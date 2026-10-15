@@ -1,0 +1,34 @@
+# Build output
+_Bin/
+_Obj/
+**/_Bin/
+**/_Obj/
+Debug/
+Release/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+ipch/
+
+# Build artifacts
+*.obj
+*.pch
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.lib
+*.tlog
+*.lastbuildstate
+*.recipe
+*.log
+*.res
+*.aps
+*.exe
+*.dll

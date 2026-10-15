@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6DEC01F1-147A-485C-8396-1AE3D5F81B2D}</ProjectGuid>
+    <RootNamespace>VLAuto</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <ProjectName>VLCTCPro</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)_Bin\</OutDir>
+    <IntDir>$(SolutionDir)_Obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+    <LibraryPath>$(SolutionDir)_Obj\VLCTCdll\$(Configuration)\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)_Bin\</OutDir>
+    <IntDir>$(SolutionDir)_Obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+    <LibraryPath>$(SolutionDir)_Obj\VLCTCdll\$(Configuration)\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>VLCTCdll.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Version>3.0</Version>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>VLCTCdll.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AutoParams.cpp" />
+    <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="LoginSck.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="VLAuto.cpp" />
+    <ClCompile Include="VLAutoDlg.cpp" />
+    <ClCompile Include="..\CrashHandler.cpp" />
+    <ClCompile Include="DlgAbout.cpp" />
+    <ClCompile Include="DlgAutoLogin.cpp" />
+    <ClCompile Include="DlgDebug.cpp" />
+    <ClCompile Include="DlgAttack.cpp" />
+    <ClCompile Include="DlgBasic.cpp" />
+    <ClCompile Include="DlgCollect.cpp" />
+    <ClCompile Include="DlgMap.cpp" />
+    <ClCompile Include="DlgMove.cpp" />
+    <ClCompile Include="DlgMovePoints.cpp" />
+    <ClCompile Include="DlgParty.cpp" />
+    <ClCompile Include="DlgRecover.cpp" />
+    <ClCompile Include="DlgYeSou.cpp" />
+    <ClCompile Include="DiskID32.cpp" />
+    <ClCompile Include="DWinProcess.cpp" />
+    <ClCompile Include="MiniBrowser.cpp" />
+    <ClCompile Include="MyListCtrl.cpp" />
+    <ClCompile Include="UiControls.cpp" />
+    <ClCompile Include="VNUnicode.cpp" />
+    <ClCompile Include="DlgExit.cpp" />
+    <ClCompile Include="DlgFindItem.cpp" />
+    <ClCompile Include="DlgLogin.cpp" />
+    <ClCompile Include="DlgOption.cpp" />
+    <ClCompile Include="DlgPKQFilter.cpp" />
+    <ClCompile Include="DlgUtility.cpp" />
+    <ClCompile Include="YSAddPoint.cpp" />
+    <ClCompile Include="YSBuyItem.cpp" />
+    <ClCompile Include="YSPrizeSel.cpp" />
+    <ClCompile Include="YSTongPK.cpp" />
+    <ClCompile Include="YSTongQ.cpp" />
+    <ClCompile Include="YSTuZhi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AutoParams.h" />
+    <ClInclude Include="GameCore.h" />
+    <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="LoginSck.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="VLAuto.h" />
+    <ClInclude Include="VLAutoDlg.h" />
+    <ClInclude Include="DlgAbout.h" />
+    <ClInclude Include="DlgAutoLogin.h" />
+    <ClInclude Include="GameLogin.h" />
+    <ClInclude Include="DlgDebug.h" />
+    <ClInclude Include="DlgAttack.h" />
+    <ClInclude Include="DlgBasic.h" />
+    <ClInclude Include="DlgCollect.h" />
+    <ClInclude Include="DlgMap.h" />
+    <ClInclude Include="DlgMove.h" />
+    <ClInclude Include="DlgMovePoints.h" />
+    <ClInclude Include="DlgParty.h" />
+    <ClInclude Include="DlgPKQFilter.h" />
+    <ClInclude Include="DlgRecover.h" />
+    <ClInclude Include="DlgYeSou.h" />
+    <ClInclude Include="DlgExit.h" />
+    <ClInclude Include="DlgFindItem.h" />
+    <ClInclude Include="DlgLogin.h" />
+    <ClInclude Include="DlgOption.h" />
+    <ClInclude Include="DlgUtility.h" />
+    <ClInclude Include="YSAddPoint.h" />
+    <ClInclude Include="YSBuyItem.h" />
+    <ClInclude Include="YSPrizeSel.h" />
+    <ClInclude Include="YSTongPK.h" />
+    <ClInclude Include="YSTongQ.h" />
+    <ClInclude Include="YSTuZhi.h" />
+    <ClInclude Include="AntiRE.h" />
+    <ClInclude Include="DWinProcess.h" />
+    <ClInclude Include="MiniBrowser.h" />
+    <ClInclude Include="MyListCtrl.h" />
+    <ClInclude Include="UiControls.h" />
+    <ClInclude Include="Help\HTMLDefines.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Login.ico" />
+    <Image Include="res\LoginBtn.bmp" />
+    <Image Include="res\MainTab.bmp" />
+    <Image Include="res\VLAuto.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="res\Ringing.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VLAuto.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\VLAuto.rc2" />
+    <None Include="Help\Home.html" />
+    <None Include="Help\Style.css" />
+    <None Include="Help\VLAuto.hhc" />
+    <None Include="Help\VLAuto.hhp" />
+    <None Include="..\..\VLAuto.NET\Home\Html\Download.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\_Bin\VLAuto4F.cmt" />
+    <None Include="..\_Bin\VLAutoPr.cmt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VLHook\VLHook.vcxproj">
+      <Project>{740a8b86-b7c7-44e4-8e9f-3eedd13da93b}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="VLAuto.rc" _x007B_8856F961-340A-11D0-A96B-00C04FD705A2_x007D_="CMiniBrowser" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

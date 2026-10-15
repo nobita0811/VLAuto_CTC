@@ -1,0 +1,319 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\TabDialogs">
+      <UniqueIdentifier>{8774219a-50f4-4aa7-8fb3-4227f6128338}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{3a3e64d9-b1e9-459a-81d6-fcf1d60393ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dialogs">
+      <UniqueIdentifier>{cd717695-cac1-4708-8ad5-44be68af9619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\TabDialogs">
+      <UniqueIdentifier>{10d9da52-186c-4f40-9f63-7ada49f17ef1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Dialogs">
+      <UniqueIdentifier>{08f30bec-6e7a-4ea8-9f28-47cdab34c5cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities">
+      <UniqueIdentifier>{19df8230-b002-4a28-a4e6-6f51cb36b451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="HTML Help Files">
+      <UniqueIdentifier>{f4b1ba0b-b5af-424c-a56f-38819f567725}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AutoParams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginSck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VLAuto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VLAutoDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgAbout.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgAutoLogin.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgDebug.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgAttack.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgBasic.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgCollect.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgMap.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgMove.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgMovePoints.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgParty.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgRecover.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgYeSou.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DiskID32.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="DWinProcess.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniBrowser.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="MyListCtrl.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="UiControls.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="VNUnicode.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgExit.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgFindItem.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgLogin.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgOption.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgPKQFilter.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgUtility.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSAddPoint.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSBuyItem.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSPrizeSel.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSTongPK.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSTongQ.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="YSTuZhi.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CrashHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AutoParams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginSck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VLAuto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VLAutoDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgAbout.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgAutoLogin.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgDebug.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgAttack.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgBasic.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgCollect.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgMap.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgMove.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgMovePoints.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgParty.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgPKQFilter.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgRecover.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgYeSou.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgExit.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgFindItem.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgLogin.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgOption.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgUtility.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSAddPoint.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSBuyItem.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSPrizeSel.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSTongPK.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSTongQ.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSTuZhi.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="AntiRE.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="DWinProcess.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniBrowser.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="MyListCtrl.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="UiControls.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Help\HTMLDefines.h">
+      <Filter>HTML Help Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Login.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\LoginBtn.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MainTab.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\VLAuto.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="res\Ringing.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VLAuto.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\VLAuto.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Help\Home.html">
+      <Filter>HTML Help Files</Filter>
+    </None>
+    <None Include="Help\Style.css">
+      <Filter>HTML Help Files</Filter>
+    </None>
+    <None Include="..\..\VLAuto.NET\Home\Html\Download.htm" />
+    <None Include="..\_Bin\VLAuto4F.cmt" />
+    <None Include="..\_Bin\VLAutoPr.cmt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Help\VLAuto.hhc">
+      <Filter>HTML Help Files</Filter>
+    </None>
+    <None Include="Help\VLAuto.hhp">
+      <Filter>HTML Help Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

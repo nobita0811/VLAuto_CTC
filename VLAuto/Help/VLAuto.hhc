@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+   <OBJECT type="text/site properties">
+     <param name="Window Styles" value="0x800025">
+     <param name="comment" value="title:Online Help">
+     <param name="comment" value="base:index.htm">
+   </OBJECT>
+   <UL>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Trang chu">
+            <param name="Local" value="Home.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 0 - Tai khoan & LIC">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Account.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 1 - Co ban">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Basic.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 2 - Phuc hoi">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Recover.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 3 - Chien dau">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Attack.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 4 - Nhat do">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Collect.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 5 - Di chuyen">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Move.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 6 - To doi">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Party.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 7 - Ban do">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Map.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 8 - Nhiem vu">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/YeSou.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Phan 9 - Tien ich">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Utility.html">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Cac thiet lap khac">
+            <param name="Local" value="http://vlauto.net/Help/VLAuto/Other.html">
+          </OBJECT>
+   </UL>
+</BODY>
+</HTML>

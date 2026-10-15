@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{740A8B86-B7C7-44E4-8E9F-3EEDD13DA93B}</ProjectGuid>
+    <RootNamespace>HookPr</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>VLCTCdll</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)_Bin\</OutDir>
+    <IntDir>$(SolutionDir)_Obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)_Bin\</OutDir>
+    <IntDir>$(SolutionDir)_Obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HOOKPR_EXPORTS;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;HOOKPR_EXPORTS;VLTK_FREE_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="VLHook.cpp" />
+    <ClCompile Include="PELib.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="User32.cpp" />
+    <ClCompile Include="ZZTest.cpp" />
+    <ClCompile Include="VLAttack.cpp" />
+    <ClCompile Include="VLBasic.cpp" />
+    <ClCompile Include="VLCollect.cpp" />
+    <ClCompile Include="VLMain.cpp" />
+    <ClCompile Include="VLMap.cpp" />
+    <ClCompile Include="VLMove.cpp" />
+    <ClCompile Include="VLDebug.cpp" />
+    <ClCompile Include="VLDebugMap.cpp" />
+    <ClCompile Include="VLDebugCollect.cpp" />
+    <ClCompile Include="VLDebugAttack.cpp" />
+    <ClCompile Include="VLDebugRecover.cpp" />
+    <ClCompile Include="VLDebugLowCfg.cpp" />
+    <ClCompile Include="..\CrashHandler.cpp" />
+    <ClCompile Include="VLExpLimit.cpp" />
+    <ClCompile Include="VLDebugPath.cpp" />
+    <ClCompile Include="MagicAttrib.cpp" />
+    <ClCompile Include="VLParty.cpp" />
+    <ClCompile Include="VLQTong.cpp" />
+    <ClCompile Include="VLQuest.cpp" />
+    <ClCompile Include="VLRecover.cpp" />
+    <ClCompile Include="VLUtil.cpp" />
+    <ClCompile Include="VLYeSou.cpp" />
+    <ClCompile Include="JxCore.cpp" />
+    <ClCompile Include="S3Client.cpp" />
+    <ClCompile Include="DiskID32.cpp" />
+    <ClCompile Include="DTextFile.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MagicAttrib.h" />
+    <ClInclude Include="VLHook.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="User32.h" />
+    <ClInclude Include="VLClasses.h" />
+    <ClInclude Include="VLDebug.h" />
+    <ClInclude Include="GameBase.h" />
+    <ClInclude Include="JxCore.h" />
+    <ClInclude Include="S3Client.h" />
+    <ClInclude Include="AntiRE.h" />
+    <ClInclude Include="DTextFile.h" />
+    <ClInclude Include="KNode.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

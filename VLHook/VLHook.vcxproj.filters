@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7a1fff2f-9082-47d2-9d07-6e0104c8afb0}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\VLClasses">
+      <UniqueIdentifier>{ad73d5a7-32d3-4e7c-90a1-0b24441198d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameCore">
+      <UniqueIdentifier>{c0690074-2271-4d74-8348-55ada44c4f04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{aef3c56e-27a5-4d8a-8f4a-32f13ca7fa99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{3ad28eee-70db-491d-96ff-1dfa1689286c}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\GameCore">
+      <UniqueIdentifier>{d25904b2-e0ad-46ed-bb29-30b8145d250a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities">
+      <UniqueIdentifier>{732e0422-cf3a-4ec6-a2a1-07e27b0cba6e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PELib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="User32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ZZTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VLAttack.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLBasic.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLCollect.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLMain.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLMap.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLMove.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebug.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugMap.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugCollect.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugAttack.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugRecover.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugLowCfg.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLExpLimit.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLParty.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLQTong.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLQuest.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLRecover.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLUtil.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLYeSou.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="JxCore.cpp">
+      <Filter>Source Files\GameCore</Filter>
+    </ClCompile>
+    <ClCompile Include="S3Client.cpp">
+      <Filter>Source Files\GameCore</Filter>
+    </ClCompile>
+    <ClCompile Include="DiskID32.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="DTextFile.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="VLHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicAttrib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CrashHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="User32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VLClasses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBase.h">
+      <Filter>Header Files\GameCore</Filter>
+    </ClInclude>
+    <ClInclude Include="JxCore.h">
+      <Filter>Header Files\GameCore</Filter>
+    </ClInclude>
+    <ClInclude Include="S3Client.h">
+      <Filter>Header Files\GameCore</Filter>
+    </ClInclude>
+    <ClInclude Include="AntiRE.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="DTextFile.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="VLHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KNode.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicAttrib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VLDebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
