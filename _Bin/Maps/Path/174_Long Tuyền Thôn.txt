@@ -1,0 +1,25 @@
+; VLAuto MapPath - Map 174 Long TuyÒn Th«n
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,52176,102492
+1,52697,102474
+2,53394,101954
+3,53925,101594
+4,54137,100703
+5,54851,100155
+6,54787,98302
+7,54725,94214
+8,54716,93900
+[Sides]
+0,1
+1,2
+2,3
+3,4
+4,5
+5,6
+6,7
+7,8
+[Doors]
+8,179,51904,104832
+7,179,51783,106000
+[Driver]

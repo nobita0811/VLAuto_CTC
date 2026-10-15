@@ -1,0 +1,33 @@
+﻿  DlgAbout.cpp
+  DlgAttack.cpp
+  DlgAutoLogin.cpp
+  DlgBasic.cpp
+  DlgCollect.cpp
+  DlgDebug.cpp
+  DlgExit.cpp
+  DlgFindItem.cpp
+  DlgLogin.cpp
+  DlgMap.cpp
+  DlgMove.cpp
+  DlgMovePoints.cpp
+  DlgOption.cpp
+  DlgPKQFilter.cpp
+  DlgParty.cpp
+  DlgRecover.cpp
+  DlgUtility.cpp
+  DlgYeSou.cpp
+  GameWindow.cpp
+  LoginSck.cpp
+  Generating Code...
+  Compiling...
+  MyListCtrl.cpp
+  VLAuto.cpp
+  VLAutoDlg.cpp
+  YSAddPoint.cpp
+  YSBuyItem.cpp
+  YSPrizeSel.cpp
+  YSTongPK.cpp
+  YSTongQ.cpp
+  YSTuZhi.cpp
+  Generating Code...
+  VLAuto.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\VLCTCPro.exe

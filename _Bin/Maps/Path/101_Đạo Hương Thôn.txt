@@ -1,0 +1,8 @@
+; VLAuto MapPath - Map 101 §¹o H­¬ng Th«n
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,42848,108736
+[Sides]
+[Doors]
+0,78,57900,109588
+[Driver]

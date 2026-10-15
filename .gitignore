@@ -1,8 +1,6 @@
 # Build output
-_Bin/
-_Obj/
-**/_Bin/
-**/_Obj/
+*/_Bin/
+*/_Obj/
 Debug/
 Release/
 
@@ -32,3 +30,7 @@ ipch/
 *.aps
 *.exe
 *.dll
+
+# Keep root build folders in git
+!/_Bin/**
+!/_Obj/**

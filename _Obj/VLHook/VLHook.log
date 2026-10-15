@@ -1,0 +1,34 @@
+﻿  VLHook.cpp
+  PELib.cpp
+  stdafx.cpp
+  User32.cpp
+  ZZTest.cpp
+  VLAttack.cpp
+  VLBasic.cpp
+  VLCollect.cpp
+  VLMain.cpp
+  VLMap.cpp
+  VLMove.cpp
+  VLDebug.cpp
+  VLDebugMap.cpp
+  VLDebugCollect.cpp
+  VLDebugAttack.cpp
+  VLDebugRecover.cpp
+  VLExpLimit.cpp
+  VLDebugPath.cpp
+  MagicAttrib.cpp
+  VLParty.cpp
+  Generating Code...
+  Compiling...
+  VLQTong.cpp
+  VLQuest.cpp
+  VLRecover.cpp
+  VLUtil.cpp
+  VLYeSou.cpp
+  JxCore.cpp
+  S3Client.cpp
+  DiskID32.cpp
+  DTextFile.cpp
+  Generating Code...
+     Creating library I:\JX20\VLAuto\_Obj\VLHook\VLHookPr.lib and object I:\JX20\VLAuto\_Obj\VLHook\VLHookPr.exp
+  VLHook.vcxproj -> I:\JX20\VLAuto\_Bin\VLHookPr.dll
