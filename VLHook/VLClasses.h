@@ -47,6 +47,9 @@ public:
 	BOOL	m_bAttackBossFirst;
 	char	m_szControlPass[40];
 	BOOL	m_bQuitingGame;
+	int		m_nTongMoney;		// Lenh gom tien len bang dang cho ve thanh (0 = khong co)
+	int		m_nTongTimeout;		// g_RunningTimer: qua moc nay chua ve thanh => huy
+	int		m_nTongCityTimer;	// g_RunningTimer: da ve thanh, cho toi moc nay moi gop (0 = chua ve thanh)
 
 private:
 	unsigned m_uHardDiskID;
@@ -55,6 +58,9 @@ public:
 	CVLMain(void);
 	BOOL IsPEPacked();
 	BOOL PostFeedBack(WPARAM wParam, LPARAM lParam = -1);
+	BOOL StoreTongMoney(int nMoney);
+	void TongMoneyBreathe();
+	BOOL UseAmuletPaper();
 	void SetDllFilePath(char *szDllFile);
 	int CheckRegistration();
 	void InitParams(HWND hWndGame, HWND hWndServer);
@@ -670,6 +676,19 @@ enum YESOU_REQUIRED_VALUE
 	ys_rqshanhe,
 };
 
+// Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
+// Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
+#define QUEST_TRACE 1
+#if QUEST_TRACE
+void QTraceSite(char *szLast, const char *szFormat, ...);
+#define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)
+#else
+#define QTRACE(...) ((void)0)
+#endif
+const char* QTName_Gen(int nGen);
+const char* QTName_YS(int nYS);
+const char* QTName_Rq(int nRq);
+
 struct YS_Task_Header
 {
 	char szVersion[12];
@@ -898,6 +917,7 @@ public:
 	BOOL	m_bIsYeSouAndPK;
 	BOOL	m_bGetMingWang;
 	time_t	m_tmStart;
+	BOOL	m_bNoVipCard;		// 15-10: server bao can kich hoat the Vip -> ngung Da Tau
 
 public:
 	CVLQuest(void);
@@ -930,8 +950,10 @@ public:
 	void DoQuestFY(int nRqValue);
 	void DoQuestPK(int nRqValue);
 	void DoSuspendOpt();
+	void StopNoVip();
 	YESOU_TASK_DOING ReportQuest(BOOL bAutoCheck = 0, char *szQuest = 0);
 	YESOU_TASK_DOING GetRequiredCondition();
+	YESOU_TASK_DOING GetRequiredConditionRaw();
 
 	// Bang Hoi
 	BOOL BHPreparing();

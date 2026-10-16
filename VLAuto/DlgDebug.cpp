@@ -15,6 +15,7 @@
 #include <tlhelp32.h>
 #include <shlwapi.h>
 #include <psapi.h>
+#include <vector>
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "shlwapi.lib")
 
@@ -142,6 +143,8 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("Tìm đường (Dijkstra) theo City.map tới NpcPoints[Idx], chạy 1 bước - bấm tiếp để chạy tiếp"), 0 },
 	{ dtab_map, dbg_mp_menu,			_T("Menu NPC: GetMenuCount + dòng"),
 		_T("Đọc bảng hội thoại KUiMsgSel / KUiMsgSel2 đang mở và các lựa chọn"), 0 },
+	{ dtab_map, dbg_mp_dialog,			_T("Lời thoại / bảng thông báo"),
+		_T("Đọc đầy đủ lời NPC trong hộp thoại đang mở (vd: mô tả nhiệm vụ Dã Tẩu) và bảng thông báo KUiInformation"), 0 },
 	{ dtab_map, dbg_mp_clickmenuidx,	_T("theMain.ClickMenuIdx(Idx)"),
 		_T("Chọn dòng số Idx trong bảng hội thoại đang mở"), 0 },
 	{ dtab_map, dbg_mp_clickmenustr,	_T("theMain.ClickMenuStr(Chuỗi)"),
@@ -182,6 +185,8 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("OperationRequest(GOI_MONEY_INOUT_STORE_BOX, TRUE, Idx) - cần mở rương"), TRUE },
 	{ dtab_map, dbg_mp_moneyout,		_T("Rút Idx lượng từ rương"),
 		_T("OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, Idx) - cần mở rương"), TRUE },
+	{ dtab_map, dbg_mp_tongmoney,		_T("Góp Idx lượng vào quỹ bang"),
+		_T("TongOperation(4, {2, 0, Idx}, buf) - như nút Góp quỹ (15_10: lệnh con 2 -> 0x5BDDA0, this 0x17A4F00). X khác 0 = thử lệnh con X (0..12). Không cần mở cửa sổ bang"), TRUE },
 	{ dtab_map, dbg_mp_handtoroom,		_T("Đồ trên tay -> hành trang"),
 		_T("EQUIP_ROOM.FindRoom + SwitchItem(UOC_ITEM_TAKE_WITH)"), 0 },
 	{ dtab_map, dbg_mp_checkready,		_T("CheckReady (chỉ đọc)"),
@@ -365,9 +370,9 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 	{ dtab_lowcfg, dbg_lc_autotrim,		_T("Tự giảm RAM mỗi Idx giây"),
 		_T("Idx = số giây giữa 2 lần giảm RAM (0 = tắt). Chạy cả khi tạm dừng Auto"), 0 },
 	{ dtab_lowcfg, dbg_lc_fps,			_T("FPS vẽ = Idx"),
-		_T("Ghi [0x815838] = 1000 / Idx (Idx = 0: trả lại giá trị gốc từ config.ini PaintFps). Logic game vẫn 18 nhịp/giây"), 0 },
+		_T("Ghi [0x7AD7B0] PaintFps = Idx (Idx = 0: trả lại giá trị gốc từ config.ini PaintFps). Logic game không đổi"), 0 },
 	{ dtab_lowcfg, dbg_lc_screen,		_T("Tắt hình (Idx = 1/0)"),
-		_T("Idx = 1: game ngừng vẽ (như khi thu nhỏ > 10s, ghi [0x9BC508] liên tục), Idx = 0: vẽ lại"), 0 },
+		_T("Idx = 1: game ngừng vẽ (như khi thu nhỏ > 10s, ghi [0x8483B0] liên tục), Idx = 0: vẽ lại"), 0 },
 	{ dtab_lowcfg, dbg_lc_players,		_T("Người chơi hiển thị = Idx"),
 		_T("OperationRequest(GOI_OPTION_SETTING, 6, Idx): Idx = 0 ẩn người chơi khác, mặc định 200"), 0 },
 	{ dtab_lowcfg, dbg_lc_weather,		_T("Thời tiết (Idx = 1/0)"),
@@ -384,25 +389,27 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 	// Tab Đăng nhập - màn hình bắt đầu (KUiInit) và cửa sổ đăng nhập.
 	// Game chưa nạp VLHook (chưa vào game) => VLAuto tự đọc bộ nhớ + CreateRemoteThread (RunLoginCmd)
 	{ dtab_login, dbg_lg_status,		_T("Trạng thái đăng nhập"),
-		_T("Đang trong game hay chưa; màn hình bắt đầu (0x840460) + 4 nút; chọn máy chủ (0x839A18) + danh sách máy chủ; cửa sổ nhập tài khoản (0x8399FC)"), 0 },
+		_T("Đang trong game hay chưa; màn hình bắt đầu (0x7C47D8) + 4 nút; bảng Nhắc nhở (0x7BE5E8); chọn máy chủ (0x7BE604) + danh sách máy chủ; cửa sổ nhập tài khoản (0x7BE5EC)"), 0 },
 	{ dtab_login, dbg_lg_serverlist,	_T("Đọc danh sách server (file)"),
-		_T("Đọc \\UserDataCl\\serverlist.ini (thư mục Game, hoặc đường dẫn ở Chuỗi), giải mã XOR 0x32 (updatedll.dll UnEncrypt), xuất serverlist_.txt cùng thư mục"), 0 },
+		_T("Đọc \\settings\\serverlist.ini trong các file pak của Game theo thứ tự package.ini (pak đầu tiên có file được dùng, giải nén UCL), xuất UTF-8 ra UiConfig\\serverlist_.txt cho Auto Login. Chuỗi (tùy chọn) = thư mục Game, file .pak hoặc file .ini"), 0 },
 	{ dtab_login, dbg_lg_entergame,		_T("Bấm Bắt Đầu Trò Chơi"),
 		_T("KUiInit::EnterGame() = OnClickButton(this + 0x5A4): mở cửa sổ đăng nhập, đóng màn hình bắt đầu"), 0 },
+	{ dtab_login, dbg_lg_notice,		_T("Nhắc nhở: Xác định"),
+		_T("Bảng \"Nhắc nhở\" (KUiHealthNotice *0x7BE5E8, mở sau Bắt Đầu Trò Chơi): WndProc 0x483B10(0x565, nút Xác định +0x37C) => mở chọn máy chủ + đóng bảng"), 0 },
 	{ dtab_login, dbg_lg_click,			_T("Bấm nút(Idx)"),
 		_T("KUiInit::OnClickButton: Idx 0 Bắt Đầu, 1 Tùy Chọn, 2 Xem Ghi Hình, 3 Thoát Khỏi Trò Chơi (thoát game!)"), TRUE },
 	{ dtab_login, dbg_lg_region,		_T("Chọn khu vực(Idx)"),
-		_T("Chọn khu vực thứ Idx (xem Trạng thái): Left/RightList SetCurSel + nạp lại danh sách máy chủ 0x48AF80"), 0 },
+		_T("Chọn khu vực thứ Idx (xem Trạng thái): Left/RightList SetCurSel + nạp lại danh sách máy chủ 0x487160"), 0 },
 	{ dtab_login, dbg_lg_server,		_T("Chọn máy chủ(Idx)"),
 		_T("Chọn máy chủ thứ Idx trong khu vực đang chọn (xem Trạng thái): IpList SetCurSel"), 0 },
 	{ dtab_login, dbg_lg_selserver,		_T("Chọn máy chủ: Đăng nhập"),
-		_T("KUiSelServer::OnLogin() 0x48ACD0 với máy chủ đang chọn (xem danh sách ở Trạng thái): kết nối + mở cửa sổ nhập tài khoản"), 0 },
+		_T("KUiSelServer::OnLogin() 0x487D00 với máy chủ đang chọn (xem danh sách ở Trạng thái): kết nối + mở cửa sổ nhập tài khoản"), 0 },
 	{ dtab_login, dbg_lg_role,			_T("Chọn nhân vật(Idx)"),
-		_T("KUiSelPlayer::OnSelectPlayer 0x49C940: Idx = số thứ tự trong danh sách nhân vật (xem Trạng thái), phải đang hiện trên trang"), 0 },
+		_T("KUiSelPlayer::OnSelectPlayer 0x49FEE0: Idx = số thứ tự trong danh sách nhân vật (xem Trạng thái), phải đang hiện trên trang"), 0 },
 	{ dtab_login, dbg_lg_entergame2,	_T("Vào game"),
-		_T("KUiSelPlayer::OnEnterGame 0x49C210: g_LoginLogic.SelectRole(nhân vật đang chọn) + cửa sổ đang vào game"), 0 },
+		_T("KUiSelPlayer: tick đồng ý (+0x8464) + OnEnterGame 0x4A0370: g_LoginLogic.SelectRole(nhân vật đang chọn) + cửa sổ đang vào game"), 0 },
 	{ dtab_login, dbg_lg_login,			_T("Nhập TK/MK + Đăng nhập (Chuỗi)"),
-		_T("Chuỗi = \"TàiKhoản MậtKhẩu\": KWndEdit::SetText 2 ô, tick đồng ý điều khoản (+0x80C0), KUiLogin::OnLogin() 0x4871D0"), 0 },
+		_T("Chuỗi = \"TàiKhoản MậtKhẩu\": KWndEdit::SetText 2 ô, KUiLogin::OnLogin() 0x484C20"), 0 },
 };
 
 static const int s_nButtonCount = sizeof(s_Buttons) / sizeof(s_Buttons[0]);
@@ -744,9 +751,9 @@ static void AppendServerList(CString& strOut, HANDLE hGame, DWORD dwList, int nC
 {
 	for (int i = 0; dwList && i < nCount && i < 64; i++)
 	{
-		BYTE server[0x24] = { 0 };
+		BYTE server[LG_SERVER_ROW] = { 0 };
 		SIZE_T nRead = 0;
-		if (!ReadProcessMemory(hGame, (LPCVOID)(UINT_PTR)(dwList + i * 0x24), server, sizeof(server), &nRead))
+		if (!ReadProcessMemory(hGame, (LPCVOID)(UINT_PTR)(dwList + i * LG_SERVER_ROW), server, sizeof(server), &nRead))
 			break;
 		server[31] = 0;
 		WCHAR szTitle[64];
@@ -792,6 +799,8 @@ void CDlgDebug::LoginStatus(HANDLE hGame)
 		strOut += strLine;
 	}
 
+	AppendWndState(strOut, hGame, _T("KUiHealthNotice - bảng Nhắc nhở"), LG_NOTICE_SELF);
+
 	AppendWndState(strOut, hGame, _T("KUiSelServer - chọn máy chủ"), LG_SEL_SELF);
 	DWORD dwSel = ReadGameDword(hGame, LG_SEL_SELF);
 	if (dwSel)
@@ -830,72 +839,273 @@ void CDlgDebug::LoginStatus(HANDLE hGame)
 	strOut += strLine;
 	for (int i = 0; i < nRoles && i < 50; i++)
 	{
-		BYTE role[0x24] = { 0 };
-		if (!ReadProcessMemory(hGame, (LPCVOID)(UINT_PTR)(LG_LOGIC + LG_LOGIC_ROLES + i * 0x24), role, sizeof(role), NULL))
+		BYTE role[LG_ROLE_INFO_SIZE] = { 0 };
+		if (!ReadProcessMemory(hGame, (LPCVOID)(UINT_PTR)(LG_LOGIC + LG_LOGIC_ROLES + i * LG_ROLE_INFO_SIZE), role, sizeof(role), NULL))
 			break;
 		role[31] = 0;
 		WCHAR szName[64];
 		TCVN3ToUnicode((LPCSTR)role, szName, 63);
 		BOOL bCur = dwRoleWnd && nRoleSel >= 0 && i == nRoleSel + nRolePage;
 		strLine.Format(_T("  %s[%d] %s  cấp %d  giới tính %d  ngũ hành %d%s\n"), bCur ? _T("=>") : _T("  "), i, szName,
-			*(short*)(role + 34), role[32], role[33], (dwRoleWnd && (i < nRolePage || i >= nRolePage + LG_ROLE_PER_PAGE)) ? _T("  (trang khác)") : _T(""));
+			*(int*)(role + LG_ROLE_INFO_LEVEL), role[32], role[33], (dwRoleWnd && (i < nRolePage || i >= nRolePage + LG_ROLE_PER_PAGE)) ? _T("  (trang khác)") : _T(""));
 		strOut += strLine;
 	}
 
 	AppendText(strOut, CLR_TEXT);
 }
 
-#define SERVERLIST_XOR		0x32	// updatedll.dll Encrypt/UnEncrypt: key "2TgIOR6J...", chỉ số key luôn 0 (& 0x40)
+#define SERVERLIST_XOR		0x32	// 10_10: UserDataCl\serverlist.ini mã hóa XOR (updatedll.dll UnEncrypt)
+#define SERVERLIST_PAK_FILE	"\\settings\\serverlist.ini"	// 15_10: nằm trong data\*.pak (0x5AC720 đọc "\Settings\ServerList.ini")
+#define SERVERLIST_OUT_FILE	_T("%s\\UiConfig\\serverlist_.txt")	// Auto Login đọc file này
 
-// Đọc + giải mã danh sách server từ file (Game: g_LoginLogic 0x59B900 -> 0x595C30).
-// serverlistdebug.ini (không mã hóa) có thì Game dùng file đó thay serverlist.ini
+// Mã file trong pak (g_FileName2Id): chữ thường, '/' -> '\'
+static DWORD PakFileNameId(LPCSTR szName)
+{
+	DWORD dwId = 0;
+	for (int i = 0; szName[i]; i++)
+	{
+		char c = szName[i];
+		if (c >= 'A' && c <= 'Z')
+			c += 'a' - 'A';
+		else if (c == '/')
+			c = '\\';
+		dwId = (dwId + (DWORD)((i + 1) * c)) % 0x8000000B * 0xFFFFFFEF;
+	}
+	return dwId ^ 0x12345678;
+}
+
+// Giải nén UCL nrv2b (bit buffer 8 bit) - pak method 1
+static BOOL UclNrv2bDecompress8(const BYTE* pSrc, DWORD dwSrcLen, BYTE* pDst, DWORD dwDstLen)
+{
+	DWORD bb = 0, ip = 0, op = 0, dwLastOff = 1;
+	BOOL bErr = FALSE;
+	auto GetByte = [&]() -> DWORD { if (ip < dwSrcLen) return pSrc[ip++]; bErr = TRUE; return 0; };
+	auto GetBit = [&]() -> DWORD { if (bb & 0x7F) bb *= 2; else bb = GetByte() * 2 + 1; return (bb >> 8) & 1; };
+	for (;;)
+	{
+		while (GetBit())
+		{
+			if (op >= dwDstLen)
+				return FALSE;
+			pDst[op++] = (BYTE)GetByte();
+			if (bErr)
+				return FALSE;
+		}
+		DWORD dwOff = 1;
+		do
+		{
+			dwOff = dwOff * 2 + GetBit();
+			if (bErr || dwOff > 0x1000002)
+				return FALSE;
+		} while (!GetBit());
+		if (dwOff == 2)
+			dwOff = dwLastOff;
+		else
+		{
+			dwOff = (dwOff - 3) * 256 + GetByte();
+			if (dwOff == 0xFFFFFFFF)
+				break;
+			dwLastOff = ++dwOff;
+		}
+		DWORD dwLen = GetBit();
+		dwLen = dwLen * 2 + GetBit();
+		if (dwLen == 0)
+		{
+			dwLen = 1;
+			do
+			{
+				dwLen = dwLen * 2 + GetBit();
+				if (bErr || dwLen >= dwDstLen)
+					return FALSE;
+			} while (!GetBit());
+			dwLen += 2;
+		}
+		dwLen += (dwOff > 0xD00);
+		if (bErr || dwOff > op || op + dwLen + 1 > dwDstLen)
+			return FALSE;
+		for (DWORD i = 0; i <= dwLen; i++, op++)
+			pDst[op] = pDst[op - dwOff];
+	}
+	return !bErr && op == dwDstLen;
+}
+
+static BOOL ReadFileAt(HANDLE hFile, DWORD dwOffset, void* pBuf, DWORD dwSize)
+{
+	DWORD dwRead = 0;
+	return SetFilePointer(hFile, dwOffset, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER &&
+		ReadFile(hFile, pBuf, dwSize, &dwRead, NULL) && dwRead == dwSize;
+}
+
+// Tìm và giải nén szName trong file pak. 1 = OK, 0 = không có, -1 = lỗi (strErr)
+static int ReadPakFile(LPCTSTR szPak, LPCSTR szName, CStringA& strData, CString& strErr)
+{
+	HANDLE hFile = CreateFile(szPak, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return 0;
+	// Header: "PACK", số file, vị trí bảng chỉ mục, vị trí dữ liệu; mỗi dòng chỉ mục 16 byte:
+	// mã file, vị trí, kích thước gốc, (method << 24) | kích thước nén
+	DWORD header[4] = { 0 }, dwId = PakFileNameId(szName);
+	int nResult = 0;
+	std::vector<DWORD> index;
+	if (!ReadFileAt(hFile, 0, header, sizeof(header)) || header[0] != 0x4B434150 || header[1] > 0x100000)
+		strErr = _T("không phải file pak");
+	else
+	{
+		index.resize(header[1] * 4 + 4);
+		if (!ReadFileAt(hFile, header[2], &index[0], header[1] * 16))
+			strErr = _T("lỗi đọc bảng chỉ mục");
+	}
+	for (DWORD i = 0; strErr.IsEmpty() && i < header[1]; i++)
+	{
+		const DWORD* pEntry = &index[i * 4];
+		if (pEntry[0] != dwId)
+			continue;
+		DWORD dwSize = pEntry[2], dwPackSize = pEntry[3] & 0xFFFFFF, dwMethod = pEntry[3] >> 24;
+		nResult = -1;
+		if (dwSize > 4 * 1024 * 1024 || dwPackSize > 4 * 1024 * 1024)
+		{
+			strErr.Format(_T("kích thước lạ (%u / %u)"), dwSize, dwPackSize);
+			break;
+		}
+		std::vector<BYTE> pack(dwPackSize + 1);
+		if (!ReadFileAt(hFile, pEntry[1], &pack[0], dwPackSize))
+		{
+			strErr = _T("lỗi đọc dữ liệu");
+			break;
+		}
+		LPSTR pData = strData.GetBuffer(dwSize + 1);
+		BOOL bOK = FALSE;
+		if (dwMethod == 0)
+			bOK = (dwPackSize == dwSize) && (memcpy(pData, &pack[0], dwSize), TRUE);
+		else if (dwMethod == 1)
+			bOK = UclNrv2bDecompress8(&pack[0], dwPackSize, (BYTE*)pData, dwSize);
+		strData.ReleaseBuffer(bOK ? dwSize : 0);
+		if (bOK)
+			nResult = 1;
+		else if (dwMethod <= 1)
+			strErr = _T("giải nén lỗi");
+		else
+			strErr.Format(_T("chưa hỗ trợ kiểu nén %u"), dwMethod);
+		break;
+	}
+	CloseHandle(hFile);
+	return strErr.IsEmpty() ? nResult : -1;
+}
+
+// Đọc file thường (10_10: có thể mã hóa XOR, đã giải mã thì bắt đầu bằng '[')
+static BOOL ReadServerListIni(LPCTSTR szFile, CStringA& strData, BOOL& bEncrypted)
+{
+	bEncrypted = FALSE;
+	HANDLE hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return FALSE;
+	DWORD dwSize = GetFileSize(hFile, NULL), dwRead = 0;
+	if (dwSize == INVALID_FILE_SIZE || dwSize > 4 * 1024 * 1024)
+		dwSize = 0;
+	LPSTR pData = strData.GetBuffer(dwSize + 1);
+	BOOL bRead = ReadFile(hFile, pData, dwSize, &dwRead, NULL);
+	CloseHandle(hFile);
+	if (!bRead)
+		dwRead = 0;
+	bEncrypted = dwRead > 0 && pData[0] != '[' && (pData[0] ^ SERVERLIST_XOR) == '[';
+	for (DWORD i = 0; bEncrypted && i < dwRead; i++)
+		pData[i] ^= SERVERLIST_XOR;
+	strData.ReleaseBuffer(dwRead);
+	return dwRead > 0;
+}
+
+// Đọc danh sách server như Game 15_10: "\settings\serverlist.ini" trong các pak theo thứ tự package.ini
+// (pak đầu tiên có file được dùng). Chuỗi = thư mục Game, file .pak hoặc file .ini (đọc thẳng).
+// Xuất UTF-8 ra UiConfig\serverlist_.txt của VLAuto cho Auto Login.
 void CDlgDebug::ServerListFile(HANDLE hGame, CString strPath)
 {
-	CString strLog;
+	CString strLog, strErr, strSource;
+	CStringA strData;
 	strPath.Trim();
-	if (strPath.IsEmpty())
+	strPath.Trim(_T("\""));
+	if (strPath.IsEmpty() || PathIsDirectory(strPath))
 	{
-		TCHAR szExe[MAX_PATH] = _T("");
-		if (!GetModuleFileNameEx(hGame, NULL, szExe, MAX_PATH))
+		TCHAR szDir[MAX_PATH] = _T("");
+		if (!strPath.IsEmpty())
+			lstrcpyn(szDir, strPath, MAX_PATH);
+		else if (GetModuleFileNameEx(hGame, NULL, szDir, MAX_PATH))
+			PathRemoveFileSpec(szDir);
+		else
 		{
 			strLog.Format(_T("LỖI: không lấy được đường dẫn Game (GetLastError = %d)"), GetLastError());
 			AppendLog(strLog, CLR_ERROR, TRUE);
 			return;
 		}
-		PathRemoveFileSpec(szExe);
-		strPath.Format(_T("%s\\UserDataCl\\serverlist.ini"), szExe);
+		PathRemoveBackslash(szDir);
+		CString strGameDir = szDir, strIni = strGameDir + _T("\\package.ini");
+		TCHAR szValue[MAX_PATH] = _T("");
+		GetPrivateProfileString(_T("Package"), _T("Path"), _T("\\data"), szValue, MAX_PATH, strIni);
+		CString strPakDir = szValue;
+		strPakDir.Replace(_T("\\\\"), _T("\\"));
+		strPakDir.TrimRight(_T('\\'));
+		if (!strPakDir.IsEmpty() && strPakDir[0] != _T('\\'))
+			strPakDir = _T("\\") + strPakDir;
+		strPakDir = strGameDir + strPakDir;
+		strLog.Format(_T("%s: thư mục pak %s\n"), (LPCTSTR)strIni, (LPCTSTR)strPakDir);
+		AppendText(strLog, CLR_TEXT);
+		for (int i = 0; ; i++)
+		{
+			CString strKey;
+			strKey.Format(_T("%d"), i);
+			if (!GetPrivateProfileString(_T("Package"), strKey, _T(""), szValue, MAX_PATH, strIni))
+				break;
+			CString strPak = strPakDir + _T("\\") + szValue, strPakErr;
+			CStringA strPakData;
+			int nRet = ReadPakFile(strPak, SERVERLIST_PAK_FILE, strPakData, strPakErr);
+			if (nRet == 0)
+				continue;
+			if (nRet < 0)
+				strLog.Format(_T("  [%d] %s: LỖI %s\n"), i, szValue, (LPCTSTR)strPakErr);
+			else if (strSource.IsEmpty())
+				strLog.Format(_T("  [%d] %s: có %hs (%d byte) => DÙNG\n"), i, szValue, SERVERLIST_PAK_FILE, strPakData.GetLength());
+			else
+				strLog.Format(_T("  [%d] %s: có %hs (%d byte), bị pak trước che\n"), i, szValue, SERVERLIST_PAK_FILE, strPakData.GetLength());
+			AppendText(strLog, nRet < 0 ? CLR_ERROR : CLR_TEXT);
+			if (nRet > 0 && strSource.IsEmpty())
+			{
+				strSource.Format(_T("%s (%hs)"), (LPCTSTR)strPak, SERVERLIST_PAK_FILE);
+				strData = strPakData;
+			}
+		}
+		if (strSource.IsEmpty())
+		{
+			// Không có trong pak => file rời
+			CString strLoose = strGameDir + CString(SERVERLIST_PAK_FILE);
+			BOOL bEncrypted = FALSE;
+			if (ReadServerListIni(strLoose, strData, bEncrypted))
+				strSource = strLoose;
+		}
+		if (strSource.IsEmpty())
+		{
+			strLog.Format(_T("LỖI: không tìm thấy %hs trong các pak của %s"), SERVERLIST_PAK_FILE, (LPCTSTR)strIni);
+			AppendLog(strLog, CLR_ERROR, TRUE);
+			return;
+		}
 	}
-
-	CString strDir = strPath;
-	PathRemoveFileSpec(strDir.GetBuffer());
-	strDir.ReleaseBuffer();
-	CString strDebug = strDir + _T("\\serverlistdebug.ini");
-	if (PathFileExists(strDebug))
+	else if (!PathMatchSpec(strPath, _T("*.pak")))
 	{
-		strLog.Format(_T("Chú ý: có %s - Game dùng file này (không mã hóa) thay serverlist.ini"), (LPCTSTR)strDebug);
-		AppendLog(strLog, CLR_ERROR, FALSE);
+		BOOL bEncrypted = FALSE;
+		if (!ReadServerListIni(strPath, strData, bEncrypted))
+		{
+			strLog.Format(_T("LỖI: không đọc được %s (GetLastError = %d)"), (LPCTSTR)strPath, GetLastError());
+			AppendLog(strLog, CLR_ERROR, TRUE);
+			return;
+		}
+		strSource = strPath + (bEncrypted ? _T(" (đã giải mã XOR 0x32)") : _T(""));
 	}
-
-	HANDLE hFile = CreateFile(strPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
+	else if (ReadPakFile(strPath, SERVERLIST_PAK_FILE, strData, strErr) > 0)
+		strSource.Format(_T("%s (%hs)"), (LPCTSTR)strPath, SERVERLIST_PAK_FILE);
+	else
 	{
-		strLog.Format(_T("LỖI: không mở được %s (GetLastError = %d)"), (LPCTSTR)strPath, GetLastError());
+		strLog.Format(_T("LỖI: %s: %s"), (LPCTSTR)strPath, strErr.IsEmpty() ? _T("không có \\settings\\serverlist.ini") : (LPCTSTR)strErr);
 		AppendLog(strLog, CLR_ERROR, TRUE);
 		return;
 	}
-	DWORD dwSize = GetFileSize(hFile, NULL), dwRead = 0;
-	if (dwSize == INVALID_FILE_SIZE || dwSize > 4 * 1024 * 1024)
-		dwSize = 0;
-	CStringA strData;
-	LPSTR pData = strData.GetBuffer(dwSize + 1);
-	BOOL bRead = ReadFile(hFile, pData, dwSize, &dwRead, NULL);
-	CloseHandle(hFile);
-	pData[bRead ? dwRead : 0] = 0;
-	// Đã giải mã sẵn (vd serverlistdebug.ini) thì bắt đầu bằng '['
-	BOOL bEncrypted = dwRead > 0 && pData[0] != '[';
-	for (DWORD i = 0; bEncrypted && i < dwRead; i++)
-		pData[i] ^= SERVERLIST_XOR;
-	strData.ReleaseBuffer(bRead ? dwRead : 0);
 
 	// TCVN3 -> Unicode từng dòng
 	CStringW strText;
@@ -914,14 +1124,19 @@ void CDlgDebug::ServerListFile(HANDLE hGame, CString strPath)
 		nPos = nEnd + 1;
 	}
 
-	// Xuất UTF-8 (BOM) cùng thư mục
-	CString strOut = strDir + _T("\\serverlist_.txt");
+	// Xuất UTF-8 (BOM) cho Auto Login
+	CString strOut;
+	strOut.Format(SERVERLIST_OUT_FILE, g_szAppFolder);
+	CString strOutDir = strOut;
+	PathRemoveFileSpec(strOutDir.GetBuffer());
+	strOutDir.ReleaseBuffer();
+	CreateDirectory(strOutDir, NULL);
 	int nLen = WideCharToMultiByte(CP_UTF8, 0, strText, strText.GetLength(), NULL, 0, NULL, NULL);
 	CStringA strUtf8;
 	WideCharToMultiByte(CP_UTF8, 0, strText, strText.GetLength(), strUtf8.GetBuffer(nLen + 1), nLen, NULL, NULL);
 	strUtf8.ReleaseBuffer(nLen);
 	BOOL bWrite = FALSE;
-	hFile = CreateFile(strOut, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hFile = CreateFile(strOut, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile != INVALID_HANDLE_VALUE)
 	{
 		DWORD dwWritten = 0;
@@ -930,12 +1145,12 @@ void CDlgDebug::ServerListFile(HANDLE hGame, CString strPath)
 		CloseHandle(hFile);
 	}
 
-	strLog.Format(_T("%s: %u byte, %s\n"), (LPCTSTR)strPath, dwRead, bEncrypted ? _T("đã giải mã XOR 0x32") : _T("không mã hóa"));
+	strLog.Format(_T("%s: %d byte\n"), (LPCTSTR)strSource, strData.GetLength());
 	AppendText(strLog, CLR_TEXT);
 	AppendText(CString(strText), CLR_TEXT);
 	if (bWrite)
 	{
-		strLog.Format(_T("=> OK, đã xuất %s"), (LPCTSTR)strOut);
+		strLog.Format(_T("=> OK, đã xuất %s (Auto Login dùng file này)"), (LPCTSTR)strOut);
 		AppendLog(strLog, CLR_OK, TRUE);
 	}
 	else
@@ -1070,8 +1285,13 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 		code.PushImm(nIdx < LG_LIST_LEFT_NUM ? nIdx : nIdx - LG_LIST_LEFT_NUM);
 		code.EcxThis(nIdx < LG_LIST_LEFT_NUM ? LG_SEL_LEFTLIST : LG_SEL_RIGHTLIST);
 		code.Call(LG_LIST_SETCURSEL);
-		code.EcxThis(0);
-		code.Call(LG_SEL_UPDATE);
+		// SetCurSel báo 0x691 => WndProc tự nạp lại IpList khi +0x226C = 1. Gọi LG_SEL_UPDATE thêm lần nữa sẽ
+		// TerminateThread thread ping vừa tạo (đang giữ loader lock) => Game treo mọi thread mới
+		if (ReadGameDword(hGame, ReadGameDword(hGame, LG_SEL_SELF) + LG_SEL_AUTOUPDATE) != 1)
+		{
+			code.EcxThis(0);
+			code.Call(LG_SEL_UPDATE);
+		}
 		// Màu list như khi bấm vào khu vực (WndProc msg 0x202): khu vực thường, máy chủ nổi bật
 		code.PushImm(0);
 		code.EcxThis(LG_SEL_LEFTLIST);
@@ -1082,7 +1302,7 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 		code.PushImm(1);
 		code.EcxThis(LG_SEL_IPLIST);
 		code.Call(LG_LIST_FOCUS);
-		strCall.Format(_T("KUiSelServer: chọn khu vực %d (%s[%d]) + nạp lại máy chủ 0x48AF80"), nIdx,
+		strCall.Format(_T("KUiSelServer: chọn khu vực %d (%s[%d]) + nạp lại máy chủ 0x487160"), nIdx,
 			nIdx < LG_LIST_LEFT_NUM ? _T("LeftList") : _T("RightList"), nIdx < LG_LIST_LEFT_NUM ? nIdx : nIdx - LG_LIST_LEFT_NUM);
 		break;
 	case dbg_lg_server:
@@ -1106,9 +1326,22 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 	case dbg_lg_entergame2:
 		dwSelfPtr = LG_ROLE_SELF;
 		code.Begin(dwSelfPtr);
+		code.PushImm(1);		// 15_10: tick đồng ý điều khoản (cbUserAgreement +0x8464)
+		code.EcxThis(LG_ROLE_AGREE);
+		code.Call(LG_BTN_CHECK);
 		code.EcxThis(0);
 		code.Call(LG_ROLE_ENTER);
-		strCall = _T("KUiSelPlayer::OnEnterGame() - nhân vật đang chọn");
+		strCall = _T("KUiSelPlayer: tick đồng ý + OnEnterGame() - nhân vật đang chọn");
+		break;
+	case dbg_lg_notice:
+		dwSelfPtr = LG_NOTICE_SELF;
+		code.Begin(dwSelfPtr);
+		code.PushImm(0);
+		code.PushThis(LG_NOTICE_OK);
+		code.PushImm(LG_WND_BUTTON_CLICK);
+		code.EcxThis(0);
+		code.Call(LG_NOTICE_WNDPROC);
+		strCall.Format(_T("KUiHealthNotice::WndProc(0x%X, this + 0x%X = Xác định, 0)"), LG_WND_BUTTON_CLICK, LG_NOTICE_OK);
 		break;
 	case dbg_lg_selserver:
 		dwSelfPtr = LG_SEL_SELF;
@@ -1126,12 +1359,15 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 		code.PushImm(code.AddString(szPassword));
 		code.EcxThis(LG_LOGIN_PASSWORD);
 		code.Call(LG_EDIT_SETTEXT);
-		code.PushImm(1);
-		code.EcxThis(LG_LOGIN_AGREE);
-		code.Call(LG_BTN_CHECK);
+		if (LG_LOGIN_AGREE)	// 15_10: cửa sổ đăng nhập không còn ô đồng ý
+		{
+			code.PushImm(1);
+			code.EcxThis(LG_LOGIN_AGREE);
+			code.Call(LG_BTN_CHECK);
+		}
 		code.EcxThis(0);
 		code.Call(LG_LOGIN_FUNC);
-		strCall.Format(_T("KUiLogin: SetText(TK \"%S\"), SetText(MK %d ký tự), tick đồng ý, OnLogin()"), szAccount, (int)strlen(szPassword));
+		strCall.Format(_T("KUiLogin: SetText(TK \"%S\"), SetText(MK %d ký tự), OnLogin()"), szAccount, (int)strlen(szPassword));
 		break;
 	}
 	code.End();

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -11,31 +11,82 @@ const int Map9xID[MAX_9XMAP_NUM] = { 124, 93, 75, 144, 321, 322, 225, 226, 227, 
 
 #define BIKIP_NUM 28
 const char* BikipMP[BIKIP_NUM] =
-{ "Thiªn V­¬ng Chïy", "Thiªn V­¬ng Th­¬ng", "Thiªn V­¬ng §ao",
-	"ThiÕu L©m QuyÒn", "ThiÕu L©m C«n", "ThiÕu L©m §ao",
-	"Phi §ao thuËt.", "Phi Tiªu thuËt.", "Tô TiÔn thuËt.", "H·m TÜnh thuËt.",
-	"Ngò §éc Ch­ëng", "Ngò §éc §ao", "Ngò §éc NhiÕp",
-	"DiÖt KiÕm MËt TŞch", "Nga Mi  PhËt Quang", "Phæ §é MËt TŞch",
-	"Thóy Yªn §ao ph¸p", "Thóy Yªn Song ®ao", "C¸i Bang Ch­ëng", ", C¸i Bang C«n",
-	"V©n Long Kİch", "L­u Tinh. §ao ph¸p", "NhiÕp Hån. Chó thuËt",
-	"Th¸i Cùc QuyÒn", "Th¸i Cùc KiÕm", "Ngù Phong thuËt", "Ngù L«i thuËt", "Ngù T©m thuËt" };
+{ "ThiÂªn VÂ­Â¬ng ChÃ¯y", "ThiÂªn VÂ­Â¬ng ThÂ­Â¬ng", "ThiÂªn VÂ­Â¬ng Â§ao",
+	"ThiÃ•u LÂ©m QuyÃ’n", "ThiÃ•u LÂ©m CÂ«n", "ThiÃ•u LÂ©m Â§ao",
+	"Phi Â§ao thuÃ‹t.", "Phi TiÂªu thuÃ‹t.", "TÃ´ TiÃ”n thuÃ‹t.", "HÂ·m TÃœnh thuÃ‹t.",
+	"NgÃ² Â§Ã©c ChÂ­Ã«ng", "NgÃ² Â§Ã©c Â§ao", "NgÃ² Â§Ã©c NhiÃ•p",
+	"DiÃ–t KiÃ•m MÃ‹t TÃch", "Nga Mi  PhÃ‹t Quang", "PhÃ¦ Â§Ã© MÃ‹t TÃch",
+	"ThÃ³y YÂªn Â§ao phÂ¸p", "ThÃ³y YÂªn Song Â®ao", "CÂ¸i Bang ChÂ­Ã«ng", ", CÂ¸i Bang CÂ«n",
+	"VÂ©n Long KÃch", "LÂ­u Tinh. Â§ao phÂ¸p", "NhiÃ•p HÃ¥n. ChÃ³ thuÃ‹t",
+	"ThÂ¸i CÃ¹c QuyÃ’n", "ThÂ¸i CÃ¹c KiÃ•m", "NgÃ¹ Phong thuÃ‹t", "NgÃ¹ LÂ«i thuÃ‹t", "NgÃ¹ TÂ©m thuÃ‹t" };
 
 #define HKIM_NUM 27
 const char* HoangKimMP[HKIM_NUM] =
-{ "§ång Cõu", "§Şch Kh¸i", "V« Gian", "V« Ma", "V« TrÇn", "Chó Ph­îc", "U Lung", "Minh ¶o", "CËp Phong",
-	"L¨ng Nh¹c", "KÕ NghiÖp", "H¸m Thiªn", "Ngù Long", "Vô ¶o", "S­¬ng Tinh", "L«i Khung", "§Şa Ph¸ch", "B¨ng Hµn",
-	"S©m Hoang", "Tª Hoµng", "Bİch H¶i", "Ma Hoµng", "Ma ThŞ", "Ma S¸t", "Méng Long", "Tø Kh«ng", "Phôc Ma" };
+{ "Â§Ã¥ng CÃµu", "Â§Ãch KhÂ¸i", "VÂ« Gian", "VÂ« Ma", "VÂ« TrÃ‡n", "ChÃ³ PhÂ­Ã®c", "U Lung", "Minh Â¶o", "CÃ‹p Phong",
+	"LÂ¨ng NhÂ¹c", "KÃ• NghiÃ–p", "HÂ¸m ThiÂªn", "NgÃ¹ Long", "VÃ´ Â¶o", "SÂ­Â¬ng Tinh", "LÂ«i Khung", "Â§Ãa PhÂ¸ch", "BÂ¨ng HÂµn",
+	"SÂ©m Hoang", "TÂª HoÂµng", "BÃch HÂ¶i", "Ma HoÂµng", "Ma ThÃ", "Ma SÂ¸t", "MÃ©ng Long", "TÃ¸ KhÂ«ng", "PhÃ´c Ma" };
 
-const char* CANCEL_BY_USER = "Hñy nhiÖm vô hoÆc dïng S¬ ®Ò theo thiÕt lËp cña ng­êi ch¬i!";
+// 15-10: menu chÃ­nh cá»§a NPC DÃ£ Táº©u (hiá»‡n trÆ°á»›c há»™p mÃ´ táº£ nhiá»‡m vá»¥)
+// Chuá»—i TCVN3 viáº¿t báº±ng escape hex Ä‘á»ƒ Ä‘Ãºng byte dÃ¹ file lÆ°u TCVN3 hay UTF-8
+const char* YS_MENU_GETQUEST = "Nh\xcbn nhi\xd6m v\xf4";	// "Nháº­n nhiá»‡m vá»¥"
+
+// Gop cac dong cua hop thoai thanh 1 chuoi de QTRACE
+template <class T> static const char* QTJoinMsg(T* pMsgSel)
+{
+	static char szJoin[200];
+	szJoin[0] = 0;
+	for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
+	{
+		size_t nLen = strlen(szJoin);
+		if (nLen >= sizeof(szJoin) - 1) break;
+		_snprintf(szJoin + nLen, sizeof(szJoin) - 1 - nLen, "%s[%d]%s", i ? " | " : "", i, pMsgSel->m_pMessages[i]->Msg);
+		szJoin[sizeof(szJoin) - 1] = 0;
+	}
+	return szJoin;
+}
+
+// 15-10: thÃ´ng bÃ¡o "Cáº§n kÃ­ch hoáº¡t tháº» Vip má»›i cÃ³ thá»ƒ nháº­n vÃ  lÃ m nhiá»‡m vá»¥"
+// TÃ¡ch "k\xdd" "ch": náº¿u viáº¿t liá»n "\xddch" thÃ¬ trÃ¬nh biÃªn dá»‹ch Ä‘á»c cáº£ "c" vÃ o mÃ£ hex
+const char* YS_NEED_VIP = "k\xdd" "ch ho\xb9t";	// "kÃ­ch hoáº¡t", pháº£i Ä‘i kÃ¨m chá»¯ Vip
+
+static BOOL IsNeedVipText(const char* szText)
+{
+	return szText && strstr(szText, YS_NEED_VIP) &&
+		(strstr(szText, "Vip") || strstr(szText, "VIP") || strstr(szText, "vip"));
+}
+
+// Tim thong bao can the Vip trong hop thoai (loi NPC + cac dong chon)
+static BOOL HasNeedVipMsg(KUiMsgSel* pMsgSel)
+{
+	char szInfo[sizeof(pMsgSel->m_InfoText)];
+	GameTextPlain(pMsgSel->m_InfoText, sizeof(pMsgSel->m_InfoText), szInfo, sizeof(szInfo));
+	if (IsNeedVipText(szInfo)) return TRUE;
+	for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
+		if (IsNeedVipText(pMsgSel->m_pMessages[i]->Msg)) return TRUE;
+	return 0;
+}
+
+static BOOL HasNeedVipMsg(KUiMsgSel2* pMsgSel2)
+{
+	if (IsNeedVipText(pMsgSel2->GetQuestionText())) return TRUE;
+	for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
+		if (IsNeedVipText(pMsgSel2->m_pMessages[i]->Msg)) return TRUE;
+	return 0;
+}
+
+const char* CANCEL_BY_USER = "HÃ±y nhiÃ–m vÃ´ hoÃ†c dÃ¯ng SÂ¬ Â®Ã’ theo thiÃ•t lÃ‹p cÃ±a ngÂ­Ãªi chÂ¬i!";
 
 void CVLQuest::BreathYS()
 {
+	if (m_bNoVipCard && m_nYSDoing != ys_suspending)
+		m_nYSDoing = ys_suspending;	// Chua co the Vip: khong lam Da Tau nua
+
 	if (m_nYSDoing == ys_suspending)
 	{
 		/*if (g_pCurPlayer->m_cTong.m_dwTongNameID && m_nTongPK == act_auto)
 		{
-			SaveYSLog("Ng­ng nhiÖm vô D· TÈu, lµm nhiÖm vô LB ®Æc biÖt!\n");
-			SystemMessage("<color=yellow>Ng­ng nvô D· TÈu, lµm nvô LB ®Æc biÖt!");
+			SaveYSLog("NgÂ­ng nhiÃ–m vÃ´ DÂ· TÃˆu, lÂµm nhiÃ–m vÃ´ LB Â®Ã†c biÃ–t!\n");
+			SystemMessage("<color=yellow>NgÂ­ng nvÃ´ DÂ· TÃˆu, lÂµm nvÃ´ LB Â®Ã†c biÃ–t!");
 			m_nGenDoing = qt_dopk;
 			m_bIsYeSouAndPK = 0;
 		}
@@ -47,6 +98,8 @@ void CVLQuest::BreathYS()
 	}
 
 	m_nQuestStatus = g_pCurPlayer->GetTaskVal(ys_taskstatus);
+	QTRACE("BreathYS: YS=%s Status=%d QID=%d Step=%d Map=%d", QTName_YS(m_nYSDoing), m_nQuestStatus,
+		g_pCurPlayer->GetTaskVal(ys_majorid), m_nDoQuestStep, *g_pMapID);
 
 	switch (m_nQuestStatus)
 	{
@@ -101,6 +154,7 @@ void CVLQuest::DoCurrentQuest()
 
 void CVLQuest::CancelQuest()
 {
+	QTRACE("CancelQuest: Map=%d Shoping=%d InTownOnly=%d", *g_pMapID, theMap.m_bDoShoping, m_bInTownOnly);
 	// CancelQuest in town
 	if (m_bInTownOnly || ((*g_pMapID) >= city_banghoimin && (*g_pMapID) <= city_banghoimax))
 	{
@@ -114,16 +168,17 @@ void CVLQuest::CancelQuest()
 	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
+		QTRACE("CancelQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
 		if (pMsgSel2->m_nNumMessage == 6)
 		{
-			if (strstr(pMsgSel2->m_pMessages[2]->Msg, "NhiÖm vô lÇn nµy khã qu¸"))
+			if (strstr(pMsgSel2->m_pMessages[2]->Msg, "NhiÃ–m vÃ´ lÃ‡n nÂµy khÃ£ quÂ¸"))
 			{
-				if (g_pCurPlayer->GetItemsCount("S¬ §Ò Giang Hå") > 0)
+				if (g_pCurPlayer->GetItemsCount("SÂ¬ Â§Ã’ Giang HÃ¥") > 0)
 				{
-					SystemMessage("<color=yellow>Hoµn thµnh nhiÖm vô b»ng S¬ §Ò Giang Hå.");
+					SystemMessage("<color=yellow>HoÂµn thÂµnh nhiÃ–m vÃ´ bÂ»ng SÂ¬ Â§Ã’ Giang HÃ¥.");
 
 					char szLogInfo[80];
-					sprintf(szLogInfo, "Hoµn thµnh nhiÖm vô b»ng S¬ §Ò Giang Hå.\n");
+					sprintf(szLogInfo, "HoÂµn thÂµnh nhiÃ–m vÃ´ bÂ»ng SÂ¬ Â§Ã’ Giang HÃ¥.\n");
 					SaveYSLog(szLogInfo);
 
 					pMsgSel2->OnClickMsg(3);
@@ -141,13 +196,14 @@ void CVLQuest::CancelQuest()
 	KUiMsgSel* pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
 	if (pMsgSel && pMsgSel->IsVisible())
 	{
+		QTRACE("CancelQuest: MsgSel %d dong: %s", pMsgSel->m_nNumMessage, QTJoinMsg(pMsgSel));
 		if (pMsgSel->m_nNumMessage == 2)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "§óng, ta kh«ng muèn lµm nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Â§Ã³ng, ta khÂ«ng muÃ¨n lÂµm nhiÃ–m vÃ´"))
 			{
 				int nCancelChance = g_pCurPlayer->GetTaskVal(ys_taskccl);
 				char szLogInfo[80];
-				sprintf(szLogInfo, "Hñy nhiÖm vô b»ng c¬ héi hiÖn cã, sè c¬ héi cßn l¹i lµ %d.\n", nCancelChance - 1);
+				sprintf(szLogInfo, "HÃ±y nhiÃ–m vÃ´ bÂ»ng cÂ¬ hÃ©i hiÃ–n cÃ£, sÃ¨ cÂ¬ hÃ©i cÃŸn lÂ¹i lÂµ %d.\n", nCancelChance - 1);
 				SaveYSLog(szLogInfo);
 				pMsgSel->OnClickMsg(0);
 				if (m_nRemainQuest) m_nRemainQuest--;
@@ -157,13 +213,13 @@ void CVLQuest::CancelQuest()
 		}
 		else if (pMsgSel->m_nNumMessage == 3)
 		{
-			if (strstr(pMsgSel->m_pMessages[1]->Msg, "100 m¶nh s¬n Hµ X· T¾c"))
+			if (strstr(pMsgSel->m_pMessages[1]->Msg, "100 mÂ¶nh sÂ¬n HÂµ XÂ· TÂ¾c"))
 			{
 				int nMapSHXT = g_pCurPlayer->GetTaskVal(ys_shxtmap);
 				if (nMapSHXT >= 100)
 				{
 					char szLogInfo[80];
-					sprintf(szLogInfo, "Hñy nhiÖm vô b»ng 100 m¶nh SHXT, sè m¶nh SHXT cßn l¹i lµ %d.\n", nMapSHXT - 100);
+					sprintf(szLogInfo, "HÃ±y nhiÃ–m vÃ´ bÂ»ng 100 mÂ¶nh SHXT, sÃ¨ mÂ¶nh SHXT cÃŸn lÂ¹i lÂµ %d.\n", nMapSHXT - 100);
 					SaveYSLog(szLogInfo);
 					pMsgSel->OnClickMsg(1);
 					if (m_nRemainQuest) m_nRemainQuest--;
@@ -179,7 +235,7 @@ void CVLQuest::CancelQuest()
 		}
 		else if (pMsgSel->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel->m_pMessages[2]->Msg, "NhiÖm vô lÇn nµy khã qu¸"))
+			if (strstr(pMsgSel->m_pMessages[2]->Msg, "NhiÃ–m vÃ´ lÃ‡n nÂµy khÃ£ quÂ¸"))
 				pMsgSel->OnClickMsg(2);
 		}
 
@@ -191,6 +247,7 @@ void CVLQuest::CancelQuest()
 
 void CVLQuest::ReturnQuest()
 {
+	QTRACE("ReturnQuest: Map=%d Shoping=%d Arrange=%d", *g_pMapID, theMap.m_bDoShoping, m_nArrangeStep);
 	// ReturnQuest in town
 	if (m_bInTownOnly || ((*g_pMapID) >= city_banghoimin && (*g_pMapID) <= city_banghoimax))
 	{
@@ -211,9 +268,10 @@ void CVLQuest::ReturnQuest()
 	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
+		QTRACE("ReturnQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
 		if (pMsgSel2->m_nNumMessage == 6)
 		{
-			if (strstr(pMsgSel2->m_pMessages[1]->Msg, "Ta ®· hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel2->m_pMessages[1]->Msg, "Ta Â®Â· hoÂµn thÂµnh nhiÃ–m vÃ´"))
 				pMsgSel2->OnClickMsg(1);
 		}
 
@@ -223,20 +281,21 @@ void CVLQuest::ReturnQuest()
 	KUiMsgSel* pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
 	if (pMsgSel && pMsgSel->IsVisible())
 	{
+		QTRACE("ReturnQuest: MsgSel %d dong: %s", pMsgSel->m_nNumMessage, QTJoinMsg(pMsgSel));
 		if (pMsgSel->m_nNumMessage == 1)
 		{
-			if (strstr(pMsgSel->m_InfoText, "Nh÷ng viÖc b¹n lµm ch­a ®¹t ®óng yªu cÇu"))
+			if (strstr(pMsgSel->m_InfoText, "NhÃ·ng viÃ–c bÂ¹n lÂµm chÂ­a Â®Â¹t Â®Ã³ng yÂªu cÃ‡u"))
 			{
 				m_nYSDoing = ys_suspending;
-				SystemMessage("<color=yellow>VËt phÈm nhiÖm vô kh«ng ®óng!");
-				SaveYSLog("VËt phÈm nhiÖm vô kh«ng ®óng => T¹m ng­ng!");
+				SystemMessage("<color=yellow>VÃ‹t phÃˆm nhiÃ–m vÃ´ khÂ«ng Â®Ã³ng!");
+				SaveYSLog("VÃ‹t phÃˆm nhiÃ–m vÃ´ khÂ«ng Â®Ã³ng => TÂ¹m ngÂ­ng!");
 			}
 			pMsgSel->OnClickMsg(0);
 			theMap.m_nTimeWait = 2;
 		}
 		else if (pMsgSel->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel->m_pMessages[1]->Msg, "Ta ®· hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[1]->Msg, "Ta Â®Â· hoÂµn thÂµnh nhiÃ–m vÃ´"))
 				pMsgSel->OnClickMsg(1);
 		}
 
@@ -270,8 +329,8 @@ void CVLQuest::ReturnQuest()
 				pYSBox->OnConfirm(0);
 				theMap.ResetShoping(0);
 				m_nYSDoing = ys_suspending;
-				SystemMessage("<color=yellow>Kh«ng thÊy vËt phÈm nhiÖm vô!");
-				SaveYSLog("Kh«ng thÊy vËt phÈm nhiÖm vô => T¹m ng­ng!");
+				SystemMessage("<color=yellow>KhÂ«ng thÃŠy vÃ‹t phÃˆm nhiÃ–m vÃ´!");
+				SaveYSLog("KhÂ«ng thÃŠy vÃ‹t phÃˆm nhiÃ–m vÃ´ => TÂ¹m ngÂ­ng!");
 			}
 		}
 		return;
@@ -292,6 +351,7 @@ void CVLQuest::ReturnQuest()
 
 void CVLQuest::ChoosePrize()
 {
+	QTRACE("ChoosePrize: Map=%d Shoping=%d", *g_pMapID, theMap.m_bDoShoping);
 	// ReturnQuest in town
 	if (m_bInTownOnly || ((*g_pMapID) >= city_banghoimin && (*g_pMapID) <= city_banghoimax))
 	{
@@ -314,93 +374,93 @@ void CVLQuest::ChoosePrize()
 		for (int i = 0; i < 3; i++)
 		{
 			szItemIcon = pPrzSel->PrzItem[i].m_szIcon;
-			szItemText = pPrzSel->PrzItem[i].m_szText + 9;	// strlen("NhËn ®­îc");
+			szItemText = pPrzSel->PrzItem[i].m_szText + 9;	// strlen("NhÃ‹n Â®Â­Ã®c");
 			strcpy(szPrize[i], szItemText);
 			if (strstr(szItemIcon, "quxiao_icon")) // Huy NV
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_cohoihuy] * 10000;
 			else if (strstr(szItemIcon, "wenhao_icon")) // Dau hoi
 			{
-				strcpy(szPrize[i], "DÊu hái (?)");
+				strcpy(szPrize[i], "DÃŠu hÃ¡i (?)");
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dauhoi] * 10000;
 			}
 			else if (strstr(szItemIcon, "jinqian_icon")) // Kim tien
 				nValues[i] = atol(szItemText);
 			else if (strstr(szItemIcon, "jingyan_icon")) // Kinh nghiem
 				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
-			else if (strstr(szItemText, "®iÓm tİch l"))
+			else if (strstr(szItemText, "Â®iÃ“m tÃch l"))
 				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
 			else
 			{
-				if (strstr(szItemText, "Nhu T×nh C©n Quèc"))
+				if (strstr(szItemText, "Nhu TÃ—nh CÂ©n QuÃ¨c"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhao];
-				else if (strstr(szItemText, "Nhu T×nh  TuÖ T©m"))
+				else if (strstr(szItemText, "Nhu TÃ—nh  TuÃ– TÂ©m"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhnb];
-				else if (strstr(szItemText, "Nhu T×nh"))
+				else if (strstr(szItemText, "Nhu TÃ—nh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhot];
-				else if (strstr(szItemText, "HiÖp Cèt T×nh ı KÕt"))
+				else if (strstr(szItemText, "HiÃ–p CÃ¨t TÃ—nh Ã½ KÃ•t"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hiepcotnb];
-				else if (strstr(szItemText, "HiÖp Cèt"))
+				else if (strstr(szItemText, "HiÃ–p CÃ¨t"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hiepcotot];
-				else if (strstr(szItemText, "An Bang B¨ng Tinh"))
+				else if (strstr(szItemText, "An Bang BÂ¨ng Tinh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_anbangdc];
 				else if (strstr(szItemText, "An Bang"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_anbangot];
-				else if (strstr(szItemText, "§Şnh Quèc ¤ Sa"))
+				else if (strstr(szItemText, "Â§Ãnh QuÃ¨c Â¤ Sa"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dinhquocmu];
-				else if (strstr(szItemText, "§Şnh Quèc"))
+				else if (strstr(szItemText, "Â§Ãnh QuÃ¨c"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dinhquocot];
-				else if (strstr(szItemIcon, "½±Àø»Æ½ğ×°±¸")) // Hoang Kim mon phai
+				else if (strstr(szItemIcon, "Â½Â±Ã€Ã¸Â»Ã†Â½Ã°Ã—Â°Â±Â¸")) // Hoang Kim mon phai
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hoangkimmp];
-				else if (strstr(szItemText, "Hoµng Kim")) // Hoang Kim mon phai
+				else if (strstr(szItemText, "HoÂµng Kim")) // Hoang Kim mon phai
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hoangkimmp];
-				else if (strstr(szItemText, "Thñy Tinh"))
+				else if (strstr(szItemText, "ThÃ±y Tinh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttthbt];
-				else if (strstr(szItemText, "Tinh Hång B¶o Th¹ch"))
+				else if (strstr(szItemText, "Tinh HÃ¥ng BÂ¶o ThÂ¹ch"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttthbt];
-				else if (strstr(szItemText, "ThiÕt La H¸n"))
+				else if (strstr(szItemText, "ThiÃ•t La HÂ¸n"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "Bµn Nh­îc T©m Kinh"))
+				else if (strstr(szItemText, "BÂµn NhÂ­Ã®c TÂ©m Kinh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "B¸t Nh· T©m Kinh"))
+				else if (strstr(szItemText, "BÂ¸t NhÂ· TÂ©m Kinh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "Vâ L©m MËt TŞch"))
+				else if (strstr(szItemText, "VÃ¢ LÂ©m MÃ‹t TÃch"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_vlmtttk];
-				else if (strstr(szItemText, "TÈy Tñy Kinh"))
+				else if (strstr(szItemText, "TÃˆy TÃ±y Kinh"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_vlmtttk];
-				else if (strstr(szItemText, "Tiªn Th¶o Lé"))
+				else if (strstr(szItemText, "TiÂªn ThÂ¶o LÃ©"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttl];
-				else if (strstr(szItemText, "HuyÒn ThiÕt"))
+				else if (strstr(szItemText, "HuyÃ’n ThiÃ•t"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
-				else if (strstr(szItemText, "MËt Ng©n"))
+				else if (strstr(szItemText, "MÃ‹t NgÂ©n"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
 				else if (strstr(szItemText, "Chu Sa"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
-				else if (strstr(szItemText, "Khæng T­íc"))
+				else if (strstr(szItemText, "KhÃ¦ng TÂ­Ã­c"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Phï Dung"))
+				else if (strstr(szItemText, "PhÃ¯ Dung"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Chung Nhò"))
+				else if (strstr(szItemText, "Chung NhÃ²"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Thiªn s¬n  B¶o Lé"))
+				else if (strstr(szItemText, "ThiÂªn sÂ¬n  BÂ¶o LÃ©"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tsblo];
-				else if (strstr(szItemText, "B¸ch Qu¶ Lé"))
+				else if (strstr(szItemText, "BÂ¸ch QuÂ¶ LÃ©"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_bqualo];
-				else if (strstr(szItemText, " hoµn"))						//§¹i Lùc hoµn ,
+				else if (strstr(szItemText, " hoÂµn"))						//Â§Â¹i LÃ¹c hoÂµn ,
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_duochoan];
-				else if (strstr(szItemText, "Ph¸o Hoa"))
+				else if (strstr(szItemText, "PhÂ¸o Hoa"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phaohoa];
-				else if (strstr(szItemText, "T©m T©m T­¬ng"))
+				else if (strstr(szItemText, "TÂ©m TÂ©m TÂ­Â¬ng"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tttanhphu];
-				else if (strstr(szItemText, "Phóc Duyªn Lé (TiÓu)"))
+				else if (strstr(szItemText, "PhÃ³c DuyÂªn LÃ© (TiÃ“u)"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen];
-				else if (strstr(szItemText, "Phóc Duyªn Lé (Trung)"))
+				else if (strstr(szItemText, "PhÃ³c DuyÂªn LÃ© (Trung)"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen] * 2;
-				else if (strstr(szItemText, "Phóc Duyªn Lé (§¹i)"))
+				else if (strstr(szItemText, "PhÃ³c DuyÂªn LÃ© (Â§Â¹i)"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen] * 3;
-				else if (strstr(szItemText, "HuyÒn Tinh Kho¸ng"))
+				else if (strstr(szItemText, "HuyÃ’n Tinh KhoÂ¸ng"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_huyentinh];
-				else if (strstr(szItemText, "HuyÒn tinh cÊp") ||
-					strstr(szItemText, "HuyÒn Tinh cÊp"))
+				else if (strstr(szItemText, "HuyÃ’n tinh cÃŠp") ||
+					strstr(szItemText, "HuyÃ’n Tinh cÃŠp"))
 				{
 					int nMinLevel = m_PrizeSelOpt.m_PrizeVal[prize_levelht] + 1;
 					int nLevel = atoi(szItemText + 15);
@@ -443,18 +503,19 @@ void CVLQuest::ChoosePrize()
 				nMaxPrize = nValues[i];
 			}
 		}
-		SystemMessage(1, "<color=yellow>%s = %d\n  %s = %d\n  %s = %d\n<color=green>  §· chän: %s",
+		SystemMessage(1, "<color=yellow>%s = %d\n  %s = %d\n  %s = %d\n<color=green>  Â§Â· chÃ¤n: %s",
 			szPrize[0], nValues[0],
 			szPrize[1], nValues[1],
 			szPrize[2], nValues[2],
 			szPrize[nMaxIdx]);
 		char szMsg[256];
-		sprintf(szMsg, "PhÇn th­ëng: %s = %d, %s = %d, %s = %d. §· chän: %s.\n",
+		sprintf(szMsg, "PhÃ‡n thÂ­Ã«ng: %s = %d, %s = %d, %s = %d. Â§Â· chÃ¤n: %s.\n",
 			szPrize[0], nValues[0],
 			szPrize[1], nValues[1],
 			szPrize[2], nValues[2],
 			szPrize[nMaxIdx]);
 		SaveYSLog(szMsg);
+		QTRACE("ChoosePrize: chon o %d (gia tri %ld)", nMaxIdx + 1, nMaxPrize);
 		pPrzSel->OnClickBtn(nMaxIdx);
 		m_nDoQuestStep = 0;
 		m_nYSDoing = ys_none;
@@ -503,7 +564,7 @@ BOOL CVLQuest::YSPreparing()
 				theMap.m_bDoShoping = 0;
 				theMap.NearestDriver();
 				m_nDoQuestStep = 1; // Buy FY Items
-				SystemMessage("<color=yellow>§i ®æi Phóc Duyªn dù tr÷...");
+				SystemMessage("<color=yellow>Â§i Â®Ã¦i PhÃ³c DuyÂªn dÃ¹ trÃ·...");
 			}
 			else
 				m_nDoQuestStep = 3; // Check Return Items
@@ -605,13 +666,13 @@ BOOL CVLQuest::YSPreparing()
 	if (m_nDoQuestStep == 4) // Check PK Values
 	{
 		BOOL bCanUsePK = (m_nTongPK != act_cancel && m_TongPKOpt.m_bUseWithYS && // user setting
-			g_pCurPlayer->m_cTong.m_dwTongNameID && g_pCurPlayer->m_cTong.m_nContributePoint >= 200); // current condition
+			g_pCurPlayer->m_cTong.m_dwTongNameID && g_pCurPlayer->m_cTong.ContributePoint() >= 200); // current condition
 		BOOL bGetMaxPK = ((m_nTotalPKQuest >= 100) ||
 			(m_TongPKOpt.m_nMaxQuestCount > 0 && m_nTotalPKQuest >= m_TongPKOpt.m_nMaxQuestCount));
 		if (g_pCurPlayer->m_nPKValue && bCanUsePK && !bGetMaxPK)
 		{
-			SaveYSLog("Cã PK, t¹m thêi ®i tÈy PK!");
-			SystemMessage("<color=yellow>Cã PK, t¹m thêi ®i tÈy PK!");
+			SaveYSLog("CÃ£ PK, tÂ¹m thÃªi Â®i tÃˆy PK!");
+			SystemMessage("<color=yellow>CÃ£ PK, tÂ¹m thÃªi Â®i tÃˆy PK!");
 			m_nGenDoing = qt_dopk;
 			m_bIsYeSouAndPK = TRUE;
 			m_nDoQuestStep = 0;
@@ -626,6 +687,8 @@ BOOL CVLQuest::YSPreparing()
 
 void CVLQuest::GetNewQuest()
 {
+	QTRACE("GetNewQuest: Map=%d Shoping=%d NeedMoney=%d InTownOnly=%d", *g_pMapID, theMap.m_bDoShoping,
+		theMap.m_bNeedMoney, m_bInTownOnly);
 	if (theMap.m_bNeedMoney)
 	{
 		theMap.WithdrawMoney();
@@ -638,16 +701,31 @@ void CVLQuest::GetNewQuest()
 		int nSubCityID = theMain.GetSubCity(*g_pMapID);
 		if (theMap.ChangeMap(nSubCityID)) return;
 	}
-
+	//báº£n CTC , chá»‰ cÃ³ thÃ nh TÆ°Æ¡ng DÆ°Æ¡ng cÃ³ NPC DÃ£ táº©u, npháº£i cháº¡y vá» TÆ°Æ¡ng DÆ°Æ¡ng  mapid = 78
+	int nCurMapID = *g_pMapID;
+	if(nCurMapID != city_tuongduong)
+	{
+		if (theMap.ChangeMap(city_tuongduong)) return;
+	}
 	if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_YeSou])) return;
 	theMap.m_bDoShoping = TRUE;
+	QTRACE("GetNewQuest: da toi cho NPC Da Tau (%d,%d)", theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
 
 	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
+		QTRACE("GetNewQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
+		//kiá»ƒm tra xem cÃ³ VIP khÃ´ng, náº¿u khÃ´ng cÃ³ thÃ¬ dá»«ng láº¡i
+		if (HasNeedVipMsg(pMsgSel2))
+		{
+			StopNoVip();
+			return;
+		}
+
 		if (pMsgSel2->m_nNumMessage == 6)
 		{
-			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "®Ó ta hoµn thµnh nhiÖm vô"))
+			
+			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "Â®Ã“ ta hoÂµn thÂµnh nhiÃ–m vÃ´"))
 			{
 				GetYSQuestText(pMsgSel2);
 				m_nYSDoing = GetRequiredCondition();
@@ -657,6 +735,21 @@ void CVLQuest::GetNewQuest()
 				theMap.NearestDriver();
 			}
 		}
+		else
+		{
+			// 15-10: click NPC hien menu chinh truoc, chon dong "Nhan nhiem vu"
+			size_t nKeyLen = strlen(YS_MENU_GETQUEST);
+			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
+			{
+				///GetNewQuest: MsgSel2 3 dong: [0]NhÃ‹n nhiÃ–m vÃ´ | [1]Xem tÃ—nh hÃ—nh chuÃ§i nhiÃ–m vÃ´ | [2] KÃ•t thÃ³c Â®Ã¨i thoÂ¹i!
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, YS_MENU_GETQUEST, nKeyLen))
+				{
+					QTRACE("GetNewQuest: chon dong [%d] Nhan nhiem vu", i);
+					pMsgSel2->OnClickMsg(i);
+					break;
+				}
+			}
+		}
 
 		return;
 	}
@@ -664,10 +757,16 @@ void CVLQuest::GetNewQuest()
 	KUiMsgSel* pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
 	if (pMsgSel && pMsgSel->IsVisible())
 	{
+		QTRACE("GetNewQuest: MsgSel %d dong: %s", pMsgSel->m_nNumMessage, QTJoinMsg(pMsgSel));
+		if (HasNeedVipMsg(pMsgSel))
+		{
+			StopNoVip();
+			return;
+		}
 		theMap.m_nTimeWait = 3;
 		if (pMsgSel->m_nNumMessage == 1)
 		{
-			if (strstr(pMsgSel->m_InfoText, "Mçi ngµy lµm 40 lÇn lµ ®ñ råi!"))
+			if (strstr(pMsgSel->m_InfoText, "MÃ§i ngÂµy lÂµm 40 lÃ‡n lÂµ Â®Ã± rÃ¥i!"))
 			{
 				m_nRemainQuest = 0;
 				m_nYSDoing = ys_suspending;
@@ -675,9 +774,10 @@ void CVLQuest::GetNewQuest()
 			pMsgSel->OnClickMsg(0);
 			theMap.m_bDoShoping = 0;
 		}
+		
 		else if (pMsgSel->m_nNumMessage == 2)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "mau cho ta biÕt nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, "mau cho ta biÃ•t nhiÃ–m vÃ´"))
 			{
 				GetRemainQuest(pMsgSel);
 				pMsgSel->OnClickMsg(0);
@@ -685,7 +785,7 @@ void CVLQuest::GetNewQuest()
 		}
 		else if (pMsgSel->m_nNumMessage == 3)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Ta kh«ng tin cã nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Ta khÂ«ng tin cÃ£ nhiÃ–m vÃ´"))
 			{
 				m_nRemainQuest = 40;
 				pMsgSel->OnClickMsg(0);
@@ -693,7 +793,20 @@ void CVLQuest::GetNewQuest()
 		}
 		else if (pMsgSel->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "®Ó ta hoµn thµnh nhiÖm vô"))
+			/**
+			/**
+			* MsgSel2 4 dong: [0]HoÂµn thÂµnh nhiÃ–m vÃ´ thÃ¸ 1 | [1]HÃ±y nhiÃ–m vÃ´ | [2]Xem tÃ—nh hÃ—nh chuÃ§i nhiÃ–m vÃ´ | [3] KÃ•t thÃ³c Â®Ã¨i thoÂ¹i!
+			* 
+			KUiMsgSel(MSG_BASE_ADD) = 0x1C25D818  IsVisible = 0
+				KUiMsgSel2(MSG2_BASE_ADD) = 0x1B64BFA8  IsVisible = 1
+				Loi thoai :  áº§
+				[0] HoÃ n thÃ nh nhiá»‡m vá»¥ thá»© 1
+				[1] Há»§y nhiá»‡m vá»¥
+				[2] Xem tÃ¬nh hÃ¬nh chuá»—i nhiá»‡m vá»¥
+				[3]  Káº¿t thÃºc Ä‘á»‘i thoáº¡i!
+			/**/
+			/**/
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Â®Ã“ ta hoÂµn thÂµnh nhiÃ–m vÃ´"))
 			{
 				GetYSQuestText(pMsgSel);
 				m_nYSDoing = GetRequiredCondition();
@@ -707,6 +820,7 @@ void CVLQuest::GetNewQuest()
 		return;
 	}
 
+	QTRACE("GetNewQuest: khong co hop thoai -> ClickToNpc");
 	theMap.ClickToNpc(theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
 }
 
@@ -714,7 +828,7 @@ void CVLQuest::GetRemainQuest(KUiMsgSel* pMsgSel)
 {
 	char* szInfo = (char*)pMsgSel->m_InfoText + 0x16;
 
-	char* szRemain = strstr(szInfo, "cã thÓ thùc hiÖn l¹i");
+	char* szRemain = strstr(szInfo, "cÃ£ thÃ“ thÃ¹c hiÃ–n lÂ¹i");
 	if (szRemain)
 	{
 		szRemain += 20;
@@ -730,13 +844,13 @@ void CVLQuest::GetYSQuestText(KUiMsgSel* pMsgSel)
 {
 	char szLogLine[256] = "";
 	int nYeSouCode = (g_pCurPlayer->GetTaskVal(ys_tasknum) * 1234 + g_pCurPlayer->GetTaskVal(ys_minorid)) ^ 19771984;
-	sprintf(szLogLine, "D· TÈu (%08X): ", nYeSouCode);
+	sprintf(szLogLine, "DÂ· TÃˆu (%08X): ", nYeSouCode);
 	memset(m_szYSQuest, 0, sizeof(m_szYSQuest));
 	int i = 0, j = 13, k = (int)strlen(szLogLine);
 	strcpy(m_szYSQuest, "<color=green>");
 
-	int nInfoLen = (int)strlen(pMsgSel->m_InfoText);	// 10-10: khong con m_nInfoLen
-	while (i < nInfoLen)
+	int nInfoLen = GameTextLen(pMsgSel->m_InfoText, sizeof(pMsgSel->m_InfoText));	// 15-10: byte mau co the = 0
+	while (i < nInfoLen && j < (int)sizeof(m_szYSQuest) - 16 && k < (int)sizeof(szLogLine) - 2)
 	{
 		if (pMsgSel->m_InfoText[i] == 0x02)
 		{
@@ -766,15 +880,16 @@ void CVLQuest::GetYSQuestText(KUiMsgSel2* pMsgSel)
 {
 	char szLogLine[256] = "";
 	int nYeSouCode = (g_pCurPlayer->GetTaskVal(ys_tasknum) * 1234 + g_pCurPlayer->GetTaskVal(ys_minorid)) ^ 19771984;
-	sprintf(szLogLine, "D· TÈu (%08X): ", nYeSouCode);
+	sprintf(szLogLine, "DÂ· TÃˆu (%08X): ", nYeSouCode);
 	memset(m_szYSQuest, 0, sizeof(m_szYSQuest));
 	int i = 0, j = 13, k = (int)strlen(szLogLine);
 	strcpy(m_szYSQuest, "<color=green>");
 
-	const char* szInfo = pMsgSel->GetInfoText(0);	// 10-10: loi thoai NPC o list "MessageList"
-	if (!szInfo) return;
+	const char* szInfo = pMsgSel->GetQuestion();	// 15-10: loi thoai NPC o this+0x2578
+	if (!szInfo[0]) return;
 
-	while (szInfo[i])
+	// Loi thoai co the dai toi 8KB: chan de khong tran m_szYSQuest / szLogLine
+	while (szInfo[i] && j < (int)sizeof(m_szYSQuest) - 16 && k < (int)sizeof(szLogLine) - 2)
 	{
 		if (szInfo[i] == 0x02)
 		{
@@ -802,6 +917,8 @@ void CVLQuest::GetYSQuestText(KUiMsgSel2* pMsgSel)
 
 void CVLQuest::DoQuest01()
 {
+	QTRACE("DoQuest01 (mua o NPC): Step=%d Map=%d/%d Npc=%d Shoping=%d", m_nDoQuestStep,
+		*g_pMapID, m_nRqMapID, m_nRqNpcID, theMap.m_bDoShoping);
 	if (m_nDoQuestStep == 0)
 	{
 		PlayerItem theItem;
@@ -876,21 +993,22 @@ void CVLQuest::DoQuest01()
 			if (ComAttr.nSeries != m_nRqSeries) continue;
 			break;
 		}
+		QTRACE("DoQuest01: shop co %d mon, vat pham can o idx=%d", pShop->m_nObjCount, nItemIdx);
 		POINT itmPos;
 		if (EQUIP_ROOM.FindRoom(pShop->m_pObjectList[nItemIdx].DataW, pShop->m_pObjectList[nItemIdx].DataH, &itmPos))
 		{
 			g_pCurPlayer->BuyItem(pShop->m_pObjectList[nItemIdx].uId);
 
-			SystemMessage("Mua ®­îc vËt phÈm/trang bŞ tõ NPC");
-			SaveYSLog("Mua ®­îc vËt phÈm/trang bŞ tõ NPC");
+			SystemMessage("Mua Â®Â­Ã®c vÃ‹t phÃˆm/trang bÃ tÃµ NPC");
+			SaveYSLog("Mua Â®Â­Ã®c vÃ‹t phÃˆm/trang bÃ tÃµ NPC");
 
 			m_nYSDoing = ys_return;
 			theMap.NearestDriver();
 		}
 		else
 		{
-			SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
-			SaveYSLog("Hµnh trang kh«ng ®ñ chç trèng => T¹m ng­ng!");
+			SystemMessage("<color=yellow>HÂµnh trang khÂ«ng Â®Ã± chÃ§ trÃ¨ng!");
+			SaveYSLog("HÂµnh trang khÂ«ng Â®Ã± chÃ§ trÃ¨ng => TÂ¹m ngÂ­ng!");
 			m_nYSDoing = ys_suspending;
 		}
 		theMap.ResetShoping();
@@ -904,6 +1022,9 @@ void CVLQuest::DoQuest0203()
 	static int nNextCityID = 0;
 	static BOOL bRunToYeSou = 0;
 	static PlayerItem theItem = { -1, -1, -1, -1, -1 };
+
+	QTRACE("DoQuest0%d (tim vat pham): Step=%d Map=%d NextCity=%d RunToYS=%d", m_nQuestID,
+		m_nDoQuestStep, *g_pMapID, nNextCityID, bRunToYeSou);
 
 	if (m_nDoQuestStep == 0)
 	{
@@ -921,7 +1042,7 @@ void CVLQuest::DoQuest0203()
 		{
 			if (!GetItemFromRepo(&theItem)) return;
 			if (m_nQuestID == 3) m_bReturnItem = TRUE;
-			SaveYSLog("LÊy vËt phÈm/trang bŞ trong r­¬ng ®å.");
+			SaveYSLog("LÃŠy vÃ‹t phÃˆm/trang bÃ trong rÂ­Â¬ng Â®Ã¥.");
 			m_nYSDoing = ys_return;
 			theMap.NearestDriver();
 			return;
@@ -962,7 +1083,7 @@ void CVLQuest::DoQuest0203()
 		{
 			m_nYSDoing = ys_cancel;
 			theMap.NearestDriver();
-			SaveYSLog("Ng­êi ch¬i kh«ng thiÕt lËp mua ®å => Hñy nhiÖm vô!");
+			SaveYSLog("NgÂ­Ãªi chÂ¬i khÂ«ng thiÃ•t lÃ‹p mua Â®Ã¥ => HÃ±y nhiÃ–m vÃ´!");
 			return;
 		}
 		if (m_nQuestID == 2)
@@ -977,8 +1098,8 @@ void CVLQuest::DoQuest0203()
 				if (!EQUIP_ROOM.FindRoom(nW, nH, &itmPos))
 				{
 					m_nYSDoing = ys_suspending;
-					SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
-					SaveYSLog("Hµnh trang kh«ng ®ñ chç trèng => T¹m ng­ng!");
+					SystemMessage("<color=yellow>HÂµnh trang khÂ«ng Â®Ã± chÃ§ trÃ¨ng!");
+					SaveYSLog("HÂµnh trang khÂ«ng Â®Ã± chÃ§ trÃ¨ng => TÂ¹m ngÂ­ng!");
 					return;
 				}
 			}
@@ -999,6 +1120,7 @@ void CVLQuest::DoQuest0203()
 	bRunToYeSou = 0;
 
 	int nBuyResult = SearchBuyItem();
+	QTRACE("DoQuest0203: SearchBuyItem => %d (0=khong thay, 1=dang tim, 2=da mua)", nBuyResult);
 	if (nBuyResult == 1) return; // Continue
 
 	m_nDoQuestStep = 1;
@@ -1021,12 +1143,12 @@ void CVLQuest::DoQuest0203()
 			{
 				m_nYSDoing = ys_cancel;
 				theMap.NearestDriver();
-				SaveYSLog("T×m hÕt c¸c thµnh kh«ng thÊy => Hñy nhiÖm vô!");
+				SaveYSLog("TÃ—m hÃ•t cÂ¸c thÂµnh khÂ«ng thÃŠy => HÃ±y nhiÃ–m vÃ´!");
 			}
 			else
 			{
 				m_nYSDoing = ys_suspending;
-				SaveYSLog("T×m hÕt c¸c thµnh kh«ng thÊy => T¹m ng­ng!");
+				SaveYSLog("TÃ—m hÃ•t cÂ¸c thÂµnh khÂ«ng thÃŠy => TÂ¹m ngÂ­ng!");
 			}
 		}
 		else
@@ -1037,6 +1159,8 @@ void CVLQuest::DoQuest0203()
 void CVLQuest::DoQuest04()
 {
 	int nTotalMap = g_pCurPlayer->GetTaskVal(ys_maphave);
+	QTRACE("DoQuest04 (do chi): co %d/%d Step=%d Map=%d/%d", nTotalMap, m_nRqValue, m_nDoQuestStep,
+		*g_pMapID, m_nRqMapID);
 	if (nTotalMap >= m_nRqValue && !theMap.m_bDoShoping)
 	{
 		m_bNeedGoTrain = 0;
@@ -1073,12 +1197,15 @@ void CVLQuest::DoQuest05()
 	int nPreLevel;
 	int nOldValue, nCurValue;
 
+	QTRACE("DoQuest05 (%s): Step=%d RqValue=%d", QTName_Rq(m_nRqType), m_nDoQuestStep, m_nRqValue);
+
 	switch (m_nRqType)
 	{
 	case ys_rqjingyan:
 		nOldValue = g_pCurPlayer->GetTaskVal(ys_preexp);
 		nPreLevel = g_pCurPlayer->GetTaskVal(ys_prelevel);
 		nCurValue = theMain.GetExpUpLevel(nPreLevel, P_PLAYER->m_Level) + (int)g_pCurPlayer->m_nCurExp;
+		QTRACE("DoQuest05 JY: dat %d/10", m_nRqValue ? (int)((__int64)(nCurValue - nOldValue) * 10 / m_nRqValue) : 0);
 		if (nCurValue >= nOldValue + m_nRqValue)
 		{
 			char szMsg[64];
@@ -1096,6 +1223,7 @@ void CVLQuest::DoQuest05()
 	case ys_rqmingwang:
 		nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 		nCurValue = g_pCurPlayer->GetTaskVal(0x0064);
+		QTRACE("DoQuest05 MW: dat %d/%d", nCurValue - nOldValue, m_nRqValue);
 		if (nCurValue >= nOldValue + m_nRqValue && !theMap.m_bDoShoping)
 		{
 			m_bNeedGoPCK = 0;
@@ -1109,6 +1237,7 @@ void CVLQuest::DoQuest05()
 	case ys_rqfuyuan:
 		nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 		nCurValue = g_pCurPlayer->GetTaskVal(0x0097);
+		QTRACE("DoQuest05 FY: dat %d/%d", nCurValue - nOldValue, m_nRqValue);
 		if (nCurValue >= nOldValue + m_nRqValue && !theMap.m_bDoShoping)
 		{
 			m_nYSDoing = ys_return;
@@ -1121,6 +1250,7 @@ void CVLQuest::DoQuest05()
 	case ys_rqpk:
 		nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 		nCurValue = g_pCurPlayer->m_nPKValue;
+		QTRACE("DoQuest05 PK: dat %d/%d", nCurValue - nOldValue, m_nRqValue);
 		if (nCurValue >= nOldValue + m_nRqValue)
 		{
 			m_bNeedGoTrain = 0;
@@ -1143,6 +1273,7 @@ void CVLQuest::DoQuest05()
 void CVLQuest::DoQuest06()
 {
 	int nMapSHXT = g_pCurPlayer->GetTaskVal(ys_shxtmap);
+	QTRACE("DoQuest06 (SHXT): co %d/%d manh", nMapSHXT, m_nRqValue);
 	if (nMapSHXT >= m_nRqValue)
 		m_nYSDoing = ys_return;
 	else
@@ -1192,13 +1323,13 @@ void CVLQuest::DoQuestJY(int nRqValue)
 	if (m_nDoQuestStep < 9)
 	{
 		BOOL bCanUsePK = (m_nTongPK != act_cancel && m_TongPKOpt.m_bUseWithYS && // user setting
-			g_pCurPlayer->m_cTong.m_dwTongNameID && g_pCurPlayer->m_cTong.m_nContributePoint >= 200); // current condition
+			g_pCurPlayer->m_cTong.m_dwTongNameID && g_pCurPlayer->m_cTong.ContributePoint() >= 200); // current condition
 		BOOL bGetMaxPK = ((m_nTotalPKQuest >= 100) ||
 			(m_TongPKOpt.m_nMaxQuestCount > 0 && m_nTotalPKQuest >= m_TongPKOpt.m_nMaxQuestCount));
 		if (bCanUsePK && !bGetMaxPK)
 		{
-			SaveYSLog("Lµm nvô LB ®Æc biÖt t¨ng KN!");
-			SystemMessage("<color=yellow>Lµm nvô LB ®Æc biÖt t¨ng KN!");
+			SaveYSLog("LÂµm nvÃ´ LB Â®Ã†c biÃ–t tÂ¨ng KN!");
+			SystemMessage("<color=yellow>LÂµm nvÃ´ LB Â®Ã†c biÃ–t tÂ¨ng KN!");
 			m_nGenDoing = qt_dopk;
 			m_bIsYeSouAndPK = TRUE;
 			m_nDoQuestStep = 0;
@@ -1291,12 +1422,12 @@ void CVLQuest::DoQuestMW(int nRqValue)
 					{
 						m_nYSDoing = ys_cancel;
 						theMap.NearestDriver();
-						SaveYSLog("Qu¸ giê ch¹y Tİn sø => Hñy nhiÖm vô!");
+						SaveYSLog("QuÂ¸ giÃª chÂ¹y TÃn sÃ¸ => HÃ±y nhiÃ–m vÃ´!");
 					}
 					else
 					{
 						m_nYSDoing = ys_suspending;
-						SaveYSLog("Qu¸ giê ch¹y Tİn sø => T¹m ng­ng!");
+						SaveYSLog("QuÂ¸ giÃª chÂ¹y TÃn sÃ¸ => TÂ¹m ngÂ­ng!");
 					}
 					pMsgSel2->OnClickMsg(0);
 					m_bNeedGoPCK = 0;
@@ -1317,7 +1448,7 @@ void CVLQuest::DoQuestMW(int nRqValue)
 	{
 		if (pMsgSel2 && pMsgSel2->IsVisible())
 		{
-			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "§óng vËy!"))
+			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "Â§Ã³ng vÃ‹y!"))
 				m_nDoQuestStep = 2;
 			if (pMsgSel2->m_nNumMessage == 7)
 				pMsgSel2->OnClickMsg(2);
@@ -1334,10 +1465,10 @@ void CVLQuest::DoQuestMW(int nRqValue)
 		int nCount = theMain.GetMenuCount();
 		if (nCount > 0)
 		{
-			if (nCount == 2 && theMain.ClickMenuStr("Muèn"))
+			if (nCount == 2 && theMain.ClickMenuStr("MuÃ¨n"))
 				m_nDoQuestStep = 5;
 			else
-				theMain.ClickMenuStr("NhiÖm vô Tİn Sø");
+				theMain.ClickMenuStr("NhiÃ–m vÃ´ TÃn SÃ¸");
 			theMap.ResetShoping();
 			return;
 		}
@@ -1425,21 +1556,21 @@ void CVLQuest::DoQuestFY(int nRqValue)
 	{
 		if (nRqValue > 30)
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (§¹i)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (TiÓu)");
+			strcpy(FYItem[0], "PhÃ³c DuyÂªn LÃ© (Â§Â¹i)");
+			strcpy(FYItem[1], "PhÃ³c DuyÂªn LÃ© (Trung)");
+			strcpy(FYItem[2], "PhÃ³c DuyÂªn LÃ© (TiÃ“u)");
 		}
 		else if (nRqValue > 10)
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (TiÓu)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (§¹i)");
+			strcpy(FYItem[0], "PhÃ³c DuyÂªn LÃ© (Trung)");
+			strcpy(FYItem[1], "PhÃ³c DuyÂªn LÃ© (TiÃ“u)");
+			strcpy(FYItem[2], "PhÃ³c DuyÂªn LÃ© (Â§Â¹i)");
 		}
 		else
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (TiÓu)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (§¹i)");
+			strcpy(FYItem[0], "PhÃ³c DuyÂªn LÃ© (TiÃ“u)");
+			strcpy(FYItem[1], "PhÃ³c DuyÂªn LÃ© (Trung)");
+			strcpy(FYItem[2], "PhÃ³c DuyÂªn LÃ© (Â§Â¹i)");
 		}
 		m_nDoQuestStep = 2;
 	}
@@ -1495,13 +1626,13 @@ void CVLQuest::DoQuestFY(int nRqValue)
 			if (nRqValue > 30)
 			{
 				m_nYSDoing = ys_suspending;
-				SaveYSLog("Kh«ng mua ®­îc Phóc Duyªn Lé => T¹m ng­ng!");
+				SaveYSLog("KhÂ«ng mua Â®Â­Ã®c PhÃ³c DuyÂªn LÃ© => TÂ¹m ngÂ­ng!");
 			}
 			else
 			{
 				m_nYSDoing = ys_cancel;
 				theMap.NearestDriver();
-				SaveYSLog("Kh«ng mua ®­îc Phóc Duyªn Lé => Hñy nhiÖm vô!");
+				SaveYSLog("KhÂ«ng mua Â®Â­Ã®c PhÃ³c DuyÂªn LÃ© => HÃ±y nhiÃ–m vÃ´!");
 			}
 		}
 	}
@@ -1518,8 +1649,8 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 		if (!bAutoCheck)
 		{
 			ExecuteScript("ClearMessage()");
-			if (szQuest) sprintf(szQuest, "VLAuto kh«ng tù lµm NhiÖm vô!");
-			SystemMessage("<color=yellow>VLAuto kh«ng tù lµm NhiÖm vô!", 1);
+			if (szQuest) sprintf(szQuest, "VLAuto khÂ«ng tÃ¹ lÂµm NhiÃ–m vÃ´!");
+			SystemMessage("<color=yellow>VLAuto khÂ«ng tÃ¹ lÂµm NhiÃ–m vÃ´!", 1);
 		}
 		return ys_Result;
 	}
@@ -1546,29 +1677,29 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 	int nTimeCount = (int)(tmNow - m_tmStart);
 	if (m_nYSDoing != ys_doing)
 	{
-		if (szQuest) sprintf(szQuest, "Ch­a nhËn NhiÖm vô míi!");
+		if (szQuest) sprintf(szQuest, "ChÂ­a nhÃ‹n NhiÃ–m vÃ´ mÃ­i!");
 		if (m_nYSDoing == ys_return)
-			strcpy(szMsg, "<color=green>§ang tr¶ nhiÖm vô.");
+			strcpy(szMsg, "<color=green>Â§ang trÂ¶ nhiÃ–m vÃ´.");
 		else if (m_nYSDoing == ys_cancel)
-			strcpy(szMsg, "<color=green>§ang hñy nhiÖm vô.");
+			strcpy(szMsg, "<color=green>Â§ang hÃ±y nhiÃ–m vÃ´.");
 		else
-			strcpy(szMsg, "<color=green>Ch­a nhËn NhiÖm vô míi!");
+			strcpy(szMsg, "<color=green>ChÂ­a nhÃ‹n NhiÃ–m vÃ´ mÃ­i!");
 		ys_Result = ys_none;
 	}
 	else if (m_nQuestID == 1)
 	{
-		if (szQuest) sprintf(szQuest, "NV mua vËt phÈm t¹i NPC.");
-		sprintf(szMsg, "<color=green>NhiÖm vô Mua vËt phÈm t¹i NPC.");
+		if (szQuest) sprintf(szQuest, "NV mua vÃ‹t phÃˆm tÂ¹i NPC.");
+		sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ Mua vÃ‹t phÃˆm tÂ¹i NPC.");
 	}
 	else if (m_nQuestID == 2)
 	{
-		if (szQuest) sprintf(szQuest, "NV t×m vËt phÈm theo tªn, hÖ.");
-		sprintf(szMsg, "<color=green>NhiÖm vô T×m vËt phÈm theo tªn, hÖ.");
+		if (szQuest) sprintf(szQuest, "NV tÃ—m vÃ‹t phÃˆm theo tÂªn, hÃ–.");
+		sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ TÃ—m vÃ‹t phÃˆm theo tÂªn, hÃ–.");
 	}
 	else if (m_nQuestID == 3)
 	{
-		if (szQuest) sprintf(szQuest, "NV t×m vËt phÈm theo thuéc tİnh.");
-		sprintf(szMsg, "<color=green>NhiÖm vô T×m vËt phÈm theo thuéc tİnh.");
+		if (szQuest) sprintf(szQuest, "NV tÃ—m vÃ‹t phÃˆm theo thuÃ©c tÃnh.");
+		sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ TÃ—m vÃ‹t phÃˆm theo thuÃ©c tÃnh.");
 	}
 	else if (m_nQuestID == 4)
 	{
@@ -1580,10 +1711,10 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			nTotalMap * 2 < m_nRqValue)
 		{
 			ys_Result = ys_cancel;
-			SaveYSLog("Hñy nhiÖm vô do thùc hiÖn qu¸ thêi gian thiÕt lËp.");
+			SaveYSLog("HÃ±y nhiÃ–m vÃ´ do thÃ¹c hiÃ–n quÂ¸ thÃªi gian thiÃ•t lÃ‹p.");
 		}
-		if (szQuest) sprintf(szQuest, "NV mËt/®å chİ, hoµn thµnh %d/%d", nTotalMap, m_nRqValue);
-		sprintf(szMsg, "<color=green>NhiÖm vô Thu thËp MËt chİ/§å chİ.\n  Hoµn thµnh: <color=yellow>%d/%d", nTotalMap, m_nRqValue);
+		if (szQuest) sprintf(szQuest, "NV mÃ‹t/Â®Ã¥ chÃ, hoÂµn thÂµnh %d/%d", nTotalMap, m_nRqValue);
+		sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ Thu thÃ‹p MÃ‹t chÃ/Â§Ã¥ chÃ.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nTotalMap, m_nRqValue);
 	}
 	else if (m_nQuestID == 5)
 	{
@@ -1598,24 +1729,24 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			nDifferent = theMain.GetExpUpLevel(nPreLevel, P_PLAYER->m_Level) + (int)g_pCurPlayer->m_nCurExp - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV kinh nghiÖm, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Kinh nghiÖm.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, "NV kinh nghiÃ–m, hoÂµn thÂµnh %d/%d", nDifferent, m_nRqValue);
+			sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ nÂ©ng cÃŠp Kinh nghiÃ–m.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
 			break;
 		case ys_rqmingwang:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 			nDifferent = g_pCurPlayer->GetTaskVal(0x0064) - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV danh väng, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Danh väng.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, "NV danh vÃ¤ng, hoÂµn thÂµnh %d/%d", nDifferent, m_nRqValue);
+			sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ nÂ©ng cÃŠp Danh vÃ¤ng.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
 			break;
 		case ys_rqfuyuan:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 			nDifferent = g_pCurPlayer->GetTaskVal(0x0097) - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV phóc duyªn, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Phóc duyªn.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, "NV phÃ³c duyÂªn, hoÂµn thÂµnh %d/%d", nDifferent, m_nRqValue);
+			sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ nÂ©ng cÃŠp PhÃ³c duyÂªn.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
 			break;
 		case ys_rqpk:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
@@ -1625,10 +1756,10 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			if (nTimeCount > 300) // 5 minutes
 			{
 				ys_Result = ys_cancel;
-				SaveYSLog("Qu¸ thêi gian, vÒ thµnh hñy nhiÖm vô!\n");
+				SaveYSLog("QuÂ¸ thÃªi gian, vÃ’ thÂµnh hÃ±y nhiÃ–m vÃ´!\n");
 			}
-			if (szQuest) sprintf(szQuest, "NV n©ng PK , hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng trŞ PK.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, "NV nÂ©ng PK , hoÂµn thÂµnh %d/%d", nDifferent, m_nRqValue);
+			sprintf(szMsg, "<color=green>NhiÃ–m vÃ´ nÂ©ng trÃ PK.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
 			break;
 		}
 	}
@@ -1637,7 +1768,7 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 		int nMapSHXT = g_pCurPlayer->GetTaskVal(ys_shxtmap);
 		if (nMapSHXT >= m_nRqValue)
 			ys_Result = ys_return;
-		sprintf(szMsg, "<color=green>NhiÖm thu thËp m¶nh b¶n ®å SHXT.\n  Hoµn thµnh: <color=yellow>%d/%d", nMapSHXT, m_nRqValue);
+		sprintf(szMsg, "<color=green>NhiÃ–m thu thÃ‹p mÂ¶nh bÂ¶n Â®Ã¥ SHXT.\n  HoÂµn thÂµnh: <color=yellow>%d/%d", nMapSHXT, m_nRqValue);
 	}
 
 	if (!bAutoCheck)
@@ -1649,11 +1780,11 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			int nHour = nTimeCount / 3600;
 			int nMin = (nTimeCount - 3600 * nHour) / 60;
 			int nSec = nTimeCount % 60;
-			SystemMessage(1, "<color=green>Thêi gian ®· thùc hiÖn: <color=yellow>%02d:%02d:%02d", nHour, nMin, nSec);
+			SystemMessage(1, "<color=green>ThÃªi gian Â®Â· thÃ¹c hiÃ–n: <color=yellow>%02d:%02d:%02d", nHour, nMin, nSec);
 			SystemMessage(m_szYSQuest, 1);
 			int nQuestCancel = g_pCurPlayer->GetTaskVal(ys_taskccl);
 			int nSHXTMap = g_pCurPlayer->GetTaskVal(ys_shxtmap);
-			SystemMessage(1, "<color=green>NV ngµy / C¬ héi hñy / M¶nh SHXT:\n  <color=yellow>%d / %d / %d", m_nRemainQuest, nQuestCancel, nSHXTMap);
+			SystemMessage(1, "<color=green>NV ngÂµy / CÂ¬ hÃ©i hÃ±y / MÂ¶nh SHXT:\n  <color=yellow>%d / %d / %d", m_nRemainQuest, nQuestCancel, nSHXTMap);
 		}
 	}
 
@@ -1661,6 +1792,15 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 }
 
 YESOU_TASK_DOING CVLQuest::GetRequiredCondition()
+{
+	YESOU_TASK_DOING ysResult = GetRequiredConditionRaw();
+	QTRACE("Dieu kien: QID=%d Minor=%d Rq=%s RqValue=%d Map=%d Npc=%d => %s",
+		m_nQuestID, g_pCurPlayer->GetTaskVal(ys_minorid), QTName_Rq(m_nRqType), m_nRqValue,
+		m_nRqMapID, m_nRqNpcID, QTName_YS(ysResult));
+	return ysResult;
+}
+
+YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 {
 	// Init Param Values
 	m_nRqGenre = -1; m_nRqDetail = -1; m_nRqParticular = -1;
@@ -1687,8 +1827,8 @@ YESOU_TASK_DOING CVLQuest::GetRequiredCondition()
 		m_nLastMapID = 0;
 		if (nMinorID >= TaskInfoHeader.nTaskNum[m_nQuestID - 1])
 		{
-			SystemMessage("<color=yellow>Kh«ng nhËn d¹ng ®­îc yªu cÇu D· TÈu!");
-			SaveYSLog("Kh«ng nhËn d¹ng ®­îc yªu cÇu D· TÈu => T¹m ng­ng!");
+			SystemMessage("<color=yellow>KhÂ«ng nhÃ‹n dÂ¹ng Â®Â­Ã®c yÂªu cÃ‡u DÂ· TÃˆu!");
+			SaveYSLog("KhÂ«ng nhÃ‹n dÂ¹ng Â®Â­Ã®c yÂªu cÃ‡u DÂ· TÃˆu => TÂ¹m ngÂ­ng!");
 			return ys_suspending;
 		}
 	}
@@ -1754,11 +1894,11 @@ YESOU_TASK_DOING CVLQuest::GetRequiredCondition()
 		m_nRqMapID = g_pCurPlayer->GetTaskVal(ys_mapid);
 		if (!theMove.LoadYeSouMap(m_nRqMapID))
 		{
-			SystemMessage("<color=yellow>N¬i cÇn ®Õn ch­a cã MAP!");
+			SystemMessage("<color=yellow>NÂ¬i cÃ‡n Â®Ã•n chÂ­a cÃ£ MAP!");
 			m_nRqMapID = 0;
 			if (m_TuZhiOpt.m_bCancelNoMap)
 			{
-				SaveYSLog("N¬i cÇn ®Õn ch­a cã MAP => Hñy nhiÖm vô!");
+				SaveYSLog("NÂ¬i cÃ‡n Â®Ã•n chÂ­a cÃ£ MAP => HÃ±y nhiÃ–m vÃ´!");
 				return ys_cancel;
 			}
 			else
@@ -1872,7 +2012,7 @@ YESOU_TASK_DOING CVLQuest::GetRequiredCondition()
 				if (m_AddPointOpt.m_bSJCancel &&
 					m_nRqValue < m_AddPointOpt.m_nSJCancelVal)
 				{
-					SaveYSLog("NhiÖm vô thÊt b¹i, ®iÓm yªu cÇu thÊp => Hñy nhiÖm vô!");
+					SaveYSLog("NhiÃ–m vÃ´ thÃŠt bÂ¹i, Â®iÃ“m yÂªu cÃ‡u thÃŠp => HÃ±y nhiÃ–m vÃ´!");
 					return ys_cancel;
 				}
 				else
@@ -1889,7 +2029,7 @@ YESOU_TASK_DOING CVLQuest::GetRequiredCondition()
 			return ys_return;
 		else
 		{
-			SaveYSLog("Sè m¶nh b¶n ®å SHXT hiÖn cã qu¸ İt, kh«ng ®ñ tr¶ nhiÖm vô.");
+			SaveYSLog("SÃ¨ mÂ¶nh bÂ¶n Â®Ã¥ SHXT hiÃ–n cÃ£ quÂ¸ Ãt, khÂ«ng Â®Ã± trÂ¶ nhiÃ–m vÃ´.");
 			return ys_suspending;
 		}
 	}
@@ -1975,7 +2115,7 @@ BOOL CVLQuest::GetUseableItem(PlayerItem* pPlayerItem, const char* szItemName, i
 		theObject.uGenre = CGOG_ITEM;
 		theObject.uId = nItemIdx;
 		g_pCoreShell->GetGameData(GDI_GAME_OBJ_DESC, (int)& theObject, (int)szItemDesc);
-		szDateTime = strstr(szItemDesc, "sö dông:");
+		szDateTime = strstr(szItemDesc, "sÃ¶ dÃ´ng:");
 		if (!szDateTime)
 		{
 			*pPlayerItem = PLAYER_ITEM(i);
@@ -2224,10 +2364,10 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 
 		//g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_GETPRICE, 0, 0);
 
-		sprintf(szMsg, "Mua ®­îc <color=yellow>%s <color=blue>%d v¹n", szGotItem, nItemPrice / 10000);
+		sprintf(szMsg, "Mua Â®Â­Ã®c <color=yellow>%s <color=blue>%d vÂ¹n", szGotItem, nItemPrice / 10000);
 		SystemMessage(szMsg);
 
-		sprintf(szMsg, "Mua ®­îc <%s> gi¸ %d v¹n l­îng.", szGotItem, nItemPrice / 10000);
+		sprintf(szMsg, "Mua Â®Â­Ã®c <%s> giÂ¸ %d vÂ¹n lÂ­Ã®ng.", szGotItem, nItemPrice / 10000);
 		SaveYSLog(szMsg);
 
 		CloseAllWindows(0);
@@ -2240,23 +2380,23 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 	{
 		POINT itmPos;
 		KItem* pItem;
-		KStallObject* pItemSt = (KStallObject*)GetPtrAddress(IST_BASE_ADD);
-		KShopObject* pItemList = pPlrStall->m_pObjectList;
+		static KStallObject pItemSt[MAX_STALL_OBJ];	// 15-10: hang lay bang GetGameData(GDI_STALL_ITEMS)
+		int nStallObj = pPlrStall->GetObjects(pItemSt, MAX_STALL_OBJ);
 		if (nCurIndex) m_bVsNpc[nCurIndex] = TRUE;
-		for (int i = 0; i < pPlrStall->m_nObjCount; i++)
+		for (int i = 0; i < nStallObj; i++)
 		{
-			pItem = (KItem*)(dwItmBaseAdd + pItemList[i].uId * ITM_DATA_SIZE);
+			pItem = (KItem*)(dwItmBaseAdd + pItemSt[i].uId * ITM_DATA_SIZE);
 			if (ComAttr.nSpecialType >= 1) continue;
 
 			int nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_other];
 			if (szItemName)
 			{
 				if (!strstr(ComAttr.szItemName, szItemName)) continue;
-				if (strstr(ComAttr.szItemName, "(TiÓu)"))
+				if (strstr(ComAttr.szItemName, "(TiÃ“u)"))
 					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan01];
 				else if (strstr(ComAttr.szItemName, "(Trung)"))
 					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan02];
-				else if (strstr(ComAttr.szItemName, "(§¹i)"))
+				else if (strstr(ComAttr.szItemName, "(Â§Â¹i)"))
 					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan03];
 			}
 			else
@@ -2305,7 +2445,7 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 			if (pItemSt[i].nPrice > nMaxPrice * 10000) continue;
 			if (pItemSt[i].nPrice > EQUIP_MONEY)
 			{
-				SystemMessage("<color=yellow>T×m ®­îc ®å phï hîp, mµ kh«ng ®ñ tiÒn!");
+				SystemMessage("<color=yellow>TÃ—m Â®Â­Ã®c Â®Ã¥ phÃ¯ hÃ®p, mÂµ khÂ«ng Â®Ã± tiÃ’n!");
 				continue;
 			}
 
@@ -2316,7 +2456,7 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 			nLastMoney = EQUIP_MONEY;
 			strcpy(szGotItem, ComAttr.szItemName);
 			nItemPrice = pItemSt[i].nPrice;
-			g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, pItemList[i].uId, 0);
+			g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, pItemSt[i].uId, 0);
 			nTimeWait = 2;
 			return 1;
 		}
@@ -2338,7 +2478,7 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_player) continue;
-		if (!g_pNpcArray[i]->m_bHaveStall || g_pNpcArray[i]->m_Doing != do_sit) continue;
+		if (g_pNpcArray[i]->m_Doing != do_sit) continue;	// 15-10: KNpc khong con m_bHaveStall
 		if (m_bVsNpc[i]) continue; // Already Visited.
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 		if (bIsNearYeSou)
@@ -2381,7 +2521,7 @@ void CVLQuest::ArrangeEquipRoom()
 		else
 		{
 			m_nArrangeStep = 2;
-			SystemMessage("<color=yellow>§ang s¾p xÔp l¹i hµnh trang...");
+			SystemMessage("<color=yellow>Â§ang sÂ¾p xÃ”p lÂ¹i hÂµnh trang...");
 		}
 	}
 	if (m_nArrangeStep == 2)

@@ -52,6 +52,7 @@ CVLMain::CVLMain(void)
 	m_hWndGame = m_hWndAuto = NULL;
 	m_bQuitingGame = 0;
 	m_uHardDiskID = 0;
+	m_nTongMoney = m_nTongTimeout = m_nTongCityTimer = 0;
 }
 
 BOOL CVLMain::IsPEPacked()
@@ -68,6 +69,79 @@ BOOL CVLMain::IsPEPacked()
 		return PEC2_IsPacked();
 
 	return FALSE;
+}
+
+#define TONG_CITY_TIMEOUT	600		// g_RunningTimer (50ms): 30s cho ve thanh sau khi dung Tho Dia Phu
+#define TONG_CITY_DELAY		20		// g_RunningTimer (50ms): ve thanh roi cho 1s moi gop
+
+// Gop nMoney luong tien tren nguoi vao quy bang (VLAuto: bang Thong ke > Gom tien len bang).
+// Chi gop duoc trong thanh: dang o ngoai thanh thi dung Tho Dia Phu, TongMoneyBreathe cho ve thanh roi moi gop
+BOOL CVLMain::StoreTongMoney(int nMoney)
+{
+	if (!g_pCurPlayer || !g_pNpcArray[0] || !g_pCoreShell) return FALSE;
+	int nIndex = g_pCurPlayer->m_nIndex;
+	if (nIndex <= 0 || nIndex >= MAX_NPC || !P_PLAYER->m_dwID) return FALSE;
+	if (nMoney <= 0) return FALSE;
+	m_nTongMoney = nMoney;
+	m_nTongTimeout = g_RunningTimer + TONG_CITY_TIMEOUT;
+	m_nTongCityTimer = 0;
+	if (P_PLAYER->m_FightMode && !UseAmuletPaper())
+	{
+		m_nTongMoney = 0;
+		SystemMessage("<color=yellow>Auto: het Tho dia phu - khong ve thanh gom tien len bang duoc!", 1);
+		return FALSE;
+	}
+	SystemMessage("<color=yellow>Auto: tam dung - gom tien len bang", 1);
+	TongMoneyBreathe();
+	return TRUE;
+}
+
+// Chu ky 200ms: da ve thanh (m_FightMode = 0) => cho TONG_CITY_DELAY roi gop quy
+// Nhu nut Gop quy (KUiTong 0x4EB060 -> 0x4EB430(2, 0, nMoney)): TongOperation(4, {2, 0, nMoney}, buf)
+void CVLMain::TongMoneyBreathe()
+{
+	if (!m_nTongMoney || !g_pCurPlayer || !g_pNpcArray[0] || !g_pCoreShell) return;
+	int nIndex = g_pCurPlayer->m_nIndex;
+	if (nIndex <= 0 || nIndex >= MAX_NPC || !P_PLAYER->m_dwID) return;
+
+	if (P_PLAYER->m_FightMode)
+	{
+		m_nTongCityTimer = 0;
+		if (g_RunningTimer >= m_nTongTimeout)
+		{
+			m_nTongMoney = 0;
+			SystemMessage("<color=yellow>Auto: khong ve thanh duoc - huy gom tien len bang!", 1);
+		}
+		return;
+	}
+	if (!m_nTongCityTimer)
+	{
+		m_nTongCityTimer = g_RunningTimer + TONG_CITY_DELAY;
+		return;
+	}
+	if (g_RunningTimer < m_nTongCityTimer) return;
+
+	int nMoney = min(m_nTongMoney, EQUIP_MONEY);
+	m_nTongMoney = 0;
+	if (nMoney <= 0) return;
+	int  p[13] = { 2, 0, nMoney };
+	char buf[0x138] = { 0 };
+	g_pCoreShell->TongOperation(4, (int)p, (int)buf);
+	SystemMessage("<color=yellow>Auto: da gom tien len bang - chay tiep", 1);
+}
+
+// Dung Tho Dia Phu / Hoi Thanh Phu / phim tat 3 (nhu CVLRecover::OnUseAM), bao VLAuto dem cmd_useam
+BOOL CVLMain::UseAmuletPaper()
+{
+	if (!g_pCurPlayer->UseItem(AMULET_PAPER) && !g_pCurPlayer->UseItem(AMULETX_PAPER))
+	{
+		KUiPlayerBar *pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
+		if (!pUiPlayerBar || !pUiPlayerBar->m_nHK3Gengre)
+			return FALSE;
+		ExecuteScript("ShortcutUseItem(2)");
+	}
+	PostFeedBack(cmd_useam);
+	return TRUE;
 }
 
 BOOL CVLMain::PostFeedBack(WPARAM wParam, LPARAM lParam)
@@ -543,7 +617,7 @@ BOOL CVLMain::ClickMenuStr(const char* szLine, BOOL bClick)
 		for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 		{
 			char* szMsg = (char*)pMsgSel2->m_pMessages[i]->Msg;
-			if (strstr(szMsg, szLine))
+			if (TcvnStrStrI(szMsg, szLine))
 			{
 				if (bClick)
 					pMsgSel2->OnClickMsg(i);
@@ -557,7 +631,7 @@ BOOL CVLMain::ClickMenuStr(const char* szLine, BOOL bClick)
 		for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
 		{
 			char* szMsg = (char*)pMsgSel->m_pMessages[i]->Msg;
-			if (strstr(szMsg, szLine))
+			if (TcvnStrStrI(szMsg, szLine))
 			{
 				if (bClick)
 					pMsgSel->OnClickMsg(i);

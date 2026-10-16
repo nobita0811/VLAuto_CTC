@@ -77,9 +77,9 @@ void CVLMap::InitEquipCheck()
 
 	if (m_bRepair)
 	{
-		for (int i = 0; i < itempart_num; i++)
+		for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 		{
-			int nItemIdx = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+			int nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
 			if (!nItemIdx) continue;
 
 			KItem* pItem = g_pItemArray[nItemIdx];
@@ -834,9 +834,9 @@ void CVLMap::GetRepairItems()
 	int nItemIdx;
 	KItem* pItem;
 	static int nLastRpEquip = -1;
-	for (int i = nLastRpEquip + 1; i < itempart_num; i++)
+	for (int i = nLastRpEquip + 1; i < MAX_EQUIP_SLOT; i++)
 	{
-		nItemIdx = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+		nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
 		if (!nItemIdx) continue;
 		pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
 		if (pItem->m_nCurDur < 0) continue; // Durability not available
@@ -911,7 +911,7 @@ void CVLMap::GetGroceries()
 		//Buy TDP
 		if (m_bBuyTDP && (g_pCurPlayer->GetItemsCount(AMULET_PAPER) < m_nAMNumbers))
 		{
-			g_pCurPlayer->BuyItem(8);
+			g_pCurPlayer->BuyItem(1);
 			return;
 		}
 		m_bFinished = TRUE;
@@ -1065,7 +1065,7 @@ BOOL CVLMap::GetReputation(int nRepType)
 		for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 		{
 			char* szMsg = (char*)pMsgSel2->m_pMessages[i]->Msg;
-			if (strstr(szMsg, szMenuChoice))
+			if (TcvnStrStrI(szMsg, szMenuChoice))
 				pMsgSel2->OnClickMsg(i);
 		}
 		return TRUE;
@@ -1436,9 +1436,9 @@ BOOL CVLMap::CheckReady()
 		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, TRUE, nSaveAmount);
 		return 0;
 	}
-	for (int i = 0; i < itempart_num; i++)
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 	{	// Kiem tra do ben
-		nItemIdx = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+		nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
 		if (!nItemIdx) continue;
 		pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
 		if (pItem->m_nCurDur >= 0 && pItem->m_nCurDur < 3)
@@ -1486,30 +1486,40 @@ void CVLMap::ClickToNpc(int nX, int nY)
 			ExecuteScript(szScript);
 			SystemMessage("<color=yellow>Lag qu¸, chê 5s click l¹i...");
 		}
+		if (m_nTimeWait == 1)
+			QTRACE("ClickToNpc: het thoi gian cho, PEOPLE_IDX=%d Doing=%d", PEOPLE_IDX, P_PLAYER->m_Doing);
 		m_nTimeWait--;
 		return;
 	}
 
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	int nDialogers = 0, nNearIdx = 0, nNearDist = MAX_INTNUM;
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
 
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 		dZ = __distance(nX, nY, nNpcX, nNpcY);
+		nDialogers++;
+		if (dZ < nNearDist) { nNearDist = dZ; nNearIdx = i; }
 		if (dZ > 40) continue;
 
 		dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
 		if (dZ > PLAYER_PICKUP_DISTANCE)
 		{
+			QTRACE("ClickToNpc: thay #%d %s, cach nguoi %d > %d -> chay toi", i, g_pNpcArray[i]->Name,
+				dZ, PLAYER_PICKUP_DISTANCE);
 			g_pCurPlayer->MoveTo(nNpcX, nNpcY);
 			return;
 		}
 
 		theAttack.SetPeopleIdx(i);
+		QTRACE("ClickToNpc: SetPeopleIdx(#%d %s) -> PEOPLE_IDX=%d", i, g_pNpcArray[i]->Name, PEOPLE_IDX);
 		m_nTimeWait = MAX_TIME_WAIT; //wait for 5s for next
 		return;
 	}
+	QTRACE("ClickToNpc: KHONG co NPC hoi thoai trong 40 quanh (%d,%d). Tong dialoger=%d, gan nhat #%d %s cach %d",
+		nX, nY, nDialogers, nNearIdx, nNearIdx ? g_pNpcArray[nNearIdx]->Name : "-", nNearIdx ? nNearDist : -1);
 }
 
 void CVLMap::LoadSellList()

@@ -129,9 +129,9 @@ static void EquipDur()
 	DbgOut("Trang bi (CheckEquip moi 30s): tien %d, tu sua %d khi Dur <= 80%% va +N < 6, ve thanh khi Dur < %d\n",
 		EQUIP_MONEY, r.m_bAutoRepair, r.m_nAMByDurAmount);
 	int nCount = 0;
-	for (int i = 0; i < itempart_num; i++)
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 	{
-		int nEquipIndex = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+		int nEquipIndex = g_pCurPlayer->m_ItemList.GetEquip(i);
 		KItem *pItem = GetItem(nEquipIndex);
 		if (!pItem) continue;
 		nCount++;

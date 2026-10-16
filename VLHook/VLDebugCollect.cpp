@@ -298,7 +298,7 @@ static void ItemAttrib(int nIdx)
 		ComAttr.nItemGenre, ComAttr.nSpecialType, ComAttr.nDetailType, ComAttr.nParticularType, ComAttr.nObjIdx,
 		ComAttr.nSeries, ComAttr.nLevel, ComAttr.nPrice, ComAttr.nWidth, ComAttr.nHeight, ComAttr.bStack);
 	DbgOut("  Do ben %d/%d  +%d  m_nLockCount %d  m_dwUniID 0x%08X  +0x6C0 %d (=1: client khong cho Ra)\n", pItem->m_nCurDur, pItem->m_nMaxDur,
-		pItem->m_nItemPlus, pItem->m_nLockCount, pItem->m_dwUniID, *(int*)((BYTE*)pItem + 0x6C0));
+		pItem->m_nItemPlus, pItem->m_nLockCount, pItem->m_dwUniID, *(int*)((BYTE*)pItem + 0x860));
 	DbgOut("  m_MagicLevel:");
 	for (int j = 0; j < 6; j++) DbgOut(" 0x%X", pItem->m_MagicLevel[j]);
 	DbgOut("\n");
@@ -494,7 +494,7 @@ static void DecomposeScan(BOOL bClearFail)
 		int nIdx = PLAYER_ITEM(i).nIdx;
 		KItem *pItem = GetItem(nIdx);
 		if (!pItem || ComAttr.nItemGenre != item_equip) continue;
-		DWORD dw6C0 = *(DWORD*)((BYTE*)pItem + 0x6C0);
+		DWORD dw6C0 = *(DWORD*)((BYTE*)pItem + 0x860);
 		int nMagic = 0;
 		while (nMagic < 6 && pItem->m_aryAllAttrib[13 + nMagic].nAttribType > item_begin) nMagic++;
 		DbgOut("%-3d | %2d,%-2d | %d/%d | %-2d | %-4d | %-4X | %s =>", nIdx, PLAYER_ITEM(i).nX, PLAYER_ITEM(i).nY,

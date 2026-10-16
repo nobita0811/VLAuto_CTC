@@ -11,6 +11,20 @@
 #include "DlgMap.h"
 #include "GameWindow.h"
 
+// Khoi tien o cuoi file cfg nhan vat
+#define CFG_MONEY_TAG		0x594E4F4D	// 'MONY'
+#define STAT_START_DELAY	5000		// ms sau khi vao game moi lay tien ban dau (cho dong bo vat pham)
+#define TONG_MONEY_TIMEOUT	45000		// ms cho tien tren nguoi giam sau lenh gom tien len bang (gom phu ve thanh)
+#define MONEY_SAVE_INTERVAL	30000		// ms: tien thay doi thi ghi vao cfg toi da moi 30s
+
+#pragma pack(push, 4)
+struct CFG_MONEY_BLOCK
+{
+	DWORD	dwTag;
+	__int64	nMoney;
+};
+#pragma pack(pop)
+
 struct WinMessage
 {
 	UINT uMsg;
@@ -129,6 +143,9 @@ void GameWindow::Refresh()
 				m_bAutoStartDone = 0;
 				m_dwAutoStartTick = 0;
 			}
+			m_dwLoginTick = 0;
+			m_bStatReady = FALSE;
+			m_bDead = FALSE;
 		}
 		return;
 	}
@@ -162,6 +179,17 @@ void GameWindow::Refresh()
 		m_nPlayerLevel = Npc.m_Level;
 		strcpy(m_szPlayerName, Npc.Name);
 		m_bInfoChanged = TRUE;
+
+		// Thong ke lan dang nhap nay
+		m_nMoney = m_nStartMoney = m_nSavedMoney = 0;
+		m_dwLoginTick = GetTickCount() | 1;
+		m_dwMoneySaveTick = 0;
+		m_bStatReady = FALSE;
+		m_bDead = FALSE;
+		m_nAMUsed = 0;
+		m_nDeathCount = 0;
+		m_nEquipMoney = m_nTongMoney = m_nTongPending = m_nTongBase = 0;
+		m_dwTongTick = 0;
 
 		LoadProfile();
 		m_bLoadDone = TRUE;
@@ -205,6 +233,7 @@ void GameWindow::Refresh()
 	m_nFlagX <<= 4;	m_nFlagY <<= 5;
 	Npc.GetMapPos(&m_nOffX, &m_nOffY);
 	m_FightMode = Npc.m_FightMode;
+	UpdateStats(winProcess, Npc.m_Doing);
 	memset(m_szEnemyName, 0, 32);
 	m_nEnemySeries = -1;
 	m_nEnemyLife = 0;
@@ -318,13 +347,23 @@ BOOL GameWindow::LoadConfigFile(LPCTSTR szFileName)
 	if (!m_prYeSou.ReadFromFile(cfgFile))
 		return FALSE;
 
+	// Khoi tien (them sau, file cu khong co)
+	CFG_MONEY_BLOCK money = { 0 };
+	if (cfgFile.Read(&money, sizeof(money)) == sizeof(money) && money.dwTag == CFG_MONEY_TAG)
+		m_nSavedMoney = money.nMoney;
+
 	// File cua nhan vat khac => bo skill da chon (file cu luu ten tai khoan van giu)
 	if (strcmp(m_szPlayerName, szAccountID) && strcmp(m_szAccountID, szAccountID))
 		memset(&m_prAttack.m_SettingSkills, 0, sizeof(m_prAttack.m_SettingSkills));
 
-	CVLAutoDlg *pMainDlg = (CVLAutoDlg*)theApp.GetMainDlg();
-	((CDlgMap*)pMainDlg->m_MainTab.GetTabDlg(tab_map))->UpdateTrainMap(0);
-	pMainDlg->m_MainTab.GetTabDlg(tab_basic)->UpdateData(0);
+	// Chi cap nhat giao dien khi day la nhan vat dang chon: cac tab doc/ghi g_pCurGameWin, co the NULL
+	// (nhan vat vao game khi chua chon ai - crash doc NULL+0x844 m_prMap.m_nTrainMapID) hoac la nhan vat khac
+	if (this == g_pCurGameWin)
+	{
+		CVLAutoDlg *pMainDlg = (CVLAutoDlg*)theApp.GetMainDlg();
+		((CDlgMap*)pMainDlg->m_MainTab.GetTabDlg(tab_map))->UpdateTrainMap(0);
+		pMainDlg->m_MainTab.GetTabDlg(tab_basic)->UpdateData(0);
+	}
 
 	cfgFile.Close();
 
@@ -369,9 +408,128 @@ BOOL GameWindow::SaveConfigFile(LPCTSTR szFileName)
 	if (!m_prYeSou.WriteToFile(cfgFile))
 		return FALSE;
 
+	CFG_MONEY_BLOCK money = { CFG_MONEY_TAG, m_bStatReady ? m_nMoney : m_nSavedMoney };
+	cfgFile.Write(&money, sizeof(money));
+	m_nSavedMoney = money.nMoney;
+
 	cfgFile.Close();
 
 	return TRUE;
+}
+
+// Thong ke: tien (tren nguoi + ruong), so lan chet. Goi moi lan Refresh khi dang trong game
+void GameWindow::UpdateStats(DWinProcess& winProcess, int nDoing)
+{
+	DWORD dwNow = GetTickCount();
+	if (!m_dwLoginTick)
+		m_dwLoginTick = dwNow | 1;
+
+	LPBYTE lpPlayer = NULL;
+	int Rooms[2 * INVENTORY_SIZE / sizeof(int)];	// room_equipment, room_repository
+	if (winProcess.ReadMemory((LPCVOID)PLR_BASE_ADD, &lpPlayer, sizeof(lpPlayer)) && lpPlayer
+		&& winProcess.ReadMemory(lpPlayer + PLAYER_OFFSET + PLR_ROOM_OFFSET, Rooms, sizeof(Rooms)))
+	{
+		m_nEquipMoney = Rooms[1];
+		m_nMoney = (__int64)Rooms[1] + Rooms[INVENTORY_SIZE / sizeof(int) + 1];
+	}
+
+	// Lenh gom tien: tien da giam => may chu da nhan, cong vao m_nTongMoney. Qua TONG_MONEY_TIMEOUT ma chua giam => that bai
+	if (m_nTongPending)
+	{
+		if (m_nMoney <= m_nTongBase - m_nTongPending)
+		{
+			m_nTongMoney += m_nTongPending;
+			m_nTongPending = 0;
+		}
+		else if (dwNow - m_dwTongTick >= TONG_MONEY_TIMEOUT)
+			m_nTongPending = 0;
+	}
+
+	// Vua vao game tien chua dong bo xong => cho STAT_START_DELAY moi lay moc
+	if (!m_bStatReady)
+	{
+		if (dwNow - m_dwLoginTick < STAT_START_DELAY)
+			return;
+		m_bStatReady = TRUE;
+		m_nStartMoney = m_nMoney;
+	}
+
+	BOOL bDead = nDoing == do_death || nDoing == do_revive;
+	if (bDead && !m_bDead)
+		m_nDeathCount++;
+	m_bDead = bDead;
+
+	if (m_nMoney != m_nSavedMoney && (!m_dwMoneySaveTick || dwNow - m_dwMoneySaveTick >= MONEY_SAVE_INTERVAL))
+	{
+		m_dwMoneySaveTick = dwNow | 1;
+		SaveMoney();
+	}
+}
+
+// Gom tien tren nguoi len quy bang, giu lai nKeep (tinh ca tien trong ruong).
+// Tra ve so tien da gui lenh gom, 0 = khong gom (chua vao game / dang cho lenh truoc / khong du tien), -1 = loi gui lenh
+int GameWindow::StoreTongMoney(__int64 nKeep)
+{
+	if (!m_hWnd || !m_bAttached || !m_bStatReady || m_nTongPending)
+		return 0;
+	__int64 nMoney = min(m_nEquipMoney, m_nMoney - nKeep);
+	if (nMoney <= 0)
+		return 0;
+	if (!::PostMessage(m_hWnd, WM_HOOK_MAIN, cmd_tongmoney, (LPARAM)nMoney))
+		return -1;
+	m_nTongPending = nMoney;
+	m_nTongBase = m_nMoney;
+	m_dwTongTick = GetTickCount();
+	return (int)nMoney;
+}
+
+// Ghi tien vao cuoi file cfg cua nhan vat (khong ghi lai cac tab)
+void GameWindow::SaveMoney()
+{
+	TCHAR szFileName[MAX_PATH];
+	if (!m_bStatReady || !GetProfileFileName(szFileName)) return;
+
+	CFile cfgFile;
+	if (!cfgFile.Open(szFileName, CFile::modeReadWrite | CFile::shareDenyWrite))
+	{
+		SaveProfile();	// Chua co file cfg
+		return;
+	}
+	CFG_MONEY_BLOCK money = { 0 };
+	ULONGLONG nLength = cfgFile.GetLength();
+	if (nLength >= sizeof(money))
+	{
+		cfgFile.Seek(nLength - sizeof(money), CFile::begin);
+		if (cfgFile.Read(&money, sizeof(money)) != sizeof(money) || money.dwTag != CFG_MONEY_TAG)
+			cfgFile.Seek(0, CFile::end);	// File cu chua co khoi tien => them vao cuoi
+		else
+			cfgFile.Seek(nLength - sizeof(money), CFile::begin);
+	}
+	money.dwTag = CFG_MONEY_TAG;
+	money.nMoney = m_nMoney;
+	cfgFile.Write(&money, sizeof(money));
+	cfgFile.Close();
+	m_nSavedMoney = m_nMoney;
+}
+
+// Doc tien da luu trong file cfg (nhan vat dang offline)
+BOOL GameWindow::ReadSavedMoney(LPCTSTR szFileName, __int64* pMoney)
+{
+	CFile cfgFile;
+	if (!cfgFile.Open(szFileName, CFile::modeRead | CFile::shareDenyNone))
+		return FALSE;
+	CFG_MONEY_BLOCK money = { 0 };
+	ULONGLONG nLength = cfgFile.GetLength();
+	BOOL bOK = FALSE;
+	if (nLength >= sizeof(money))
+	{
+		cfgFile.Seek(nLength - sizeof(money), CFile::begin);
+		bOK = cfgFile.Read(&money, sizeof(money)) == sizeof(money) && money.dwTag == CFG_MONEY_TAG;
+	}
+	cfgFile.Close();
+	if (bOK)
+		*pMoney = money.nMoney;
+	return bOK;
 }
 
 BOOL GameWindow::IsRegistered()

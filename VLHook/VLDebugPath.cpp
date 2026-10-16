@@ -499,7 +499,7 @@ static int MatchMapID(const char *szMenu)
 		if (!pEq) continue;
 		const char *szName = pEq + 1;
 		int nLen = (int)strlen(szName);
-		if (nLen > 3 && nLen > nBestLen && strstr(szMenu, szName))
+		if (nLen > 3 && nLen > nBestLen && TcvnStrStrI(szMenu, szName))
 		{
 			nBest = atoi(p);
 			nBestLen = nLen;
@@ -752,8 +752,9 @@ static BOOL PatchDraw(BOOL bOn)
 	BOOL bOK = TRUE;
 	if (bOn)
 	{
-		if (p[0] != 0xE9 || (DWORD)(p + 5) + *(int*)(p + 1) != DGS_FUNC_ADD)
-			bOK = FALSE;	// Khong phai "jmp DrawGameSpace" - sai ban game
+		// 10-10: "jmp DrawGameSpace" (E9), 15-10: "call DrawGameSpace" (E8) - HookDrawGameSpace (__fastcall) dung duoc ca hai
+		if ((p[0] != 0xE9 && p[0] != 0xE8) || (DWORD)(p + 5) + *(int*)(p + 1) != DGS_FUNC_ADD)
+			bOK = FALSE;	// Khong phai "jmp/call DrawGameSpace" - sai ban game
 		else
 		{
 			memcpy(s_OrgJmp, p, 5);
@@ -872,7 +873,7 @@ static void OnMapChanged(int nOldMap, POINT ptOld, int nNewMap, int x, int y)
 		const char *szMenu = "";
 		const char *szName = MapName(nNewMap);
 		for (int i = 0; i < s_nMenu; i++)
-			if (MatchMapID(s_szMenu[i]) == nNewMap || strstr(s_szMenu[i], szName)) { szMenu = s_szMenu[i]; break; }
+			if (MatchMapID(s_szMenu[i]) == nNewMap || TcvnStrStrI(s_szMenu[i], szName)) { szMenu = s_szMenu[i]; break; }
 		AddDriver(nPoint, nNewMap, szMenu);
 		sprintf(szMsg, "<color=yellow>MapPath: xa phu (diem %d) -> %s (%d)", nPoint, szName, nNewMap);
 	}
@@ -1756,7 +1757,7 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 		break;
 	}
 	if ((s_bShow || s_bRec || s_nRunTarget >= 0 || s_bDoorTest) && !PatchDraw(TRUE))
-		DbgOut("\nLOI: khong chen duoc ham ve (0x%08X khong phai jmp 0x%08X) - sai ban game?\n", DGS_JMP_ADD, DGS_FUNC_ADD);
+		DbgOut("\nLOI: khong chen duoc ham ve (0x%08X khong phai jmp/call 0x%08X) - sai ban game?\n", DGS_JMP_ADD, DGS_FUNC_ADD);
 	return TRUE;
 }
 
@@ -1830,10 +1831,10 @@ void PathTravelStop(const char *szReason)
 // Dong menu dang mo co dan toi map nTo? (ten trong MapNames.ini hoac dong menu da ghi)
 static BOOL MenuLineFor(const char *szLine, const PT_LINK &l)
 {
-	if (l.szMenu[0] && !strcmp(szLine, l.szMenu)) return TRUE;
+	if (l.szMenu[0] && !TcvnStrCmpI(szLine, l.szMenu)) return TRUE;
 	if (MatchMapID(szLine) == l.nTo) return TRUE;
 	const char *szName = MapName(l.nTo);
-	return strlen(szName) > 3 && strstr(szLine, szName) != NULL;
+	return strlen(szName) > 3 && TcvnStrStrI(szLine, szName) != NULL;
 }
 
 // Toa do xa phu cho buoc khong co diem ghi: xa phu gan nhat trong file CityMaps (CVLMap)

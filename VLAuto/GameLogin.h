@@ -4,46 +4,58 @@
 
 // Tab Đăng nhập: ở màn hình bắt đầu Game chưa nạp VLHook (chỉ gắn khi đã vào game)
 // => VLAuto tự đọc bộ nhớ Game và tạo thread trong Game (CreateRemoteThread) để gọi hàm giao diện.
-// Địa chỉ 10_10 (xem Offsets_10_10.md mục Đăng nhập)
-#define LG_UIN_BASE_ADD		0x00840460	// KUiInit::m_pSelf
-#define LG_IOC_FUNC_ADD		0x0048FFB0	// KUiInit::OnClickButton(KWndButton*) thiscall
-#define LG_SMC_BASE_ADD		0x00847EF4	// KUiSysMsgCentre (!= 0 khi đang trong game)
-#define LG_SEL_SELF			0x00839A18	// KUiSelServer::m_pSelf ("UiNewLogin\选服务器.ini", OpenWindow 0x48BA00)
-#define LG_SEL_LOGIN_FUNC	0x0048ACD0	// KUiSelServer::OnLogin() thiscall: máy chủ đang chọn -> mở cửa sổ đăng nhập
-#define LG_SEL_REGIONS		0x0904		// KLoginServer* danh sách KHU VỰC (GetServerRegionList 0x597E00), 0x24 byte/dòng
-#define LG_SEL_REGION		0x2EB8		// Chỉ số khu vực đang chọn
-#define LG_SEL_LEFTLIST		0x090C		// KWndList: 14 khu vực đầu
-#define LG_SEL_RIGHTLIST	0x0EBC		// KWndList: khu vực thứ 15 trở đi (0x489F20: count > 14)
-#define LG_SEL_IPLIST		0x146C		// KWndList: MÁY CHỦ của khu vực đang chọn
-#define LG_SEL_SERVERS		0x0908		// KLoginServer* máy chủ của khu vực đang chọn (GetServerList 0x597F10)
-#define LG_SEL_UPDATE		0x0048AF80	// KUiSelServer: khu vực đang chọn ở Left/RightList -> LG_SEL_REGION, nạp lại IpList
-#define LG_LIST_LEFT_NUM	14			// LeftList chứa tối đa 14 khu vực
-#define LG_LIST_COUNT		0x049C		// KWndList::số dòng
-#define LG_LIST_CURSEL		0x04B0		// KWndList::dòng đang chọn
-#define LG_LIST_SETCURSEL	0x0045BD20	// KWndList::SetCurSel(int) thiscall, báo 0x691 lên cửa sổ cha
-#define LG_LIST_CLEARSEL	0x00483C30	// KWndList: dòng đang chọn = -1 (không báo)
-#define LG_LIST_FOCUS		0x00483B10	// KWndList: màu list đang được chọn (int) thiscall (+0x4C4 = +0x5A8 / +0x5A4)
-#define LG_LOGIN_SELF		0x008399FC	// KUiLogin::m_pSelf ("UiNewLogin\登陆.ini", OpenWindow 0x487CF0)
-#define LG_LOGIN_ACCOUNT	0x0588		// KWndEdit m_Account
-#define LG_LOGIN_PASSWORD	0x0A94		// KWndEdit m_PassWord
-#define LG_LOGIN_AGREE		0x80C0		// Ô tick đồng ý điều khoản (chưa tick thì OnLogin chỉ hiện thông báo)
-#define LG_LOGIN_FUNC		0x004871D0	// KUiLogin::OnLogin() thiscall
-#define LG_EDIT_SETTEXT		0x00458A30	// KWndEdit::SetText(const char*) thiscall
-#define LG_BTN_CHECK		0x00453AD0	// KWndButton::CheckButton(int) thiscall
-#define LG_ROLE_SELF		0x0084053C	// KUiSelPlayer::m_pSelf ("UiNewLogin\选游戏存档人物.ini", OpenWindow 0x49D160)
-#define LG_ROLE_SELECT		0x0049C940	// KUiSelPlayer::OnSelectPlayer(int nSel, bool bPlaySound) thiscall
-#define LG_ROLE_ENTER		0x0049C210	// KUiSelPlayer::OnEnterGame() thiscall: SelectRole(m_nSelPlayer + trang) 0x595E50
-#define LG_ROLE_NUM			0xB964		// short m_nNumPlayer (= số nhân vật)
-#define LG_ROLE_SEL			0xB966		// short m_nSelPlayer (ô đang chọn trên trang, -1 = chưa chọn)
-#define LG_ROLE_PAGE		0xB970		// short: số nhân vật đã lật qua bằng Next/Pre
-#define LG_ROLE_PER_PAGE	3			// Hiện 3 nhân vật mỗi trang (m_player 0x5764, 0x770 byte/ô)
-#define LG_LOGIC			0x009BCBB8	// g_LoginLogic (KLogin)
-#define LG_LOGIC_STATUS		0x0008		// m_Status (SelectRole cần = 7)
+// Địa chỉ 15_10 (xem Offsets_15_10.md mục Đăng nhập)
+#define LG_UIN_BASE_ADD		0x007C47D8	// KUiInit::m_pSelf
+#define LG_IOC_FUNC_ADD		0x00490EA0	// KUiInit::OnClickButton(KWndButton*) thiscall
+#define LG_SMC_BASE_ADD		0x007CA1FC	// KUiSysMsgCentre (!= 0 khi đang trong game)
+#define LG_NOTICE_SELF		0x007BE5E8	// 15_10: bảng "Nhắc nhở" KUiHealthNotice::m_pSelf ("UiNewLogin\健康游戏公告.ini"), mở bởi Bắt Đầu Trò Chơi (0x483760)
+#define LG_NOTICE_OK		0x037C		// KWndButton "Close" = nút Xác định
+#define LG_NOTICE_WNDPROC	0x00483B10	// KUiHealthNotice::WndProc(msg, uParam, nParam) thiscall: 0x565 + nút Xác định => KUiSelServer::OpenWindow 0x486BE0, đóng bảng 0x483860(1)
+#define LG_WND_BUTTON_CLICK	0x0565		// Thông báo nút được bấm (uParam = KWndButton*)
+#define LG_SEL_SELF			0x007BE604	// KUiSelServer::m_pSelf ("UiNewLogin\选服务器.ini", OpenWindow 0x486BE0)
+#define LG_SEL_LOGIN_FUNC	0x00487D00	// KUiSelServer::OnLogin() thiscall: máy chủ đang chọn -> mở cửa sổ đăng nhập
+#define LG_SEL_REGIONS		0x06FC		// KLoginServer* danh sách KHU VỰC (0x5AC720, Settings\ServerList.ini: RegionCount, Region_%d), 0x24 byte/dòng
+#define LG_SERVER_ROW		0x24		// KLoginServer: char Title[32] (TCVN3) + BYTE IP[4] ở +0x20 ("%d_Title" / "%d_Address", 0x5AC910)
+#define LG_SEL_REGION		0x2080		// Chỉ số khu vực đang chọn
+#define LG_SEL_LEFTLIST		0x0704		// KWndList: 17 khu vực đầu
+#define LG_SEL_RIGHTLIST	0x0AB0		// KWndList: khu vực thứ 18 trở đi (0x486E73: count > 17)
+#define LG_SEL_IPLIST		0x0E5C		// KWndList: MÁY CHỦ của khu vực đang chọn
+#define LG_SEL_SERVERS		0x0700		// KLoginServer* máy chủ của khu vực đang chọn (GetServerList 0x5AC910(region, &count, &cursel)); số dòng = IpList count
+#define LG_SEL_UPDATE		0x00487160	// KUiSelServer: khu vực đang chọn ở Left/RightList -> LG_SEL_REGION, nạp lại IpList + bắt đầu ping (0x488560)
+#define LG_SEL_AUTOUPDATE	0x226C		// = 1 (OpenWindow 0x486CAE): Left/RightList SetCurSel báo 0x691 => WndProc tự gọi LG_SEL_UPDATE
+										// KHÔNG gọi LG_SEL_UPDATE lần 2 ngay sau đó: 0x488560 TerminateThread thread ping vừa tạo
+										// (+0x2244) khi nó đang khởi tạo (giữ loader lock) => mọi thread mới trong Game bị treo
+#define LG_LIST_LEFT_NUM	17			// LeftList chứa tối đa 17 khu vực (10_10: 14)
+#define LG_LIST_COUNT		0x029C		// KWndList::số dòng
+#define LG_LIST_CURSEL		0x02B0		// KWndList::dòng đang chọn
+#define LG_LIST_SETCURSEL	0x0044C4F0	// KWndList::SetCurSel(int) thiscall, báo 0x691 lên cửa sổ cha
+#define LG_LIST_CLEARSEL	0x00480DD0	// KWndList: dòng đang chọn = -1 (không báo)
+#define LG_LIST_FOCUS		0x00480C90	// KWndList: màu list đang được chọn (int) thiscall (+0x2C4 = +0x3A8 / +0x3A4)
+#define LG_LOGIN_SELF		0x007BE5EC	// KUiLogin::m_pSelf ("UiNewLogin\登陆.ini", OpenWindow 0x483E70)
+#define LG_LOGIN_ACCOUNT	0x0380		// KWndEdit m_Account
+#define LG_LOGIN_PASSWORD	0x067C		// KWndEdit m_PassWord
+#define LG_LOGIN_AGREE		0			// 15_10: cửa sổ đăng nhập KHÔNG có ô đồng ý (đã chuyển sang chọn nhân vật)
+#define LG_LOGIN_FUNC		0x00484C20	// KUiLogin::OnLogin() thiscall
+#define LG_EDIT_SETTEXT		0x004488F0	// KWndEdit::SetText(const char*) thiscall
+#define LG_BTN_CHECK		0x00442DD0	// KWndButton::CheckButton(int) thiscall (cờ 0x200 ở +0x34C)
+#define LG_ROLE_SELF		0x007C48AC	// KUiSelPlayer::m_pSelf ("UiNewLogin\选游戏存档人物.ini")
+#define LG_ROLE_SELECT		0x0049FEE0	// KUiSelPlayer::OnSelectPlayer(int nSel, bool bPlaySound) thiscall
+#define LG_ROLE_ENTER		0x004A0370	// KUiSelPlayer::OnEnterGame() thiscall: cần tick LG_ROLE_AGREE, SelectRole(m_nSelPlayer + trang) 0x5AAE40
+#define LG_ROLE_AGREE		0x8464		// 15_10: ô tick "cbUserAgreement" (chưa tick thì OnEnterGame chỉ hiện thông báo)
+#define LG_ROLE_NUM			0x7E1C		// short m_nNumPlayer (= số nhân vật)
+#define LG_ROLE_SEL			0x7E1E		// short m_nSelPlayer (ô đang chọn trên trang, -1 = chưa chọn)
+#define LG_ROLE_PAGE		0x7E28		// short: số nhân vật đã lật qua bằng Next/Pre
+#define LG_ROLE_PER_PAGE	3			// Hiện 3 nhân vật mỗi trang ("Player3Pos_*")
+#define LG_LOGIC			0x00848A68	// g_LoginLogic (KLogin)
+#define LG_LOGIC_STATUS		0x0008		// m_Status
+#define LG_LOGIC_STATUS_ROLES	6		// m_Status khi đã nhận danh sách nhân vật (SelectRole cần = 6; 10_10: 7)
 #define LG_LOGIC_ROLENUM	0x0012		// short m_nNumRole
-#define LG_LOGIC_ROLES		0x0014		// KRoleChiefInfo[] (Name[32], Gender, Attribute, short Level) 0x24 byte
+#define LG_LOGIC_ROLES		0x0014		// KRoleChiefInfo[]: Name[32], BYTE Gender +0x20, BYTE Attribute +0x21, int Level +0x24
+#define LG_ROLE_INFO_SIZE	0x28		// 15_10 (10_10: 0x24, short Level +0x22)
+#define LG_ROLE_INFO_LEVEL	0x24
 #define LG_WND_S_VISIBLE	0x80000000
 
-static const DWORD s_dwInitButtons[] = { 0x05A4, 0x1484, 0x3244, 0x2364 };
+static const DWORD s_dwInitButtons[] = { 0x039C, 0x0E64, 0x23F4, 0x192C };
 #define INIT_BUTTON_NUM		(sizeof(s_dwInitButtons) / sizeof(s_dwInitButtons[0]))
 
 inline DWORD ReadGameDword(HANDLE hGame, DWORD dwAddr)

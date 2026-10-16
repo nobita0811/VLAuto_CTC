@@ -217,6 +217,7 @@ void CDlgMap::InitComboBox(CComboBox *pComboBox)
 
 void CDlgMap::UpdateTrainMap(BOOL bSave)
 {
+	if (g_pCurGameWin == NULL) return;
 	CComboBox *pTrainMapCmb = (CComboBox *)GetDlgItem(IDC_TRAINMAP_COMBO);
 	if (bSave)
 		g_pCurGameWin->m_prMap.m_nTrainMapID = (int)pTrainMapCmb->GetItemData(pTrainMapCmb->GetCurSel());

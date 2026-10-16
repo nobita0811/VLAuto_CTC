@@ -9,6 +9,46 @@
 #include "S3Client.h"
 #include "VLClasses.h"
 
+//================================Quest Trace================================
+#if QUEST_TRACE
+void QTraceSite(char *szLast, const char *szFormat, ...)
+{
+	char szMsg[256];
+	va_list vlist;
+	va_start(vlist, szFormat);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFormat, vlist);
+	va_end(vlist);
+	szMsg[sizeof(szMsg) - 1] = 0;
+
+	if (!strcmp(szMsg, szLast)) return;
+	strcpy(szLast, szMsg);
+
+	SystemMessage(1, "<color=cyan>[QT] %s", szMsg);
+	char szLog[270];
+	_snprintf(szLog, sizeof(szLog) - 1, "[QT] %s", szMsg);
+	szLog[sizeof(szLog) - 1] = 0;
+	theQuest.SaveYSLog(szLog);
+}
+#endif
+
+const char* QTName_Gen(int nGen)
+{
+	static const char* szNames[] = { "qt_none", "qt_coll", "qt_yesou", "qt_dopk", "qt_suspending", "qt_suspended" };
+	return (nGen >= 0 && nGen < _countof(szNames)) ? szNames[nGen] : "qt_?";
+}
+
+const char* QTName_YS(int nYS)
+{
+	static const char* szNames[] = { "ys_none", "ys_doing", "ys_return", "ys_cancel", "ys_suspending" };
+	return (nYS >= 0 && nYS < _countof(szNames)) ? szNames[nYS] : "ys_?";
+}
+
+const char* QTName_Rq(int nRq)
+{
+	static const char* szNames[] = { "unknown", "tuzhi", "mizhi", "jingyan", "mingwang", "fuyuan", "pk", "songjin", "shanhe" };
+	return (nRq >= 0 && nRq < _countof(szNames)) ? szNames[nRq] : "rq_?";
+}
+
 //================================Class CVLQuest================================
 CVLQuest::CVLQuest(void)
 {
@@ -37,11 +77,17 @@ CVLQuest::CVLQuest(void)
 	m_bIsYeSouAndPK = 0;
 	m_bGetMingWang = TRUE;
 	m_bIsFull100LB = 0;
+	m_bNoVipCard = 0;
 }
 
 void CVLQuest::Breath()
 {
-	if (!m_bInfoLoaded) return;
+	if (!m_bInfoLoaded)
+	{
+		QTRACE("Breath: chua nap duoc Maps\\YSInfoX.dat");
+		return;
+	}
+	QTRACE("Breath: Gen=%s Entrust=%d", QTName_Gen(m_nGenDoing), g_pCurPlayer->m_nEntrustMode);
 
 	if (m_nGenDoing == qt_suspending)
 	{
@@ -176,7 +222,7 @@ void CVLQuest::SaveYSLog(const char *szLogInfo)
 		time_t tmNow; time(&tmNow);
 		tm lct; localtime_s(&lct, &tmNow);
 		fprintf(pLogFile, "[%02d-%02d %02d:%02d:%02d] ", lct.tm_mday, lct.tm_mon + 1, lct.tm_hour, lct.tm_min, lct.tm_sec);
-		fprintf(pLogFile, szLogInfo);
+		fprintf(pLogFile, "%s", szLogInfo);
 	}
 	fprintf(pLogFile, "\n");
 	fclose(pLogFile);
@@ -284,6 +330,7 @@ BOOL CVLQuest::LoadTaskInfo()
 void CVLQuest::CheckAutoYeSou()
 {
 	char szMsg[80];
+	m_bNoVipCard = 0;	// Bat lai / doi tuy chon: cho thu lai (vd. vua kich hoat the Vip)
 	if (m_bAutoDoQuest)
 	{
 		sprintf(szMsg, "<color=yellow>Tù lµm NhiÖm vô (Ctrl+D): <color=green>BËt");
@@ -307,6 +354,15 @@ void CVLQuest::CheckAutoYeSou()
 		if (pTask08) { delete pTask08; pTask08 = NULL; }
 	}
 	SystemMessage(szMsg, 1);
+}
+
+void CVLQuest::StopNoVip()
+{
+	m_bNoVipCard = TRUE;
+	m_nYSDoing = ys_suspending;
+	theMap.ResetShoping();	// Dong hop thoai, thoi dung o NPC
+	SaveYSLog("Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!\n");
+	SystemMessage("<color=yellow>Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!", 1);
 }
 
 void CVLQuest::DoSuspendOpt()

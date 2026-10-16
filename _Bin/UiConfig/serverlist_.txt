@@ -1,75 +1,48 @@
 ﻿[List]
-AdviceRegion=0
 RegionCount=10
-Region_0=Máy chủ mới
-Region_1=Cụm Sơn 1
-Region_2=Cụm Sơn 2
-Region_3=Cụm Giang
-Region_4=Cụm Hải
-Region_5=Đấu Trường
+Region_0=Máy chủ mới vào
+Region_1=Cụm Hồi ức
+Region_2=Cụm Cao Thủ
+Region_3=Kỉ Niệm 10 năm
+Region_4=Đấu Trường
 
 [Region_0]
-Count=10
-0_Title=Thanh Thành Sơn(mới)
-0_Address=116.118.92.10
+Count=1
+0_Title=Công Thành Chiến 5(New)
+0_Address=49.213.117.40
 
 [Region_1]
-Count=20
-0_Title=Tung Sơn
-0_Address=49.213.89.27
-1_Title=Hoa Sơn
-1_Address=49.213.89.157
-2_Title=Phật Sơn
-2_Address=49.213.89.117
-3_Title=Thái Sơn
-3_Address=49.213.89.118
-4_Title=Tuyết Sơn
-4_Address=49.213.89.121
-5_Title=Kim Sơn
-5_Address=49.213.89.135
-6_Title=Hằng Sơn
-6_Address=49.213.89.160
-7_Title=Thiên Sơn
-7_Address=49.213.89.56
-8_Title=Hành Sơn
-8_Address=49.213.89.59
-9_Title=Vu Sơn
-9_Address=49.213.89.217
-10_Title=Dược Sơn
-10_Address=49.213.89.71
-11_Title=Khánh Sơn
-11_Address=49.213.89.183
-12_Title=Lương Sơn
-12_Address=49.213.89.53
-13_Title=Thục Cương Sơn
-13_Address=61.28.228.147
+Count=10
+0_Title=Thái Sơn - Hào Kiệt
+0_Address=49.213.117.57
+1_Title=S4 - Phật Sơn
+1_Address=49.213.117.58
 
 [Region_2]
-Count=20
-0_Title=Thanh Thành Sơn(mới)
-0_Address=116.118.92.10
+Count=10
+0_Title=S1 - Tú Anh
+0_Address=49.213.117.35
 
 [Region_3]
 Count=10
-0_Title=Trường Giang
-0_Address=49.213.89.155
-1_Title=Châu Giang
-1_Address=49.213.89.159
-2_Title=Cửu Giang
-2_Address=49.213.89.57
-3_Title=Long Giang
-3_Address=103.196.239.165
+0_Title=Nam Giang
+0_Address=49.213.117.59
+1_Title=Nam Hải
+1_Address=49.213.117.59
+2_Title=Công Thành Chiến 3
+2_Address=49.213.117.59
+3_Title=Công Thành Chiến 4
+3_Address=49.213.117.39
+4_Title=Công Thành Chiến 5(New)
+4_Address=49.213.117.40
 
 [Region_4]
 Count=10
-0_Title=Hoàng Hải
-0_Address=49.213.89.156
-1_Title=Nam Hải
-1_Address=49.213.89.10
-
-[Region_5]
-Count=10
 0_Title=Đấu Trường 1
-0_Address=103.196.239.178
+0_Address=49.213.117.37
 1_Title=Đấu Trường 2
-1_Address=103.196.239.208
+1_Address=49.213.117.34
+2_Title=Đấu Trường 3
+2_Address=49.213.117.38
+3_Title=Đấu Trường 4
+3_Address=49.213.117.61

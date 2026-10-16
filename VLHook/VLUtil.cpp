@@ -849,13 +849,13 @@ void CVLUtil::SearhBuyItem()
 	{
 		POINT itmPos;
 		KItem* pItem;
-		KStallObject* pItemSt = (KStallObject*)GetPtrAddress(IST_BASE_ADD);
-		KShopObject* pItemList = pPlrStall->m_pObjectList;
+		static KStallObject pItemSt[MAX_STALL_OBJ];	// 15-10: hang lay bang GetGameData(GDI_STALL_ITEMS)
+		int nStallObj = pPlrStall->GetObjects(pItemSt, MAX_STALL_OBJ);
 		if (nCurIndex) m_bVsNpc[nCurIndex] = TRUE;
 
-		for (int i = 0; i < pPlrStall->m_nObjCount; i++)
+		for (int i = 0; i < nStallObj; i++)
 		{
-			pItem = (KItem*)(dwItmBaseAdd + pItemList[i].uId*ITM_DATA_SIZE);
+			pItem = (KItem*)(dwItmBaseAdd + pItemSt[i].uId*ITM_DATA_SIZE);
 			if (!CheckItem(pItem)) continue;
 			if (m_nItemPrice > 0 && pItemSt[i].nPrice > m_nItemPrice) continue;
 
@@ -879,7 +879,7 @@ void CVLUtil::SearhBuyItem()
 				nLastMoney = EQUIP_MONEY;
 				strcpy(szGotItem, ComAttr.szItemName);
 				nItemPrice = pItemSt[i].nPrice;
-				g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, pItemList[i].uId, 0);
+				g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_BUY, pItemSt[i].uId, 0);
 				return; // Check if Done
 			}
 			else
@@ -908,7 +908,7 @@ void CVLUtil::SearhBuyItem()
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_player) continue;
-		if (!g_pNpcArray[i]->m_bHaveStall || g_pNpcArray[i]->m_Doing != do_sit) continue;
+		if (g_pNpcArray[i]->m_Doing != do_sit) continue;	// 15-10: KNpc khong con m_bHaveStall
 		if (m_bVsNpc[i]) continue; // Already Visited.
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 		dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);

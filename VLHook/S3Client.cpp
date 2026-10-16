@@ -19,6 +19,7 @@ void(*CloseAllWindows)(int);
 
 void SendPrivateMessage(const char *szName, const char *szMsg)
 {
+	if (!OnSendSomeoneMessage) return;	// 15-10: OSM_FUNC_ADD = 0 (chua tim thay ham tuong ung)
 	int nLen = (int)strlen(szMsg);
 	OnSendSomeoneMessage(szName, szMsg, nLen);
 }
@@ -36,10 +37,32 @@ void SystemMessage(int nChanel, const char *szMsgFormat, ...)
 
 	va_list vlist;
 	va_start(vlist, szMsgFormat);
-	vsprintf(szMsg, szMsgFormat, vlist);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szMsgFormat, vlist);
 	va_end(vlist);
 
 	SystemMessage(szMsg, nChanel);
+}
+
+int GameTextLen(const char *szText, int nMax)
+{
+	int i = 0;
+	while (i < nMax && szText[i])
+		i += (szText[i] == 0x02) ? 4 : 1;
+	return (i < nMax) ? i : nMax;
+}
+
+int GameTextPlain(const char *szText, int nMax, char *szOut, int nOutSize)
+{
+	int n = 0;
+	for (int i = 0; i < nMax && szText[i] && n < nOutSize - 1; i++)
+	{
+		if (szText[i] == 0x02)
+			i += 3;
+		else if (szText[i] != 0x03)
+			szOut[n++] = szText[i];
+	}
+	szOut[n] = 0;
+	return n;
 }
 
 // Class KWndImage
@@ -84,6 +107,13 @@ void KUiMsgSel::OnClickMsg(int nMsg)
 }
 
 // Class KUiMsgSel2
+const char* KUiMsgSel2::GetQuestionText()
+{
+	static char szText[sizeof(m_szQuestion)];
+	GameTextPlain(m_szQuestion, sizeof(m_szQuestion), szText, sizeof(szText));
+	return szText;
+}
+
 void KUiMsgSel2::OnClickMsg(int nMsg)
 {
 	__asm
@@ -161,6 +191,15 @@ void KUiYeSouBox::OnConfirm(int btnYes)
 		call eax;
 		add esp, 0x04;
 	}
+}
+
+// Class KUiPlayerStall
+int KUiPlayerStall::GetObjects(KStallObject* pBuf, int nMax)
+{
+	if (!g_pCoreShell || !pBuf) return 0;
+	int nCount = g_pCoreShell->GetGameData(GDI_STALL_ITEMS, 0, 0);
+	if (nCount <= 0 || nCount > nMax) return 0;	// handler ghi du nCount mon => khong vuot bo dem
+	return g_pCoreShell->GetGameData(GDI_STALL_ITEMS, (int)pBuf, nCount);
 }
 
 // Class KUiPrizeSel

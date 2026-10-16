@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MagicAttrib.h"
 
-// 10-10: sinh tu dong tu exe (bang ten 0x610C71) va pak settings/item/004/magicattriblevel.txt
+// 15-10: sinh tu dong tu exe (bang ten 0xEE0278 + 4*ID; 10-10: 0x1F18300) va pak settings/item/004/magicattriblevel.txt
 
 static const char* const s_szMagicAttribName[] =
 {
@@ -12,7 +12,7 @@ static const char* const s_szMagicAttribName[] =
 	"missle_reserve4", "missle_reserve5", "missle_end", "item_begin", "weapondamagemin_v", "weapondamagemax_v",
 	"armordefense_v", "durability_v", "requirestr", "requiredex", "requirevit", "requireeng",
 	"requirelevel", "requireseries", "requiresex", "requiremenpai", "weapondamageenhance_p", "armordefenseenhance_p",
-	"requirementreduce_p", "indestructible_b", "item_usagetime_v", "req_levelortranslife", "require_translife", "item_reserve4",
+	"requirementreduce_p", "indestructible_b", "item_usagetime_v", "req_levelortranslife", "require_translife", "require_fortune_value",
 	"item_reserve5", "item_reserve6", "item_reserve7", "item_reserve8", "item_reserve9", "item_reserve10",
 	"item_end", "damage_begin", "attackrating_v", "attackrating_p", "ignoredefense_p", "physicsdamage_v",
 	"colddamage_v", "firedamage_v", "lightingdamage_v", "poisondamage_v", "magicdamage_v", "physicsenhance_p",
@@ -47,22 +47,55 @@ static const char* const s_szMagicAttribName[] =
 	"lifemax_yan_p", "manamax_yan_v", "manamax_yan_p", "sorbdamage_yan_p", "fastwalkrun_yan_p", "attackspeed_yan_v",
 	"castspeed_yan_v", "allres_yan_p", "anti_maxres_p", "skill_enhance", "magicdamage_p", "fasthitrecover_yan_v",
 	"five_elements_enhance_v", "five_elements_resist_v", "manareplenish_p", "add_damage_p", "forbit_attack", "frozen_action",
-	"forbit_takemedicine", "invincibility", "not_add_pkvalue_p", "add_boss_damage", "", "",
+	"forbit_takemedicine", "invincibility", "not_add_pkvalue_p", "add_boss_damage", "pk_punish_weaken", "pk_punish_enhance",
 	"anti_poisontimereduce_p", "do_hurt_p", "anti_do_hurt_p", "do_stun_p", "anti_do_stun_p", "anti_physicsres_yan_p",
 	"anti_poisonres_yan_p", "anti_coldres_yan_p", "anti_fireres_yan_p", "anti_lightingres_yan_p", "anti_allres_yan_p", "anti_sorbdamage_yan_p",
-	"anti_block_rate", "anti_enhancehit_rate", "autocastskill", "transfigure", "oncastskill", "",
+	"anti_block_rate", "anti_enhancehit_rate", "autocastskill", "transfigure", "oncastskill", "enhancehiteffect_rate",
 	"me2metaldamage_p", "metal2medamage_p", "me2wooddamage_p", "wood2medamage_p", "me2waterdamage_p", "water2medamage_p",
 	"me2firedamage_p", "fire2medamage_p", "me2earthdamage_p", "earth2medamage_p", "meleedamagereturnmana_p", "rangedamagereturnmana_p",
 	"reduceskillcd1", "reduceskillcd2", "reduceskillcd3", "clearallcd", "addblockrate", "walkrunshadow",
-	"returnskill2enemy", "candetonate1", "candetonate2", "candetonate3", "manatoskill_enhance", "movedistanc_710_enhance",
-	"validtiem_1366_enhance", "daoxutian_enhance", "foxinciyou_enhance", "dec_pskill_cdtime", "expenhance_p2", "enhancehit_effect",
-	"anti_enhancehit_effect", "monthcard_power", "normal_end", "skillexpbegin", "addskilldamage1", "addskilldamage2",
-	"addskilldamage3", "addskilldamage4", "addskilldamage5", "addskilldamage6", "skill_attackradius", "skill_startevent",
-	"skill_flyevent", "skill_collideevent", "skill_vanishedevent", "skill_dohurt", "skill_bymissle", "skill_showevent",
-	"skill_desc", "", "", "", "skillexpend", "",
-	"missle_range", "missle_dmginterval", "missle_zspeed", "missle_ablility", "missle_param", "missle_wait",
-	"missle_fly", "missle_collide", "missle_vanish", "missle_exp_rev1", "missle_exp_rev2", "missle_exp_rev3",
-	"missle_exp_rev4", "missle_exp_rev5", "missle_exp_end", "magic_end",
+	"", "candetonate1", "candetonate2", "candetonate3", "manatoskill_enhance", "melee_returnres_p",
+	"range_returnres_p", "forbit_usetownportal", "factionreduction_rate", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "", "", "",
+	"", "", "", "require_prestige_value", "anit_allres_p", "coldweaken_p",
+	"longqiyunxiang", "anti_enhancehiteffect_rate", "decrease_damage", "normal_end", "skillexpbegin", "addskilldamage1",
+	"addskilldamage2", "addskilldamage3", "addskilldamage4", "addskilldamage5", "addskilldamage6", "skill_attackradius",
+	"skill_startevent", "skill_flyevent", "skill_collideevent", "skill_vanishedevent", "skill_dohurt", "skill_bymissle",
+	"skill_showevent", "skill_desc", "", "", "", "",
+	"skillexpend", "missle_exp_begin", "missle_range", "missle_dmginterval", "missle_zspeed", "missle_ablility",
+	"missle_param", "missle_wait", "missle_fly", "missle_collide", "missle_vanish", "missle_exp_rev1",
+	"missle_exp_rev2", "missle_exp_rev3", "missle_exp_rev4", "missle_exp_rev5", "missle_exp_end", "magic_end",
 };
 
 static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak settings/magicdesc.ini
@@ -114,7 +147,7 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 44 item_usagetime_v
 	"",	// 45 req_levelortranslife
 	"Y\252u c\307u v\342 c\253ng",	// 46 require_translife
-	"",	// 47 item_reserve4
+	"",	// 47 require_fortune_value
 	"",	// 48 item_reserve5
 	"",	// 49 item_reserve6
 	"",	// 50 item_reserve7
@@ -323,8 +356,8 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 253 invincibility
 	"T\330 l\326 kh\253ng t\250ng tr\336 s\350 PK (%)",	// 254 not_add_pkvalue_p
 	"S\270t th\255\254ng l\252n boss Ho\265ng Kim (%)",	// 255 add_boss_damage
-	"",	// 256 
-	"",	// 257 
+	"",	// 256 pk_punish_weaken
+	"",	// 257 pk_punish_enhance
 	"Th\352i gian t\271o th\265nh tr\363ng \256\351c (%)",	// 258 anti_poisontimereduce_p
 	"T\373 l\326 t\271o th\265nh s\270t th\255\254ng (%)",	// 259 do_hurt_p
 	"T\373 l\326 s\270t th\255\254ng gi\266m kh\270ng (%)",	// 260 anti_do_hurt_p
@@ -342,7 +375,7 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 272 autocastskill
 	"",	// 273 transfigure
 	"",	// 274 oncastskill
-	"",	// 275 
+	"",	// 275 enhancehiteffect_rate
 	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 Kim (%)",	// 276 me2metaldamage_p
 	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 Kim (%)",	// 277 metal2medamage_p
 	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 M\351c (%)",	// 278 me2wooddamage_p
@@ -361,58 +394,258 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"x x\270c su\312t x\343a t\312t c\266 th\352i gian ch\352 k\374 n\250ng c\361a b\266n th\251n",	// 291 clearallcd
 	"Xung quanh m\347i x c\270 nh\251n x t\373 l\326 h\343a gi\266i s\270t th\255\254ng",	// 292 addblockrate
 	"L\250ng Ba Vi B\351",	// 293 walkrunshadow
-	"Khi b\336 t\312n c\253ng s\317 c\343 x t\373 l\326 l\265m k\316 \256\336ch b\336 k\374 n\250ng x c\253ng k\335ch.",	// 294 returnskill2enemy
+	"",	// 294 -
 	"",	// 295 candetonate1
 	"",	// 296 candetonate2
 	"",	// 297 candetonate3
 	"Khi n\351i c\253ng \256\307y t\250ng k\374 n\250ng c\253ng k\335ch (%)",	// 298 manatoskill_enhance
-	"[M\252 Tung \266nh] Kho\266ng c\270ch t\350i \256a nhanh th\252m x",	// 299 movedistanc_710_enhance
-	"[T\366 H\265 Ki\325m Kh\335] Th\352i gian duy tr\327 hi\326u qu\266 ph\364c h\345i sinh l\371c th\252m x gi\251y",	// 300 validtiem_1366_enhance
-	"[\247\266o H\255 Thi\252n] Kh\270ng t\312t c\266 t\350i \256a th\252m x",	// 301 daoxutian_enhance
-	"",	// 302 foxinciyou_enhance
-	"Gi\266m ho\271t th\352i gian ch\352",	// 303 dec_pskill_cdtime
-	"Di\326t qu\270i nh\313n EXP (%)",	// 304 expenhance_p2
-	"Hi\326u qu\266 tr\344ng k\335ch (%)",	// 305 enhancehit_effect
-	"Hi\326u qu\266 kh\270ng tr\344ng k\335ch (%)",	// 306 anti_enhancehit_effect
-	"",	// 307 monthcard_power
-	"",	// 308 normal_end
-	"",	// 309 skillexpbegin
-	"",	// 310 addskilldamage1
-	"",	// 311 addskilldamage2
-	"",	// 312 addskilldamage3
-	"",	// 313 addskilldamage4
-	"",	// 314 addskilldamage5
-	"",	// 315 addskilldamage6
-	"",	// 316 skill_attackradius
-	"",	// 317 skill_startevent
-	"",	// 318 skill_flyevent
-	"",	// 319 skill_collideevent
-	"",	// 320 skill_vanishedevent
-	"",	// 321 skill_dohurt
-	"",	// 322 skill_bymissle
-	"",	// 323 skill_showevent
-	"",	// 324 skill_desc
-	"",	// 325 
-	"",	// 326 
-	"",	// 327 
-	"",	// 328 skillexpend
-	"",	// 329 
-	"",	// 330 missle_range
-	"",	// 331 missle_dmginterval
-	"",	// 332 missle_zspeed
-	"",	// 333 missle_ablility
-	"",	// 334 missle_param
-	"",	// 335 missle_wait
-	"",	// 336 missle_fly
-	"",	// 337 missle_collide
-	"",	// 338 missle_vanish
-	"",	// 339 missle_exp_rev1
-	"",	// 340 missle_exp_rev2
-	"",	// 341 missle_exp_rev3
-	"",	// 342 missle_exp_rev4
-	"",	// 343 missle_exp_rev5
-	"",	// 344 missle_exp_end
-	"",	// 345 magic_end
+	"",	// 299 melee_returnres_p
+	"",	// 300 range_returnres_p
+	"",	// 301 forbit_usetownportal
+	"",	// 302 factionreduction_rate
+	"",	// 303 -
+	"",	// 304 -
+	"",	// 305 -
+	"",	// 306 -
+	"",	// 307 -
+	"",	// 308 -
+	"",	// 309 -
+	"",	// 310 -
+	"",	// 311 -
+	"",	// 312 -
+	"",	// 313 -
+	"",	// 314 -
+	"",	// 315 -
+	"",	// 316 -
+	"",	// 317 -
+	"",	// 318 -
+	"",	// 319 -
+	"",	// 320 -
+	"",	// 321 -
+	"",	// 322 -
+	"",	// 323 -
+	"",	// 324 -
+	"",	// 325 -
+	"",	// 326 -
+	"",	// 327 -
+	"",	// 328 -
+	"",	// 329 -
+	"",	// 330 -
+	"",	// 331 -
+	"",	// 332 -
+	"",	// 333 -
+	"",	// 334 -
+	"",	// 335 -
+	"",	// 336 -
+	"",	// 337 -
+	"",	// 338 -
+	"",	// 339 -
+	"",	// 340 -
+	"",	// 341 -
+	"",	// 342 -
+	"",	// 343 -
+	"",	// 344 -
+	"",	// 345 -
+	"",	// 346 -
+	"",	// 347 -
+	"",	// 348 -
+	"",	// 349 -
+	"",	// 350 -
+	"",	// 351 -
+	"",	// 352 -
+	"",	// 353 -
+	"",	// 354 -
+	"",	// 355 -
+	"",	// 356 -
+	"",	// 357 -
+	"",	// 358 -
+	"",	// 359 -
+	"",	// 360 -
+	"",	// 361 -
+	"",	// 362 -
+	"",	// 363 -
+	"",	// 364 -
+	"",	// 365 -
+	"",	// 366 -
+	"",	// 367 -
+	"",	// 368 -
+	"",	// 369 -
+	"",	// 370 -
+	"",	// 371 -
+	"",	// 372 -
+	"",	// 373 -
+	"",	// 374 -
+	"",	// 375 -
+	"",	// 376 -
+	"",	// 377 -
+	"",	// 378 -
+	"",	// 379 -
+	"",	// 380 -
+	"",	// 381 -
+	"",	// 382 -
+	"",	// 383 -
+	"",	// 384 -
+	"",	// 385 -
+	"",	// 386 -
+	"",	// 387 -
+	"",	// 388 -
+	"",	// 389 -
+	"",	// 390 -
+	"",	// 391 -
+	"",	// 392 -
+	"",	// 393 -
+	"",	// 394 -
+	"",	// 395 -
+	"",	// 396 -
+	"",	// 397 -
+	"",	// 398 -
+	"",	// 399 -
+	"",	// 400 -
+	"",	// 401 -
+	"",	// 402 -
+	"",	// 403 -
+	"",	// 404 -
+	"",	// 405 -
+	"",	// 406 -
+	"",	// 407 -
+	"",	// 408 -
+	"",	// 409 -
+	"",	// 410 -
+	"",	// 411 -
+	"",	// 412 -
+	"",	// 413 -
+	"",	// 414 -
+	"",	// 415 -
+	"",	// 416 -
+	"",	// 417 -
+	"",	// 418 -
+	"",	// 419 -
+	"",	// 420 -
+	"",	// 421 -
+	"",	// 422 -
+	"",	// 423 -
+	"",	// 424 -
+	"",	// 425 -
+	"",	// 426 -
+	"",	// 427 -
+	"",	// 428 -
+	"",	// 429 -
+	"",	// 430 -
+	"",	// 431 -
+	"",	// 432 -
+	"",	// 433 -
+	"",	// 434 -
+	"",	// 435 -
+	"",	// 436 -
+	"",	// 437 -
+	"",	// 438 -
+	"",	// 439 -
+	"",	// 440 -
+	"",	// 441 -
+	"",	// 442 -
+	"",	// 443 -
+	"",	// 444 -
+	"",	// 445 -
+	"",	// 446 -
+	"",	// 447 -
+	"",	// 448 -
+	"",	// 449 -
+	"",	// 450 -
+	"",	// 451 -
+	"",	// 452 -
+	"",	// 453 -
+	"",	// 454 -
+	"",	// 455 -
+	"",	// 456 -
+	"",	// 457 -
+	"",	// 458 -
+	"",	// 459 -
+	"",	// 460 -
+	"",	// 461 -
+	"",	// 462 -
+	"",	// 463 -
+	"",	// 464 -
+	"",	// 465 -
+	"",	// 466 -
+	"",	// 467 -
+	"",	// 468 -
+	"",	// 469 -
+	"",	// 470 -
+	"",	// 471 -
+	"",	// 472 -
+	"",	// 473 -
+	"",	// 474 -
+	"",	// 475 -
+	"",	// 476 -
+	"",	// 477 -
+	"",	// 478 -
+	"",	// 479 -
+	"",	// 480 -
+	"",	// 481 -
+	"",	// 482 -
+	"",	// 483 -
+	"",	// 484 -
+	"",	// 485 -
+	"",	// 486 -
+	"",	// 487 -
+	"",	// 488 -
+	"",	// 489 -
+	"",	// 490 -
+	"",	// 491 -
+	"",	// 492 -
+	"",	// 493 -
+	"",	// 494 -
+	"",	// 495 -
+	"",	// 496 -
+	"",	// 497 -
+	"",	// 498 -
+	"",	// 499 -
+	"",	// 500 -
+	"",	// 501 require_prestige_value
+	"",	// 502 anit_allres_p
+	"",	// 503 coldweaken_p
+	"",	// 504 longqiyunxiang
+	"",	// 505 anti_enhancehiteffect_rate
+	"",	// 506 decrease_damage
+	"",	// 507 normal_end
+	"",	// 508 skillexpbegin
+	"",	// 509 addskilldamage1
+	"",	// 510 addskilldamage2
+	"",	// 511 addskilldamage3
+	"",	// 512 addskilldamage4
+	"",	// 513 addskilldamage5
+	"",	// 514 addskilldamage6
+	"",	// 515 skill_attackradius
+	"",	// 516 skill_startevent
+	"",	// 517 skill_flyevent
+	"",	// 518 skill_collideevent
+	"",	// 519 skill_vanishedevent
+	"",	// 520 skill_dohurt
+	"",	// 521 skill_bymissle
+	"",	// 522 skill_showevent
+	"",	// 523 skill_desc
+	"",	// 524 -
+	"",	// 525 -
+	"",	// 526 -
+	"",	// 527 -
+	"",	// 528 skillexpend
+	"",	// 529 missle_exp_begin
+	"",	// 530 missle_range
+	"",	// 531 missle_dmginterval
+	"",	// 532 missle_zspeed
+	"",	// 533 missle_ablility
+	"",	// 534 missle_param
+	"",	// 535 missle_wait
+	"",	// 536 missle_fly
+	"",	// 537 missle_collide
+	"",	// 538 missle_vanish
+	"",	// 539 missle_exp_rev1
+	"",	// 540 missle_exp_rev2
+	"",	// 541 missle_exp_rev3
+	"",	// 542 missle_exp_rev4
+	"",	// 543 missle_exp_rev5
+	"",	// 544 missle_exp_end
+	"",	// 545 magic_end
 };
 
 // {MAGIC_ID, P1 min/max cua cap 1..10}

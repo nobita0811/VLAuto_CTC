@@ -258,10 +258,15 @@ void CVLBasic::ExpLimitBreathe()
 		{
 			KUiPlayerBar* pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
 			if (pUiPlayerBar && pUiPlayerBar->m_nHK3Gengre)
+			{
 				ExecuteScript("ShortcutUseItem(2)");
+				theMain.PostFeedBack(cmd_useam);
+			}
 			else
 				SystemMessage("<color=yellow>Gioi han Exp: khong co Tho Dia Phu!!!");
 		}
+		else
+			theMain.PostFeedBack(cmd_useam);
 		break;
 
 	case exp_saveold:		// Trong thanh: luu ruong o day, ghi lai vi tri, rut tien xa phu

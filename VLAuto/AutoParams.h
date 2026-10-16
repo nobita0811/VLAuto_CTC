@@ -1,7 +1,7 @@
 #pragma once
 
 #define	NUM_ATTRIB			40
-#define	ALL_ATTRIB			120	// 10-10: 42 cu + 78 moi (magicdesc.ini)
+#define	ALL_ATTRIB			79	// 15-10: thuoc tinh co trong magicdesc.ini 15_10
 #define MAXSETSKILL			8
 #define MAX_NODES			64
 #define MAX_MEMBERS			16

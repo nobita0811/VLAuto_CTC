@@ -217,6 +217,8 @@ enum GAMEDATA_INDEX
 	GDI_GAME_OBJ_LIGHT_PROP,
 	GDI_PLAYER_BASE_INFO,
 	GDI_TRADE_ITEM_PRICE = 0x0BBA,
+	GDI_STALL_ITEMS = 0x0BBF,		// 15-10: hang tren sap dang xem (uParam = KStallObject[], nParam = so mon; 0,0 = dem)
+	GDI_STALL_OWNER = 0x0BC0,		// 15-10: ten chu sap
 };
 
 enum OPTIONS_LIST
@@ -256,7 +258,8 @@ enum GAMEOPERATION_INDEX
 	GOI_TRADE_PLAYER_BUY,
 	GOI_OPTION_SETTING = 0x2B,	// 10-10: case OPR 0x5C5181 (uParam = OPTION_*, nParam = gia tri)
 	GOI_SHIFT_ITEM = 0x59,
-	GOI_DECOMPOSE_EQUIP = 0x9B,	// 10-10: Ra trang bi (nut "DecomposeEquip" / Alt+V), case OPR 0x5C4A4F -> protocol 0xC6
+	GOI_DECOMPOSE_EQUIP = 0,	// 15-10: KHONG CO (10-10: 0x9B Ra trang bi "DecomposeEquip" -> protocol 0xC6). 0 = tat
+	GOI_MAP_GOTO = 0x81,		// 15-10: tu di toi o ban do (SetMapFlag 0x4DE840; 10-10: 0x85). Tu 0x6D tro di ma OPR lui 4 so voi 10-10
 };
 
 enum TEAMOPERATION_INDEX
@@ -286,7 +289,8 @@ enum PROCESSPEOPLE_INDEX
 
 enum MAGIC_ATTRIB
 {
-	// 10-10: ID lay tu bang ten thuoc tinh trong exe (khoi tao 0x610C71, mang con tro 0x1F18300 + 4*ID)
+	// 15-10: ID lay tu bang ten thuoc tinh trong exe (mang con tro 0xEE0278 + 4*ID; 10-10: 0x1F18300).
+	// ID 0..293 giong 10-10 (47 doi ten require_fortune_value, them ten 256/257/275), tu 294 khac - xem Offsets_15_10.md
 	item_begin = 27,
 	weapondamagemin_v,
 	weapondamagemax_v,
@@ -516,6 +520,8 @@ enum MAGIC_ATTRIB
 	invincibility,
 	not_add_pkvalue_p,
 	add_boss_damage,
+	pk_punish_weaken,			// 256 (15-10: ten moi)
+	pk_punish_enhance,			// 257
 	anti_poisontimereduce_p = 258,
 	do_hurt_p,
 	anti_do_hurt_p,		// 260
@@ -533,6 +539,7 @@ enum MAGIC_ATTRIB
 	autocastskill,
 	transfigure,
 	oncastskill,
+	enhancehiteffect_rate,		// 275 (15-10: ten moi)
 	me2metaldamage_p = 276,
 	metal2medamage_p,
 	me2wooddamage_p,
@@ -551,21 +558,22 @@ enum MAGIC_ATTRIB
 	clearallcd,
 	addblockrate,
 	walkrunshadow,
-	returnskill2enemy,
+	returnskill2enemy,			// 294 - 15-10: KHONG CON (bo trong)
 	candetonate1,
 	candetonate2,
 	candetonate3,
 	manatoskill_enhance,
-	movedistanc_710_enhance,
-	validtiem_1366_enhance,		// 300
-	daoxutian_enhance,
-	foxinciyou_enhance,
-	dec_pskill_cdtime,
-	expenhance_p2,
-	enhancehit_effect,
-	anti_enhancehit_effect,
-	monthcard_power,
-	normal_end,
+	melee_returnres_p,			// 299 (15-10; 10-10: movedistanc_710_enhance)
+	range_returnres_p,			// 300 (15-10; 10-10: validtiem_1366_enhance)
+	forbit_usetownportal,		// 301 (15-10; 10-10: daoxutian_enhance)
+	factionreduction_rate,		// 302 (15-10; 10-10: foxinciyou_enhance)
+	require_prestige_value = 501,	// 15-10: 303..500 trong
+	anit_allres_p,
+	coldweaken_p,
+	longqiyunxiang,
+	anti_enhancehiteffect_rate,	// 505
+	decrease_damage,
+	normal_end,					// 507 (15-10; 10-10: 308)
 
 	// Ten cu (truoc 10-10) - giu de code/ita cu van dung
 	damagetomana_p = damage2addmana_p,	// 134
@@ -759,6 +767,8 @@ enum SENDCMD
 	cmd_endpk,			// Gui lenh thoat nv phu
 	cmd_showme,			// Gui lenh Hien VLAuto
 	cmd_attack,			// Gui lenh tan cong doi thu
+	cmd_useam,			// Da dung 1 Tho Dia Phu / Hoi Thanh Phu (VLAuto dem cho bang Thong ke)
+	cmd_tongmoney,		// VLAuto -> Game: gop lParam luong tien tren nguoi vao quy bang (bang Thong ke > Gom tien)
 };
 
 //=============================== DEBUG ===============================
@@ -827,6 +837,8 @@ enum DEBUG_CMD
 	dbg_mp_saverepo,		// theMap.SaveNewRepository (Ctrl+L)
 	dbg_mp_decompose,		// g_pCurPlayer->DecomposeItem(idx) - Ra trang bi
 	dbg_mp_showwalk,		// Bat/tat ve duong Auto dang di trong game (MapPath, City.map, MoveTo, danh sach toa do)
+	dbg_mp_dialog,			// Loi thoai NPC (KUiMsgSel2 +0x2578, KUiMsgSel m_InfoText) + KUiInformation/2
+	dbg_mp_tongmoney,		// Gop quy bang: TongOperation(4, {2 (X), 0, Idx}, buf)
 
 	// Tab Nhat do (VLCollect.cpp)
 	dbg_cl_status = 200,	// Tuy chon + CVLCollect::Breathe dung o dau
@@ -924,8 +936,9 @@ enum DEBUG_CMD
 	dbg_lg_login,			// Cua so dang nhap: SetText TK + MK (Chuoi "TK MK"), tick dong y, OnLogin
 	dbg_lg_role,			// Chon nhan vat: KUiSelPlayer::OnSelectPlayer(Idx - trang)
 	dbg_lg_entergame2,		// KUiSelPlayer::OnEnterGame()
-	dbg_lg_serverlist,		// Doc + giai ma UserDataCl\serverlist.ini, xuat serverlist_.txt
-	dbg_lg_last = dbg_lg_serverlist,
+	dbg_lg_serverlist,		// Doc \settings\serverlist.ini trong pak cua Game, xuat UiConfig\serverlist_.txt
+	dbg_lg_notice,			// Bang "Nhac nho" (KUiHealthNotice) sau Bat Dau Tro Choi: bam Xac dinh
+	dbg_lg_last = dbg_lg_notice,
 
 	// Tab Giam cau hinh (VLDebugLowCfg.cpp) - thu truoc khi dua vao tab Co ban
 	dbg_lc_status = 700,	// Gia tri hien tai: FPS ve, tat hinh, nguoi choi, thoi tiet, am thanh, RAM

@@ -156,7 +156,7 @@ BOOL CVLQuest::BHPreparing()
 	if (m_nDoQuestStep == 0) // Check LB
 	{
 		if (!m_TongQOpt.m_bGetLBMin) return 0; // Don't auto get LB
-		if (g_pCurPlayer->m_cTong.m_nContributePoint < 400)
+		if (g_pCurPlayer->m_cTong.ContributePoint() < 400)
 		{
 			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn!");
 			return 0; // Het diem CH
@@ -722,6 +722,7 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 // TONG PK QUEST
 void CVLQuest::BreathPK()
 {
+	QTRACE("BreathPK: Step=%d PK=%d Map=%d", m_nDoQuestStep, g_pCurPlayer->m_nPKValue, *g_pMapID);
 	if (m_nDoQuestStep < 4 && g_pCurPlayer->GetTaskVal(bh_pkqty))
 		m_nDoQuestStep = 4; // Already have Task
 	if (m_nDoQuestStep < 3 && g_pCurPlayer->UseItem("LÖnh bµi nhiÖm vô"))
@@ -748,7 +749,7 @@ void CVLQuest::BreathPK()
 	switch (m_nDoQuestStep)
 	{
 	case 0: // Vao Ban do bang
-		if (g_pCurPlayer->m_cTong.m_nContributePoint < 200)
+		if (g_pCurPlayer->m_cTong.ContributePoint() < 200)
 		{
 			SaveYSLog("Kh«ng ®ñ ®iÓm cèng hiÕn!\n");
 			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn!");
@@ -1017,7 +1018,7 @@ void CVLQuest::BreathPK()
 		break;
 
 	case 30: // Doi nhiem vu
-		if (g_pCurPlayer->m_cTong.m_nContributePoint < 20)
+		if (g_pCurPlayer->m_cTong.ContributePoint() < 20)
 		{
 			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn nhËn!");
 			SaveYSLog("Kh«ng ®ñ ®iÓm cèng hiÕn!\n");

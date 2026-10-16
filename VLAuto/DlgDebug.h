@@ -73,7 +73,7 @@ private:
 	BOOL			SendDebugCmd(int nCmd, BOOL bFillPos = FALSE);
 	void			RunLoginCmd(int nCmd);	// Tab Đăng nhập khi Game chưa có VLHook: tự đọc bộ nhớ + CreateRemoteThread
 	void			LoginStatus(HANDLE hGame);
-	void			ServerListFile(HANDLE hGame, CString strPath);	// Đọc + giải mã UserDataCl\serverlist.ini, xuất serverlist_.txt
+	void			ServerListFile(HANDLE hGame, CString strPath);	// Đọc \settings\serverlist.ini trong pak của Game, xuất UiConfig\serverlist_.txt
 	void			UpdateTarget();
 	void			CheckHook();
 	LPCTSTR			GetCmdLabel(int nCmd);

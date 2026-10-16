@@ -1,0 +1,36 @@
+﻿  VLHook.cpp
+  PELib.cpp
+  stdafx.cpp
+  User32.cpp
+  ZZTest.cpp
+  VLAttack.cpp
+  VLBasic.cpp
+  VLCollect.cpp
+  VLMain.cpp
+  VLMap.cpp
+  VLMove.cpp
+  VLDebug.cpp
+  VLDebugMap.cpp
+  VLDebugCollect.cpp
+  VLDebugAttack.cpp
+  VLDebugRecover.cpp
+  VLDebugLowCfg.cpp
+  CrashHandler.cpp
+  VLExpLimit.cpp
+  VLDebugPath.cpp
+  Generating Code...
+  Compiling...
+  MagicAttrib.cpp
+  VLParty.cpp
+  VLQTong.cpp
+  VLQuest.cpp
+  VLRecover.cpp
+  VLUtil.cpp
+  VLYeSou.cpp
+  JxCore.cpp
+  S3Client.cpp
+  DiskID32.cpp
+  DTextFile.cpp
+  Generating Code...
+     Creating library I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Debug\VLCTCdll.lib and object I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Debug\VLCTCdll.exp
+  VLHook.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\VLCTCdll.dll

@@ -13,6 +13,9 @@ struct AutoLoginAccount
 	BOOL			bChecked;		// Được chọn để chạy LOGIN ALL
 	BOOL			bAutoRelogin;	// Chưa đăng nhập (mất kết nối, Game tắt...) thì đăng nhập lại
 	int				nReloginDelay;	// ms chờ trước khi đăng nhập lại
+	CString			strPlayerName;	// Nhân vật vào game gần nhất (để bảng Thống kê hiện tiền khi offline)
+	CString			strPlayerCfg;	// Tên file cfg của nhân vật đó trong UserConfig
+	BOOL			bTongGather;	// Được chọn trong bảng Thống kê để gom tiền lên bang
 
 	// Không lưu file
 	int				nId;			// Định danh cố định trong lúc chạy (dòng có thể bị đổi chỗ / xóa)
@@ -20,7 +23,7 @@ struct AutoLoginAccount
 	DWORD			dwOfflineTick;	// Mốc bắt đầu không ở trong game, để đếm ReloginDelay ở vòng lặp (0 = chưa đếm)
 	CString			strError;		// Lỗi của lần đăng nhập gần nhất
 
-	AutoLoginAccount() : nRoleIndex(0), bChecked(TRUE), bAutoRelogin(FALSE), nReloginDelay(10000),
+	AutoLoginAccount() : nRoleIndex(0), bChecked(TRUE), bAutoRelogin(FALSE), nReloginDelay(10000), bTongGather(FALSE),
 		nId(0), dwProcessId(0), dwOfflineTick(0) {}
 };
 
@@ -65,11 +68,50 @@ struct ClosingGame
 	DWORD			dwDeadline;
 };
 
+class CDlgAutoLogin;
+
+// CDlgLoginStats - Thống kê các nhân vật trong bảng Auto Login (nút "Xem Thống Kê", cửa sổ không modal)
+class CDlgLoginStats : public CDialog
+{
+public:
+	CDlgLoginStats(CDlgAutoLogin* pAutoLogin) : CDialog(IDD_LOGIN_STATS_DIALOG), m_pAutoLogin(pAutoLogin), m_bUpdating(FALSE), m_cyInit(0) {}
+
+	enum { IDD = IDD_LOGIN_STATS_DIALOG };
+
+	void			ShowStats();
+
+protected:
+	CDlgAutoLogin*	m_pAutoLogin;
+	CListCtrl		m_StatsList;
+	BOOL			m_bUpdating;	// Đang đổi ô check bằng code, bỏ qua LVN_ITEMCHANGED
+	int				m_cxInit, m_cyInit;	// Kích thước client lúc tạo, để OnSize dời các control
+	CRect			m_rcInit[8];
+
+	virtual BOOL	OnInitDialog();
+	virtual void	DoDataExchange(CDataExchange* pDX);
+	virtual void	OnOK() {}
+	virtual void	OnCancel();
+
+	void			UpdateStats();
+	void			SetCell(int nRow, int nCol, LPCTSTR szText);
+
+	void			SetRowCheck(int nRow, BOOL bCheck);
+
+	afx_msg void	OnTimer(UINT_PTR nIDEvent);
+	afx_msg void	OnSize(UINT nType, int cx, int cy);
+	afx_msg void	OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void	OnStatsItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void	OnKeepMoneyChanged();
+	afx_msg void	OnBnClickedTongMoney();
+	DECLARE_MESSAGE_MAP()
+};
+
 // CDlgAutoLogin dialog - Tự động đăng nhập (cửa sổ không modal)
 
 class CDlgAutoLogin : public CDialog
 {
 	DECLARE_DYNAMIC(CDlgAutoLogin)
+	friend class CDlgLoginStats;
 
 public:
 	CDlgAutoLogin(CWnd* pParent = NULL);   // standard constructor
@@ -98,6 +140,8 @@ protected:
 	int								m_nRound;		// Vòng thứ mấy của LOGIN ALL (từ 1)
 	DWORD							m_dwStartAllTick;	// Mở Auto: chờ tới mốc này mới tự LOGIN ALL (0 = không)
 	std::vector<ClosingGame>		m_Closing;
+	CDlgLoginStats					m_DlgStats;
+	int								m_nTongKeep;	// Vạn: số tiền mỗi nhân vật giữ lại khi gom tiền lên bang (bảng Thống kê)
 
 	virtual BOOL	OnInitDialog();
 	virtual void	DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -128,6 +172,8 @@ protected:
 	void			CheckClosingGames();
 	CString			GetStatusText(int nIndex);
 	void			UpdateGameStatus();
+	void			UpdatePlayerNames();
+	DWORD			GetWaitTime(int nScreen);
 
 	// Đăng nhập
 	void			StartLoginAll(BOOL bWarn);
@@ -164,6 +210,7 @@ protected:
 	afx_msg void	OnBnClickedStartLoginAll();
 	afx_msg void	OnBnClickedStopLogin();
 	afx_msg void	OnLoginOptionChanged();
+	afx_msg void	OnBnClickedReport();
 	afx_msg void	OnTimer(UINT_PTR nIDEvent);
 	DECLARE_MESSAGE_MAP()
 

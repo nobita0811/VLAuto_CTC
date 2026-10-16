@@ -42,6 +42,49 @@ void PostChatMessage(const char *szChatMsg)
 	ExecuteScript(szScript);
 }
 
+// Chu hoa TCVN3: a-z -> A-Z, ¨ © ª « ¬ ­ ® (0xA8-0xAE) -> ¡ ¢ £ ¤ ¥ ¦ § (0xA1-0xA7).
+// Chu co dau (a sac, a mu sac, o mu huyen...) TCVN3 chi co 1 ma dung chung cho hoa/thuong => giu nguyen.
+// Khong dung toupper/CharUpper: chung doi theo code page Windows (0xE0-0xFE...) lam hong ma TCVN3
+unsigned char TcvnUpChar(unsigned char c)
+{
+	if (c >= 'a' && c <= 'z') return c - ('a' - 'A');
+	if (c >= 0xA8 && c <= 0xAE) return c - (0xA8 - 0xA1);
+	return c;
+}
+
+char* TcvnUpper(char* sz)
+{
+	for (unsigned char *p = (unsigned char*)sz; *p; p++)
+		*p = TcvnUpChar(*p);
+	return sz;
+}
+
+int TcvnStrCmpI(const char* sz1, const char* sz2)
+{
+	const unsigned char *p1 = (const unsigned char*)sz1, *p2 = (const unsigned char*)sz2;
+	unsigned char c1, c2;
+	do
+	{
+		c1 = TcvnUpChar(*p1++);
+		c2 = TcvnUpChar(*p2++);
+	} while (c1 && c1 == c2);
+	return c1 - c2;
+}
+
+// Nhu strstr nhung khong phan biet hoa/thuong (TCVN3); tra ve vi tri trong szText
+const char* TcvnStrStrI(const char* szText, const char* szFind)
+{
+	if (!szText || !szFind) return NULL;
+	if (!*szFind) return szText;
+	for (; *szText; szText++)
+	{
+		const unsigned char *t = (const unsigned char*)szText, *f = (const unsigned char*)szFind;
+		while (*f && TcvnUpChar(*t) == TcvnUpChar(*f)) { t++; f++; }
+		if (!*f) return szText;
+	}
+	return NULL;
+}
+
 int __distance(int X1, int Y1, int X2, int Y2)
 {
 	double dX = (double)(X2 - X1);
@@ -470,6 +513,7 @@ void KPlayer::RepairItem(int nItemIdx)
 // uId 1..0x1FF, va gui len server vi tri (place, DataX, DataY) chu khong gui index.
 BOOL KPlayer::DecomposeItem(int nItemIdx)
 {
+	if (!GOI_DECOMPOSE_EQUIP) return FALSE;	// 15-10: game khong con tinh nang Ra trang bi
 	int nRoomWidth = m_ItemList.m_Room[room_equipment].m_nWidth;
 	int nRoomHeight = m_ItemList.m_Room[room_equipment].m_nHeight;
 	int* pArray = m_ItemList.m_Room[room_equipment].m_pArray;

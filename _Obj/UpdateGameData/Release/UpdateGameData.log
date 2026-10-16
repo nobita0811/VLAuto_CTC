@@ -1,0 +1,11 @@
+﻿  stdafx.cpp
+  GameDiff.cpp
+  PEImage.cpp
+  UpdateGameData.cpp
+  UpdateGameDataDlg.cpp
+  X86Len.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 1853 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  UpdateGameData.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\UpdateGameData.exe

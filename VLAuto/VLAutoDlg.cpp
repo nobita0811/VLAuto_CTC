@@ -601,6 +601,11 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 		SetForegroundWindow();
 		break;
 
+	case cmd_useam:		// Dem cho bang Thong ke (Auto Login)
+		if (nCurIndex >= 0)
+			pGameWin->m_nAMUsed++;
+		break;
+
 	case cmd_autohit:
 		if (pGameWin != NULL)
 		{

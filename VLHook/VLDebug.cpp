@@ -271,11 +271,7 @@ static void MsgSel2Info()
 		return;
 	}
 	DbgOut("IsVisible = %d  m_Style = 0x%08X\n", pMsgSel2->IsVisible() ? 1 : 0, pMsgSel2->m_Style);
-	for (int i = 0; i < pMsgSel2->m_nNumInfoMsg && i < 8; i++)
-	{
-		char *szText = pMsgSel2->GetInfoText(i);
-		if (szText) DbgOut("  Loi thoai[%d]: %.200s\n", i, szText);
-	}
+	if (pMsgSel2->GetQuestion()[0]) DbgOut("  Loi thoai: %.200s\n", pMsgSel2->GetQuestionText());
 	DbgOut("m_nNumMessage = %d\n", pMsgSel2->m_nNumMessage);
 	for (int i = 0; i < pMsgSel2->m_nNumMessage && i < 16; i++)
 	{

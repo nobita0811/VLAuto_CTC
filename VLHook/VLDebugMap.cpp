@@ -60,11 +60,7 @@ static void OutMenu()
 	DbgOut("KUiMsgSel2 (MSG2_BASE_ADD) = 0x%08X  IsVisible = %d\n", (DWORD)pMsgSel2, (pMsgSel2 && pMsgSel2->IsVisible()) ? 1 : 0);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
-		for (int i = 0; i < pMsgSel2->m_nNumInfoMsg && i < 4; i++)
-		{
-			char *szText = pMsgSel2->GetInfoText(i);
-			if (szText) DbgOut("  Loi thoai: %.200s\n", szText);
-		}
+		if (pMsgSel2->GetQuestion()[0]) DbgOut("  Loi thoai: %.200s\n", pMsgSel2->GetQuestionText());
 		for (int i = 0; i < pMsgSel2->m_nNumMessage && i < 16; i++)
 		{
 			KOneMsgInfo *pMsg = pMsgSel2->m_pMessages ? pMsgSel2->m_pMessages[i] : NULL;
@@ -72,6 +68,83 @@ static void OutMenu()
 		}
 	}
 	DbgOut("g_UiInformation2 IsVisible = %d\n", g_UiInformation2->IsVisible() ? 1 : 0);
+}
+
+// In chuoi TCVN3 cua game: bo ma mau (0x02 r g b, 0x03), giu xuong dong, ma dieu khien khac in <NN>
+static void DbgOutGameText(const char *szLabel, const char *szText, int nMax)
+{
+	static char szBuf[DEBUG_TEXT_SIZE];
+	int n = 0, nColor = 0;
+	int nLen = GameTextLen(szText, nMax);
+	for (int i = 0; i < nLen && n < (int)sizeof(szBuf) - 8; i++)
+	{
+		unsigned char c = (unsigned char)szText[i];
+		if (c == 0x02)
+		{
+			nColor++;
+			i += 3;	// 3 byte mau r g b, co the = 0
+		}
+		else if (c == 0x03 || c == '\r')
+			;
+		else if (c == '\n' || c >= 0x20)
+			szBuf[n++] = (char)c;
+		else
+			n += sprintf(szBuf + n, "<%02X>", c);
+	}
+	szBuf[n] = 0;
+	DbgOut("%s (%d byte, %d ma mau):\n%s\n", szLabel, nLen, nColor, szBuf);
+}
+
+static void DbgOutHex(const char *szText, int nBytes)
+{
+	DbgOut("  hex:");
+	for (int i = 0; i < nBytes; i++) DbgOut(" %02X", (unsigned char)szText[i]);
+	DbgOut("\n");
+}
+
+// Loi thoai cua NPC + cac bang thong bao dang mo (khong tac dong)
+static void OutDialogText()
+{
+	KUiMsgSel2 *pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
+	KUiMsgSel *pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
+	BOOL bAny = FALSE;
+
+	if (pMsgSel2 && pMsgSel2->IsVisible())
+	{
+		bAny = TRUE;
+		DbgOut("=== KUiMsgSel2 (0x%08X) ===\n", (DWORD)pMsgSel2);
+		DbgOutGameText("Loi thoai (this+0x2578)", pMsgSel2->GetQuestion(), sizeof(pMsgSel2->m_szQuestion));
+		DbgOutHex(pMsgSel2->GetQuestion(), 32);
+		for (int i = 0; i < pMsgSel2->m_nNumMessage && i < 16; i++)
+		{
+			KOneMsgInfo *pMsg = pMsgSel2->m_pMessages ? pMsgSel2->m_pMessages[i] : NULL;
+			if (pMsg) DbgOut("  [%d] %.*s\n", i, (pMsg->nLen > 0 && pMsg->nLen < 256) ? pMsg->nLen : 0, pMsg->Msg);
+		}
+	}
+	if (pMsgSel && pMsgSel->IsVisible())
+	{
+		bAny = TRUE;
+		DbgOut("=== KUiMsgSel (0x%08X) ===\n", (DWORD)pMsgSel);
+		DbgOutGameText("m_InfoText", pMsgSel->m_InfoText, sizeof(pMsgSel->m_InfoText));
+		for (int i = 0; i < pMsgSel->m_nNumMessage && i < 16; i++)
+		{
+			KOneMsgInfo *pMsg = pMsgSel->m_pMessages ? pMsgSel->m_pMessages[i] : NULL;
+			if (pMsg) DbgOut("  [%d] %.*s\n", i, (pMsg->nLen > 0 && pMsg->nLen < 256) ? pMsg->nLen : 0, pMsg->Msg);
+		}
+	}
+	if (g_UiInformation && g_UiInformation->IsVisible())
+	{
+		bAny = TRUE;
+		DbgOutGameText("=== KUiInformation (bang thong bao 2 nut) ===", g_UiInformation->m_szInfoText, sizeof(g_UiInformation->m_szInfoText));
+	}
+	if (g_UiInformation2 && g_UiInformation2->IsVisible())
+	{
+		bAny = TRUE;
+		DbgOutGameText("=== KUiInformation2 (bang thong bao nut OK) ===", g_UiInformation2->m_szInfoText, sizeof(g_UiInformation2->m_szInfoText));
+	}
+	if (!bAny)
+		DbgOut("Khong co hop thoai / bang thong bao nao dang mo (bam vao NPC truoc)\n");
+	g_DbgReply.bOK = TRUE;
 }
 
 static void MapStatus()
@@ -300,9 +373,9 @@ static void Inventory()
 static void EquipDur()
 {
 	if (!DbgCheckPlayer()) return;
-	for (int i = 0; i < itempart_num; i++)
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 	{
-		int nItemIdx = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+		int nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
 		KItem *pItem = GetItem(nItemIdx);
 		if (!pItem) continue;
 		const char *szNote = "";
@@ -383,9 +456,9 @@ static void CheckReadyInfo()
 		DbgOut("x Gui tien: EQUIP_MONEY %d > %d => OperationRequest(GOI_MONEY_INOUT_STORE_BOX)\n", EQUIP_MONEY, theMap.m_nMoneyAmount);
 		bReady = FALSE;
 	}
-	for (int i = 0; i < itempart_num; i++)
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 	{
-		KItem *pItem = GetItem(g_pCurPlayer->m_ItemList.m_EquipItem[i]);
+		KItem *pItem = GetItem(g_pCurPlayer->m_ItemList.GetEquip(i));
 		if (pItem && pItem->m_nCurDur >= 0 && pItem->m_nCurDur < 3)
 		{
 			DbgOut("x Trang bi sap hong: %s (%d)\n", ComAttr.szItemName, pItem->m_nCurDur);
@@ -435,6 +508,9 @@ BOOL DebugMapCmd(const DEBUG_PARAM *pParam)
 	case dbg_mp_menu:
 		OutMenu();
 		g_DbgReply.bOK = TRUE;
+		break;
+	case dbg_mp_dialog:
+		OutDialogText();
 		break;
 	case dbg_mp_clickmenuidx:
 		g_DbgReply.nResult[0] = theMain.ClickMenuIdx(P[2]);
@@ -588,6 +664,28 @@ BOOL DebugMapCmd(const DEBUG_PARAM *pParam)
 			DbgOut("Truoc: tren nguoi %d  trong ruong %d\n", EQUIP_MONEY, ROOM_MONEY);
 			g_DbgReply.nResult[0] = g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, bIn, P[2]);
 			DbgOut("OperationRequest(GOI_MONEY_INOUT_STORE_BOX, %d, %d) = %d  (can mo ruong truoc)\n", bIn, P[2], g_DbgReply.nResult[0]);
+			g_DbgReply.bOK = TRUE;
+		}
+		break;
+	case dbg_mp_tongmoney:
+		{
+			if (!DbgCheckPlayer()) break;
+			if (P[2] <= 0 || P[2] > EQUIP_MONEY)
+			{
+				DbgOut("LOI: nhap so luong o 'Idx/So' (1..%d = tien tren nguoi)\n", EQUIP_MONEY);
+				break;
+			}
+			// Nhu nut Gop quy (10-10: KUiTong 0x4EB060 -> 0x4EB430(2, 0, nMoney)).
+			// 15-10: nhanh 4 cua TongOperation 0x5C5300 (bang 0x5C5A80, lenh con 0..12), lenh con 2 ->
+			// 0x5BDDA0(this 0x17A4F00, [m_cTong+0x28], TongNameID, __int64 nMoney) (10-10: 0x5BC630, this 0x22100A0).
+			// X != 0: thu lenh con khac. p/buf = NULL thi game bo qua
+			int  nSub = P[0] ? P[0] : 2;
+			int  p[13] = { nSub, 0, P[2] };
+			char buf[0x138] = { 0 };
+			DWORD dwPlr = *(DWORD*)PLR_BASE_ADD;
+			DbgOut("Truoc: tren nguoi %d  [Player[1].m_cTong+0x28] = %d\n", EQUIP_MONEY, dwPlr ? *(int*)(dwPlr + 0x12714) : -1);	// 15-10: PLAYER_OFFSET + m_cTong 0x7E74 + 0x28 (10-10: 0x1259C)
+			g_DbgReply.nResult[0] = g_pCoreShell->TongOperation(4, (int)p, (int)buf);
+			DbgOut("TongOperation(4, {%d, 0, %d}, buf) = %d  (bam lai de xem tien tren nguoi da giam chua)\n", nSub, P[2], g_DbgReply.nResult[0]);
 			g_DbgReply.bOK = TRUE;
 		}
 		break;

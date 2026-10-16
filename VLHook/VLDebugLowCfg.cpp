@@ -9,7 +9,8 @@
 
 // Tab Giam cau hinh cua cua so DEBUG: giam RAM, FPS ve, tat hinh, an nguoi choi / thoi tiet / bong dong / am thanh.
 // Thu truoc o day, chay on thi moi dua vao tab Co ban.
-//  - GameLoop 0x591640: logic 18 nhip/s, chi ve khi da qua [LCF_PAINT_MS_ADD] ms => giam FPS khong anh huong logic.
+//  - GameLoop 0x5A9160 (15-10): chi ve khi so khung*1000 <= tick*[LCF_PAINT_FPS_ADD] => giam FPS khong anh huong logic.
+//    (10-10 luu ms/khung = 1000/PaintFps, 15-10 luu thang PaintFps)
 //  - [LCF_INACTIVE_ADD] != 0 va qua 10s => GameLoop chi RepresentBegin/End (khong ve). Engine ghi lai 0 khi cua so
 //    duoc kich hoat => DebugLowCfgBreathe ghi lai lien tuc khi dang tat hinh.
 //  - Giam RAM = SetProcessWorkingSetSize(-1, -1): day trang nho ra standby/pagefile, game van giu bo nho da cap phat.
@@ -17,7 +18,7 @@
 #define LCF_LOW_FPS			5		// FPS khi bam "Ap dung tat ca" ma Idx = 0
 #define LCF_LOW_TRIM_SEC	60		// Tu giam RAM khi bam "Ap dung tat ca"
 
-#define PAINT_MS		(*(int*)LCF_PAINT_MS_ADD)
+#define PAINT_FPS		(*(int*)LCF_PAINT_FPS_ADD)
 #define INACTIVE_TICK	(*(DWORD*)LCF_INACTIVE_ADD)
 #define VISIBLE_NUM		(*(int*)LCF_VISIBLE_ADD)
 #define SND_VOLUME		(*(int*)(LCF_KOPTION_ADD + 0))
@@ -25,7 +26,7 @@
 #define WEATHER_ON		(*(BYTE*)(SCP_BASE_ADD + SCP_WEATHER_OFF))
 #define DYNALIGHT_ON	(*(BYTE*)(SCP_BASE_ADD + SCP_DYNALIGHT_OFF))
 
-static int		s_nOrgPaintMs = 0;			// 0 = chua doi
+static int		s_nOrgPaintFps = 0;			// 0 = chua doi
 static int		s_nOrgVisible = -1;			// -1 = chua doi
 static int		s_nOrgWeather = -1;
 static int		s_nOrgDynaLight = -1;
@@ -87,13 +88,13 @@ static void SetFps(int nFps)
 {
 	if (nFps <= 0)
 	{
-		if (s_nOrgPaintMs) PAINT_MS = s_nOrgPaintMs;
-		s_nOrgPaintMs = 0;
+		if (s_nOrgPaintFps) PAINT_FPS = s_nOrgPaintFps;
+		s_nOrgPaintFps = 0;
 	}
 	else
 	{
-		if (!s_nOrgPaintMs) s_nOrgPaintMs = PAINT_MS;
-		PAINT_MS = nFps >= 1000 ? 1 : 1000 / nFps;
+		if (!s_nOrgPaintFps) s_nOrgPaintFps = PAINT_FPS > 0 ? PAINT_FPS : LCF_PAINT_FPS_DEF;
+		PAINT_FPS = nFps > 1000 ? 1000 : nFps;
 	}
 }
 
@@ -141,11 +142,12 @@ static void SetAutoTrim(int nSec)
 
 static void LowCfgStatus()
 {
-	int nMs = PAINT_MS;
-	DbgOut("FPS ve: %d ms/khung (~%d FPS)%s\n", nMs, nMs > 0 ? 1000 / nMs : 0,
-		s_nOrgPaintMs ? "" : "  - goc (config.ini [Client] PaintFps)");
-	if (s_nOrgPaintMs)
-		DbgOut("        goc %d ms (~%d FPS)\n", s_nOrgPaintMs, 1000 / s_nOrgPaintMs);
+	int nFps = PAINT_FPS;
+	int nMs = nFps > 0 ? 1000 / nFps : 0;
+	DbgOut("FPS ve: %d FPS (~%d ms/khung)%s\n", nFps, nMs,
+		s_nOrgPaintFps ? "" : "  - goc (config.ini [Client] PaintFps)");
+	if (s_nOrgPaintFps)
+		DbgOut("        goc %d FPS\n", s_nOrgPaintFps);
 	DWORD dwInactive = INACTIVE_TICK;
 	DbgOut("Tat hinh: %s   [0x%08X] = %u%s\n", s_bScreenOff ? "BAT" : "tat", LCF_INACTIVE_ADD, dwInactive,
 		dwInactive == 0 ? " (dang ve)" : (GetTickCount() - dwInactive >= 10000 ? " (khong ve)" : " (con < 10s moi ngung ve)"));
@@ -234,8 +236,8 @@ BOOL DebugLowCfgCmd(const DEBUG_PARAM *pParam)
 		break;
 	case dbg_lc_fps:
 		SetFps(P[2]);
-		DbgOut("FPS ve = %s: [0x%08X] = %d ms/khung\n", P[2] > 0 ? "Idx" : "goc", LCF_PAINT_MS_ADD, PAINT_MS);
-		g_DbgReply.nResult[0] = PAINT_MS;
+		DbgOut("FPS ve = %s: [0x%08X] = %d FPS\n", P[2] > 0 ? "Idx" : "goc", LCF_PAINT_FPS_ADD, PAINT_FPS);
+		g_DbgReply.nResult[0] = PAINT_FPS > 0 ? 1000 / PAINT_FPS : 0;	// giu don vi ms/khung cho VLAuto
 		g_DbgReply.bOK = TRUE;
 		break;
 	case dbg_lc_screen:

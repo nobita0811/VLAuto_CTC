@@ -189,9 +189,9 @@ void CVLRecover::CheckEquip()
 
 	if (nTimerCount % 600 != 40) return; //each 30s
 
-	for (int i = 0; i < itempart_num; i++)
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
 	{
-		int nEquipIndex = g_pCurPlayer->m_ItemList.m_EquipItem[i];
+		int nEquipIndex = g_pCurPlayer->m_ItemList.GetEquip(i);
 		if (!nEquipIndex) continue;
 		KItem *pItem = (KItem*)(dwItmBaseAdd + nEquipIndex * ITM_DATA_SIZE);
 		if (pItem->m_nCurDur < 0) continue; // Durability not available
@@ -317,14 +317,21 @@ void CVLRecover::OnUseAM(BOOL bUrgent)
 			if (!g_pCurPlayer->UseItem(AMULETX_PAPER))
 			{
 				if (pUiPlayerBar->m_nHK3Gengre)
+				{
 					ExecuteScript("ShortcutUseItem(2)");
+					theMain.PostFeedBack(cmd_useam);
+				}
 				else if (bUrgent)
 					//theMain.ExitGame(); // Sap chet ma het AM -> thoat game
 					SystemMessage("<color=yellow>HÕt Thæ ®Þa phï - kh«ng vÒ thµnh ®­îc!",1);
 				else // Do hu / day ruong / nhieu tien ma het AM -> chi thong bao
 					SystemMessage("<color=yellow>HÕt Thæ ®Þa phï - kh«ng vÒ thµnh ®­îc!",1);
 			}
+			else
+				theMain.PostFeedBack(cmd_useam);
 		}
+		else
+			theMain.PostFeedBack(cmd_useam);
 		if (theBasic.m_bExitWhenAM)
 			theMain.ExitGame();
 		if (!theMain.m_bSilentMode)
