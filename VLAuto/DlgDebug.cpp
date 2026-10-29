@@ -51,6 +51,7 @@
 #define CLR_OK				RGB(0, 128, 0)
 #define CLR_ERROR			RGB(208, 0, 0)
 #define CLR_TEXT			RGB(0, 0, 0)
+#define CLR_RAW				RGB(128, 0, 128)	// Dòng TCVN3 nguyên byte
 
 enum DEBUG_TABS
 {
@@ -62,6 +63,7 @@ enum DEBUG_TABS
 	dtab_recover,
 	dtab_login,
 	dtab_lowcfg,
+	dtab_quest,
 	dtab_num,
 };
 
@@ -75,6 +77,7 @@ static LPCTSTR s_szTabs[dtab_num] =
 	_T("Hồi phục"),
 	_T("Đăng nhập"),
 	_T("Giảm cấu hình"),
+	_T("Nhiệm vụ"),
 };
 
 static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
@@ -145,6 +148,10 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("Đọc bảng hội thoại KUiMsgSel / KUiMsgSel2 đang mở và các lựa chọn"), 0 },
 	{ dtab_map, dbg_mp_dialog,			_T("Lời thoại / bảng thông báo"),
 		_T("Đọc đầy đủ lời NPC trong hộp thoại đang mở (vd: mô tả nhiệm vụ Dã Tẩu) và bảng thông báo KUiInformation"), 0 },
+	{ dtab_map, dbg_mp_filelog,			_T("Ghi file/lua game nạp (bật/tắt)"),
+		_T("Hook engine.dll (KPakFile::Open, KFile::Open, KLuaScript::Load/LoadBuffer/DoString/CallFunction) + CoreDataChanged của exe (id, tham số; id 64 = hộp thoại NPC) + task value thay đổi: bật rồi bấm vào NPC, tắt để xem file .lua/.ini/.txt, hàm lua, thông báo core và task đổi + địa chỉ gọi trong exe. X = 1: ghi cả file hình/âm thanh. Lưu Logs\\FileLog.txt"), 0 },
+	{ dtab_map, dbg_mp_filelogview,		_T("Xem log file/lua"),
+		_T("Xem log đang ghi (ô Chuỗi = lọc, vd: .lua). X = 1: xóa log sau khi xem. Đầy đủ ở Logs\\FileLog.txt"), 0 },
 	{ dtab_map, dbg_mp_clickmenuidx,	_T("theMain.ClickMenuIdx(Idx)"),
 		_T("Chọn dòng số Idx trong bảng hội thoại đang mở"), 0 },
 	{ dtab_map, dbg_mp_clickmenustr,	_T("theMain.ClickMenuStr(Chuỗi)"),
@@ -331,6 +338,8 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("Đổi trạng thái PK: 0 luyện công, 1 chiến đấu, 2 đồ sát"), TRUE },
 	{ dtab_attack, dbg_at_autohit,		_T("Bật/tắt tự đánh (Ctrl+A)"),
 		_T("Đảo theAttack.m_bAutoHit + SetAutoHit() trong game (VLAuto không biết, gửi lại tùy chọn sẽ ghi đè)"), 0 },
+	{ dtab_attack, dbg_at_watchtarget,	_T("Kiểm tra đối tượng đang đánh (bật/tắt)"),
+		_T("Theo dõi mục tiêu CVLAttack::Breathe() đang đánh (PEOPLE_IDX): tên, Idx, tọa độ, khoảng cách, Res (1 = game còn vẽ NPC đó qua KNpc::Paint, 0 = không vẽ, ? = game đang không vẽ) hiện trên bảng chat - chỉ báo khi nội dung thay đổi"), 0 },
 
 	// Tab Hồi phục - các hàm game dùng trong VLHook/VLRecover.cpp (ăn thuốc, sửa đồ, về thành, buff Nga Mi, X2)
 	{ dtab_recover, dbg_rc_status,		_T("Trạng thái + bước Breathe"),
@@ -410,6 +419,27 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("KUiSelPlayer: tick đồng ý (+0x8464) + OnEnterGame 0x4A0370: g_LoginLogic.SelectRole(nhân vật đang chọn) + cửa sổ đang vào game"), 0 },
 	{ dtab_login, dbg_lg_login,			_T("Nhập TK/MK + Đăng nhập (Chuỗi)"),
 		_T("Chuỗi = \"TàiKhoản MậtKhẩu\": KWndEdit::SetText 2 ô, KUiLogin::OnLogin() 0x484C20"), 0 },
+
+	// Tab Nhiệm vụ - VLHook/VLDebugQuest.cpp: Dã Tẩu bản CTC (server điều khiển, nội dung nhiệm vụ chỉ có trong chữ
+	// hội thoại NPC / thông báo). 3 bước: bấm = kiểm tra + chạy tự động (xong tự sang bước sau tới hết Bước 3), bấm lại = dừng.
+	{ dtab_quest, dbg_qt_status,		_T("Trạng thái nhiệm vụ"),
+		_T("Bước đang chạy, nhật ký 3 bước, nhiệm vụ đã phân tích (quái, map, tiến độ n / N), task 1027, MapPath tự đi, hội thoại Dã Tẩu chưa biết (nếu có)"), 0 },
+	{ dtab_quest, dbg_qt_step1,		_T("Bước 1: Nhận nhiệm vụ (Idx)"),
+		_T("Về Tương Dương (Thổ địa phù / MapPath), bấm NPC Dã Tẩu, đọc hội thoại: có nhiệm vụ => phân tích Tiêu diệt N <quái> ở <map>; chưa có => chọn Nhận nhiệm vụ. Nhiệm vụ đánh quái => tự sang Bước 2, rồi Bước 3 (chọn ô phần thưởng Idx: 0 Kinh nghiệm, 1 Ngân lượng, 2 Ngẫu nhiên). X = 1: chỉ kiểm tra. X = 2: chỉ làm Bước 1. Bấm lại: dừng"), 0 },
+	{ dtab_quest, dbg_qt_step2,		_T("Bước 2: Diệt quái nhiệm vụ (Idx)"),
+		_T("DoQuestKillNpc(số lượng, map, tên quái) theo nhiệm vụ Bước 1: trong thành thì bán đồ, rút tiền, mua máu / mana / Thổ địa phù (tab Bản đồ) => MapPath tự đi tới map => đánh quái: Chiến đấu CHỈ nhận quái tên nhiệm vụ, không thấy quái thì đi vòng các điểm MapPath của map (bỏ điểm gần cổng, chặn mọi lệnh đi khác trừ Chiến đấu / Nhặt đồ), tiến độ n / N từ kênh Công bố. Auto tạm dừng vẫn đánh được. Đủ quái => tự sang Bước 3 (ô Idx). X = 1: chỉ kiểm tra. X = 2: không tự sang Bước 3. Bấm lại: dừng"), 0 },
+	{ dtab_quest, dbg_qt_step3,		_T("Bước 3: Trả nhiệm vụ (Idx)"),
+		_T("Thổ địa phù về thành, MapPath về Tương Dương, bấm Dã Tẩu, chọn Hoàn thành nhiệm vụ, bảng phần thưởng chọn ô Idx: 0 trái = Kinh nghiệm, 1 giữa = Ngân lượng, 2 phải = Ngẫu nhiên. X = 1: chỉ kiểm tra. Bấm lại: dừng"), 0 },
+	{ dtab_quest, dbg_qt_stop,			_T("Dừng bước đang chạy"),
+		_T("Dừng bước đang chạy (dừng cả MapPath tự đi của bước đó) và in nhật ký"), 0 },
+	{ dtab_quest, dbg_qt_watch,		_T("Theo dõi thông báo nhiệm vụ (bật/tắt)"),
+		_T("Hook CoreDataChanged / SystemMessageArrival / ChannelMessageArrival: ghi thông báo + tự phân tích nhiệm vụ (Bước 1, 4, 5 tự bật). X = 1: ghi mọi id (trừ 33, 79)"), 0 },
+	{ dtab_quest, dbg_qt_watchview,	_T("Xem thông báo nhiệm vụ"),
+		_T("Kết quả phân tích + thông báo đã ghi, mới nhất trước (ô Chuỗi = lọc). X = 1: xóa sau khi xem. Đầy đủ ở Logs\\QuestLog.txt"), 0 },
+	{ dtab_quest, dbg_qt_taskval,		_T("g_pCurPlayer->GetTaskVal(Idx)"),
+		_T("Đọc giá trị Task số = ô Idx/Số. X > Idx: liệt kê các task Idx..X khác 0 (tối đa 6000)"), 0 },
+	{ dtab_quest, dbg_qt_reset,		_T("Xóa kết quả phân tích"),
+		_T("Xóa nhiệm vụ đã phân tích (tên quái, map, tiến độ) và nhật ký 3 bước"), 0 },
 };
 
 static const int s_nButtonCount = sizeof(s_Buttons) / sizeof(s_Buttons[0]);
@@ -684,6 +714,40 @@ void CDlgDebug::AppendText(LPCTSTR szText, COLORREF crColor, BOOL bBold)
 	m_Output.SetSelectionCharFormat(cf);
 	m_Output.ReplaceSel(strText);
 	m_Output.SendMessage(WM_VSCROLL, SB_BOTTOM, 0);
+}
+
+// Kết quả từ VLHook (TCVN3): dòng thường đổi sang Unicode,
+// dòng bắt đầu bằng DEBUG_RAW_MARK hiện nguyên byte TCVN3 (cp1252) - như chuỗi viết trong mã nguồn
+void CDlgDebug::AppendReplyText(LPCSTR szText, COLORREF crColor)
+{
+	static TCHAR szLine[DEBUG_TEXT_SIZE + 1];
+	CStringA strUni;
+	const char *p = szText;
+	while (*p)
+	{
+		const char *pEnd = strchr(p, '\n');
+		int nLen = pEnd ? (int)(pEnd - p) + 1 : (int)strlen(p);
+		if (*p == DEBUG_RAW_MARK)
+		{
+			if (!strUni.IsEmpty())
+			{
+				TCVN3ToUnicode(strUni, szLine, DEBUG_TEXT_SIZE);
+				AppendText(szLine, crColor);
+				strUni.Empty();
+			}
+			int nW = MultiByteToWideChar(1252, 0, p + 1, nLen - 1, szLine, DEBUG_TEXT_SIZE);
+			szLine[nW > 0 ? nW : 0] = 0;
+			AppendText(szLine, CLR_RAW);
+		}
+		else
+			strUni.Append(p, nLen);
+		p += nLen;
+	}
+	if (!strUni.IsEmpty())
+	{
+		TCVN3ToUnicode(strUni, szLine, DEBUG_TEXT_SIZE);
+		AppendText(szLine, crColor);
+	}
 }
 
 void CDlgDebug::AppendLog(LPCTSTR szText, COLORREF crColor, BOOL bBold)
@@ -1376,7 +1440,7 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 	code.Build(buf);
 	SecureZeroMemory(szPassword, sizeof(szPassword));
 	HANDLE hThread = NULL;
-	if (WriteProcessMemory(hGame, pRemote, buf, sizeof(buf), NULL))
+	if (WriteGameMemory(hGame, pRemote, buf, sizeof(buf)))
 		hThread = CreateRemoteThread(hGame, NULL, 0, (LPTHREAD_START_ROUTINE)pRemote, NULL, 0, NULL);
 	SecureZeroMemory(buf, sizeof(buf));
 	if (!hThread)
@@ -1402,7 +1466,7 @@ void CDlgDebug::RunLoginCmd(int nCmd)
 	}
 	// Xóa mật khẩu trong vùng nhớ đã ghi vào Game rồi mới giải phóng
 	BYTE zero[CRemoteCode::TOTAL_SIZE] = { 0 };
-	WriteProcessMemory(hGame, pRemote, zero, sizeof(zero), NULL);
+	WriteGameMemory(hGame, pRemote, zero, sizeof(zero));
 	VirtualFreeEx(hGame, pRemote, 0, MEM_RELEASE);
 
 	strLog.Format(_T("%s  thread exit %u\n"), (LPCTSTR)strCall, dwExit);
@@ -1544,9 +1608,7 @@ BOOL CDlgDebug::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	if (reply.nSeq == m_nWaitSeq)
 		m_nWaitSeq = 0;
 
-	static TCHAR szText[DEBUG_TEXT_SIZE + 1];
-	TCVN3ToUnicode(reply.szText, szText, DEBUG_TEXT_SIZE);
-	AppendText(szText, reply.bOK ? CLR_TEXT : CLR_ERROR);
+	AppendReplyText(reply.szText, reply.bOK ? CLR_TEXT : CLR_ERROR);
 
 	CString strResult;
 	strResult.Format(_T("#%d  %s  %s\n\n"), reply.nSeq, GetCmdLabel(reply.nCmd), reply.bOK ? _T("=> OK") : _T("=> LỖI"));

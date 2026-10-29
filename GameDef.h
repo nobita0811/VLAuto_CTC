@@ -1,4 +1,4 @@
-//GameDef.h
+﻿//GameDef.h
 #pragma once
 
 #define CLIENT_SERIAL		683251
@@ -657,7 +657,7 @@ enum TASK_CODES
 	ys_majorid,
 	ys_maphave = 1025,
 	ys_repvalue,	// Chi so PD & DV
-	ys_shxtmap,		// So luong ban do SHXT
+	ys_shxtmap,		// So luong ban do SHXT / CTC 20-10 đổi thành đánh quái
 	ys_taskstatus,
 	ys_task405,
 	ys_minorid,
@@ -680,7 +680,12 @@ enum TASK_CODES
 	bh_tasktime = 0x0A06,
 	ys_preexp_ex = 2574
 };
+enum TASK_CODES_EX
+{
+	ys_attackNpc = 1, // đánh quái theo tên
+	ys_ItemOption, // tìm đồ theo thuộc tính và giao cho Dã Tẩu
 
+};
 enum QUEST_ACTIONS
 {
 	act_auto,
@@ -777,6 +782,7 @@ enum SENDCMD
 //                    dwData = DEBUG_COPYDATA_ID, lpData = DEBUG_REPLY (szText: chuoi TCVN3)
 #define DEBUG_COPYDATA_ID	0x56444247	// 'VDBG'
 #define DEBUG_TEXT_SIZE		4096
+#define DEBUG_RAW_MARK		'\x02'	// Dong bat dau bang ky tu nay: VLAuto hien nguyen byte TCVN3 (cp1252), khong doi sang Unicode
 
 enum DEBUG_CMD
 {
@@ -839,6 +845,8 @@ enum DEBUG_CMD
 	dbg_mp_showwalk,		// Bat/tat ve duong Auto dang di trong game (MapPath, City.map, MoveTo, danh sach toa do)
 	dbg_mp_dialog,			// Loi thoai NPC (KUiMsgSel2 +0x2578, KUiMsgSel m_InfoText) + KUiInformation/2
 	dbg_mp_tongmoney,		// Gop quy bang: TongOperation(4, {2 (X), 0, Idx}, buf)
+	dbg_mp_filelog,			// Bat/tat hook engine.dll ghi file/lua game nap (KPakFile::Open, KLuaScript::Load/DoString/CallFunction)
+	dbg_mp_filelogview,		// Xem log file/lua (Chuoi = loc, X = 1 xoa sau khi xem), luu Logs\FileLog.txt
 
 	// Tab Nhat do (VLCollect.cpp)
 	dbg_cl_status = 200,	// Tuy chon + CVLCollect::Breathe dung o dau
@@ -861,6 +869,8 @@ enum DEBUG_CMD
 	dbg_cl_badobjs,			// g_BadObjs
 	dbg_cl_decomposescan,	// Quet do co the Ra (FilterItems + core 0x9B), Idx = 1: xoa m_nDecomposeFail
 	dbg_cl_decompose,		// g_pCurPlayer->DecomposeItem(Idx)
+	dbg_cl_invnames,		// Ten vat pham trong hanh trang (moi dong 1 ten, khong trung) - cua so Cai dat nhat do
+	dbg_cl_nosavelist,		// LoadNoSaveList (Maps\RuongItem.txt) + IsInNoSaveList(Chuoi)
 
 	// Tab MapPath (VLDebugPath.cpp) - ghi/kiem tra du lieu duong di Maps\Path\<MapID>_<Ten map>.txt
 	dbg_pt_status = 300,	// Trang thai ghi + do thi map hien tai
@@ -910,6 +920,7 @@ enum DEBUG_CMD
 	dbg_at_autodefence,		// AutoDefence() x3
 	dbg_at_pk,				// ExecuteScript("Switch('PK',Idx)")
 	dbg_at_autohit,			// Dao m_bAutoHit + SetAutoHit (Ctrl+A)
+	dbg_at_watchtarget,		// Bat/tat theo doi muc tieu Breathe dang danh (SystemMessage kenh 1)
 
 	// Tab Hoi phuc (VLRecover.cpp)
 	dbg_rc_status = 500,	// Tuy chon + CVLRecover::Breathe se lam gi
@@ -952,6 +963,19 @@ enum DEBUG_CMD
 	dbg_lc_sound,			// Am luong nhac + tieng = Idx (0..100, 0 = tat)
 	dbg_lc_lowall,			// Ap dung tat ca muc thap (FPS = Idx hoac 5)
 	dbg_lc_restore,			// Tra lai tat ca nhu luc dau
+
+	// Tab Nhiem vu (VLDebugQuest.cpp) - Da Tau ban CTC: server dieu khien, doc chu hop thoai / thong bao
+	dbg_qt_status = 800,	// Buoc dang chay + nhat ky 5 buoc + ket qua phan tich nhiem vu
+	dbg_qt_step1,			// Buoc 1: toi Da Tau, doc nhiem vu / bam Nhan nhiem vu (X = 1 chi kiem tra, bam lai = dung)
+	dbg_qt_step2,			// Buoc 2: DoQuestKillNpc = ban do / mua mau, mana, TDP -> MapPath toi map -> danh quai nhiem vu
+	dbg_qt_step3,			// Buoc 3: ve Da Tau, Hoan thanh nhiem vu, chon o phan thuong Idx
+	dbg_qt_step4,			// (khong dung - giu so thu tu)
+	dbg_qt_step5,			// (khong dung)
+	dbg_qt_stop,			// Dung buoc dang chay
+	dbg_qt_watch,			// Bat/tat theo doi CoreDataChanged id 23/64/161 (X = 1: moi id)
+	dbg_qt_watchview,		// Xem thong bao da ghi (Chuoi = loc, X = 1 xoa), luu Logs\QuestLog.txt
+	dbg_qt_reset,			// Xoa ket qua phan tich + nhat ky
+	dbg_qt_taskval,			// g_pCurPlayer->GetTaskVal(Idx); X > Idx: liet ke task Idx..X khac 0
 };
 
 struct DEBUG_PARAM
@@ -972,3 +996,13 @@ struct DEBUG_REPLY
 	int		nResult[4];
 	char	szText[DEBUG_TEXT_SIZE];
 };
+
+// Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
+// Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
+#define QUEST_TRACE 1
+#if QUEST_TRACE
+void QTraceSite(char* szLast, const char* szFormat, ...);
+#define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)
+#else
+#define QTRACE(...) ((void)0)
+#endif

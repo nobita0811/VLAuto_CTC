@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "KNode.h"
 #include <stddef.h>
@@ -353,7 +353,9 @@ public:
 	WORD				m_RegY;					// 0x1A86 = HIWORD(m_dwRegionID)
 	int					m_sSyncPos[6];			// 0x1A88
 	int					m_nPKFlag;				// 0x1AA0
-	BYTE				NpcDataA[0x0274];		// 15-10: khong con m_dwTongNameID / m_bHaveStall
+	BYTE				NpcDataA[0x022C];		// 15-10: khong con m_dwTongNameID
+	int					m_nMenuState;			// 0x1CD0 0=thuong, 1=mo ban hang/giao dich (sap), 2=mo doi (sync bit 0x40/0x80 0x624024; click player 0x6DFE60)
+	BYTE				NpcDataA2[0x0044];
 	NpcCommand			m_Command;				// 0x1D18 (SendCommand 0x5F7490)
 	BYTE				NpcDataD[0x0050];
 	BOOL				m_bRideHorse;			// 0x1D78
@@ -370,6 +372,8 @@ public:
 	BOOL IsExist();
 	BOOL IsNotMob();
 	void GetMapPos(int *nX, int *nY);
+	void GetGamePos(int *nX, int *nY);	// toa do game dung de danh (theo m_RegionIndex), khac GetMapPos => NPC "ma"
+	BOOL IsGhost();
 	void MoveTo(int nX, int nY, int nAction = 0);
 	void SendCommand(NPCCMD cmd, int x = 0, int y = 0, int z = 0);
 };
@@ -457,6 +461,8 @@ public:
 	void DialogNpc(int nIndex);
 	BOOL EnterTongMap(int nStep = 0, DWORD dwTongID = 0); // nStep = 0,1,2
 	void ApplyAddBaseAttribute(int nAttribute, int nNo);
+	
+	
 };
 
 class KItem
@@ -596,4 +602,5 @@ int						__getheight(POINT p1, POINT p2, POINT p3);
 unsigned char			TcvnUpChar(unsigned char c);
 char*					TcvnUpper(char* sz);
 int						TcvnStrCmpI(const char* sz1, const char* sz2);
+int						TcvnStrNCmpI(const char* sz1, const char* sz2, int n);
 const char*				TcvnStrStrI(const char* szText, const char* szFind);

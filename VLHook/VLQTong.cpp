@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -6,8 +6,8 @@
 #include "VLClasses.h"
 
 #define TONGPK_KIND 7
-const char TongPKKind[TONGPK_KIND][12] =
-{ "Binh gi¸p", "Thiªn c«ng", "DŞ dung", "Thİ luyÖn", "Thiªn ı", "LÔ phÈm", "Ho¹t ®éng" };
+const char* const TongPKKind[TONGPK_KIND] =
+{ TV(L"Binh giÃ¡p"), TV(L"ThiÃªn cÃ´ng"), TV(L"Dá»‹ dung"), TV(L"ThÃ­ luyá»‡n"), TV(L"ThiÃªn Ã½"), TV(L"Lá»… pháº©m"), TV(L"Hoáº¡t Ä‘á»™ng") };
 
 void CVLQuest::BreathBH()
 {
@@ -110,8 +110,8 @@ void CVLQuest::BreathBH()
 		}
 		else
 		{
-			SaveYSLog("Kh«ng cßn LB ngÉu nhiªn cã thÓ lµm!");
-			SystemMessage("<color=yellow>Kh«ng cßn LB ngÉu nhiªn cã thÓ lµm!");
+			SaveYSLog(TV(L"KhÃ´ng cÃ²n LB ngáº«u nhiÃªn cÃ³ thá»ƒ lÃ m!"));
+			SystemMessage(TV(L"<color=yellow>KhÃ´ng cÃ²n LB ngáº«u nhiÃªn cÃ³ thá»ƒ lÃ m!"));
 			m_nBHDoing = bh_suspending;
 		}
 		break;
@@ -142,8 +142,8 @@ void CVLQuest::BreathBH()
 		break;
 
 	case bh_suspending:
-		SaveYSLog("Ng­ng nhiÖm vô LB ngÉu nhiªn, lµm nhiÖm vô D· TÈu!\n");
-		SystemMessage("<color=yellow>Ng­ng nvô LB ngÉu nhiªn, lµm nvô D· TÈu!");
+		SaveYSLog(TV(L"NgÆ°ng nhiá»‡m vá»¥ LB ngáº«u nhiÃªn, lÃ m nhiá»‡m vá»¥ DÃ£ Táº©u!\n"));
+		SystemMessage(TV(L"<color=yellow>NgÆ°ng nvá»¥ LB ngáº«u nhiÃªn, lÃ m nvá»¥ DÃ£ Táº©u!"));
 		m_nGenDoing = qt_yesou;
 		m_nDoQuestStep = 0;
 		theMap.ResetShoping();
@@ -158,12 +158,12 @@ BOOL CVLQuest::BHPreparing()
 		if (!m_TongQOpt.m_bGetLBMin) return 0; // Don't auto get LB
 		if (g_pCurPlayer->m_cTong.ContributePoint() < 400)
 		{
-			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn!");
+			SystemMessage(TV(L"<color=yellow>KhÃ´ng Ä‘á»§ Ä‘iá»ƒm cá»‘ng hiáº¿n!"));
 			return 0; // Het diem CH
 		}
 		if (g_pCurPlayer->GetItemsCount(item_special, 2, 1020, -1, 0) >= m_TongQOpt.m_nGetLBMin) return 0;
-		SaveYSLog("§i nhËn LÖnh bµi nhiÖm vô Bang héi.");
-		SystemMessage("<color=yellow>§i nhËn LÖnh bµi nhiÖm vô Bang héi...");
+		SaveYSLog(TV(L"Äi nháº­n Lá»‡nh bÃ i nhiá»‡m vá»¥ Bang há»™i."));
+		SystemMessage(TV(L"<color=yellow>Äi nháº­n Lá»‡nh bÃ i nhiá»‡m vá»¥ Bang há»™i..."));
 
 		g_pCurPlayer->EnterTongMap(1);
 		m_nDoQuestStep = 1;
@@ -302,12 +302,12 @@ int CVLQuest::AutoUseLB(int nTrainMapID)
 	static BOOL bFoundIt = 0;
 	static PlayerItem theItem = { -1, -1, -1, -1, -1 }; // LB Item
 
-	//Mçi ngµy mçi ng­êi ch¬i chØ ®­îc
+	//Má»—i ngÃ y má»—i ngÆ°á»i chÆ¡i chá»‰ Ä‘Æ°á»£c
 	if (g_UiInformation2->IsVisible()
-		&& strstr(g_UiInformation2->m_szInfoText, "Mçi ngµy mçi ng­êi ch¬i chØ ®­îc"))
+		&& strstr(g_UiInformation2->m_szInfoText, TV(L"Má»—i ngÃ y má»—i ngÆ°á»i chÆ¡i chá»‰ Ä‘Æ°á»£c")))
 	{
-		SaveYSLog("§· hoµn thµnh 100 LB ngÉu nhiªn!\n");
-		SystemMessage("<color=yellow>§· hoµn thµnh 100 LB ngÉu nhiªn!");
+		SaveYSLog(TV(L"ÄÃ£ hoÃ n thÃ nh 100 LB ngáº«u nhiÃªn!\n"));
+		SystemMessage(TV(L"<color=yellow>ÄÃ£ hoÃ n thÃ nh 100 LB ngáº«u nhiÃªn!"));
 		g_UiInformation2->Hide();
 		m_bIsFull100LB = TRUE;
 		return -1;
@@ -318,7 +318,7 @@ int CVLQuest::AutoUseLB(int nTrainMapID)
 	{
 		nTimeWait = 2;
 		char *szMsg0 = pMsgSel2->m_pMessages[0]->Msg;
-		if (strstr(szMsg0, "TiÕp nhËn nhiÖm vô"))
+		if (strstr(szMsg0, TV(L"Tiáº¿p nháº­n nhiá»‡m vá»¥")))
 			pMsgSel2->OnClickMsg(0);
 		else
 			pMsgSel2->OnClickMsg(pMsgSel2->m_nNumMessage);
@@ -329,7 +329,7 @@ int CVLQuest::AutoUseLB(int nTrainMapID)
 	if (pMsgSel && pMsgSel->IsVisible())
 	{
 		char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-		if (strstr(szMsg0, "§óng vËy, ta muèn hñy bá nhiÖm vô"))
+		if (strstr(szMsg0, TV(L"ÄÃºng váº­y, ta muá»‘n há»§y bá» nhiá»‡m vá»¥")))
 			pMsgSel->OnClickMsg(0);
 		else
 			pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -356,7 +356,7 @@ int CVLQuest::AutoUseLB(int nTrainMapID)
 				szTaskDes += 14;
 				char *szEnd = strstr(szTaskDes, "<color");
 				if (szEnd) *szEnd = 0;
-				sprintf(szItemDesc, "NhiÖm vô LB ngÉu nhiªn: %s", szTaskDes);
+				sprintf(szItemDesc, TV(L"Nhiá»‡m vá»¥ LB ngáº«u nhiÃªn: %s"), szTaskDes);
 				SaveYSLog(szItemDesc);
 			}
 
@@ -451,8 +451,8 @@ BOOL CVLQuest::GoBuySpItem()
 	{
 	case 0:
 		if (theMap.ChangeMap(city_tuongduong)) return TRUE;
-		SystemMessage("<color=yellow>Mua vËt phÈm t¹i ThÇn bİ th­¬ng nh©n...");
-		SaveYSLog("§i mua vËt phÈm t¹i ThÇn bİ th­¬ng nh©n...");
+		SystemMessage(TV(L"<color=yellow>Mua váº­t pháº©m táº¡i Tháº§n bÃ­ thÆ°Æ¡ng nhÃ¢n..."));
+		SaveYSLog(TV(L"Äi mua váº­t pháº©m táº¡i Tháº§n bÃ­ thÆ°Æ¡ng nhÃ¢n..."));
 		m_nDoQuestStep = 1;
 		break;
 	case 1:
@@ -507,7 +507,7 @@ BOOL CVLQuest::GoBuySpItem()
 				g_pCurPlayer->BuyItem(nItemIdx);
 			else
 			{
-				SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
+				SystemMessage(TV(L"<color=yellow>HÃ nh trang khÃ´ng Ä‘á»§ chá»— trá»‘ng!"));
 				return 0;
 			}
 			return TRUE;
@@ -590,8 +590,8 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 				g_pCurPlayer->SwitchItem(UOC_ITEM_TAKE_WITH, itmPos.x, itmPos.y);
 			else
 			{
-				SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
-				SaveYSLog("Hµnh trang kh«ng ®ñ chç trèng => T¹m ng­ng!");
+				SystemMessage(TV(L"<color=yellow>HÃ nh trang khÃ´ng Ä‘á»§ chá»— trá»‘ng!"));
+				SaveYSLog(TV(L"HÃ nh trang khÃ´ng Ä‘á»§ chá»— trá»‘ng => Táº¡m ngÆ°ng!"));
 				m_nBHDoing = bh_suspending;
 				m_nDoQuestStep = 0;
 			}
@@ -630,8 +630,8 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 			// FOUND IT
 			if (!ComAttr.bStack)
 			{
-				SystemMessage("<color=yellow>VËt phÈm nhiÖm vô kh«ng ®óng!");
-				SaveYSLog("VËt phÈm nhiÖm vô kh«ng ®óng => T¹m ng­ng!");
+				SystemMessage(TV(L"<color=yellow>Váº­t pháº©m nhiá»‡m vá»¥ khÃ´ng Ä‘Ãºng!"));
+				SaveYSLog(TV(L"Váº­t pháº©m nhiá»‡m vá»¥ khÃ´ng Ä‘Ãºng => Táº¡m ngÆ°ng!"));
 				m_nBHDoing = bh_suspending;
 				m_nDoQuestStep = 0;
 				break;
@@ -659,7 +659,7 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 			int nTotal = g_pCurPlayer->GetItemsCount(m_nRqGenre, m_nRqDetail, m_nRqParticular, m_nRqSeries, pos_yesoubox);
 			if (nTotal == m_nRqQuantity)
 			{
-				SaveYSLog("Hoµn thµnh nhiÖm vô LB ngÉu nhiªn!");
+				SaveYSLog(TV(L"HoÃ n thÃ nh nhiá»‡m vá»¥ LB ngáº«u nhiÃªn!"));
 				pYSBox->OnConfirm();
 				return;
 			}
@@ -688,9 +688,9 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 		{
 			theMap.m_nTimeWait = 2;
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "NhiÖm vô b¹n ®ång hµnh"))
+			if (strstr(szMsg0, TV(L"Nhiá»‡m vá»¥ báº¡n Ä‘á»“ng hÃ nh")))
 				pMsgSel->OnClickMsg(0);
-			else if (strstr(szMsg0, "Hoµn thµnh nhiÖm vô"))
+			else if (strstr(szMsg0, TV(L"HoÃ n thÃ nh nhiá»‡m vá»¥")))
 				pMsgSel->OnClickMsg(0);
 			else
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -702,11 +702,11 @@ void CVLQuest::ReturnBHTask(int nTaskID)
 		{
 			theMap.m_nTimeWait = 2;
 			char *szMsg0 = pMsgSel2->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "Hoµn thµnh nhiÖm vô"))
+			if (strstr(szMsg0, TV(L"HoÃ n thÃ nh nhiá»‡m vá»¥")))
 				pMsgSel2->OnClickMsg(0);
-			else if (strstr(szMsg0, "NhËn l·nh phÇn th­ëng"))
+			else if (strstr(szMsg0, TV(L"Nháº­n lÃ£nh pháº§n thÆ°á»Ÿng")))
 				pMsgSel2->OnClickMsg(0);
-			else if (strstr(szMsg0, "KÕt thóc ®èi tho¹i"))
+			else if (strstr(szMsg0, TV(L"Káº¿t thÃºc Ä‘á»‘i thoáº¡i")))
 				pMsgSel2->OnClickMsg(0);
 			else
 				pMsgSel2->OnClickMsg(pMsgSel2->m_nNumMessage);
@@ -725,14 +725,14 @@ void CVLQuest::BreathPK()
 	QTRACE("BreathPK: Step=%d PK=%d Map=%d", m_nDoQuestStep, g_pCurPlayer->m_nPKValue, *g_pMapID);
 	if (m_nDoQuestStep < 4 && g_pCurPlayer->GetTaskVal(bh_pkqty))
 		m_nDoQuestStep = 4; // Already have Task
-	if (m_nDoQuestStep < 3 && g_pCurPlayer->UseItem("LÖnh bµi nhiÖm vô"))
+	if (m_nDoQuestStep < 3 && g_pCurPlayer->UseItem(TV(L"Lá»‡nh bÃ i nhiá»‡m vá»¥")))
 		m_nDoQuestStep = 3; // Already have LB
 	if (m_nDoQuestStep >= 7 && m_nDoQuestStep < 20)
 	{
 		if (g_pCurPlayer->m_nPKValue)
 		{
-			SaveYSLog("Tr¶ nhiÖm vô LB ®Æc biÖt!");
-			SystemMessage("<color=yellow>Tr¶ nhiÖm vô LB ®Æc biÖt!");
+			SaveYSLog(TV(L"Tráº£ nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!"));
+			SystemMessage(TV(L"<color=yellow>Tráº£ nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!"));
 			g_pCurPlayer->EnterTongMap(1);
 			m_nDoQuestStep = 20; // Tra nhiem vu
 			m_bNeedGoTrain = 0;
@@ -751,19 +751,19 @@ void CVLQuest::BreathPK()
 	case 0: // Vao Ban do bang
 		if (g_pCurPlayer->m_cTong.ContributePoint() < 200)
 		{
-			SaveYSLog("Kh«ng ®ñ ®iÓm cèng hiÕn!\n");
-			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn!");
+			SaveYSLog(TV(L"KhÃ´ng Ä‘á»§ Ä‘iá»ƒm cá»‘ng hiáº¿n!\n"));
+			SystemMessage(TV(L"<color=yellow>KhÃ´ng Ä‘á»§ Ä‘iá»ƒm cá»‘ng hiáº¿n!"));
 			m_nDoQuestStep = 40;
 			break;
 		}
 		if (g_pCurPlayer->CheckRoom() == MAX_ROOM_SPACE)
 		{
-			SaveYSLog("§· ®µy r­¬ng => KÕt thóc!\n");
-			SystemMessage("<color=yellow>§· ®µy r­¬ng => KÕt thóc!");
+			SaveYSLog(TV(L"ÄÃ£ Ä‘Ã y rÆ°Æ¡ng => Káº¿t thÃºc!\n"));
+			SystemMessage(TV(L"<color=yellow>ÄÃ£ Ä‘Ã y rÆ°Æ¡ng => Káº¿t thÃºc!"));
 			m_nDoQuestStep = 40;
 		}
-		SaveYSLog("NhËn nhiÖm vô LB ®Æc biÖt!");
-		SystemMessage("<color=yellow>NhËn nhiÖm vô LB ®Æc biÖt!");
+		SaveYSLog(TV(L"Nháº­n nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!"));
+		SystemMessage(TV(L"<color=yellow>Nháº­n nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!"));
 		g_pCurPlayer->EnterTongMap(1);
 		m_nDoQuestStep = 1;
 		break;
@@ -779,11 +779,11 @@ void CVLQuest::BreathPK()
 		{
 			theMap.m_nTimeWait = 3;
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "NhËn nhiÖm vô ngÉu nhiªn"))
+			if (strstr(szMsg0, TV(L"Nháº­n nhiá»‡m vá»¥ ngáº«u nhiÃªn")))
 				pMsgSel->OnClickMsg(1);
-			else if (strstr(szMsg0, "T×m hiÓu LÖnh bµi nhiÖm vô ®Æc biÖt"))
+			else if (strstr(szMsg0, TV(L"TÃ¬m hiá»ƒu Lá»‡nh bÃ i nhiá»‡m vá»¥ Ä‘áº·c biá»‡t")))
 				pMsgSel->OnClickMsg(1);
-			else if (strstr(szMsg0, "§æi lÖnh bµi cÊp 1"))
+			else if (strstr(szMsg0, TV(L"Äá»•i lá»‡nh bÃ i cáº¥p 1")))
 			{
 				int nMaxLBKind = 3;
 				if (m_TongPKOpt.m_nChooseLB < 1)
@@ -816,12 +816,12 @@ void CVLQuest::BreathPK()
 		if (pMsgSel && pMsgSel->IsVisible())
 		{
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "§­îc, ta sÏ cè g¾ng."))
+			if (strstr(szMsg0, TV(L"ÄÆ°á»£c, ta sáº½ cá»‘ gáº¯ng.")))
 			{
 				pMsgSel->OnClickMsg(0);
 				theMap.ResetShoping();
 			}
-			else if (strstr(szMsg0, "Ta biÕt råi!"))
+			else if (strstr(szMsg0, TV(L"Ta biáº¿t rá»“i!")))
 				pMsgSel->OnClickMsg(0);
 			else
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -834,10 +834,10 @@ void CVLQuest::BreathPK()
 			int nLevel = g_pCurPlayer->GetTaskVal(bh_pklevel);
 			int nQty = g_pCurPlayer->GetTaskVal(bh_pkqty);;
 			char szMsg[128];
-			sprintf(szMsg, "LB ®Æc biÖt %02d: %s, cÊp=%d, th­=%d",
+			sprintf(szMsg, TV(L"LB Ä‘áº·c biá»‡t %02d: %s, cáº¥p=%d, thÆ°=%d"),
 				m_nTotalPKQuest+1, TongPKKind[nKind-1], nLevel, nQty);
 			SaveYSLog(szMsg);
-			sprintf(szMsg, "LB ®Æc biÖt <color=green>%02d<color>: <color=yellow>%s<color>, cÊp=<color=yellow>%d<color>, th­=<color=yellow>%d<color>",
+			sprintf(szMsg, TV(L"LB Ä‘áº·c biá»‡t <color=green>%02d<color>: <color=yellow>%s<color>, cáº¥p=<color=yellow>%d<color>, thÆ°=<color=yellow>%d<color>"),
 				m_nTotalPKQuest+1, TongPKKind[nKind-1], nLevel, nQty);
 			SystemMessage(szMsg, 1);
 			// Check in user settings
@@ -852,8 +852,8 @@ void CVLQuest::BreathPK()
 						if (nLevel >= m_TongPKOpt.m_HardQuests[i].nWsLevel &&
 							nQty >= m_TongPKOpt.m_HardQuests[i].nLetters)
 						{
-							SaveYSLog("Hñy nhiÖm vô theo thiÕt lËp cña ng­êi ch¬i!");
-							SystemMessage("<color=yellow>Hñy nvô theo thiÕt lËp cña ng­êi ch¬i!");
+							SaveYSLog(TV(L"Há»§y nhiá»‡m vá»¥ theo thiáº¿t láº­p cá»§a ngÆ°á»i chÆ¡i!"));
+							SystemMessage(TV(L"<color=yellow>Há»§y nvá»¥ theo thiáº¿t láº­p cá»§a ngÆ°á»i chÆ¡i!"));
 							m_nDoQuestStep = 30;
 							theMap.ResetShoping();
 							return;
@@ -873,7 +873,7 @@ void CVLQuest::BreathPK()
 			}
 			if (nCount < nQty)
 			{
-				SystemMessage("<color=yellow>NhiÖm vô bÊt kh¶ thi!");
+				SystemMessage(TV(L"<color=yellow>Nhiá»‡m vá»¥ báº¥t kháº£ thi!"));
 				m_nDoQuestStep = 30;
 				theMap.ResetShoping();
 			}
@@ -901,11 +901,11 @@ void CVLQuest::BreathPK()
 		{
 			theMap.m_nTimeWait = 3;
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "KÕt thóc ®èi tho¹i"))
+			if (strstr(szMsg0, TV(L"Káº¿t thÃºc Ä‘á»‘i thoáº¡i")))
 				pMsgSel->OnClickMsg(0);
 			else if (strstr(szMsg0, VISITED_PLACES))
 				pMsgSel->OnClickMsg(0);
-			else if (strstr(pMsgSel->m_InfoText, "Xin lùa chän:"))
+			else if (strstr(pMsgSel->m_InfoText, TV(L"Xin lá»±a chá»n:")))
 			{
 				int nDriverOpt = m_TongPKOpt.m_nDriverOpt;
 				if (nDriverOpt == 0) nDriverOpt = 3;
@@ -953,20 +953,20 @@ void CVLQuest::BreathPK()
 		{
 			theMap.m_nTimeWait = 3;
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(pMsgSel->m_InfoText, "H«m nay b¹n thùc hiÖn nhiÖm vô nµy 100 lÇn råi"))
+			if (strstr(pMsgSel->m_InfoText, TV(L"HÃ´m nay báº¡n thá»±c hiá»‡n nhiá»‡m vá»¥ nÃ y 100 láº§n rá»“i")))
 			{
 				pMsgSel->OnClickMsg(0);
-				SystemMessage("<color=yellow>§· hoµn thµnh 100 nhiÖm vô LB ®Æc biÖt!");
-				SaveYSLog("§· hoµn thµnh 100 nhiÖm vô LB ®Æc biÖt!\n");
+				SystemMessage(TV(L"<color=yellow>ÄÃ£ hoÃ n thÃ nh 100 nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!"));
+				SaveYSLog(TV(L"ÄÃ£ hoÃ n thÃ nh 100 nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t!\n"));
 				theMap.ResetShoping();
 				m_nDoQuestStep = 40;
 				m_nTotalPKQuest = 100;
 			}
-			else if (strstr(szMsg0, "NhËn nhiÖm vô ngÉu nhiªn"))
+			else if (strstr(szMsg0, TV(L"Nháº­n nhiá»‡m vá»¥ ngáº«u nhiÃªn")))
 				pMsgSel->OnClickMsg(1);
-			else if (strstr(szMsg0, "T×m hiÓu LÖnh bµi nhiÖm vô ®Æc biÖt"))
+			else if (strstr(szMsg0, TV(L"TÃ¬m hiá»ƒu Lá»‡nh bÃ i nhiá»‡m vá»¥ Ä‘áº·c biá»‡t")))
 				pMsgSel->OnClickMsg(4); // Tra nhiem vu
-			else if (strstr(szMsg0, "KÕt thóc ®èi tho¹i"))
+			else if (strstr(szMsg0, TV(L"Káº¿t thÃºc Ä‘á»‘i thoáº¡i")))
 			{
 				pMsgSel->OnClickMsg(0);
 				theMap.ResetShoping();
@@ -975,8 +975,8 @@ void CVLQuest::BreathPK()
 				if (m_TongPKOpt.m_nMaxQuestCount > 0 &&
 					m_nTotalPKQuest >= m_TongPKOpt.m_nMaxQuestCount)
 				{
-					SaveYSLog("§· hoµn thµnh ®ñ sè nvô LB ®Æc biÖt!\n");
-					SystemMessage("<color=yellow>§· hoµn thµnh ®ñ sè nvô LB ®Æc biÖt!");
+					SaveYSLog(TV(L"ÄÃ£ hoÃ n thÃ nh Ä‘á»§ sá»‘ nvá»¥ LB Ä‘áº·c biá»‡t!\n"));
+					SystemMessage(TV(L"<color=yellow>ÄÃ£ hoÃ n thÃ nh Ä‘á»§ sá»‘ nvá»¥ LB Ä‘áº·c biá»‡t!"));
 					m_nDoQuestStep = 40;
 				}
 			}
@@ -999,7 +999,7 @@ void CVLQuest::BreathPK()
 					m_nYSDoing = ys_return;
 					m_nDoQuestStep = 0;
 					m_bIsYeSouAndPK = 0;
-					SystemMessage("<color=yellow>§ñ ®iÓm KN, tr¶ nvô D· TÈu!");
+					SystemMessage(TV(L"<color=yellow>Äá»§ Ä‘iá»ƒm KN, tráº£ nvá»¥ DÃ£ Táº©u!"));
 					return;
 				}
 			}
@@ -1020,13 +1020,13 @@ void CVLQuest::BreathPK()
 	case 30: // Doi nhiem vu
 		if (g_pCurPlayer->m_cTong.ContributePoint() < 20)
 		{
-			SystemMessage("<color=yellow>Kh«ng ®ñ ®iÓm cèng hiÕn nhËn!");
-			SaveYSLog("Kh«ng ®ñ ®iÓm cèng hiÕn!\n");
+			SystemMessage(TV(L"<color=yellow>KhÃ´ng Ä‘á»§ Ä‘iá»ƒm cá»‘ng hiáº¿n nháº­n!"));
+			SaveYSLog(TV(L"KhÃ´ng Ä‘á»§ Ä‘iá»ƒm cá»‘ng hiáº¿n!\n"));
 			m_nDoQuestStep = 40;
 			break;
 		}
-		SystemMessage("<color=yellow>§æi nhiÖm vô LB ®Æc biÖt kh¸c!");
-		SaveYSLog("§æi nhiÖm vô LB ®Æc biÖt kh¸c!");
+		SystemMessage(TV(L"<color=yellow>Äá»•i nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t khÃ¡c!"));
+		SaveYSLog(TV(L"Äá»•i nhiá»‡m vá»¥ LB Ä‘áº·c biá»‡t khÃ¡c!"));
 		g_pCurPlayer->EnterTongMap(1);
 		m_nDoQuestStep = 31;
 		break;
@@ -1042,11 +1042,11 @@ void CVLQuest::BreathPK()
 		{
 			theMap.m_nTimeWait = 3;
 			char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-			if (strstr(szMsg0, "NhËn nhiÖm vô ngÉu nhiªn"))
+			if (strstr(szMsg0, TV(L"Nháº­n nhiá»‡m vá»¥ ngáº«u nhiÃªn")))
 				pMsgSel->OnClickMsg(1);
-			else if (strstr(szMsg0, "T×m hiÓu LÖnh bµi nhiÖm vô ®Æc biÖt"))
+			else if (strstr(szMsg0, TV(L"TÃ¬m hiá»ƒu Lá»‡nh bÃ i nhiá»‡m vá»¥ Ä‘áº·c biá»‡t")))
 				pMsgSel->OnClickMsg(3); // Doi lenh bai
-			else if (strstr(szMsg0, "§­îc, ta sÏ cè g¾ng."))
+			else if (strstr(szMsg0, TV(L"ÄÆ°á»£c, ta sáº½ cá»‘ gáº¯ng.")))
 			{
 				m_nDoQuestStep = 4;
 				pMsgSel->OnClickMsg(0);
@@ -1071,7 +1071,7 @@ void CVLQuest::BreathPK()
 				char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
 				if (strstr(szMsg0, VISITED_PLACES))
 					pMsgSel->OnClickMsg(1);
-				else if (strstr(szMsg0, "l­îng]"))
+				else if (strstr(szMsg0, TV(L"lÆ°á»£ng]")))
 				{
 					int nDriverOpt = (int)P_PLAYER->m_dwID % 7;
 					pMsgSel->OnClickMsg(nDriverOpt);
@@ -1102,7 +1102,7 @@ void CVLQuest::BreathPK()
 				m_nDoQuestStep = 9;
 				m_bGoTrainGetPK = 0;
 				theMap.m_bNoDriverRecent = TRUE;
-				SystemMessage("<color=yellow>TiÕp tôc lµm nvô D· TÈu!");
+				SystemMessage(TV(L"<color=yellow>Tiáº¿p tá»¥c lÃ m nvá»¥ DÃ£ Táº©u!"));
 				return;
 			}
 			else
@@ -1178,7 +1178,7 @@ int CVLQuest::GetRefLetters()
 		else
 		{
 			nTongIdx = -1;
-			SystemMessage("<color=yellow>NhiÖm vô thùc hiÖn thÊt b¹i!");
+			SystemMessage(TV(L"<color=yellow>Nhiá»‡m vá»¥ thá»±c hiá»‡n tháº¥t báº¡i!"));
 			return 2; // Failed
 		}
 
@@ -1191,7 +1191,7 @@ int CVLQuest::GetRefLetters()
 		if (pMsgSel && pMsgSel->IsVisible())
 		{
 			theMap.m_nTimeWait = 3;
-			if (strstr(pMsgSel->m_InfoText, "CÊm ®Şa bang héi, kh«ng ®­îc b­íc vµo"))
+			if (strstr(pMsgSel->m_InfoText, TV(L"Cáº¥m Ä‘á»‹a bang há»™i, khÃ´ng Ä‘Æ°á»£c bÆ°á»›c vÃ o")))
 			{
 				g_GlobalTongInfo[nTongIdx].bIsRestricted = TRUE;
 				nDestNpc = npc_Driver1;
@@ -1203,7 +1203,7 @@ int CVLQuest::GetRefLetters()
 				char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
 				if (strstr(szMsg0, VISITED_PLACES))
 				{
-					if (strstr(pMsgSel->m_pMessages[2]->Msg, "§©u còng kh«ng muèn ®i!"))
+					if (strstr(pMsgSel->m_pMessages[2]->Msg, TV(L"ÄÃ¢u cÅ©ng khÃ´ng muá»‘n Ä‘i!")))
 					{
 						g_GlobalTongInfo[nTongIdx].bIsRestricted = 0;
 						nDestNpc = nRqWs + 5;
@@ -1211,9 +1211,9 @@ int CVLQuest::GetRefLetters()
 					}
 					pMsgSel->OnClickMsg(2);
 				}
-				else if (strstr(szMsg0, "Hái tin tøc"))
+				else if (strstr(szMsg0, TV(L"Há»i tin tá»©c")))
 					pMsgSel->OnClickMsg(0);
-				else if (strstr(szMsg0, "KÕt thóc ®èi tho¹i"))
+				else if (strstr(szMsg0, TV(L"Káº¿t thÃºc Ä‘á»‘i thoáº¡i")))
 				{
 					char szInfoText[256];
 					char *pInfo = szInfoText;
@@ -1223,10 +1223,10 @@ int CVLQuest::GetRefLetters()
 							*pInfo = pMsgSel->m_InfoText[i];
 							pInfo++;
 						}
-					if (strstr(szInfoText, "sè T¸c ph­êng vÉn ch­a ®ñ") ||
-						strstr(szInfoText, "H×nh nh­ ng­¬i ®ang lµm nhiÖm vô lÖnh bµi"))
+					if (strstr(szInfoText, TV(L"sá»‘ TÃ¡c phÆ°á»ng váº«n chÆ°a Ä‘á»§")) ||
+						strstr(szInfoText, TV(L"HÃ¬nh nhÆ° ngÆ°Æ¡i Ä‘ang lÃ m nhiá»‡m vá»¥ lá»‡nh bÃ i")))
 					{
-						SystemMessage(0, "<color=yellow>%s<color>: §¼ng cÊp t¸c ph­êng ch­a ®ñ <color=yellow>%d<color>!",
+						SystemMessage(0, TV(L"<color=yellow>%s<color>: Äáº³ng cáº¥p tÃ¡c phÆ°á»ng chÆ°a Ä‘á»§ <color=yellow>%d<color>!"),
 							g_GlobalTongInfo[nTongIdx].szTongName, nRqLevel);
 						g_GlobalTongInfo[nTongIdx].WorkShopLevel[nRqWs] = nRqLevel;
 					}

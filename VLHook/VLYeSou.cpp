@@ -4,6 +4,9 @@
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include "MagicAttrib.h"
+
+#define PLAYER_SHOP_LOG 0 // = 1 bật ghi log danh sách đồ trong shop của người chơi khi mua đồ làm nv dã tẩu
 
 #define MAX_TIME_WAIT 10
 
@@ -11,24 +14,26 @@ const int Map9xID[MAX_9XMAP_NUM] = { 124, 93, 75, 144, 321, 322, 225, 226, 227, 
 
 #define BIKIP_NUM 28
 const char* BikipMP[BIKIP_NUM] =
-{ "Thiªn V­¬ng Chïy", "Thiªn V­¬ng Th­¬ng", "Thiªn V­¬ng §ao",
-	"ThiÕu L©m QuyÒn", "ThiÕu L©m C«n", "ThiÕu L©m §ao",
-	"Phi §ao thuËt.", "Phi Tiªu thuËt.", "Tô TiÔn thuËt.", "H·m TÜnh thuËt.",
-	"Ngò §éc Ch­ëng", "Ngò §éc §ao", "Ngò §éc NhiÕp",
-	"DiÖt KiÕm MËt TÞch", "Nga Mi  PhËt Quang", "Phæ §é MËt TÞch",
-	"Thóy Yªn §ao ph¸p", "Thóy Yªn Song ®ao", "C¸i Bang Ch­ëng", ", C¸i Bang C«n",
-	"V©n Long KÝch", "L­u Tinh. §ao ph¸p", "NhiÕp Hån. Chó thuËt",
-	"Th¸i Cùc QuyÒn", "Th¸i Cùc KiÕm", "Ngù Phong thuËt", "Ngù L«i thuËt", "Ngù T©m thuËt" };
+{ TV(L"Thiên Vương Chùy"), TV(L"Thiên Vương Thương"), TV(L"Thiên Vương Đao"),
+	TV(L"Thiếu Lâm Quyền"), TV(L"Thiếu Lâm Côn"), TV(L"Thiếu Lâm Đao"),
+	TV(L"Phi Đao thuật."), TV(L"Phi Tiêu thuật."), TV(L"Tụ Tiễn thuật."), TV(L"Hãm Tĩnh thuật."),
+	TV(L"Ngũ Độc Chưởng"), TV(L"Ngũ Độc Đao"), TV(L"Ngũ Độc Nhiếp"),
+	TV(L"Diệt Kiếm Mật Tịch"), TV(L"Nga Mi  Phật Quang"), TV(L"Phổ Độ Mật Tịch"),
+	TV(L"Thúy Yên Đao pháp"), TV(L"Thúy Yên Song đao"), TV(L"Cái Bang Chưởng"), TV(L", Cái Bang Côn"),
+	TV(L"Vân Long Kích"), TV(L"Lưu Tinh. Đao pháp"), TV(L"Nhiếp Hồn. Chú thuật"),
+	TV(L"Thái Cực Quyền"), TV(L"Thái Cực Kiếm"), TV(L"Ngự Phong thuật"), TV(L"Ngự Lôi thuật"), TV(L"Ngự Tâm thuật") };
 
 #define HKIM_NUM 27
 const char* HoangKimMP[HKIM_NUM] =
-{ "§ång Cõu", "§Þch Kh¸i", "V« Gian", "V« Ma", "V« TrÇn", "Chó Ph­îc", "U Lung", "Minh ¶o", "CËp Phong",
-	"L¨ng Nh¹c", "KÕ NghiÖp", "H¸m Thiªn", "Ngù Long", "Vô ¶o", "S­¬ng Tinh", "L«i Khung", "§Þa Ph¸ch", "B¨ng Hµn",
-	"S©m Hoang", "Tª Hoµng", "BÝch H¶i", "Ma Hoµng", "Ma ThÞ", "Ma S¸t", "Méng Long", "Tø Kh«ng", "Phôc Ma" };
+{ TV(L"Đồng Cừu"), TV(L"Địch Khái"), TV(L"Vô Gian"), TV(L"Vô Ma"), TV(L"Vô Trần"), TV(L"Chú Phược"), "U Lung", TV(L"Minh ảo"), TV(L"Cập Phong"),
+	TV(L"Lăng Nhạc"), TV(L"Kế Nghiệp"), TV(L"Hám Thiên"), TV(L"Ngự Long"), TV(L"Vụ ảo"), TV(L"Sương Tinh"), TV(L"Lôi Khung"), TV(L"Địa Phách"), TV(L"Băng Hàn"),
+	TV(L"Sâm Hoang"), TV(L"Tê Hoàng"), TV(L"Bích Hải"), TV(L"Ma Hoàng"), TV(L"Ma Thị"), TV(L"Ma Sát"), TV(L"Mộng Long"), TV(L"Tứ Không"), TV(L"Phục Ma") };
 
 // 15-10: menu chính của NPC Dã Tẩu (hiện trước hộp mô tả nhiệm vụ)
 // Chuỗi TCVN3 viết bằng escape hex để đúng byte dù file lưu TCVN3 hay UTF-8
-const char* YS_MENU_GETQUEST = "Nh\xcbn nhi\xd6m v\xf4";	// "Nhận nhiệm vụ"
+const char* YS_MENU_GETQUEST = TV(L"Nhận nhiệm vụ");	// "Nhận nhiệm vụ"
+const char* YS_MENU_RETURNQUEST = TV(L"Hoàn thành nhiệm vụ");	// "Hoàn thành nhiệm vụ"
+const char* YS_CANCEL_QUEST = TV(L"Đã hủy nhiệm vụ");	// "Hoàn thành nhiệm vụ"
 
 // Gop cac dong cua hop thoai thanh 1 chuoi de QTRACE
 template <class T> static const char* QTJoinMsg(T* pMsgSel)
@@ -47,14 +52,18 @@ template <class T> static const char* QTJoinMsg(T* pMsgSel)
 
 // 15-10: thông báo "Cần kích hoạt thẻ Vip mới có thể nhận và làm nhiệm vụ"
 // Tách "k\xdd" "ch": nếu viết liền "\xddch" thì trình biên dịch đọc cả "c" vào mã hex
-const char* YS_NEED_VIP = "k\xdd" "ch ho\xb9t";	// "kích hoạt", phải đi kèm chữ Vip
+const char* YS_NEED_VIP = TV(L"kích hoạt");	// "kích hoạt", phải đi kèm chữ Vip
 
 static BOOL IsNeedVipText(const char* szText)
 {
 	return szText && strstr(szText, YS_NEED_VIP) &&
 		(strstr(szText, "Vip") || strstr(szText, "VIP") || strstr(szText, "vip"));
 }
-
+//IsCancelQuestText
+static BOOL IsCancelQuestText(const char* szText)
+{
+	return szText && strstr(szText, YS_CANCEL_QUEST) ;
+}
 // Tim thong bao can the Vip trong hop thoai (loi NPC + cac dong chon)
 static BOOL HasNeedVipMsg(KUiMsgSel* pMsgSel)
 {
@@ -74,30 +83,26 @@ static BOOL HasNeedVipMsg(KUiMsgSel2* pMsgSel2)
 	return 0;
 }
 
-const char* CANCEL_BY_USER = "Hñy nhiÖm vô hoÆc dïng S¬ ®Ò theo thiÕt lËp cña ng­êi ch¬i!";
+const char* CANCEL_BY_USER = TV(L"Hủy nhiệm vụ hoặc dùng Sơ đề theo thiết lập của người chơi!");
 
 void CVLQuest::BreathYS()
 {
 	if (m_bNoVipCard && m_nYSDoing != ys_suspending)
 		m_nYSDoing = ys_suspending;	// Chua co the Vip: khong lam Da Tau nua
 
-	if (m_nYSDoing == ys_suspending)
+	// ngưng nhiệm vụ Da Tẩu, không làm nữa
+	// phải reset lại sau 12h đêm, nếu không sẽ bị treo ở trạng thái ngưng nhiệm vụ
+	if (m_nYSDoing == ys_suspending) 
 	{
-		/*if (g_pCurPlayer->m_cTong.m_dwTongNameID && m_nTongPK == act_auto)
-		{
-			SaveYSLog("Ng­ng nhiÖm vô D· TÈu, lµm nhiÖm vô LB ®Æc biÖt!\n");
-			SystemMessage("<color=yellow>Ng­ng nvô D· TÈu, lµm nvô LB ®Æc biÖt!");
-			m_nGenDoing = qt_dopk;
-			m_bIsYeSouAndPK = 0;
-		}
-		else*/
-			m_nGenDoing = qt_suspending;
+		m_nGenDoing = qt_suspending;
 		m_nDoQuestStep = 0;
 		theMap.ResetShoping();
 		return;
 	}
 
-	m_nQuestStatus = g_pCurPlayer->GetTaskVal(ys_taskstatus);
+	//g_pCurPlayer->GetTaskVal đã không sử đụng được nữa
+	//m_nQuestStatus = g_pCurPlayer->GetTaskVal(ys_taskstatus);
+
 	QTRACE("BreathYS: YS=%s Status=%d QID=%d Step=%d Map=%d", QTName_YS(m_nYSDoing), m_nQuestStatus,
 		g_pCurPlayer->GetTaskVal(ys_majorid), m_nDoQuestStep, *g_pMapID);
 
@@ -130,6 +135,21 @@ void CVLQuest::BreathYS()
 
 void CVLQuest::DoCurrentQuest()
 {
+	//CTC 15-10: nhiệm vụ Da Tẩu mới không dùng g_pCurPlayer->GetTaskVal nữa
+	switch (m_nYesouKind)
+	{
+	case ys_attackNpc:
+		DoQuestAttackNpc();
+		break;
+	case ys_ItemOption:
+		DoQuestItemOption();
+		break;
+	default:
+		break;
+	}
+	return; 
+	// code lỗi thời không dùng tới
+
 	m_nQuestID = g_pCurPlayer->GetTaskVal(ys_majorid);
 	switch (m_nQuestID)
 	{
@@ -161,38 +181,71 @@ void CVLQuest::CancelQuest()
 		int nSubCityID = theMain.GetSubCity(*g_pMapID);
 		if (theMap.ChangeMap(nSubCityID)) return;
 	}
-
+	int nCurMapID = *g_pMapID;
+	if (nCurMapID != city_tuongduong)
+	{
+		if (theMap.ChangeMap(city_tuongduong)) return;
+	}
 	if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_YeSou])) return;
 	theMap.m_bDoShoping = TRUE;
+	// check đã bật cửa sổ thông báo chưa
+	if (g_UiInformation2 && g_UiInformation2->IsVisible())
+	{
+		/*
+		* g_UiInformation2 = 0x007C6CC8  IsVisible = 1
+		  Text: Cần kích hoạt thẻ Vip mới có thể nhận và làm nhiệm vụ..
+		  Text [TCVN3]: CÇn kÝch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm vô..
+		*/
+		char szInfo[sizeof(g_UiInformation2->m_szInfoText) + 1];
+		// loại bỏ các mã màu nếu có
+		GameTextPlain(g_UiInformation2->m_szInfoText, sizeof(g_UiInformation2->m_szInfoText), szInfo, sizeof(szInfo));
+		int bCancelQuest = IsCancelQuestText(szInfo);
+		QTRACE("GetNewQuest: Information2: %s (NeedVip = %d)", szInfo, bCancelQuest);
+		if (bCancelQuest)
+		{
+			m_nQuestStatus = 1;
+			m_nYSDoing = ys_none;
+			CloseAllWindows(0);
+			return;
+		}
+		else
+			CloseAllWindows(0);
+	}
 
 	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
 		QTRACE("CancelQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
-		if (pMsgSel2->m_nNumMessage == 6)
+		if (pMsgSel2->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel2->m_pMessages[2]->Msg, "NhiÖm vô lÇn nµy khã qu¸"))
+			/*
+			* Lua chon[0]: Hoàn thành nhiệm vụ thứ 0
+			  Lua chon[0] [TCVN3]: Hoµn thµnh nhiÖm vô thø 0
+			  Lua chon[1]: Hủy nhiệm vụ
+			  Lua chon[1] [TCVN3]: Hñy nhiÖm vô
+			  Lua chon[2]: Xem tình hình chuỗi nhiệm vụ
+			  Lua chon[2] [TCVN3]: Xem t×nh h×nh chuçi nhiÖm vô
+			  Lua chon[3]:  Kết thúc đối thoại!
+			  Lua chon[3] [TCVN3]:  KÕt thóc ®èi tho¹i!
+			*/
+			size_t nKeyLen = strlen(TV(L"Hủy nhiệm vụ"));
+			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 			{
-				if (g_pCurPlayer->GetItemsCount("S¬ §Ò Giang Hå") > 0)
-				{
-					SystemMessage("<color=yellow>Hoµn thµnh nhiÖm vô b»ng S¬ §Ò Giang Hå.");
-
-					char szLogInfo[80];
-					sprintf(szLogInfo, "Hoµn thµnh nhiÖm vô b»ng S¬ §Ò Giang Hå.\n");
-					SaveYSLog(szLogInfo);
-
-					pMsgSel2->OnClickMsg(3);
-					m_nYSDoing = ys_return;
-					return;
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Hủy nhiệm vụ"), nKeyLen))
+				{					
+					//Lua chon[2]: Xem tình hình chuỗi nhiệm vụ
+					QTRACE(TV(L"CancelQuest: chon dong [%d] Hủy nhiệm vụ"), i);
+					pMsgSel2->OnClickMsg(i);
+					m_nQuestStatus = 1;
+					m_nYSDoing = ys_none;
+					CloseAllWindows(0);
+					break;					
 				}
-
-				pMsgSel2->OnClickMsg(2);
 			}
-		}
-
+		}		
 		return;
 	}
-
+	/**
 	KUiMsgSel* pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
 	if (pMsgSel && pMsgSel->IsVisible())
 	{
@@ -241,10 +294,12 @@ void CVLQuest::CancelQuest()
 
 		return;
 	}
+	/**/
 	memset(m_szYSQuest, 0, sizeof(m_szYSQuest));
 	theMap.ClickToNpc(theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
 }
 
+//về trả nhiệm vụ
 void CVLQuest::ReturnQuest()
 {
 	QTRACE("ReturnQuest: Map=%d Shoping=%d Arrange=%d", *g_pMapID, theMap.m_bDoShoping, m_nArrangeStep);
@@ -271,7 +326,7 @@ void CVLQuest::ReturnQuest()
 		QTRACE("ReturnQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
 		if (pMsgSel2->m_nNumMessage == 6)
 		{
-			if (strstr(pMsgSel2->m_pMessages[1]->Msg, "Ta ®· hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel2->m_pMessages[1]->Msg, TV(L"Ta đã hoàn thành nhiệm vụ")))
 				pMsgSel2->OnClickMsg(1);
 		}
 
@@ -284,18 +339,18 @@ void CVLQuest::ReturnQuest()
 		QTRACE("ReturnQuest: MsgSel %d dong: %s", pMsgSel->m_nNumMessage, QTJoinMsg(pMsgSel));
 		if (pMsgSel->m_nNumMessage == 1)
 		{
-			if (strstr(pMsgSel->m_InfoText, "Nh÷ng viÖc b¹n lµm ch­a ®¹t ®óng yªu cÇu"))
+			if (strstr(pMsgSel->m_InfoText, TV(L"Những việc bạn làm chưa đạt đúng yêu cầu")))
 			{
 				m_nYSDoing = ys_suspending;
-				SystemMessage("<color=yellow>VËt phÈm nhiÖm vô kh«ng ®óng!");
-				SaveYSLog("VËt phÈm nhiÖm vô kh«ng ®óng => T¹m ng­ng!");
+				SystemMessage(TV(L"<color=yellow>Vật phẩm nhiệm vụ không đúng!"));
+				SaveYSLog(TV(L"Vật phẩm nhiệm vụ không đúng => Tạm ngưng!"));
 			}
 			pMsgSel->OnClickMsg(0);
 			theMap.m_nTimeWait = 2;
 		}
 		else if (pMsgSel->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel->m_pMessages[1]->Msg, "Ta ®· hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[1]->Msg, TV(L"Ta đã hoàn thành nhiệm vụ")))
 				pMsgSel->OnClickMsg(1);
 		}
 
@@ -329,8 +384,8 @@ void CVLQuest::ReturnQuest()
 				pYSBox->OnConfirm(0);
 				theMap.ResetShoping(0);
 				m_nYSDoing = ys_suspending;
-				SystemMessage("<color=yellow>Kh«ng thÊy vËt phÈm nhiÖm vô!");
-				SaveYSLog("Kh«ng thÊy vËt phÈm nhiÖm vô => T¹m ng­ng!");
+				SystemMessage(TV(L"<color=yellow>Không thấy vật phẩm nhiệm vụ!"));
+				SaveYSLog(TV(L"Không thấy vật phẩm nhiệm vụ => Tạm ngưng!"));
 			}
 		}
 		return;
@@ -348,7 +403,7 @@ void CVLQuest::ReturnQuest()
 
 	theMap.ClickToNpc(theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
 }
-
+// chọn phần thưởng
 void CVLQuest::ChoosePrize()
 {
 	QTRACE("ChoosePrize: Map=%d Shoping=%d", *g_pMapID, theMap.m_bDoShoping);
@@ -380,87 +435,87 @@ void CVLQuest::ChoosePrize()
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_cohoihuy] * 10000;
 			else if (strstr(szItemIcon, "wenhao_icon")) // Dau hoi
 			{
-				strcpy(szPrize[i], "DÊu hái (?)");
+				strcpy(szPrize[i], TV(L"Dấu hỏi (?)"));
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dauhoi] * 10000;
 			}
 			else if (strstr(szItemIcon, "jinqian_icon")) // Kim tien
 				nValues[i] = atol(szItemText);
 			else if (strstr(szItemIcon, "jingyan_icon")) // Kinh nghiem
 				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
-			else if (strstr(szItemText, "®iÓm tÝch l"))
+			else if (strstr(szItemText, TV(L"điểm tích l")))
 				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
 			else
 			{
-				if (strstr(szItemText, "Nhu T×nh C©n Quèc"))
+				if (strstr(szItemText, TV(L"Nhu Tình Cân Quốc")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhao];
-				else if (strstr(szItemText, "Nhu T×nh  TuÖ T©m"))
+				else if (strstr(szItemText, TV(L"Nhu Tình  Tuệ Tâm")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhnb];
-				else if (strstr(szItemText, "Nhu T×nh"))
+				else if (strstr(szItemText, TV(L"Nhu Tình")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nhutinhot];
-				else if (strstr(szItemText, "HiÖp Cèt T×nh ý KÕt"))
+				else if (strstr(szItemText, TV(L"Hiệp Cốt Tình ý Kết")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hiepcotnb];
-				else if (strstr(szItemText, "HiÖp Cèt"))
+				else if (strstr(szItemText, TV(L"Hiệp Cốt")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hiepcotot];
-				else if (strstr(szItemText, "An Bang B¨ng Tinh"))
+				else if (strstr(szItemText, TV(L"An Bang Băng Tinh")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_anbangdc];
 				else if (strstr(szItemText, "An Bang"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_anbangot];
-				else if (strstr(szItemText, "§Þnh Quèc ¤ Sa"))
+				else if (strstr(szItemText, TV(L"Định Quốc Ô Sa")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dinhquocmu];
-				else if (strstr(szItemText, "§Þnh Quèc"))
+				else if (strstr(szItemText, TV(L"Định Quốc")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dinhquocot];
 				else if (strstr(szItemIcon, "½±Àø»Æ½ð×°±¸")) // Hoang Kim mon phai
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hoangkimmp];
-				else if (strstr(szItemText, "Hoµng Kim")) // Hoang Kim mon phai
+				else if (strstr(szItemText, TV(L"Hoàng Kim"))) // Hoang Kim mon phai
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_hoangkimmp];
-				else if (strstr(szItemText, "Thñy Tinh"))
+				else if (strstr(szItemText, TV(L"Thủy Tinh")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttthbt];
-				else if (strstr(szItemText, "Tinh Hång B¶o Th¹ch"))
+				else if (strstr(szItemText, TV(L"Tinh Hồng Bảo Thạch")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttthbt];
-				else if (strstr(szItemText, "ThiÕt La H¸n"))
+				else if (strstr(szItemText, TV(L"Thiết La Hán")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "Bµn Nh­îc T©m Kinh"))
+				else if (strstr(szItemText, TV(L"Bàn Nhược Tâm Kinh")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "B¸t Nh· T©m Kinh"))
+				else if (strstr(szItemText, TV(L"Bát Nhã Tâm Kinh")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tlhbntk];
-				else if (strstr(szItemText, "Vâ L©m MËt TÞch"))
+				else if (strstr(szItemText, TV(L"Võ Lâm Mật Tịch")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_vlmtttk];
-				else if (strstr(szItemText, "TÈy Tñy Kinh"))
+				else if (strstr(szItemText, TV(L"Tẩy Tủy Kinh")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_vlmtttk];
-				else if (strstr(szItemText, "Tiªn Th¶o Lé"))
+				else if (strstr(szItemText, TV(L"Tiên Thảo Lộ")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_ttl];
-				else if (strstr(szItemText, "HuyÒn ThiÕt"))
+				else if (strstr(szItemText, TV(L"Huyền Thiết")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
-				else if (strstr(szItemText, "MËt Ng©n"))
+				else if (strstr(szItemText, TV(L"Mật Ngân")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
 				else if (strstr(szItemText, "Chu Sa"))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nkhoang];
-				else if (strstr(szItemText, "Khæng T­íc"))
+				else if (strstr(szItemText, TV(L"Khổng Tước")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Phï Dung"))
+				else if (strstr(szItemText, TV(L"Phù Dung")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Chung Nhò"))
+				else if (strstr(szItemText, TV(L"Chung Nhũ")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_nthach];
-				else if (strstr(szItemText, "Thiªn s¬n  B¶o Lé"))
+				else if (strstr(szItemText, TV(L"Thiên sơn  Bảo Lộ")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tsblo];
-				else if (strstr(szItemText, "B¸ch Qu¶ Lé"))
+				else if (strstr(szItemText, TV(L"Bách Quả Lộ")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_bqualo];
-				else if (strstr(szItemText, " hoµn"))						//§¹i Lùc hoµn ,
+				else if (strstr(szItemText, TV(L" hoàn")))						//§¹i Lùc hoµn ,
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_duochoan];
-				else if (strstr(szItemText, "Ph¸o Hoa"))
+				else if (strstr(szItemText, TV(L"Pháo Hoa")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phaohoa];
-				else if (strstr(szItemText, "T©m T©m T­¬ng"))
+				else if (strstr(szItemText, TV(L"Tâm Tâm Tương")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_tttanhphu];
-				else if (strstr(szItemText, "Phóc Duyªn Lé (TiÓu)"))
+				else if (strstr(szItemText, TV(L"Phúc Duyên Lộ (Tiểu)")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen];
-				else if (strstr(szItemText, "Phóc Duyªn Lé (Trung)"))
+				else if (strstr(szItemText, TV(L"Phúc Duyên Lộ (Trung)")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen] * 2;
-				else if (strstr(szItemText, "Phóc Duyªn Lé (§¹i)"))
+				else if (strstr(szItemText, TV(L"Phúc Duyên Lộ (Đại)")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_phucduyen] * 3;
-				else if (strstr(szItemText, "HuyÒn Tinh Kho¸ng"))
+				else if (strstr(szItemText, TV(L"Huyền Tinh Khoáng")))
 					nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_huyentinh];
-				else if (strstr(szItemText, "HuyÒn tinh cÊp") ||
-					strstr(szItemText, "HuyÒn Tinh cÊp"))
+				else if (strstr(szItemText, TV(L"Huyền tinh cấp")) ||
+					strstr(szItemText, TV(L"Huyền Tinh cấp")))
 				{
 					int nMinLevel = m_PrizeSelOpt.m_PrizeVal[prize_levelht] + 1;
 					int nLevel = atoi(szItemText + 15);
@@ -503,13 +558,13 @@ void CVLQuest::ChoosePrize()
 				nMaxPrize = nValues[i];
 			}
 		}
-		SystemMessage(1, "<color=yellow>%s = %d\n  %s = %d\n  %s = %d\n<color=green>  §· chän: %s",
+		SystemMessage(1, TV(L"<color=yellow>%s = %d\n  %s = %d\n  %s = %d\n<color=green>  Đã chọn: %s"),
 			szPrize[0], nValues[0],
 			szPrize[1], nValues[1],
 			szPrize[2], nValues[2],
 			szPrize[nMaxIdx]);
 		char szMsg[256];
-		sprintf(szMsg, "PhÇn th­ëng: %s = %d, %s = %d, %s = %d. §· chän: %s.\n",
+		sprintf(szMsg, TV(L"Phần thưởng: %s = %d, %s = %d, %s = %d. Đã chọn: %s.\n"),
 			szPrize[0], nValues[0],
 			szPrize[1], nValues[1],
 			szPrize[2], nValues[2],
@@ -564,7 +619,7 @@ BOOL CVLQuest::YSPreparing()
 				theMap.m_bDoShoping = 0;
 				theMap.NearestDriver();
 				m_nDoQuestStep = 1; // Buy FY Items
-				SystemMessage("<color=yellow>§i ®æi Phóc Duyªn dù tr÷...");
+				SystemMessage(TV(L"<color=yellow>Đi đổi Phúc Duyên dự trữ..."));
 			}
 			else
 				m_nDoQuestStep = 3; // Check Return Items
@@ -671,8 +726,8 @@ BOOL CVLQuest::YSPreparing()
 			(m_TongPKOpt.m_nMaxQuestCount > 0 && m_nTotalPKQuest >= m_TongPKOpt.m_nMaxQuestCount));
 		if (g_pCurPlayer->m_nPKValue && bCanUsePK && !bGetMaxPK)
 		{
-			SaveYSLog("Cã PK, t¹m thêi ®i tÈy PK!");
-			SystemMessage("<color=yellow>Cã PK, t¹m thêi ®i tÈy PK!");
+			SaveYSLog(TV(L"Có PK, tạm thời đi tẩy PK!"));
+			SystemMessage(TV(L"<color=yellow>Có PK, tạm thời đi tẩy PK!"));
 			m_nGenDoing = qt_dopk;
 			m_bIsYeSouAndPK = TRUE;
 			m_nDoQuestStep = 0;
@@ -710,22 +765,39 @@ void CVLQuest::GetNewQuest()
 	if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_YeSou])) return;
 	theMap.m_bDoShoping = TRUE;
 	QTRACE("GetNewQuest: da toi cho NPC Da Tau (%d,%d)", theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
+	// check đã kích hoạt thẻ vip chưa, nếu chưa thì dừng lại
+	if (g_UiInformation2 && g_UiInformation2->IsVisible())
+	{		
+		/*
+		* g_UiInformation2 = 0x007C6CC8  IsVisible = 1
+		  Text: Cần kích hoạt thẻ Vip mới có thể nhận và làm nhiệm vụ..
+		  Text [TCVN3]: CÇn kÝch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm vô..
+		*/
+		char szInfo[sizeof(g_UiInformation2->m_szInfoText) + 1];
+		// loại bỏ các mã màu nếu có
+		GameTextPlain(g_UiInformation2->m_szInfoText, sizeof(g_UiInformation2->m_szInfoText), szInfo, sizeof(szInfo));	
+		int nVipVal = IsNeedVipText(szInfo);
+		QTRACE("GetNewQuest: Information2: %s (NeedVip = %d)", szInfo, nVipVal);
+		if (nVipVal)
+		{
+			StopNoVip();
+			CloseAllWindows(0);
+			return;
+		}
+		else
+			CloseAllWindows(0);
+	}
 
 	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
 		QTRACE("GetNewQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
-		//kiểm tra xem có VIP không, nếu không có thì dừng lại
-		if (HasNeedVipMsg(pMsgSel2))
-		{
-			StopNoVip();
-			return;
-		}
+		
 
 		if (pMsgSel2->m_nNumMessage == 6)
 		{
 			
-			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "®Ó ta hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel2->m_pMessages[0]->Msg, TV(L"để ta hoàn thành nhiệm vụ")))
 			{
 				GetYSQuestText(pMsgSel2);
 				m_nYSDoing = GetRequiredCondition();
@@ -735,22 +807,92 @@ void CVLQuest::GetNewQuest()
 				theMap.NearestDriver();
 			}
 		}
-		else
+		else if (pMsgSel2->m_nNumMessage == 3) // Nhận nhiệm vụ
 		{
+			/*
+			*  Lua chon[0]: Nhận nhiệm vụ
+			  Lua chon[0] [TCVN3]: NhËn nhiÖm vô
+			  Lua chon[1]: Xem tình hình chuỗi nhiệm vụ
+			  Lua chon[1] [TCVN3]: Xem t×nh h×nh chuçi nhiÖm vô
+			  Lua chon[2]:  Kết thúc đối thoại!
+			  Lua chon[2] [TCVN3]:  KÕt thóc ®èi tho¹i!
+			*/
 			// 15-10: click NPC hien menu chinh truoc, chon dong "Nhan nhiem vu"
 			size_t nKeyLen = strlen(YS_MENU_GETQUEST);
 			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
-			{
-				///GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+			{				
 				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, YS_MENU_GETQUEST, nKeyLen))
 				{
-					QTRACE("GetNewQuest: chon dong [%d] Nhan nhiem vu", i);
+					m_nQuestStatus = 1;
+					m_nYSDoing = ys_none;
+					//Lua chon[0]: Nhận nhiệm vụ
+					QTRACE(TV(L"GetNewQuest: chon dong [%d] Nhận nhiệm vụ"), i);
 					pMsgSel2->OnClickMsg(i);
 					break;
 				}
 			}
 		}
+		else if (pMsgSel2->m_nNumMessage == 4)
+		{
+			/*
+			* Lua chon[0]: Hoàn thành nhiệm vụ thứ 0
+			  Lua chon[0] [TCVN3]: Hoµn thµnh nhiÖm vô thø 0
+			  Lua chon[1]: Hủy nhiệm vụ
+			  Lua chon[1] [TCVN3]: Hñy nhiÖm vô
+			  Lua chon[2]: Xem tình hình chuỗi nhiệm vụ
+			  Lua chon[2] [TCVN3]: Xem t×nh h×nh chuçi nhiÖm vô
+			  Lua chon[3]:  Kết thúc đối thoại!
+			  Lua chon[3] [TCVN3]:  KÕt thóc ®èi tho¹i!
+			*/
+			size_t nKeyLen = strlen(TV(L"Xem tình hình chuỗi nhiệm vụ"));
+			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
+			{				
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Xem tình hình chuỗi nhiệm vụ"), nKeyLen))
+				{
+					m_nQuestStatus = 1;
+					m_nYSDoing = ys_none;
+					//Lua chon[2]: Xem tình hình chuỗi nhiệm vụ
+					QTRACE(TV(L"GetNewQuest: chon dong [%d] Xem tình hình chuỗi nhiệm vụ"), i);
+					pMsgSel2->OnClickMsg(i);
+					break;
+					break;
+				}
+			}
+		}
+		// xem thông tin nhiệm vụ => phân tích là loại nhiệm vụ gì, để biết là cần làm gì tiếp theo
+		else if (pMsgSel2->m_nNumMessage == 1)
+		{
+			/*
+			MSG2_BASE_ADD -> 0x21077B70
+			IsVisible = 1  m_Style = 0x90000000
+			  Loi thoai: Tổng số nhiệm vụ đã hoàn thành: 2 lần.  Số nhiệm vụ hôm nay đã nhận: 0 / 10 lần. Nhiệm vụ hiện tại: Tìm Trang bị tăng Nội Lực lớn hơn 150 điểm 
+			  Loi thoai [TCVN3]: Tæng sè nhiÖm vô ®· hoµn thµnh: 2 lÇn.  Sè nhiÖm vô h«m nay ®· nhËn: 0 / 10 lÇn. NhiÖm vô hiÖn t¹i: T×m Trang bÞ t¨ng Néi Lùc lín h¬n 150 ®iÓm 
+			m_nNumMessage = 1
+			  Lua chon[0]: Ta biết rồi.
+			  Lua chon[0] [TCVN3]: Ta biÕt råi.
+			*/
 
+			size_t nKeyLen = strlen(TV(L"Ta biết rồi"));
+			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
+			{
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Ta biết rồi"), nKeyLen))
+				{
+					GetYesouQuestFromKUiMsgSel2(pMsgSel2);
+					m_nQuestStatus = 1;
+					m_nYSDoing = ys_doing;
+					QTRACE(TV(L"GetNewQuest: chon dong [%d] Ta biết rồi"), i);
+					pMsgSel2->OnClickMsg(i);
+					// Xong voi Da Tau: tra co Shoping, neu khong ChangeMap bo qua buoc chay toi xa phu
+					// (ClickToNpc tu xa khong thay NPC => dung im)
+					theMap.m_bDoShoping = 0;
+					theMap.NearestDriver();
+					// Moc dung vong tim cac thanh (GetNextSearchCity). Duong cu gan trong GetRequiredConditionRaw,
+					// duong 15-10 khong goi ham do => di vong mai khong huy nhiem vu
+					m_nFirstMapID = theMain.GetOwnerCity(*g_pMapID);
+					break;
+				}
+			}
+		}
 		return;
 	}
 
@@ -766,7 +908,7 @@ void CVLQuest::GetNewQuest()
 		theMap.m_nTimeWait = 3;
 		if (pMsgSel->m_nNumMessage == 1)
 		{
-			if (strstr(pMsgSel->m_InfoText, "Mçi ngµy lµm 40 lÇn lµ ®ñ råi!"))
+			if (strstr(pMsgSel->m_InfoText, TV(L"Mỗi ngày làm 40 lần là đủ rồi!")))
 			{
 				m_nRemainQuest = 0;
 				m_nYSDoing = ys_suspending;
@@ -777,7 +919,7 @@ void CVLQuest::GetNewQuest()
 		
 		else if (pMsgSel->m_nNumMessage == 2)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "mau cho ta biÕt nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, TV(L"mau cho ta biết nhiệm vụ")))
 			{
 				GetRemainQuest(pMsgSel);
 				pMsgSel->OnClickMsg(0);
@@ -785,7 +927,10 @@ void CVLQuest::GetNewQuest()
 		}
 		else if (pMsgSel->m_nNumMessage == 3)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Ta kh«ng tin cã nhiÖm vô"))
+			/*
+			* 
+			*/
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, TV(L"Ta không tin có nhiệm vụ")))
 			{
 				m_nRemainQuest = 40;
 				pMsgSel->OnClickMsg(0);
@@ -806,7 +951,7 @@ void CVLQuest::GetNewQuest()
 				[3]  Kết thúc đối thoại!
 			/**/
 			/**/
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "®Ó ta hoµn thµnh nhiÖm vô"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, TV(L"để ta hoàn thành nhiệm vụ")))
 			{
 				GetYSQuestText(pMsgSel);
 				m_nYSDoing = GetRequiredCondition();
@@ -828,7 +973,7 @@ void CVLQuest::GetRemainQuest(KUiMsgSel* pMsgSel)
 {
 	char* szInfo = (char*)pMsgSel->m_InfoText + 0x16;
 
-	char* szRemain = strstr(szInfo, "cã thÓ thùc hiÖn l¹i");
+	char* szRemain = strstr(szInfo, TV(L"có thể thực hiện lại"));
 	if (szRemain)
 	{
 		szRemain += 20;
@@ -844,7 +989,7 @@ void CVLQuest::GetYSQuestText(KUiMsgSel* pMsgSel)
 {
 	char szLogLine[256] = "";
 	int nYeSouCode = (g_pCurPlayer->GetTaskVal(ys_tasknum) * 1234 + g_pCurPlayer->GetTaskVal(ys_minorid)) ^ 19771984;
-	sprintf(szLogLine, "D· TÈu (%08X): ", nYeSouCode);
+	sprintf(szLogLine, TV(L"Dã Tẩu (%08X): "), nYeSouCode);
 	memset(m_szYSQuest, 0, sizeof(m_szYSQuest));
 	int i = 0, j = 13, k = (int)strlen(szLogLine);
 	strcpy(m_szYSQuest, "<color=green>");
@@ -880,7 +1025,7 @@ void CVLQuest::GetYSQuestText(KUiMsgSel2* pMsgSel)
 {
 	char szLogLine[256] = "";
 	int nYeSouCode = (g_pCurPlayer->GetTaskVal(ys_tasknum) * 1234 + g_pCurPlayer->GetTaskVal(ys_minorid)) ^ 19771984;
-	sprintf(szLogLine, "D· TÈu (%08X): ", nYeSouCode);
+	sprintf(szLogLine, TV(L"Dã Tẩu (%08X): "), nYeSouCode);
 	memset(m_szYSQuest, 0, sizeof(m_szYSQuest));
 	int i = 0, j = 13, k = (int)strlen(szLogLine);
 	strcpy(m_szYSQuest, "<color=green>");
@@ -999,16 +1144,16 @@ void CVLQuest::DoQuest01()
 		{
 			g_pCurPlayer->BuyItem(pShop->m_pObjectList[nItemIdx].uId);
 
-			SystemMessage("Mua ®­îc vËt phÈm/trang bÞ tõ NPC");
-			SaveYSLog("Mua ®­îc vËt phÈm/trang bÞ tõ NPC");
+			SystemMessage(TV(L"Mua được vật phẩm/trang bị từ NPC"));
+			SaveYSLog(TV(L"Mua được vật phẩm/trang bị từ NPC"));
 
 			m_nYSDoing = ys_return;
 			theMap.NearestDriver();
 		}
 		else
 		{
-			SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
-			SaveYSLog("Hµnh trang kh«ng ®ñ chç trèng => T¹m ng­ng!");
+			SystemMessage(TV(L"<color=yellow>Hành trang không đủ chỗ trống!"));
+			SaveYSLog(TV(L"Hành trang không đủ chỗ trống => Tạm ngưng!"));
 			m_nYSDoing = ys_suspending;
 		}
 		theMap.ResetShoping();
@@ -1042,7 +1187,7 @@ void CVLQuest::DoQuest0203()
 		{
 			if (!GetItemFromRepo(&theItem)) return;
 			if (m_nQuestID == 3) m_bReturnItem = TRUE;
-			SaveYSLog("LÊy vËt phÈm/trang bÞ trong r­¬ng ®å.");
+			SaveYSLog(TV(L"Lấy vật phẩm/trang bị trong rương đồ."));
 			m_nYSDoing = ys_return;
 			theMap.NearestDriver();
 			return;
@@ -1083,7 +1228,7 @@ void CVLQuest::DoQuest0203()
 		{
 			m_nYSDoing = ys_cancel;
 			theMap.NearestDriver();
-			SaveYSLog("Ng­êi ch¬i kh«ng thiÕt lËp mua ®å => Hñy nhiÖm vô!");
+			SaveYSLog(TV(L"Người chơi không thiết lập mua đồ => Hủy nhiệm vụ!"));
 			return;
 		}
 		if (m_nQuestID == 2)
@@ -1098,8 +1243,8 @@ void CVLQuest::DoQuest0203()
 				if (!EQUIP_ROOM.FindRoom(nW, nH, &itmPos))
 				{
 					m_nYSDoing = ys_suspending;
-					SystemMessage("<color=yellow>Hµnh trang kh«ng ®ñ chç trèng!");
-					SaveYSLog("Hµnh trang kh«ng ®ñ chç trèng => T¹m ng­ng!");
+					SystemMessage(TV(L"<color=yellow>Hành trang không đủ chỗ trống!"));
+					SaveYSLog(TV(L"Hành trang không đủ chỗ trống => Tạm ngưng!"));
 					return;
 				}
 			}
@@ -1143,12 +1288,12 @@ void CVLQuest::DoQuest0203()
 			{
 				m_nYSDoing = ys_cancel;
 				theMap.NearestDriver();
-				SaveYSLog("T×m hÕt c¸c thµnh kh«ng thÊy => Hñy nhiÖm vô!");
+				SaveYSLog(TV(L"Tìm hết các thành không thấy => Hủy nhiệm vụ!"));
 			}
 			else
 			{
 				m_nYSDoing = ys_suspending;
-				SaveYSLog("T×m hÕt c¸c thµnh kh«ng thÊy => T¹m ng­ng!");
+				SaveYSLog(TV(L"Tìm hết các thành không thấy => Tạm ngưng!"));
 			}
 		}
 		else
@@ -1328,8 +1473,8 @@ void CVLQuest::DoQuestJY(int nRqValue)
 			(m_TongPKOpt.m_nMaxQuestCount > 0 && m_nTotalPKQuest >= m_TongPKOpt.m_nMaxQuestCount));
 		if (bCanUsePK && !bGetMaxPK)
 		{
-			SaveYSLog("Lµm nvô LB ®Æc biÖt t¨ng KN!");
-			SystemMessage("<color=yellow>Lµm nvô LB ®Æc biÖt t¨ng KN!");
+			SaveYSLog(TV(L"Làm nvụ LB đặc biệt tăng KN!"));
+			SystemMessage(TV(L"<color=yellow>Làm nvụ LB đặc biệt tăng KN!"));
 			m_nGenDoing = qt_dopk;
 			m_bIsYeSouAndPK = TRUE;
 			m_nDoQuestStep = 0;
@@ -1422,12 +1567,12 @@ void CVLQuest::DoQuestMW(int nRqValue)
 					{
 						m_nYSDoing = ys_cancel;
 						theMap.NearestDriver();
-						SaveYSLog("Qu¸ giê ch¹y TÝn sø => Hñy nhiÖm vô!");
+						SaveYSLog(TV(L"Quá giờ chạy Tín sứ => Hủy nhiệm vụ!"));
 					}
 					else
 					{
 						m_nYSDoing = ys_suspending;
-						SaveYSLog("Qu¸ giê ch¹y TÝn sø => T¹m ng­ng!");
+						SaveYSLog(TV(L"Quá giờ chạy Tín sứ => Tạm ngưng!"));
 					}
 					pMsgSel2->OnClickMsg(0);
 					m_bNeedGoPCK = 0;
@@ -1448,7 +1593,7 @@ void CVLQuest::DoQuestMW(int nRqValue)
 	{
 		if (pMsgSel2 && pMsgSel2->IsVisible())
 		{
-			if (strstr(pMsgSel2->m_pMessages[0]->Msg, "§óng vËy!"))
+			if (strstr(pMsgSel2->m_pMessages[0]->Msg, TV(L"Đúng vậy!")))
 				m_nDoQuestStep = 2;
 			if (pMsgSel2->m_nNumMessage == 7)
 				pMsgSel2->OnClickMsg(2);
@@ -1465,10 +1610,10 @@ void CVLQuest::DoQuestMW(int nRqValue)
 		int nCount = theMain.GetMenuCount();
 		if (nCount > 0)
 		{
-			if (nCount == 2 && theMain.ClickMenuStr("Muèn"))
+			if (nCount == 2 && theMain.ClickMenuStr(TV(L"Muốn")))
 				m_nDoQuestStep = 5;
 			else
-				theMain.ClickMenuStr("NhiÖm vô TÝn Sø");
+				theMain.ClickMenuStr(TV(L"Nhiệm vụ Tín Sứ"));
 			theMap.ResetShoping();
 			return;
 		}
@@ -1556,21 +1701,21 @@ void CVLQuest::DoQuestFY(int nRqValue)
 	{
 		if (nRqValue > 30)
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (§¹i)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (TiÓu)");
+			strcpy(FYItem[0], TV(L"Phúc Duyên Lộ (Đại)"));
+			strcpy(FYItem[1], TV(L"Phúc Duyên Lộ (Trung)"));
+			strcpy(FYItem[2], TV(L"Phúc Duyên Lộ (Tiểu)"));
 		}
 		else if (nRqValue > 10)
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (TiÓu)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (§¹i)");
+			strcpy(FYItem[0], TV(L"Phúc Duyên Lộ (Trung)"));
+			strcpy(FYItem[1], TV(L"Phúc Duyên Lộ (Tiểu)"));
+			strcpy(FYItem[2], TV(L"Phúc Duyên Lộ (Đại)"));
 		}
 		else
 		{
-			strcpy(FYItem[0], "Phóc Duyªn Lé (TiÓu)");
-			strcpy(FYItem[1], "Phóc Duyªn Lé (Trung)");
-			strcpy(FYItem[2], "Phóc Duyªn Lé (§¹i)");
+			strcpy(FYItem[0], TV(L"Phúc Duyên Lộ (Tiểu)"));
+			strcpy(FYItem[1], TV(L"Phúc Duyên Lộ (Trung)"));
+			strcpy(FYItem[2], TV(L"Phúc Duyên Lộ (Đại)"));
 		}
 		m_nDoQuestStep = 2;
 	}
@@ -1626,13 +1771,13 @@ void CVLQuest::DoQuestFY(int nRqValue)
 			if (nRqValue > 30)
 			{
 				m_nYSDoing = ys_suspending;
-				SaveYSLog("Kh«ng mua ®­îc Phóc Duyªn Lé => T¹m ng­ng!");
+				SaveYSLog(TV(L"Không mua được Phúc Duyên Lộ => Tạm ngưng!"));
 			}
 			else
 			{
 				m_nYSDoing = ys_cancel;
 				theMap.NearestDriver();
-				SaveYSLog("Kh«ng mua ®­îc Phóc Duyªn Lé => Hñy nhiÖm vô!");
+				SaveYSLog(TV(L"Không mua được Phúc Duyên Lộ => Hủy nhiệm vụ!"));
 			}
 		}
 	}
@@ -1649,20 +1794,20 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 		if (!bAutoCheck)
 		{
 			ExecuteScript("ClearMessage()");
-			if (szQuest) sprintf(szQuest, "VLAuto kh«ng tù lµm NhiÖm vô!");
-			SystemMessage("<color=yellow>VLAuto kh«ng tù lµm NhiÖm vô!", 1);
+			if (szQuest) sprintf(szQuest, TV(L"VLAuto không tự làm Nhiệm vụ!"));
+			SystemMessage(TV(L"<color=yellow>VLAuto không tự làm Nhiệm vụ!"), 1);
 		}
 		return ys_Result;
 	}
 
-	m_nQuestID = g_pCurPlayer->GetTaskVal(ys_majorid);
-	m_nQuestStatus = g_pCurPlayer->GetTaskVal(ys_taskstatus);
-
-	int nQuestGID = g_pCurPlayer->GetTaskVal(ys_taskgid);
-	if ((m_nYSDoing == ys_doing) && (nQuestGID != m_nQuestGID))
-		m_nYSDoing = ys_none;
-
-	m_nQuestGID = nQuestGID;
+	// CTC 15-10: GetTaskVal(ys_...) luôn trả 0 => không đọc lại m_nQuestID / m_nQuestStatus / m_nQuestGID ở đây
+	// (CheckStatus gọi mỗi 5s, trước đây ghi đè Status=1 về 0 giữa chừng => BreathYS bỏ DoCurrentQuest, đứng im)
+	//m_nQuestID = g_pCurPlayer->GetTaskVal(ys_majorid);
+	//m_nQuestStatus = g_pCurPlayer->GetTaskVal(ys_taskstatus);
+	//int nQuestGID = g_pCurPlayer->GetTaskVal(ys_taskgid);
+	//if ((m_nYSDoing == ys_doing) && (nQuestGID != m_nQuestGID))
+	//	m_nYSDoing = ys_none;
+	//m_nQuestGID = nQuestGID;
 
 	if (bAutoCheck)
 	{
@@ -1677,29 +1822,29 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 	int nTimeCount = (int)(tmNow - m_tmStart);
 	if (m_nYSDoing != ys_doing)
 	{
-		if (szQuest) sprintf(szQuest, "Ch­a nhËn NhiÖm vô míi!");
+		if (szQuest) sprintf(szQuest, TV(L"Chưa nhận Nhiệm vụ mới!"));
 		if (m_nYSDoing == ys_return)
-			strcpy(szMsg, "<color=green>§ang tr¶ nhiÖm vô.");
+			strcpy(szMsg, TV(L"<color=green>Đang trả nhiệm vụ."));
 		else if (m_nYSDoing == ys_cancel)
-			strcpy(szMsg, "<color=green>§ang hñy nhiÖm vô.");
+			strcpy(szMsg, TV(L"<color=green>Đang hủy nhiệm vụ."));
 		else
-			strcpy(szMsg, "<color=green>Ch­a nhËn NhiÖm vô míi!");
+			strcpy(szMsg, TV(L"<color=green>Chưa nhận Nhiệm vụ mới!"));
 		ys_Result = ys_none;
 	}
 	else if (m_nQuestID == 1)
 	{
-		if (szQuest) sprintf(szQuest, "NV mua vËt phÈm t¹i NPC.");
-		sprintf(szMsg, "<color=green>NhiÖm vô Mua vËt phÈm t¹i NPC.");
+		if (szQuest) sprintf(szQuest, TV(L"NV mua vật phẩm tại NPC."));
+		sprintf(szMsg, TV(L"<color=green>Nhiệm vụ Mua vật phẩm tại NPC."));
 	}
 	else if (m_nQuestID == 2)
 	{
-		if (szQuest) sprintf(szQuest, "NV t×m vËt phÈm theo tªn, hÖ.");
-		sprintf(szMsg, "<color=green>NhiÖm vô T×m vËt phÈm theo tªn, hÖ.");
+		if (szQuest) sprintf(szQuest, TV(L"NV tìm vật phẩm theo tên, hệ."));
+		sprintf(szMsg, TV(L"<color=green>Nhiệm vụ Tìm vật phẩm theo tên, hệ."));
 	}
 	else if (m_nQuestID == 3)
 	{
-		if (szQuest) sprintf(szQuest, "NV t×m vËt phÈm theo thuéc tÝnh.");
-		sprintf(szMsg, "<color=green>NhiÖm vô T×m vËt phÈm theo thuéc tÝnh.");
+		if (szQuest) sprintf(szQuest, TV(L"NV tìm vật phẩm theo thuộc tính."));
+		sprintf(szMsg, TV(L"<color=green>Nhiệm vụ Tìm vật phẩm theo thuộc tính."));
 	}
 	else if (m_nQuestID == 4)
 	{
@@ -1711,10 +1856,10 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			nTotalMap * 2 < m_nRqValue)
 		{
 			ys_Result = ys_cancel;
-			SaveYSLog("Hñy nhiÖm vô do thùc hiÖn qu¸ thêi gian thiÕt lËp.");
+			SaveYSLog(TV(L"Hủy nhiệm vụ do thực hiện quá thời gian thiết lập."));
 		}
-		if (szQuest) sprintf(szQuest, "NV mËt/®å chÝ, hoµn thµnh %d/%d", nTotalMap, m_nRqValue);
-		sprintf(szMsg, "<color=green>NhiÖm vô Thu thËp MËt chÝ/§å chÝ.\n  Hoµn thµnh: <color=yellow>%d/%d", nTotalMap, m_nRqValue);
+		if (szQuest) sprintf(szQuest, TV(L"NV mật/đồ chí, hoàn thành %d/%d"), nTotalMap, m_nRqValue);
+		sprintf(szMsg, TV(L"<color=green>Nhiệm vụ Thu thập Mật chí/Đồ chí.\n  Hoàn thành: <color=yellow>%d/%d"), nTotalMap, m_nRqValue);
 	}
 	else if (m_nQuestID == 5)
 	{
@@ -1729,24 +1874,24 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			nDifferent = theMain.GetExpUpLevel(nPreLevel, P_PLAYER->m_Level) + (int)g_pCurPlayer->m_nCurExp - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV kinh nghiÖm, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Kinh nghiÖm.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, TV(L"NV kinh nghiệm, hoàn thành %d/%d"), nDifferent, m_nRqValue);
+			sprintf(szMsg, TV(L"<color=green>Nhiệm vụ nâng cấp Kinh nghiệm.\n  Hoàn thành: <color=yellow>%d/%d"), nDifferent, m_nRqValue);
 			break;
 		case ys_rqmingwang:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 			nDifferent = g_pCurPlayer->GetTaskVal(0x0064) - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV danh väng, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Danh väng.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, TV(L"NV danh vọng, hoàn thành %d/%d"), nDifferent, m_nRqValue);
+			sprintf(szMsg, TV(L"<color=green>Nhiệm vụ nâng cấp Danh vọng.\n  Hoàn thành: <color=yellow>%d/%d"), nDifferent, m_nRqValue);
 			break;
 		case ys_rqfuyuan:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
 			nDifferent = g_pCurPlayer->GetTaskVal(0x0097) - nOldValue;
 			if (nDifferent >= m_nRqValue)
 				ys_Result = ys_return;
-			if (szQuest) sprintf(szQuest, "NV phóc duyªn, hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng cÊp Phóc duyªn.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, TV(L"NV phúc duyên, hoàn thành %d/%d"), nDifferent, m_nRqValue);
+			sprintf(szMsg, TV(L"<color=green>Nhiệm vụ nâng cấp Phúc duyên.\n  Hoàn thành: <color=yellow>%d/%d"), nDifferent, m_nRqValue);
 			break;
 		case ys_rqpk:
 			nOldValue = g_pCurPlayer->GetTaskVal(ys_repvalue);
@@ -1756,10 +1901,10 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			if (nTimeCount > 300) // 5 minutes
 			{
 				ys_Result = ys_cancel;
-				SaveYSLog("Qu¸ thêi gian, vÒ thµnh hñy nhiÖm vô!\n");
+				SaveYSLog(TV(L"Quá thời gian, về thành hủy nhiệm vụ!\n"));
 			}
-			if (szQuest) sprintf(szQuest, "NV n©ng PK , hoµn thµnh %d/%d", nDifferent, m_nRqValue);
-			sprintf(szMsg, "<color=green>NhiÖm vô n©ng trÞ PK.\n  Hoµn thµnh: <color=yellow>%d/%d", nDifferent, m_nRqValue);
+			if (szQuest) sprintf(szQuest, TV(L"NV nâng PK , hoàn thành %d/%d"), nDifferent, m_nRqValue);
+			sprintf(szMsg, TV(L"<color=green>Nhiệm vụ nâng trị PK.\n  Hoàn thành: <color=yellow>%d/%d"), nDifferent, m_nRqValue);
 			break;
 		}
 	}
@@ -1768,9 +1913,8 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 		int nMapSHXT = g_pCurPlayer->GetTaskVal(ys_shxtmap);
 		if (nMapSHXT >= m_nRqValue)
 			ys_Result = ys_return;
-		sprintf(szMsg, "<color=green>NhiÖm thu thËp m¶nh b¶n ®å SHXT.\n  Hoµn thµnh: <color=yellow>%d/%d", nMapSHXT, m_nRqValue);
-	}
-
+		sprintf(szMsg, TV(L"<color=green>Nhiệm thu thập mảnh bản đồ SHXT.\n  Hoàn thành: <color=yellow>%d/%d"), nMapSHXT, m_nRqValue);
+	}	
 	if (!bAutoCheck)
 	{
 		ExecuteScript("ClearMessage()");
@@ -1780,11 +1924,11 @@ YESOU_TASK_DOING CVLQuest::ReportQuest(BOOL bAutoCheck, char* szQuest)
 			int nHour = nTimeCount / 3600;
 			int nMin = (nTimeCount - 3600 * nHour) / 60;
 			int nSec = nTimeCount % 60;
-			SystemMessage(1, "<color=green>Thêi gian ®· thùc hiÖn: <color=yellow>%02d:%02d:%02d", nHour, nMin, nSec);
+			SystemMessage(1, TV(L"<color=green>Thời gian đã thực hiện: <color=yellow>%02d:%02d:%02d"), nHour, nMin, nSec);
 			SystemMessage(m_szYSQuest, 1);
 			int nQuestCancel = g_pCurPlayer->GetTaskVal(ys_taskccl);
 			int nSHXTMap = g_pCurPlayer->GetTaskVal(ys_shxtmap);
-			SystemMessage(1, "<color=green>NV ngµy / C¬ héi hñy / M¶nh SHXT:\n  <color=yellow>%d / %d / %d", m_nRemainQuest, nQuestCancel, nSHXTMap);
+			SystemMessage(1, TV(L"<color=green>NV ngày / Cơ hội hủy / Mảnh SHXT:\n  <color=yellow>%d / %d / %d"), m_nRemainQuest, nQuestCancel, nSHXTMap);
 		}
 	}
 
@@ -1827,8 +1971,8 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 		m_nLastMapID = 0;
 		if (nMinorID >= TaskInfoHeader.nTaskNum[m_nQuestID - 1])
 		{
-			SystemMessage("<color=yellow>Kh«ng nhËn d¹ng ®­îc yªu cÇu D· TÈu!");
-			SaveYSLog("Kh«ng nhËn d¹ng ®­îc yªu cÇu D· TÈu => T¹m ng­ng!");
+			SystemMessage(TV(L"<color=yellow>Không nhận dạng được yêu cầu Dã Tẩu!"));
+			SaveYSLog(TV(L"Không nhận dạng được yêu cầu Dã Tẩu => Tạm ngưng!"));
 			return ys_suspending;
 		}
 	}
@@ -1894,11 +2038,11 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 		m_nRqMapID = g_pCurPlayer->GetTaskVal(ys_mapid);
 		if (!theMove.LoadYeSouMap(m_nRqMapID))
 		{
-			SystemMessage("<color=yellow>N¬i cÇn ®Õn ch­a cã MAP!");
+			SystemMessage(TV(L"<color=yellow>Nơi cần đến chưa có MAP!"));
 			m_nRqMapID = 0;
 			if (m_TuZhiOpt.m_bCancelNoMap)
 			{
-				SaveYSLog("N¬i cÇn ®Õn ch­a cã MAP => Hñy nhiÖm vô!");
+				SaveYSLog(TV(L"Nơi cần đến chưa có MAP => Hủy nhiệm vụ!"));
 				return ys_cancel;
 			}
 			else
@@ -2012,7 +2156,7 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 				if (m_AddPointOpt.m_bSJCancel &&
 					m_nRqValue < m_AddPointOpt.m_nSJCancelVal)
 				{
-					SaveYSLog("NhiÖm vô thÊt b¹i, ®iÓm yªu cÇu thÊp => Hñy nhiÖm vô!");
+					SaveYSLog(TV(L"Nhiệm vụ thất bại, điểm yêu cầu thấp => Hủy nhiệm vụ!"));
 					return ys_cancel;
 				}
 				else
@@ -2029,7 +2173,7 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 			return ys_return;
 		else
 		{
-			SaveYSLog("Sè m¶nh b¶n ®å SHXT hiÖn cã qu¸ Ýt, kh«ng ®ñ tr¶ nhiÖm vô.");
+			SaveYSLog(TV(L"Số mảnh bản đồ SHXT hiện có quá ít, không đủ trả nhiệm vụ."));
 			return ys_suspending;
 		}
 	}
@@ -2115,7 +2259,7 @@ BOOL CVLQuest::GetUseableItem(PlayerItem* pPlayerItem, const char* szItemName, i
 		theObject.uGenre = CGOG_ITEM;
 		theObject.uId = nItemIdx;
 		g_pCoreShell->GetGameData(GDI_GAME_OBJ_DESC, (int)& theObject, (int)szItemDesc);
-		szDateTime = strstr(szItemDesc, "sö dông:");
+		szDateTime = strstr(szItemDesc, TV(L"sử dụng:"));
 		if (!szDateTime)
 		{
 			*pPlayerItem = PLAYER_ITEM(i);
@@ -2324,17 +2468,19 @@ int CVLQuest::GetNextSearchCity(BOOL bBuySuccess)
 	nCityID = m_BuyItemOpt.m_VisitCities[i] >> 16;
 	if (bBuySuccess) return nCityID;
 
-	// Check Visit Setting
-	while (TRUE)
+	// Check Visit Setting: toi da 1 vong, quay ve thanh hien tai/thanh bat dau => da tim het
+	for (int k = 0; k < MAX_CITY_NUM; k++, i = (i + 1) % MAX_CITY_NUM)
 	{
 		nCityID = m_BuyItemOpt.m_VisitCities[i] >> 16;
-		bVisit = (BOOL)(m_BuyItemOpt.m_VisitCities[i++] & 0xFFFF);
-		if (!bVisit) continue;
+		bVisit = (BOOL)(m_BuyItemOpt.m_VisitCities[i] & 0xFFFF);
 		if (nCityID == nMapID) break; // current map
-		if (nCityID == m_nFirstMapID) break; // first visited map
+		if (nCityID == m_nFirstMapID) break; // first visited map (ke ca khi khong tick)
+		if (!bVisit) continue;
+		QTRACE("GetNextSearchCity: %d -> %d (First=%d)", nMapID, nCityID, m_nFirstMapID);
 		return nCityID;
 	}
 
+	QTRACE("GetNextSearchCity: %d da tim het vong (First=%d)", nMapID, m_nFirstMapID);
 	return 0;
 }
 
@@ -2346,8 +2492,10 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 	static BOOL bFoundIt = 0;
 	static char szGotItem[80];
 	static int nItemPrice = 0;
+	static BOOL bStallLogged = 0;	// da ghi log doi chieu cho lan mo sap hien tai
 
 	char szMsg[128];
+	char szLog[640];
 	int nX, nY, dMin;
 	int nPlayerX, nPlayerY, nNpcX, nNpcY, dZ;
 
@@ -2364,10 +2512,10 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 
 		//g_pCoreShell->OperationRequest(GOI_TRADE_PLAYER_GETPRICE, 0, 0);
 
-		sprintf(szMsg, "Mua ®­îc <color=yellow>%s <color=blue>%d v¹n", szGotItem, nItemPrice / 10000);
+		sprintf(szMsg, TV(L"Mua được <color=yellow>%s <color=blue>%d vạn"), szGotItem, nItemPrice / 10000);
 		SystemMessage(szMsg);
 
-		sprintf(szMsg, "Mua ®­îc <%s> gi¸ %d v¹n l­îng.", szGotItem, nItemPrice / 10000);
+		sprintf(szMsg, TV(L"Mua được <%s> giá %d vạn lượng."), szGotItem, nItemPrice / 10000);
 		SaveYSLog(szMsg);
 
 		CloseAllWindows(0);
@@ -2383,74 +2531,117 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 		static KStallObject pItemSt[MAX_STALL_OBJ];	// 15-10: hang lay bang GetGameData(GDI_STALL_ITEMS)
 		int nStallObj = pPlrStall->GetObjects(pItemSt, MAX_STALL_OBJ);
 		if (nCurIndex) m_bVsNpc[nCurIndex] = TRUE;
+
+		// Log doi chieu: moi lan mo sap ghi 1 lan (dieu kien can tim + tung mon + ly do loai) vao Logs\<ten>.log
+		BOOL bLog = !bStallLogged;
+		bStallLogged = TRUE;
+		if (bLog && PLAYER_SHOP_LOG)
+		{
+			if (szItemName)
+				sprintf(szLog, TV(L"[Sạp] #%d %s: %d món. Cần tên '%s'"),
+					nCurIndex, nCurIndex ? g_pNpcArray[nCurIndex]->Name : "?", nStallObj, szItemName);
+			else
+				sprintf(szLog, TV(L"[Sạp] #%d %s: %d món. Cần G/D/P=%d/%d/%d Lv=%d Hệ=%d, %s (%d %s) %d..%d"),
+					nCurIndex, nCurIndex ? g_pNpcArray[nCurIndex]->Name : "?", nStallObj,
+					m_nRqGenre, m_nRqDetail, m_nRqParticular, m_nRqLevel, m_nRqSeries,
+					m_nReqAttrib >= 0 ? MagicAttribDesc(m_nReqAttrib) : "-", m_nReqAttrib,
+					m_nReqAttrib >= 0 ? MagicAttribName(m_nReqAttrib) : "-", m_nMinValue, m_nMaxValue);
+			SaveYSLog(szLog);
+		}
+
 		for (int i = 0; i < nStallObj; i++)
 		{
 			pItem = (KItem*)(dwItmBaseAdd + pItemSt[i].uId * ITM_DATA_SIZE);
-			if (ComAttr.nSpecialType >= 1) continue;
 
+			const char* szWhy = 0;
 			int nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_other];
-			if (szItemName)
+			do
 			{
-				if (!strstr(ComAttr.szItemName, szItemName)) continue;
-				if (strstr(ComAttr.szItemName, "(TiÓu)"))
-					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan01];
-				else if (strstr(ComAttr.szItemName, "(Trung)"))
-					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan02];
-				else if (strstr(ComAttr.szItemName, "(§¹i)"))
-					nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan03];
-			}
-			else
-			{
-				if (m_nRqGenre >= 0)
+				if (ComAttr.nSpecialType >= 1) { szWhy = "SpecialType"; break; }
+				if (szItemName)
 				{
-					if (m_nRqGenre != ComAttr.nItemGenre) continue;
-					if (m_nRqDetail != ComAttr.nDetailType) continue;
-					if (m_nRqParticular != ComAttr.nParticularType) continue;
-					if (m_nRqGenre == item_equip)
-					{
-						if (m_nRqDetail == equip_ring)
-							nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_ring];
-						else if (m_nRqDetail == equip_amulet)
-							nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_pendant];
-						else if (m_nRqDetail == equip_pendant)
-							nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_pendant];
-					}
-					else if (m_nRqGenre == item_special)
-					{
-						if (m_nRqParticular == 400)
-							nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_satthugian];
-					}
+					if (!strstr(ComAttr.szItemName, szItemName)) { szWhy = TV(L"sai tên"); break; }
+					if (strstr(ComAttr.szItemName, TV(L"(Tiểu)")))
+						nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan01];
+					else if (strstr(ComAttr.szItemName, "(Trung)"))
+						nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan02];
+					else if (strstr(ComAttr.szItemName, TV(L"(Đại)")))
+						nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_fuyuan03];
 				}
-				if (m_nRqLevel >= 0 && m_nRqLevel != ComAttr.nLevel) continue;
-				if (m_nRqSeries >= 0 && m_nRqSeries != ComAttr.nSeries) continue;
-				// Check Attribute
-				if (m_nReqAttrib >= 0)
+				else
 				{
-					BOOL bFound = 0;
-					for (int j = 13; j < 19; j++)
+					if (m_nRqGenre >= 0)
 					{
-						if (ItmAttr(j) <= item_begin) continue;
-						if (ItmAttr(j) == m_nReqAttrib &&
-							pItem->m_aryAllAttrib[j].nValue[0] >= m_nMinValue &&
-							pItem->m_aryAllAttrib[j].nValue[0] <= m_nMaxValue)
+						if (m_nRqGenre != ComAttr.nItemGenre) { szWhy = TV(L"sai loại (Genre)"); break; }
+						if (m_nRqDetail != ComAttr.nDetailType) { szWhy = TV(L"sai loại (Detail)"); break; }
+						if (m_nRqParticular != ComAttr.nParticularType) { szWhy = TV(L"sai loại (Particular)"); break; }
+						if (m_nRqGenre == item_equip)
 						{
-							bFound = TRUE;
-							break;
+							if (m_nRqDetail == equip_ring)
+								nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_ring];
+							else if (m_nRqDetail == equip_amulet)
+								nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_pendant];
+							else if (m_nRqDetail == equip_pendant)
+								nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_pendant];
+						}
+						else if (m_nRqGenre == item_special)
+						{
+							if (m_nRqParticular == 400)
+								nMaxPrice = m_BuyItemOpt.m_MaxPrice[price_satthugian];
 						}
 					}
-					if (!bFound) continue;
+					if (m_nRqLevel >= 0 && m_nRqLevel != ComAttr.nLevel) { szWhy = TV(L"sai cấp"); break; }
+					if (m_nRqSeries >= 0 && m_nRqSeries != ComAttr.nSeries) { szWhy = TV(L"sai hệ"); break; }
+					// Check Attribute
+					if (m_nReqAttrib >= 0)
+					{
+						BOOL bFound = 0, bHave = 0;
+						for (int j = 13; j < 19; j++)
+						{
+							if (ItmAttr(j) <= item_begin) continue;
+							if (ItmAttr(j) != m_nReqAttrib) continue;
+							bHave = TRUE;
+							if (pItem->m_aryAllAttrib[j].nValue[0] >= m_nMinValue &&
+								pItem->m_aryAllAttrib[j].nValue[0] <= m_nMaxValue)
+							{
+								bFound = TRUE;
+								break;
+							}
+						}
+						if (!bFound) { szWhy = bHave ? TV(L"có option nhưng chưa đủ chỉ số") : TV(L"không có option"); break; }
+					}
 				}
-			}
-			// Check Price
-			if (pItemSt[i].nPrice > nMaxPrice * 10000) continue;
-			if (pItemSt[i].nPrice > EQUIP_MONEY)
-			{
-				SystemMessage("<color=yellow>T×m ®­îc ®å phï hîp, mµ kh«ng ®ñ tiÒn!");
-				continue;
-			}
+				// Check Price
+				if (pItemSt[i].nPrice > nMaxPrice * 10000) { szWhy = TV(L"giá cao hơn thiết lập"); break; }
+				if (pItemSt[i].nPrice > EQUIP_MONEY)
+				{
+					SystemMessage(TV(L"<color=yellow>Tìm được đồ phù hợp, mà không đủ tiền!"));
+					szWhy = TV(L"không đủ tiền");
+					break;
+				}
+				// Check Room
+				if (!EQUIP_ROOM.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos)) { szWhy = TV(L"hết chỗ hành trang"); break; }
+			} while (0);
 
-			// Check Room
-			if (!EQUIP_ROOM.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos)) continue;
+			if (bLog && PLAYER_SHOP_LOG)
+			{
+				int nLen = sprintf(szLog, TV(L"  [%d] %s G/D/P=%d/%d/%d Lv=%d Hệ=%d giá=%d (tối đa %d vạn):"),
+					i, ComAttr.szItemName, ComAttr.nItemGenre, ComAttr.nDetailType, ComAttr.nParticularType,
+					ComAttr.nLevel, ComAttr.nSeries, pItemSt[i].nPrice, nMaxPrice);
+				for (int j = 13; j < 19; j++)
+				{
+					if (ItmAttr(j) <= item_begin) continue;
+					int nRoom = (int)sizeof(szLog) - nLen - 64;	// chua cho " => ly do"
+					if (nRoom <= 0) break;
+					int n = _snprintf(szLog + nLen, nRoom, " %s%s(%d)=%d", ItmAttr(j) == m_nReqAttrib ? "*" : "",
+						MagicAttribDesc(ItmAttr(j)), ItmAttr(j), pItem->m_aryAllAttrib[j].nValue[0]);
+					if (n < 0) { nLen += nRoom; szLog[nLen] = 0; break; }
+					nLen += n;
+				}
+				sprintf(szLog + nLen, " => %s", szWhy ? szWhy : "OK");
+				SaveYSLog(szLog);
+			}
+			if (szWhy) continue;
 			// Found it
 			bFoundIt = TRUE;
 			nLastMoney = EQUIP_MONEY;
@@ -2464,6 +2655,7 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 		nTimeWait = 0;
 		return 1; // Continue
 	}
+	bStallLogged = 0;
 	if (nTimeWait) { nTimeWait--; return 1; }
 
 	if (PEOPLE_IDX)
@@ -2478,7 +2670,7 @@ int CVLQuest::SearchBuyItem(const char* szItemName, BOOL bIsNearYeSou)
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_player) continue;
-		if (g_pNpcArray[i]->m_Doing != do_sit) continue;	// 15-10: KNpc khong con m_bHaveStall
+		if (g_pNpcArray[i]->m_nMenuState != 1) continue;	// 1 = dang bay sap
 		if (m_bVsNpc[i]) continue; // Already Visited.
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 		if (bIsNearYeSou)
@@ -2521,7 +2713,7 @@ void CVLQuest::ArrangeEquipRoom()
 		else
 		{
 			m_nArrangeStep = 2;
-			SystemMessage("<color=yellow>§ang s¾p xÔp l¹i hµnh trang...");
+			SystemMessage(TV(L"<color=yellow>Đang sắp xễp lại hành trang..."));
 		}
 	}
 	if (m_nArrangeStep == 2)

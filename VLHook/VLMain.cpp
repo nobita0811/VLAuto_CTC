@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "AntiRE.h"
 #include "GameBase.h"
@@ -52,7 +52,7 @@ CVLMain::CVLMain(void)
 	m_hWndGame = m_hWndAuto = NULL;
 	m_bQuitingGame = 0;
 	m_uHardDiskID = 0;
-	m_nTongMoney = m_nTongTimeout = m_nTongCityTimer = 0;
+	m_nTongMoney = m_nTongTimeout = m_nTongCityTimer = m_nTongStep = m_nTongEquipBase = 0;
 }
 
 BOOL CVLMain::IsPEPacked()
@@ -73,9 +73,20 @@ BOOL CVLMain::IsPEPacked()
 
 #define TONG_CITY_TIMEOUT	600		// g_RunningTimer (50ms): 30s cho ve thanh sau khi dung Tho Dia Phu
 #define TONG_CITY_DELAY		20		// g_RunningTimer (50ms): ve thanh roi cho 1s moi gop
+#define TONG_STORE_TIMEOUT	200		// g_RunningTimer (50ms): 10s de mo khoa ruong va rut tien
+#define TONG_WITHDRAW_WAIT	100		// g_RunningTimer (50ms): 5s cho tien rut tu ruong ve tren nguoi
 
-// Gop nMoney luong tien tren nguoi vao quy bang (VLAuto: bang Thong ke > Gom tien len bang).
-// Chi gop duoc trong thanh: dang o ngoai thanh thi dung Tho Dia Phu, TongMoneyBreathe cho ve thanh roi moi gop
+enum TONG_STEP
+{
+	tong_city,		// Cho ve thanh (Tho Dia Phu)
+	tong_store,		// Mo khoa ruong (neu co mat khau), rut phan thieu - khong can mo ruong
+	tong_withdraw,	// Da gui lenh rut, cho tien tren nguoi tang
+	tong_gather,	// Gop quy
+};
+
+// Gop nMoney luong vao quy bang (VLAuto: bang Thong ke > Gom tien len bang). nMoney co the lon hon tien tren nguoi:
+// phan thieu rut tu ruong truoc (khong can mo ruong). Chi gop duoc trong thanh: dang o ngoai thanh thi dung Tho Dia Phu,
+// TongMoneyBreathe cho ve thanh -> (rut tien ruong) -> gop
 BOOL CVLMain::StoreTongMoney(int nMoney)
 {
 	if (!g_pCurPlayer || !g_pNpcArray[0] || !g_pCoreShell) return FALSE;
@@ -85,6 +96,7 @@ BOOL CVLMain::StoreTongMoney(int nMoney)
 	m_nTongMoney = nMoney;
 	m_nTongTimeout = g_RunningTimer + TONG_CITY_TIMEOUT;
 	m_nTongCityTimer = 0;
+	m_nTongStep = tong_city;
 	if (P_PLAYER->m_FightMode && !UseAmuletPaper())
 	{
 		m_nTongMoney = 0;
@@ -96,8 +108,9 @@ BOOL CVLMain::StoreTongMoney(int nMoney)
 	return TRUE;
 }
 
-// Chu ky 200ms: da ve thanh (m_FightMode = 0) => cho TONG_CITY_DELAY roi gop quy
-// Nhu nut Gop quy (KUiTong 0x4EB060 -> 0x4EB430(2, 0, nMoney)): TongOperation(4, {2, 0, nMoney}, buf)
+// Chu ky 200ms: da ve thanh (m_FightMode = 0) => cho TONG_CITY_DELAY, tien tren nguoi thieu thi rut tu ruong
+// (mo khoa ruong, OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, n) - khong can mo ruong), roi gop quy.
+// Gop quy nhu nut Gop quy (10-10: KUiTong 0x4EB060 -> 0x4EB430(2, 0, nMoney)): TongOperation(4, {2, 0, nMoney}, buf)
 void CVLMain::TongMoneyBreathe()
 {
 	if (!m_nTongMoney || !g_pCurPlayer || !g_pNpcArray[0] || !g_pCoreShell) return;
@@ -107,20 +120,64 @@ void CVLMain::TongMoneyBreathe()
 	if (P_PLAYER->m_FightMode)
 	{
 		m_nTongCityTimer = 0;
-		if (g_RunningTimer >= m_nTongTimeout)
+		if (m_nTongStep != tong_city || g_RunningTimer >= m_nTongTimeout)
 		{
 			m_nTongMoney = 0;
-			SystemMessage("<color=yellow>Auto: khong ve thanh duoc - huy gom tien len bang!", 1);
+			SystemMessage("<color=yellow>Auto: khong o trong thanh - huy gom tien len bang!", 1);
 		}
 		return;
 	}
-	if (!m_nTongCityTimer)
-	{
-		m_nTongCityTimer = g_RunningTimer + TONG_CITY_DELAY;
-		return;
-	}
-	if (g_RunningTimer < m_nTongCityTimer) return;
 
+	if (m_nTongStep == tong_city)
+	{
+		if (!m_nTongCityTimer)
+		{
+			m_nTongCityTimer = g_RunningTimer + TONG_CITY_DELAY;
+			return;
+		}
+		if (g_RunningTimer < m_nTongCityTimer) return;
+		if (m_nTongMoney <= EQUIP_MONEY || ROOM_MONEY <= 0)
+			m_nTongStep = tong_gather;
+		else
+		{
+			m_nTongStep = tong_store;
+			m_nTongTimeout = g_RunningTimer + TONG_STORE_TIMEOUT;
+			SystemMessage("<color=yellow>Auto: rut tien trong ruong de gom len bang", 1);
+		}
+	}
+
+	if (m_nTongStep == tong_store || m_nTongStep == tong_withdraw)
+	{
+		if (g_RunningTimer >= m_nTongTimeout)
+		{
+			SystemMessage("<color=yellow>Auto: khong rut duoc tien trong ruong - chi gop tien tren nguoi", 1);
+			m_nTongStep = tong_gather;
+		}
+	}
+
+	if (m_nTongStep == tong_store)
+	{
+		if (theMain.OpenLockRoom(theMap.m_nRepositoryPass)) return;	// Ruong dang khoa: mo khoa (mat khau o tab Ban do)
+		int nWithdraw = min(m_nTongMoney - EQUIP_MONEY, ROOM_MONEY);
+		if (nWithdraw <= 0)
+			m_nTongStep = tong_gather;
+		else
+		{
+			m_nTongEquipBase = EQUIP_MONEY;
+			g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nWithdraw);
+			m_nTongCityTimer = g_RunningTimer + TONG_WITHDRAW_WAIT;
+			m_nTongStep = tong_withdraw;
+			return;
+		}
+	}
+
+	if (m_nTongStep == tong_withdraw)
+	{
+		if (EQUIP_MONEY <= m_nTongEquipBase && g_RunningTimer < m_nTongCityTimer) return;	// Cho may chu tra tien
+		m_nTongStep = tong_gather;
+	}
+
+	if (m_nTongStep != tong_gather) return;
 	int nMoney = min(m_nTongMoney, EQUIP_MONEY);
 	m_nTongMoney = 0;
 	if (nMoney <= 0) return;
@@ -128,6 +185,21 @@ void CVLMain::TongMoneyBreathe()
 	char buf[0x138] = { 0 };
 	g_pCoreShell->TongOperation(4, (int)p, (int)buf);
 	SystemMessage("<color=yellow>Auto: da gom tien len bang - chay tiep", 1);
+}
+
+// Co Tho Dia Phu / Hoi Thanh Phu that: trong hanh trang hoac dat o o phim tat (pos_immediacy), ke ca vat pham ve thanh (item_townportal).
+// Khong dung KUiPlayerBar::m_nHK3Gengre: o phim tat 3 co bat ky vat pham nao (vd binh thuoc) cung khac 0
+BOOL CVLMain::HaveTownPortal()
+{
+	for (int i = 0; i < MAX_PLAYER_ITEM; i++)
+	{
+		if (!PLAYER_ITEM(i).nIdx) continue;
+		if (PLAYER_ITEM(i).nPlace != pos_equiproom && PLAYER_ITEM(i).nPlace != pos_immediacy) continue;
+		KItem* pItem = (KItem*)(dwItmBaseAdd + PLAYER_ITEM(i).nIdx * ITM_DATA_SIZE);
+		if (ComAttr.nItemGenre == item_townportal) return TRUE;
+		if (strstr(ComAttr.szItemName, AMULET_PAPER) || strstr(ComAttr.szItemName, AMULETX_PAPER)) return TRUE;
+	}
+	return FALSE;
 }
 
 // Dung Tho Dia Phu / Hoi Thanh Phu / phim tat 3 (nhu CVLRecover::OnUseAM), bao VLAuto dem cmd_useam
@@ -213,6 +285,7 @@ void CVLMain::InitParams(HWND hWndGame, HWND hWndServer)
 	theCollect.LoadRedList();
 	theParty.LoadNoPTList();
 	theMap.LoadSellList();
+	theMap.LoadNoSaveList();
 
 	//Inject Codes
 	//theCollect.InjectCode();
@@ -284,7 +357,6 @@ void CVLMain::InitGameData()
 void CVLMain::LoadOptions()
 {
 	m_bSilentMode = GetPrivateProfileInt("Options", "SilentMode", 1, m_szIniFile);
-	m_bAutoChat = GetPrivateProfileInt("Options", "AutoChat", 1, m_szIniFile);
 	m_bPrintScreen = GetPrivateProfileInt("Options", "PrintScreen", 0, m_szIniFile);
 	m_bAttackBossFirst = GetPrivateProfileInt("Options", "AttackBossFirst", 1, m_szIniFile);
 	GetPrivateProfileString("Options", "ControlPass", "", m_szControlPass, 32, m_szIniFile);
@@ -449,25 +521,25 @@ void CVLMain::GetCityName(int nCityID, char* szCityName)
 	switch (nCityID)
 	{
 	case city_phuongtuong:
-		strcpy(szCityName, "Ph­îng T­êng");
+		strcpy(szCityName, TV(L"PhÆ°á»£ng TÆ°á»ng"));
 		break;
 	case city_thanhdo:
-		strcpy(szCityName, "Thµnh §«");
+		strcpy(szCityName, TV(L"ThÃ nh ÄÃ´"));
 		break;
 	case city_bienkinh:
-		strcpy(szCityName, "BiÖn Kinh");
+		strcpy(szCityName, TV(L"Biá»‡n Kinh"));
 		break;
 	case city_tuongduong:
-		strcpy(szCityName, "T­¬ng D­¬ng");
+		strcpy(szCityName, TV(L"TÆ°Æ¡ng DÆ°Æ¡ng"));
 		break;
 	case city_duongchau:
-		strcpy(szCityName, "D­¬ng Ch©u");
+		strcpy(szCityName, TV(L"DÆ°Æ¡ng ChÃ¢u"));
 		break;
 	case city_daily:
-		strcpy(szCityName, "§¹i Lý");
+		strcpy(szCityName, TV(L"Äáº¡i LÃ½"));
 		break;
 	case city_laman:
-		strcpy(szCityName, "L©m An");
+		strcpy(szCityName, TV(L"LÃ¢m An"));
 		break;
 	default:
 		GetMapName(nCityID, szCityName);

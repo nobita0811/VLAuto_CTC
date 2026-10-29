@@ -66,10 +66,19 @@
     <ClCompile Include="DlgAttack.cpp">
       <Filter>Source Files\TabDialogs</Filter>
     </ClCompile>
+    <ClCompile Include="DlgSettingSkill.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
     <ClCompile Include="DlgBasic.cpp">
       <Filter>Source Files\TabDialogs</Filter>
     </ClCompile>
     <ClCompile Include="DlgCollect.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgCollectSetting.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgBuySetting.cpp">
       <Filter>Source Files\TabDialogs</Filter>
     </ClCompile>
     <ClCompile Include="DlgMap.cpp">
@@ -191,10 +200,19 @@
     <ClInclude Include="DlgAttack.h">
       <Filter>Header Files\TabDialogs</Filter>
     </ClInclude>
+    <ClInclude Include="DlgSettingSkill.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
     <ClInclude Include="DlgBasic.h">
       <Filter>Header Files\TabDialogs</Filter>
     </ClInclude>
     <ClInclude Include="DlgCollect.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgCollectSetting.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgBuySetting.h">
       <Filter>Header Files\TabDialogs</Filter>
     </ClInclude>
     <ClInclude Include="DlgMap.h">

@@ -286,3 +286,18 @@ Engine UI mới: widget gốc nhỏ hơn 0x200 byte. `m_Style` vẫn ở +4 (bit
 - Lệnh con **2** = góp quỹ (như 10_10): 0x5C54DD → `0x5BDDA0(this 0x17A4F00, [Player+0x12714] (= m_cTong 0x7E74 + 0x28), TongNameID, __int64 p[2])` (10_10: 0x5BC630, this 0x22100A0).
 - Gọi từ VLHook: `int p[13] = {2, 0, nMoney}; char buf[0x138]; g_pCoreShell->TongOperation(4, (int)p, (int)buf);` (CVLMain::StoreTongMoney, nút Debug tab Map "Góp Idx lượng vào quỹ bang"). **Chưa thử trong game 15_10.**
 - Tiền rương cho bảng Thống kê (VLAuto/GameCore.h): `PLR_ROOM_OFFSET` = m_ItemList 0x144 + m_Room 0x6B44 = **0x6C88** (KInventory 0x1C, m_nMoney +4; room 0 = trên người, room 1 = rương).
+
+## Hộp thoại NPC: đường đi từ core tới UI (15_10)
+
+| Mục | Địa chỉ | Ghi chú |
+|---|---|---|
+| CoreDataChanged(uDataId, uParam, nParam) | 0x409C20 | switch (uDataId - 1), bảng nhảy 0x40CC1C, 0xB3 trường hợp. Prologue 55 8B EC 6A FF |
+| KClientCallback vtable | 0x7600B0 | [0] CoreDataChanged 0x40CF10 (wrapper, gọi 0x409C20), [1] ChannelMessageArrival 0x40DA10, [2] MSNMessageArrival 0x40DAB0 |
+| KClientCallback::ChannelMessageArrival | 0x40DA10 | __thiscall, ret 18h: nChannelID, szSendName, pMsgBuff, nMsgLength (WORD), bSucc (BYTE), +1 tham số. Tin kênh chat từ server ("Công bố: Nhiệm vụ Dã Tẩu -Tiêu diệt: a / b"). Prologue 55 8B EC 6A FF 68 40 46 |
+| KUiMsgCentrePad::SystemMessageArrival | 0x4BD680 | __cdecl (msg, len WORD, kênh): kênh 0 = khung thông báo dưới, kênh 1 = dòng của Auto. Prologue 55 8B EC 83 EC 08 |
+| id 64 (hộp thoại NPC) | 0x40ABAB | gọi KUiMsgSel2::OpenWindow 0x5210C0(uParam = KUiQuestionAndAnswer*) |
+| KUiMsgSel2::OpenWindow | 0x5210C0 | new 0x4588, ctor 0x521290, rồi Show 0x5217B0 (call ở 0x521180) |
+| KUiMsgSel2 LoadScheme | 0x521604 | push "npc描述界面.ini" (0x758824) - file duy nhất client nạp khi bấm Dã Tẩu |
+| KPlayerTask::GetTaskVal | 0x609990 | n > 0x176F trả 0; std::map ở this+0x54C |
+
+Khi đối thoại với Dã Tẩu, client không nạp/chạy lua nào: nội dung hoàn toàn do server gửi (nút "Ghi file/lua game nạp", VLDebugFile.cpp).

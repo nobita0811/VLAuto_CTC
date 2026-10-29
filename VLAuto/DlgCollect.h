@@ -9,11 +9,6 @@ class CDlgCollect : public CDialog
 public:
 	CDlgCollect(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgCollect();
-	void			UpdateMagicOptions(BOOL bSave);
-	void			OnBnClickedAddButton();
-	void			OnBnClickedDelButton();
-	void			OnBnClickedSaveButton();
-	void			OnBnClickedLoadButton();
 
 // Dialog Data
 	enum { IDD = IDD_COLLECT_DIALOG };
@@ -26,14 +21,10 @@ protected:
 	virtual void	OnCancel() {}
 
 	afx_msg void	OnButtonsClicked(UINT nID);
-	afx_msg void	OnCbnSelchangeItemattribCombo();
 	afx_msg void	OnCbnSelchangeItemCombo();
 	afx_msg void	OnCbnSelchangeVioletitemCombo();
-	afx_msg void	OnLbnSelchangeItemattribList();
 
 	DECLARE_MESSAGE_MAP()
 public:
-	CComboBox		m_ItemAttribCombo;
-	CListBox		m_ItemAttribList;
 	CToolTipCtrl	m_ToolTip;
 };

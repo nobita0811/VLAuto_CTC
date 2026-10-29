@@ -121,6 +121,7 @@ extern DWORD_PTR g_dwNullUiPtr;
 #define DNPC_FUNC_ADD	0x005E9880	// KPlayer::DialogNpc (15-10)
 #define GRL_FUNC_ADD	0x005BD0C0	// KCoreShell::GetNPCRelation (15-10)
 #define MVT_FUNC_ADD	0x005F8CF0	// KNpc::MoveTo Function (15-10)
+#define NMP_FUNC_ADD	0x005BC920	// KNpc::GetMpsPos thiscall(int *x, int *y) (15-10): SubWorld[m_SubWorldIndex(+0x103C)].Map2Mps(m_RegionIndex(+0x1040), ...) 0x630AD0
 #define SKL_FUNC_ADD	0x00644CB0	// SendClientCmdSkill(skill, x, y) Function (15-10, goi tin co them token)
 #define IGR_FUNC_ADD	0x006051B0	// KItem::GetRepairPrice (15-10)
 #define GTV_BASE_ADD	0x00609990	// KPlayerTask::GetTaskVal Function (15-10)
@@ -133,6 +134,9 @@ extern DWORD_PTR g_dwNullUiPtr;
 #define RPS_VT_DRAWPRIM	0x48		// iRepresentShell::DrawPrimitives (4 tham so) - vtable offset (15-10, 10-10: 0x4C)
 #define DGS_JMP_ADD		0x004D78CD	// KUiGameSpace::PaintWindow: mov ecx,[CORE]; CALL DrawGameSpace (15-10: E8, 10-10: E9)
 #define DGS_FUNC_ADD	0x005BD120	// KCoreShell::DrawGameSpace (ScenePlace.Paint + DrawSelectInfo)
+#define GOLD_BLUE_MAX_ADD	0x01729548	// int: ve ten NPC (0x5FDD6C) GetGoldType 0x6D4600 (IsGold && IsGolding ? m_nGoldType+1 : 0) <= gia tri nay => ten xanh (0xFF6365FF), lon hon => vang (0xFFEBB200)
+#define NPCP_FUNC_ADD	0x005F7CA0	// KNpc::Paint thiscall(0) (15-10): xoay m_ResDir(+0x1DC4) ve m_Dir roi m_DataRes(+0x1DC8).Draw (KNpcRes::Draw 0x6BEEC0)
+#define NPCP_CALL_ADD	0x00642B23	// CoreDrawGameObj 0x642940 (genre NPC, nParam & 2 = ve than): E8 call KNpc::Paint
 
 // Trap ban do (cong di bo) - KScenePlaceRegionC::m_TrapInfo nap tu <x>_<y>Region_C.dat (15-10)
 #define SCP_BASE_ADD	0x0172B1F8	// g_ScenePlace (KScenePlaceC) - DrawGameSpace: mov ecx,0x172B1F8; call Paint
@@ -170,10 +174,10 @@ extern DWORD_PTR g_dwNullUiPtr;
 #define SCK_SHORTCUT_SIT	"Switch([[sit]])"
 #define SCK_SHORTCUT_HORSE	"Switch([[horse]])"
 
-#define AMULET_PAPER		"Thæ ®Þa phï"
-#define AMULETX_PAPER		"Håi thµnh phï"
-#define KC_LENH				"Khiªu chiÕn lÖnh"
-#define FY_ITEM				"Phóc Duyªn Lé"
-#define VISITED_PLACES		"Nh÷ng n¬i ®· ®i qua"
-#define AGREE_TRADE			"Giao dÞch"
-#define FULL_REPAIR			"Söa kü ["
+#define AMULET_PAPER		TV(L"Thổ địa phù")
+#define AMULETX_PAPER		TV(L"Hồi thành phù")
+#define KC_LENH				TV(L"Khiêu chiến lệnh")
+#define FY_ITEM				TV(L"Phúc Duyên Lộ")
+#define VISITED_PLACES		TV(L"Những nơi đã đi qua")
+#define AGREE_TRADE			TV(L"Giao dịch")
+#define FULL_REPAIR			TV(L"Sửa kỹ [")

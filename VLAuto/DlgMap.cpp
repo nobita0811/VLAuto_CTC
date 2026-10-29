@@ -6,6 +6,7 @@
 #include "GameWindow.h"
 #include "DlgCollect.h"
 #include "DlgMap.h"
+#include "DlgBuySetting.h"
 
 // CDlgMap dialog
 
@@ -28,10 +29,6 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 
 	//Checkboxes
 	DDX_Check(pDX, IDC_AUTORETURN_CHECK, g_pCurGameWin->m_prMap.m_bAutoReturn);
-	DDX_Check(pDX, IDC_BUYITEM_CHECK1, g_pCurGameWin->m_prMap.m_TradeItem[0].bBuyCheck);
-	DDX_Check(pDX, IDC_BUYITEM_CHECK2, g_pCurGameWin->m_prMap.m_TradeItem[1].bBuyCheck);
-	DDX_Check(pDX, IDC_BUYITEM_CHECK3, g_pCurGameWin->m_prMap.m_TradeItem[2].bBuyCheck);
-	DDX_Check(pDX, IDC_BUYAM_CHECK, g_pCurGameWin->m_prMap.m_bBuyTDP);
 	DDX_Check(pDX, IDC_REPAIRITEM_CHECK, g_pCurGameWin->m_prMap.m_bRepair);
 	DDX_Check(pDX, IDC_SELLITEM_CHECK, g_pCurGameWin->m_prMap.m_bSellItems);
 	DDX_Check(pDX, IDC_GETREPUTATION_CHECK, g_pCurGameWin->m_prMap.m_bGetReputation);
@@ -41,19 +38,12 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_GIVEKCL_CHECK, g_pCurGameWin->m_prMap.m_bGiveKCL);
 
 	//Textboxes
-	DDX_Text(pDX, IDC_BUYITEM_EDIT1, g_pCurGameWin->m_prMap.m_TradeItem[0].nBuyAmout);
-	DDX_Text(pDX, IDC_BUYITEM_EDIT2, g_pCurGameWin->m_prMap.m_TradeItem[1].nBuyAmout);
-	DDX_Text(pDX, IDC_BUYITEM_EDIT3, g_pCurGameWin->m_prMap.m_TradeItem[2].nBuyAmout);
 	DDX_Text(pDX, IDC_SAVEMONEY_EDIT, g_pCurGameWin->m_prMap.m_nMoneyAmount);
 	DDX_Text(pDX, IDC_REPOSITORYPASS_EDIT, g_pCurGameWin->m_prMap.m_nRepositoryPass);
 	DDX_Text(pDX, IDC_GETMONEY_EDIT, g_pCurGameWin->m_prMap.m_nGetMoneyAmount);
-	DDX_Text(pDX, IDC_BUYAM_EDIT, g_pCurGameWin->m_prMap.m_nAMNumbers);
 	DDX_Text(pDX, IDC_GIVEKCL_EDIT, g_pCurGameWin->m_prMap.m_nMinKCL);
 
 	//ComboBoxes
-	DDX_CBIndex(pDX, IDC_BUYITEM_COMBO1, g_pCurGameWin->m_prMap.m_TradeItem[0].nItemPos);
-	DDX_CBIndex(pDX, IDC_BUYITEM_COMBO2, g_pCurGameWin->m_prMap.m_TradeItem[1].nItemPos);
-	DDX_CBIndex(pDX, IDC_BUYITEM_COMBO3, g_pCurGameWin->m_prMap.m_TradeItem[2].nItemPos);
 	DDX_CBIndex(pDX, IDC_DRIVER_COMBO, g_pCurGameWin->m_prMap.m_nDriverOption);
 	DDX_CBIndex(pDX, IDC_SAVEITEM_COMBO, g_pCurGameWin->m_prMap.m_nSaveItemMode);
 	UpdateTrainMap(pDX->m_bSaveAndValidate);
@@ -63,17 +53,6 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 	bChecked = ((CButton*)GetDlgItem(IDC_GETMONEY_CHECK))->GetCheck();
 	GetDlgItem(IDC_REPOSITORYPASS_EDIT)->EnableWindow(!bChecked);
 	GetDlgItem(IDC_GETMONEY_EDIT)->EnableWindow(!bChecked);
-	bChecked = ((CButton*)GetDlgItem(IDC_BUYITEM_CHECK1))->GetCheck();
-	GetDlgItem(IDC_BUYITEM_COMBO1)->EnableWindow(!bChecked);
-	GetDlgItem(IDC_BUYITEM_EDIT1)->EnableWindow(!bChecked);
-	bChecked = ((CButton*)GetDlgItem(IDC_BUYITEM_CHECK2))->GetCheck();
-	GetDlgItem(IDC_BUYITEM_COMBO2)->EnableWindow(!bChecked);
-	GetDlgItem(IDC_BUYITEM_EDIT2)->EnableWindow(!bChecked);
-	bChecked = ((CButton*)GetDlgItem(IDC_BUYITEM_CHECK3))->GetCheck();
-	GetDlgItem(IDC_BUYITEM_COMBO3)->EnableWindow(!bChecked);
-	GetDlgItem(IDC_BUYITEM_EDIT3)->EnableWindow(!bChecked);
-	bChecked = ((CButton*)GetDlgItem(IDC_BUYAM_CHECK))->GetCheck();
-	GetDlgItem(IDC_BUYAM_EDIT)->EnableWindow(!bChecked);
 	bChecked = ((CButton*)GetDlgItem(IDC_SAVEMONEY_CHECK))->GetCheck();
 	GetDlgItem(IDC_SAVEMONEY_EDIT)->EnableWindow(!bChecked);
 	bChecked = ((CButton*)GetDlgItem(IDC_DRIVER_CHECK))->GetCheck();
@@ -96,12 +75,6 @@ BOOL CDlgMap::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	CComboBox *pComboBox;
-	pComboBox = (CComboBox*)GetDlgItem(IDC_BUYITEM_COMBO1);
-	InitComboBox(pComboBox);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_BUYITEM_COMBO2);
-	InitComboBox(pComboBox);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_BUYITEM_COMBO3);
-	InitComboBox(pComboBox);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_DRIVER_COMBO);
 	pComboBox->AddString(_T("Nơi đã đi qua 1"));
 	pComboBox->AddString(_T("Nơi đã đi qua 2"));
@@ -159,18 +132,11 @@ BOOL CDlgMap::OnInitDialog()
 
 	if (m_ToolTip.Create(this))
 	{
-		m_ToolTip.AddTool(GetDlgItem(IDC_AUTORETURN_CHECK), _T("Hồi thành tự quay lại nơi Luyện công (phím tắt Ctrl + G)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_AUTORETURN_CHECK), _T("Hồi thành tự quay lại nơi Luyện công (phím tắt Ctrl + T)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GETMONEY_CHECK), _T("Rút tiền trong Rương khi Hồi thành"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GETMONEY_EDIT), _T("Số tiền cần rút (vạn lượng)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_REPOSITORYPASS_EDIT), _T("Mật mã Rương (để rút tiền)"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_COMBO1), _T("Loại thuốc cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_EDIT1), _T("Số lượng cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_COMBO2), _T("Loại thuốc cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_EDIT2), _T("Số lượng cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_COMBO3), _T("Loại thuốc cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_EDIT3), _T("Số lượng cần mua"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYAM_CHECK), _T("Mua Thổ Địa Phù (ở Tạp hóa)"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_BUYITEM_EDIT3), _T("Số lượng TĐP cần mua"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_BUYSETTING_BUTTON), _T("Cài đặt mua thuốc, Thổ Địa Phù khi về thành"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_SELLITEM_CHECK), _T("Bán đồ (ở Tạp hóa / Hiệu thuốc)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_REPAIRITEM_CHECK), _T("Sửa đồ (ở Hiệu thuốc)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GETREPUTATION_CHECK), _T("Nhận PD / DV ở Võ Lâm Truyền Nhân"));
@@ -190,29 +156,6 @@ BOOL CDlgMap::PreTranslateMessage(MSG* pMsg)
 {
 	m_ToolTip.RelayEvent(pMsg);
 	return CDialog::PreTranslateMessage(pMsg);
-}
-
-void CDlgMap::InitComboBox(CComboBox *pComboBox)
-{
-	pComboBox->ResetContent();
-	pComboBox->AddString(_T("Kim Sáng Dược (tiểu)"));
-	pComboBox->AddString(_T("Kim Sáng Dược (trung)"));
-	pComboBox->AddString(_T("Kim Sáng Dược (đại)"));
-	pComboBox->AddString(_T("Hồi Thiên Đan"));
-	pComboBox->AddString(_T("Ngưng Thần Đan (tiểu)"));
-	pComboBox->AddString(_T("Ngưng Thần Đan (trung)"));
-	pComboBox->AddString(_T("Ngưng Thần Đan (đại)"));
-	pComboBox->AddString(_T("Đại Bổ Tán"));
-	pComboBox->AddString(_T("Thừa Tiên Mật (tiểu)"));
-	pComboBox->AddString(_T("Thừa Tiên Mật (trung)"));
-	pComboBox->AddString(_T("Tam Hoa Tán"));
-	pComboBox->AddString(_T("Hoắc Hương Chính Khí Hoàn"));
-	pComboBox->AddString(_T("Tam Thuận Tán"));
-	pComboBox->AddString(_T("Ngân Kiều Khứ Độc Đan"));
-	pComboBox->AddString(_T("Quy Nguyên Đơn"));
-	pComboBox->AddString(_T("Thanh Hồng Đơn"));
-	pComboBox->AddString(_T("Ngũ Hoa Ngọc Lộ Hoàn"));
-	pComboBox->AddString(_T("Long Đàm Hóa Độc đan"));
 }
 
 void CDlgMap::UpdateTrainMap(BOOL bSave)
@@ -243,7 +186,13 @@ void CDlgMap::OnButtonsClicked(UINT nID)
 	CString szMessage;
 	CButton *pButton = (CButton*)GetDlgItem(nID);
 
-	if (nID == IDC_GETMONEY_CHECK)
+	if (nID == IDC_BUYSETTING_BUTTON)
+	{
+		UpdateData();
+		CDlgBuySetting dlgSetting(this);
+		dlgSetting.DoModal();
+	}
+	else if (nID == IDC_GETMONEY_CHECK)
 	{
 		if (pButton->GetCheck())
 		{

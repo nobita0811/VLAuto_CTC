@@ -1,7 +1,10 @@
-#include "stdafx.h"
+Ôªø#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
+#include <intrin.h>
+
+BOOL DebugQuestMoveOK(void *pCaller);	// VLDebugQuest.cpp
 
 // Global Variables
 DWORD				dwObjBaseAdd;
@@ -42,7 +45,7 @@ void PostChatMessage(const char *szChatMsg)
 	ExecuteScript(szScript);
 }
 
-// Chu hoa TCVN3: a-z -> A-Z, ® © ™ ´ ¨ ≠ Æ (0xA8-0xAE) -> ° ¢ £ § • ¶ ß (0xA1-0xA7).
+// Chu hoa TCVN3: a-z -> A-Z, ¬® ¬© ¬™ ¬´ ¬¨ ¬≠ ¬Æ (0xA8-0xAE) -> ¬° ¬¢ ¬£ ¬§ ¬• ¬¶ ¬ß (0xA1-0xA7).
 // Chu co dau (a sac, a mu sac, o mu huyen...) TCVN3 chi co 1 ma dung chung cho hoa/thuong => giu nguyen.
 // Khong dung toupper/CharUpper: chung doi theo code page Windows (0xE0-0xFE...) lam hong ma TCVN3
 unsigned char TcvnUpChar(unsigned char c)
@@ -68,6 +71,19 @@ int TcvnStrCmpI(const char* sz1, const char* sz2)
 		c1 = TcvnUpChar(*p1++);
 		c2 = TcvnUpChar(*p2++);
 	} while (c1 && c1 == c2);
+	return c1 - c2;
+}
+
+int TcvnStrNCmpI(const char* sz1, const char* sz2, int n)
+{
+	const unsigned char *p1 = (const unsigned char*)sz1, *p2 = (const unsigned char*)sz2;
+	unsigned char c1 = 0, c2 = 0;
+	while (n-- > 0)
+	{
+		c1 = TcvnUpChar(*p1++);
+		c2 = TcvnUpChar(*p2++);
+		if (!c1 || c1 != c2) break;
+	}
 	return c1 - c2;
 }
 
@@ -127,6 +143,33 @@ void KNpc::GetMapPos(int *nX, int *nY)
 {
 	*nX = m_RegX * REGION_WIDTH + m_MapX * CELL_WIDTH + (m_OffX >> 10);
 	*nY = m_RegY * REGION_HEIGHT + m_MapY * CELL_HEIGHT + (m_OffY >> 10);
+}
+
+// KNpc::GetMpsPos cua game: region[m_RegionIndex].LeftTop + m_MapX/Y * cell + (m_OffX/Y >> 10).
+// Day la toa do game dung khi tu danh (NpcSet::GetDistanceSquare / KNpcAI::FollowAttack).
+// m_RegionIndex ngoai 0..so region thi game khong ghi => giu gia tri GetMapPos.
+void KNpc::GetGamePos(int *nX, int *nY)
+{
+	GetMapPos(nX, nY);
+	__asm
+	{
+		push nY;
+		push nX;
+		mov ecx, this;
+		mov eax, NMP_FUNC_ADD;
+		call eax;
+	}
+}
+
+// NPC "ma": con trong mang NPC client nhung o region game dang giu da bi nap lai cho vung khac
+// => game tinh toa do (GetGamePos) lech voi toa do dong bo (GetMapPos, m_RegX/m_RegY), khong ve,
+// nhung KNpcAI::FollowAttack van thay "trong tam" va ra skill vao cho trong.
+BOOL KNpc::IsGhost()
+{
+	int nX, nY, nGX, nGY;
+	GetMapPos(&nX, &nY);
+	GetGamePos(&nGX, &nGY);
+	return abs(nX - nGX) > CELL_WIDTH || abs(nY - nGY) > CELL_HEIGHT;
 }
 
 void KNpc::MoveTo(int nX, int nY, int nAction)
@@ -298,6 +341,7 @@ void KPlayer::MoveTo(int nX, int nY)
 	int nDestY = nY;
 	int nPlayerX, nPlayerY, dZ;
 
+	if (!DebugQuestMoveOK(_ReturnAddress())) return;	// DEBUG > Nhiem vu: Buoc 4 / giu dung tai map
 	if (m_nSendMoveFrames > MAX_PLAYER_MOVE_FRAME)
 	{
 		P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
@@ -313,6 +357,7 @@ void KPlayer::MoveTo(int nX, int nY)
 }
 void KPlayer::GoTo(int nX, int nY)
 {
+	if (!DebugQuestMoveOK(_ReturnAddress())) return;
 	int x = nX / 32;
 	int y = nY / 32;
 	__asm
@@ -324,6 +369,8 @@ void KPlayer::GoTo(int nX, int nY)
 		call eax;
 	}
 }
+
+
 int KPlayer::GetTaskVal(int nTaskNum)
 {
 	int retValue = m_cTask.GetTaskVal(nTaskNum);
@@ -569,7 +616,7 @@ BOOL KPlayer::EnterTongMap(int nStep, DWORD dwTongID)
 	static int nLastMapID = 0;
 	static char szLastMapNm[32] = "";
 
-	char *szLanhDia = strstr(g_szMapName, " - l∑");
+	char *szLanhDia = strstr(g_szMapName, TV(L" - l√£"));
 	if (szLanhDia)
 	{
 		char szMapTongName[16] = "";

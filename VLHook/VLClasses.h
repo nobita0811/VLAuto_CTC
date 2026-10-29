@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "S3Client.h"
 
@@ -42,7 +42,6 @@ public:
 	char	m_szIniFile[MAX_PATH];
 	BOOL	m_bPause;
 	BOOL	m_bSilentMode;
-	BOOL	m_bAutoChat;
 	BOOL	m_bPrintScreen;
 	BOOL	m_bAttackBossFirst;
 	char	m_szControlPass[40];
@@ -50,6 +49,8 @@ public:
 	int		m_nTongMoney;		// Lenh gom tien len bang dang cho ve thanh (0 = khong co)
 	int		m_nTongTimeout;		// g_RunningTimer: qua moc nay chua ve thanh => huy
 	int		m_nTongCityTimer;	// g_RunningTimer: da ve thanh, cho toi moc nay moi gop (0 = chua ve thanh)
+	int		m_nTongStep;		// TONG_STEP (VLMain.cpp): ve thanh -> rut tien ruong -> gop
+	int		m_nTongEquipBase;	// Tien tren nguoi luc gui lenh rut tien ruong
 
 private:
 	unsigned m_uHardDiskID;
@@ -61,6 +62,7 @@ public:
 	BOOL StoreTongMoney(int nMoney);
 	void TongMoneyBreathe();
 	BOOL UseAmuletPaper();
+	BOOL HaveTownPortal();
 	void SetDllFilePath(char *szDllFile);
 	int CheckRegistration();
 	void InitParams(HWND hWndGame, HWND hWndServer);
@@ -259,7 +261,9 @@ public:
 	int		m_SettingSkills[MAXSETSKILL];
 	ALTER_SKILLS m_AlterSkill[2];
 	//Reservations
-	int		m_Revserved[3];
+	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
+	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
+	int		m_Revserved2;
 
 	//Private
 	DWORD	m_LastNpcID;
@@ -289,6 +293,7 @@ public:
 	BOOL	IsLagTarget(int nIndex);
 	int		SearchNearestNpc(int nX, int nY, int nRange);
 	void	AutoDefence();
+	void	ReleaseEnemy();
 	void	ProcessAttack();
 	int		GetCurTargetIdx();
 	void	SendVLCmdSkill(int nSkillId, int nX, int nY);
@@ -406,6 +411,8 @@ public:
 	BOOL	m_bNoAttackFollow;
 	BOOL	m_bMoveByMap;
 	int		m_nNodesMapID;	// Ban do cua m_Nodes (0 = khong kiem tra)
+	POINT	m_GoNodes[MAX_NODES];	// Danh sach toa do di den noi luyen cong (GoTrainBreathe)
+	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = khong kiem tra)
 	//private
 	int		m_nStatus;
 	int		m_nPreNode;
@@ -414,6 +421,18 @@ public:
 	//Ver 2.42
 	int		nLastMapID;
 	BOOL	m_bFindingWay;
+	// Di toi bai train sau khi chon xa phu (Tab Ban do bao): MapToMap -> MapPath toi diem dau tien.
+	// Dang bat thi Tab Chien dau chi buff, khong tu ve / tim quai
+	BOOL	m_bGoTrain;
+	int		m_nGoTrainMap;
+	DWORD	m_dwGoTrainTick;
+	int		m_nGoNode;		// Diem dang toi trong m_GoNodes (-1 = chua chon diem bat dau)
+	void	GoTrainStart(int nMapID);
+	void	GoTrainStop();
+	BOOL	GoTrainBreathe();
+	BOOL	GoNodesBreathe();
+	BOOL	HaveGoNodes();
+	BOOL	NearTrainArea(int nPlayerX, int nPlayerY);
 	int		m_nMapPoints, m_nStart, m_nEnd;
 	POINT	MapPoints[MAX_POINTS];
 	int		MapSides[MAX_POINTS][MAX_POINTS];
@@ -463,6 +482,8 @@ private:
 	BOOL	RunningToDoor();
 	BOOL	RunningToPos();
 	BOOL	Dijkstra(int nStart, int nEnd);
+	// hàm di chuyển đến bất kỳ nơi nào trong thế giơi game (yêu cầu cần làm full map path , có thể không tìm đường được)
+	BOOL	GoToWorld(int MapId, int nDestX, int nDestY);
 };
 
 #define MAX_MEMBERS 16
@@ -480,6 +501,7 @@ public:
 	int		m_nAutoLeaveTime;
 	BOOL	m_bAutoKick;
 	int		m_nAutoKickTime;
+	BOOL	m_bAlwaysCaptain;	// Luon lam chu PT; khong tick: chi nhan loi moi (che do danh sach)
 private:
 	BOOL	m_bPTAllYS;
 	BOOL	m_bAcceptAllYS;
@@ -497,6 +519,8 @@ public:
 	BOOL IsInAcceptList(char* szPlayerName);
 	BOOL AcceptInvite(char *szInviter);
 	void AcceptJoinAll();
+	void BreatheListMode();
+	int  CountListNames();
 	void CheckAbsentMem();
 	void LoadNoPTList();
 	BOOL IsInNoPTList(const char *szNpcName);
@@ -532,6 +556,7 @@ struct ShopItems
 };
 
 #define MAX_SELL_ITEMS 64
+#define MAX_NOSAVE_ITEMS 64
 class CVLMap
 {
 	typedef struct
@@ -601,6 +626,7 @@ public:
 	BOOL	m_bEnableGiveKCL;
 	ShopItems m_ShopItem[MAX_SHOP_ITEMS];
 	char	m_szSellItems[MAX_SELL_ITEMS][80];
+	char	m_szNoSaveItems[MAX_NOSAVE_ITEMS][32];	// Maps\RuongItem.txt: khong cat vao ruong
 
 public:
 	CVLMap(void);
@@ -614,6 +640,7 @@ public:
 	BOOL IsLagMoving(int nPlayerX, int nPlayerY, int dZ);
 	void NearestDriver();
 	void WithdrawMoney();
+	void WithdrawMoneyForXaPhu();
 	BOOL ChangeMap(int nNewMapID);
 	int OpenStoreBox(); // 0 = Opening, 1 = Opened, -1 = NotFound
 	void SaveNewRepository();
@@ -631,6 +658,8 @@ public:
 	void ClickToNpc(int nX, int nY);
 	void LoadSellList();
 	BOOL IsInSellList(const char *szItemName);
+	void LoadNoSaveList();
+	BOOL IsInNoSaveList(const char *szItemName);
 	void ResetShoping(BOOL bResetAll = TRUE);
 };
 
@@ -676,15 +705,7 @@ enum YESOU_REQUIRED_VALUE
 	ys_rqshanhe,
 };
 
-// Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
-// Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
-#define QUEST_TRACE 1
-#if QUEST_TRACE
-void QTraceSite(char *szLast, const char *szFormat, ...);
-#define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)
-#else
-#define QTRACE(...) ((void)0)
-#endif
+
 const char* QTName_Gen(int nGen);
 const char* QTName_YS(int nYS);
 const char* QTName_Rq(int nRq);
@@ -917,8 +938,15 @@ public:
 	BOOL	m_bIsYeSouAndPK;
 	BOOL	m_bGetMingWang;
 	time_t	m_tmStart;
+	// phần này biến để làm lại logic nhiệm vụ dã tẩu mới (bản CTC 15-10_2026 trở đi)
 	BOOL	m_bNoVipCard;		// 15-10: server bao can kich hoat the Vip -> ngung Da Tau
-
+	char	m_szQuestYesouInfo[0x2000]; // dòng text báo nhiệm vụ
+	int		m_nYesouKind; // loại nhiệm vụ theo enum TASK_CODES_EX
+	int		m_nYesouCount;			// ys_attackNpc: so quai can diet / ys_ItemOption: gia tri thuoc tinh (lon hon N diem)
+	int		m_nYesouMapID;			// ys_attackNpc: ID map theo Maps\MapNames.ini (0 = khong thay)
+	char	m_szYesouTarget[64];	// ys_attackNpc: ten quai / ys_ItemOption: ten thuoc tinh (TCVN3)
+	char	m_szYesouMap[64];		// ys_attackNpc: ten map (TCVN3)
+	char	m_szYesouCurQuest[1024];	// doan sau "Nhiem vu hien tai:"
 public:
 	CVLQuest(void);
 	void Breath();
@@ -964,7 +992,11 @@ public:
 	BOOL MoveSpItemToEquip();
 	void ReturnBHTask(int nTaskID);
 	int GetRefLetters();
-
+	// dành cho nhiệm vụ Dã tẩu mới (bản CTC 15-10_2026 trở đi)
+	int FindMapID(const char* szName, char* szFound, int nFound, BOOL bPrint);
+	void GetYesouQuestFromKUiMsgSel2(KUiMsgSel2* pMsgSel2); // trả về loại nhiệm vụ, số lượng, tên vật phẩm, tên NPC, tọa độ, v.v... trong m_szQuestYesouInfo
+	void DoQuestAttackNpc();
+	void DoQuestItemOption();
 private:
 	BOOL CheckMyItem(PlayerItem *pPlayerItem, int nPlace = pos_equiproom, BOOL bNoStackItem = 0);
 	BOOL GetUseableItem(PlayerItem *pPlayerItem, const char *szItemName, int nPlace = 0);

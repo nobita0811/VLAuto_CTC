@@ -260,6 +260,19 @@ static void TeamInfo()
 	g_DbgReply.bOK = TRUE;
 }
 
+// In chuoi game 2 lan: dong thuong (VLAuto doi TCVN3 -> Unicode) va dong DEBUG_RAW_MARK (nguyen byte TCVN3)
+static void DbgOutTcvn(const char *szLabel, const char *szText, int nLen)
+{
+	char szLine[512];
+	if (nLen < 0 || nLen > (int)sizeof(szLine) - 1) nLen = sizeof(szLine) - 1;
+	int i;
+	for (i = 0; i < nLen && szText[i]; i++)
+		szLine[i] = (szText[i] == '\r' || szText[i] == '\n') ? ' ' : szText[i];
+	szLine[i] = 0;
+	DbgOut("  %s: %s\n", szLabel, szLine);
+	DbgOut("%c  %s [TCVN3]: %s\n", DEBUG_RAW_MARK, szLabel, szLine);
+}
+
 static void MsgSel2Info()
 {
 	KUiMsgSel2 *pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
@@ -271,12 +284,15 @@ static void MsgSel2Info()
 		return;
 	}
 	DbgOut("IsVisible = %d  m_Style = 0x%08X\n", pMsgSel2->IsVisible() ? 1 : 0, pMsgSel2->m_Style);
-	if (pMsgSel2->GetQuestion()[0]) DbgOut("  Loi thoai: %.200s\n", pMsgSel2->GetQuestionText());
+	if (pMsgSel2->GetQuestion()[0]) DbgOutTcvn("Loi thoai", pMsgSel2->GetQuestionText(), 200);
 	DbgOut("m_nNumMessage = %d\n", pMsgSel2->m_nNumMessage);
 	for (int i = 0; i < pMsgSel2->m_nNumMessage && i < 16; i++)
 	{
 		KOneMsgInfo *pMsg = pMsgSel2->m_pMessages ? pMsgSel2->m_pMessages[i] : NULL;
-		if (pMsg) DbgOut("  Lua chon[%d]: %.*s\n", i, pMsg->nLen > 0 && pMsg->nLen < 256 ? pMsg->nLen : 0, pMsg->Msg);
+		if (!pMsg) continue;
+		char szLabel[32];
+		sprintf(szLabel, "Lua chon[%d]", i);
+		DbgOutTcvn(szLabel, pMsg->Msg, pMsg->nLen > 0 && pMsg->nLen < 256 ? pMsg->nLen : 0);
 	}
 	g_DbgReply.bOK = TRUE;
 }
@@ -296,6 +312,9 @@ static void MapInfo()
 	DbgOut("  m_nNodesMapID = %d  (map hien tai %d)\n", theMove.m_nNodesMapID, *g_pMapID);
 	for (int i = 0; i < MAX_NODES && theMove.m_Nodes[i].x; i++)
 		DbgOut("  m_Nodes[%d] = (%d, %d)%s\n", i, theMove.m_Nodes[i].x, theMove.m_Nodes[i].y, i == theMove.m_nCurNode ? "  <== CurNode" : "");
+	DbgOut("  m_nGoNodesMapID = %d  m_bGoTrain = %d  m_nGoNode = %d\n", theMove.m_nGoNodesMapID, theMove.m_bGoTrain, theMove.m_nGoNode);
+	for (int i = 0; i < MAX_NODES && theMove.m_GoNodes[i].x; i++)
+		DbgOut("  m_GoNodes[%d] = (%d, %d)\n", i, theMove.m_GoNodes[i].x, theMove.m_GoNodes[i].y);
 	g_DbgReply.bOK = TRUE;
 }
 
@@ -420,7 +439,7 @@ static void ExecDebugCmd(const DEBUG_PARAM *pParam)
 		DbgOut("g_UiInformation2 = 0x%08X  IsVisible = %d\n", (DWORD)g_UiInformation2, g_UiInformation2->IsVisible() ? 1 : 0);
 		if (g_UiInformation2->IsVisible())
 		{
-			DbgOut("Text: %.128s\n", g_UiInformation2->m_szInfoText);
+			DbgOutTcvn("Text", g_UiInformation2->m_szInfoText, sizeof(g_UiInformation2->m_szInfoText));
 			g_UiInformation2->Hide();
 			DbgOut("Hide() => IsVisible = %d\n", g_UiInformation2->IsVisible() ? 1 : 0);
 		}
@@ -452,6 +471,7 @@ static void ExecDebugCmd(const DEBUG_PARAM *pParam)
 		if (DebugAttackCmd(pParam)) break;
 		if (DebugRecoverCmd(pParam)) break;
 		if (DebugLowCfgCmd(pParam)) break;
+		if (DebugQuestCmd(pParam)) break;
 		DbgOut("Lenh khong ho tro: %d\n", pParam->nCmd);
 		break;
 	}

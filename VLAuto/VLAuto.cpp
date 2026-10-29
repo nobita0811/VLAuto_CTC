@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "../GameDef.h"
 #include "../VLHook/VLHook.h"
+#include "KDtrFix.h"
 #include "VLAuto.h"
 #include "GameWindow.h"
 #include "DlgLogin.h"
@@ -51,6 +52,7 @@ BOOL CVLAutoApp::InitApplication()
 BOOL CVLAutoApp::InitInstance()
 {
 	CrashInstall("VLAuto", TRUE);	// Log crash vao <Auto>\Crash
+	KDtrFixStart();					// Sua crash do hook "KDtr" cua game (game chay 16BITCOLOR)
 
 	if (!FirstInstance())
 		return FALSE;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+Ôªø#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -31,7 +31,7 @@ void CVLUtil::Breath()
 	if (P_PLAYER->m_FightMode)
 	{
 		if (m_bDoingUtil)
-			SystemMessage("<color=yellow>ßang trong trπng th∏i chi’n Æ u, kh´ng th” th˘c hi÷n thao t∏c nµy!");
+			SystemMessage(TV(L"<color=yellow>ƒêang trong tr·∫°ng th√°i chi·∫øn ƒë·∫•u, kh√¥ng th·ªÉ th·ª±c hi·ªán thao t√°c n√†y!"));
 		m_bDoingUtil = 0;
 		m_nUtilTask = 0;
 		m_nDoJobStep = 0;
@@ -101,15 +101,15 @@ void CVLUtil::ReadPosition()
 	if (nFlagX < 1 || nFlagY < 1)
 	{
 		P_PLAYER->GetMapPos(&nFlagX, &nFlagY);
-		sprintf(szInfo, "T‰a ÆÈ hi÷n tπi: <color=green>(%d,%d)<color>...\n", nFlagX, nFlagY);
+		sprintf(szInfo, TV(L"T·ªça ƒë·ªô hi·ªán t·∫°i: <color=green>(%d,%d)<color>...\n"), nFlagX, nFlagY);
 	}
 	else
 	{
 		nFlagX <<= 4;
 		nFlagY <<= 5;
-		sprintf(szInfo, "T‰a ÆÈ cæm cÍ: <color=green>(%d,%d)<color>...\n", nFlagX, nFlagY);
+		sprintf(szInfo, TV(L"T·ªça ƒë·ªô c·∫Øm c·ªù: <color=green>(%d,%d)<color>...\n"), nFlagX, nFlagY);
 	}
-	strcat(szInfo, "  Æ∑ Æ≠Óc l≠u vµo Cliboard!");
+	strcat(szInfo, TV(L"  ƒë√£ ƒë∆∞·ª£c l∆∞u v√†o Cliboard!"));
 
 	sprintf(szPos, "%d,%d\r\n", nFlagX, nFlagY);
 	_EmptyClipboard();
@@ -163,7 +163,7 @@ void CVLUtil::CheckLifeTime()
 	{
 		tm tmDeadLine;
 		localtime_s(&tmDeadLine, pTime);
-		SystemMessage(0, "Hπn sˆ dÙng: <color=green>%d-%02d-%02d %02d:%02d", tmDeadLine.tm_year + 1900,
+		SystemMessage(0, TV(L"H·∫°n s·ª≠ d·ª•ng: <color=green>%d-%02d-%02d %02d:%02d"), tmDeadLine.tm_year + 1900,
 			tmDeadLine.tm_mon + 1, tmDeadLine.tm_mday, tmDeadLine.tm_hour, tmDeadLine.tm_min);
 	}
 	DWORD	dwLifeTime = *(LPDWORD)LIFETIME_HRS;
@@ -172,10 +172,10 @@ void CVLUtil::CheckLifeTime()
 		int nHours, nMinutes;
 		nHours = dwLifeTime / 3600;
 		nMinutes = (dwLifeTime / 60) % 60;
-		SystemMessage(0, "ThÍi gian: <color=green>%02d giÍ %02d phÛt", nHours, nMinutes);
+		SystemMessage(0, TV(L"Th·ªùi gian: <color=green>%02d gi·ªù %02d ph√∫t"), nHours, nMinutes);
 	}
 #else
-	SystemMessage("<color=green>Bπn Æang ch¨i VLTK b∂n mi‘n ph›!!!");
+	SystemMessage(TV(L"<color=green>B·∫°n ƒëang ch∆°i VLTK b·∫£n mi·ªÖn ph√≠!!!"));
 #endif
 }
 
@@ -222,7 +222,7 @@ void CVLUtil::CheckPMControl()
 		}
 		else if (!strcmp(szCmd, "money"))
 		{
-			sprintf(szMsgReply, "Ng©n l≠Óng hµnh trang = %d, r≠¨ng = %d.", EQUIP_MONEY, ROOM_MONEY);
+			sprintf(szMsgReply, TV(L"Ng√¢n l∆∞·ª£ng h√†nh trang = %d, r∆∞∆°ng = %d."), EQUIP_MONEY, ROOM_MONEY);
 		}
 		else if (!strcmp(szCmd, "datau"))
 		{
@@ -230,31 +230,31 @@ void CVLUtil::CheckPMControl()
 		}
 		else if (!strcmp(szCmd, "leavept"))
 		{
-			sprintf(szMsgReply, "ß∑ rÍi kh·i TÊ ÆÈi.");
+			sprintf(szMsgReply, TV(L"ƒê√£ r·ªùi kh·ªèi T·ªï ƒë·ªôi."));
 			g_pCoreShell->TeamOperation(TEAM_LEAVE, 0, 0);
 		}
 		else if (!strcmp(szCmd, "exit"))
 		{
-			sprintf(szMsgReply, "ßang tho∏t Game.");
+			sprintf(szMsgReply, TV(L"ƒêang tho√°t Game."));
 			theMain.ExitGame();
 		}
 		else if (!strcmp(szCmd, "exitall"))
 		{
-			sprintf(szMsgReply, "ßang tho∏t t t c∂ Game.");
+			sprintf(szMsgReply, TV(L"ƒêang tho√°t t·∫•t c·∫£ Game."));
 			theMain.PostFeedBack(cmd_exitall, 0);
 		}
 		else if (!strcmp(szCmd, "shutdown"))
 		{
-			sprintf(szMsgReply, "Chu»n bﬁ tæt m∏y t›nh.");
+			sprintf(szMsgReply, TV(L"Chu·∫©n b·ªã t·∫Øt m√°y t√≠nh."));
 			theMain.PostFeedBack(cmd_exitall, 1);
 		}
 		else if (!strcmp(szCmd, "restart"))
 		{
-			sprintf(szMsgReply, "Chu»n bﬁ khÎi ÆÈng lπi m∏y.");
+			sprintf(szMsgReply, TV(L"Chu·∫©n b·ªã kh·ªüi ƒë·ªông l·∫°i m√°y."));
 			theMain.PostFeedBack(cmd_exitall, 2);
 		}
 		else
-			sprintf(szMsgReply, "Sai l÷nh! Xin Æ‰c lπi H≠Ìng d…n!");
+			sprintf(szMsgReply, TV(L"Sai l·ªánh! Xin ƒë·ªçc l·∫°i H∆∞·ªõng d·∫´n!"));
 
 		SendPrivateMessage(szSender, szMsgReply);
 
@@ -307,7 +307,7 @@ void CVLUtil::MoveItems()
 			{
 				if (nOpeningStore < 0)
 				{
-					SystemMessage("<color=yellow>Kh´ng t◊m th y R≠¨ng ÆÂ!!!");
+					SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y R∆∞∆°ng ƒë·ªì!!!"));
 					m_bDoingUtil = 0;
 				}
 				return;
@@ -353,19 +353,19 @@ void CVLUtil::MoveItems()
 			nItemDetail = equip_pendant;
 			break;
 		case 5: // Kim Nguyen Bao
-			strcpy(szItemName, "Kim Nguy™n b∂o");
+			strcpy(szItemName, TV(L"Kim Nguy√™n b·∫£o"));
 			break;
 		case 6: // Thuy Tinh
-			strcpy(szItemName, "ThÒy Tinh");
+			strcpy(szItemName, TV(L"Th·ªßy Tinh"));
 			break;
 		case 7: // Tinh Hong BT
-			strcpy(szItemName, "Tinh HÂng B∂o Thπch");
+			strcpy(szItemName, TV(L"Tinh H·ªìng B·∫£o Th·∫°ch"));
 			break;
 		case 8: // Tien Thao Lo
-			strcpy(szItemName, "Ti™n Th∂o LÈ");
+			strcpy(szItemName, TV(L"Ti√™n Th·∫£o L·ªô"));
 			break;
 		case 9: // Phuc Duyen Lo
-			strcpy(szItemName, "PhÛc Duy™n LÈ");
+			strcpy(szItemName, TV(L"Ph√∫c Duy√™n L·ªô"));
 			break;
 		case 10: // Khieu chien lenh
 			strcpy(szItemName, KC_LENH);
@@ -389,7 +389,7 @@ void CVLUtil::MoveItems()
 			pItem = (KItem*)(dwItmBaseAdd + PLAY_HAND_IDX*ITM_DATA_SIZE);
 			if (!DestRoom.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &ptDestPos))
 			{
-				SystemMessage("<color=yellow>N¨i chuy”n Æ’n kh´ng ÆÒ chÁ!!!");
+				SystemMessage(TV(L"<color=yellow>N∆°i chuy·ªÉn ƒë·∫øn kh√¥ng ƒë·ªß ch·ªó!!!"));
 				m_bDoingUtil = 0;
 				return;
 			}
@@ -433,7 +433,7 @@ void CVLUtil::MoveItems()
 		}
 		if (!bFound)
 		{
-			SystemMessage("<color=yellow>Kh´ng cﬂn ÆÂ c«n chuy”n => K’t thÛc!");
+			SystemMessage(TV(L"<color=yellow>Kh√¥ng c√≤n ƒë·ªì c·∫ßn chuy·ªÉn => K·∫øt th√∫c!"));
 			m_bDoingUtil = 0;
 		}
 	}
@@ -467,7 +467,7 @@ void CVLUtil::StartGiveKCL()
 {
 	if (m_bDoingUtil)
 	{
-		SystemMessage("VLAuto: <color=yellow>Hi÷n Æang chπy Ti÷n ›ch kh∏c!!!");
+		SystemMessage(TV(L"VLAuto: <color=yellow>Hi·ªán ƒëang ch·∫°y Ti·ªán √≠ch kh√°c!!!"));
 		return;
 	}
 	m_bDoingUtil = TRUE;
@@ -498,11 +498,11 @@ void CVLUtil::GiveKCL()
 	{
 		if (pMsgSel->m_nNumMessage > 4)
 		{
-			if (strstr(pMsgSel->m_pMessages[0]->Msg, "Ta Æ’n giao l÷nh bµi"))
+			if (strstr(pMsgSel->m_pMessages[0]->Msg, TV(L"Ta ƒë·∫øn giao l·ªánh b√†i")))
 				pMsgSel->OnClickMsg(0);
 			else
 			{
-				SystemMessage("<color=yellow>ßang giÍ c´ng thµnh, l«n sau giao vÀy!");
+				SystemMessage(TV(L"<color=yellow>ƒêang gi·ªù c√¥ng th√†nh, l·∫ßn sau giao v·∫≠y!"));
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
 				m_bDoingUtil = 0;
 				theMap.m_bEnableGiveKCL = 0;
@@ -510,7 +510,7 @@ void CVLUtil::GiveKCL()
 		}
 		else
 		{
-			SystemMessage("<color=yellow>K’t thÛc giao [Khi™u chi’n l÷nh]!");
+			SystemMessage(TV(L"<color=yellow>K·∫øt th√∫c giao [Khi√™u chi·∫øn l·ªánh]!"));
 			pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
 			m_bDoingUtil = 0;
 		}
@@ -552,7 +552,7 @@ void CVLUtil::GiveKCL()
 		}
 		if (!bFound)
 		{
-			SystemMessage("<color=yellow>Kh´ng cﬂn Khi™u chi’n l÷nh => K’t thÛc!");
+			SystemMessage(TV(L"<color=yellow>Kh√¥ng c√≤n Khi√™u chi·∫øn l·ªánh => K·∫øt th√∫c!"));
 			if (YeSouRoom.m_pArray[0])
 				pYSBox->OnConfirm();
 			else
@@ -567,16 +567,16 @@ void CVLUtil::GiveKCL()
 	if (nTimeWait)
 	{
 		if (nTimeWait == 10)
-			SystemMessage("<color=yellow>Lag qu∏, chÍ 3s click lπi...");
+			SystemMessage(TV(L"<color=yellow>Lag qu√°, ch·ªù 3s click l·∫°i..."));
 		nTimeWait--;
 		return;
 	}
-	int nResult = ClickToNpc("Xa phu c´ng thµnh");
+	int nResult = ClickToNpc(TV(L"Xa phu c√¥ng th√†nh"));
 	if (nResult > 1)
 		nTimeWait = 20; // Wait for 3s for next
 	else if (nResult < 1)
 	{
-		SystemMessage("<color=yellow>Kh´ng t◊m th y Xa phu c´ng thµnh!!!");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y Xa phu c√¥ng th√†nh!!!"));
 		m_bDoingUtil = 0;
 	}
 }
@@ -585,7 +585,7 @@ void CVLUtil::StartOpenGift()
 {
 	if (m_bDoingUtil)
 	{
-		SystemMessage("VLAuto: <color=yellow>Hi÷n Æang chπy Ti÷n ›ch kh∏c!!!");
+		SystemMessage(TV(L"VLAuto: <color=yellow>Hi·ªán ƒëang ch·∫°y Ti·ªán √≠ch kh√°c!!!"));
 		return;
 	}
 
@@ -595,7 +595,7 @@ void CVLUtil::StartOpenGift()
 	if (ComAttr.nItemGenre == item_special && ComAttr.bStack)
 	{
 		strcpy(m_szItemName, ComAttr.szItemName);
-		SystemMessage(0, "T˘ mÎ <color=yellow>[%s]", m_szItemName);
+		SystemMessage(0, TV(L"T·ª± m·ªü <color=yellow>[%s]"), m_szItemName);
 		m_bDoingUtil = TRUE;
 		m_nUtilTask = util_opengif;
 	}
@@ -605,14 +605,14 @@ void CVLUtil::OpenGifts()
 {
 	if (g_pCurPlayer->CheckRoom() >= MAX_ROOM_SPACE)
 	{
-		SystemMessage("<color=yellow>ß∑ Æµy r≠¨ng => K’t thÛc!");
+		SystemMessage(TV(L"<color=yellow>ƒê√£ ƒë√†y r∆∞∆°ng => K·∫øt th√∫c!"));
 		m_szItemName[0] = 0;
 		m_bDoingUtil = 0;
 		return;
 	}
 	if (!g_pCurPlayer->UseItem(m_szItemName))
 	{
-		SystemMessage(0, "Kh´ng cﬂn <color=yellow>[%s] <color=red>=> K’t thÛc!", m_szItemName);
+		SystemMessage(0, TV(L"Kh√¥ng c√≤n <color=yellow>[%s] <color=red>=> K·∫øt th√∫c!"), m_szItemName);
 		m_szItemName[0] = 0;
 		m_bDoingUtil = 0;
 	}
@@ -626,20 +626,20 @@ void CVLUtil::AutoOpenItems()
 	static int nTimeCount = 10;
 
 	if (g_UiInformation2->IsVisible()
-		&& strstr(g_UiInformation2->m_szInfoText, "H´m nay ng≠¨i Æ∑ sˆ dÙng 10,"))
+		&& strstr(g_UiInformation2->m_szInfoText, TV(L"H√¥m nay ng∆∞∆°i ƒë√£ s·ª≠ d·ª•ng 10,")))
 	{
 		theCollect.m_bGetCNHK = 0;
 		nTimeCount = 36000; // 1 hour later
 		g_UiInformation2->Hide();
 	}
 
-	if (theMain.ClickMenuStr("MÎ mi‘n ph›"))
+	if (theMain.ClickMenuStr(TV(L"M·ªü mi·ªÖn ph√≠")))
 		return;
 
 	if (nTimeCount > 0) { nTimeCount--; return; }
 	nTimeCount = 50; // 5 seconds later
 
-	if (g_pCurPlayer->UseItem("C»m nang hoµng kim"))
+	if (g_pCurPlayer->UseItem(TV(L"C·∫©m nang ho√†ng kim")))
 		theCollect.m_bGetCNHK = 0;
 	else
 		theCollect.m_bGetCNHK = TRUE;
@@ -678,7 +678,7 @@ BOOL CVLUtil::ArrangeStackItems(const char *szItemName)
 		pItem = (KItem*)(dwItmBaseAdd + PLAY_HAND_IDX*ITM_DATA_SIZE);
 		if (!strstr(ComAttr.szItemName, szItemName))
 		{
-			SystemMessage("VÀt ph»m c«m tr™n tay kh∏c loπi!!!");
+			SystemMessage(TV(L"V·∫≠t ph·∫©m c·∫ßm tr√™n tay kh√°c lo·∫°i!!!"));
 			return 0;
 		}
 		if (nMaxStack > 0)
@@ -793,22 +793,22 @@ void CVLUtil::SearhBuyItem()
 				if (CheckItem(pItem))
 				{
 					m_bDoingUtil = 0;
-					SystemMessage(0, "T◊m th y <color=yellow>%s", ComAttr.szItemName);
+					SystemMessage(0, TV(L"T√¨m th·∫•y <color=yellow>%s"), ComAttr.szItemName);
 
 					char szMsg[64];
 					if (PLAYER_ITEM(i).nPlace == pos_equiproom)
-						strcpy(szMsg, "C t tπi <color=green>Hµnh trang");
+						strcpy(szMsg, TV(L"C·∫•t t·∫°i <color=green>H√†nh trang"));
 					else if (PLAYER_ITEM(i).nPlace == pos_repositoryroom)
-						strcpy(szMsg, "C t tπi <color=green>R≠¨ng ÆÂ 1");
+						strcpy(szMsg, TV(L"C·∫•t t·∫°i <color=green>R∆∞∆°ng ƒë·ªì 1"));
 					else if (PLAYER_ITEM(i).nPlace == pos_repo02)
-						strcpy(szMsg, "C t tπi <color=green>R≠¨ng ÆÂ 2");
+						strcpy(szMsg, TV(L"C·∫•t t·∫°i <color=green>R∆∞∆°ng ƒë·ªì 2"));
 					else if (PLAYER_ITEM(i).nPlace == pos_repo03)
-						strcpy(szMsg, "C t tπi <color=green>R≠¨ng ÆÂ 3");
+						strcpy(szMsg, TV(L"C·∫•t t·∫°i <color=green>R∆∞∆°ng ƒë·ªì 3"));
 					else if (PLAYER_ITEM(i).nPlace == pos_guid)
-						strcpy(szMsg, "C t tπi <color=green>R≠¨ng Bang hÈi");
+						strcpy(szMsg, TV(L"C·∫•t t·∫°i <color=green>R∆∞∆°ng Bang h·ªôi"));
 					SystemMessage(szMsg);
 
-					SystemMessage(0, "Vﬁ tr› (cÈt,dﬂng) lµ: <color=yellow>(%d,%d)",
+					SystemMessage(0, TV(L"V·ªã tr√≠ (c·ªôt,d√≤ng) l√†: <color=yellow>(%d,%d)"),
 						PLAYER_ITEM(i).nX + 1, PLAYER_ITEM(i).nY + 1);
 					return;
 				}
@@ -824,7 +824,7 @@ void CVLUtil::SearhBuyItem()
 	if (!m_bFromPlrShop)
 	{
 		m_bDoingUtil = 0;
-		SystemMessage("<color=yellow>Kh´ng t◊m th y vÀt ph»m!!!");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y v·∫≠t ph·∫©m!!!"));
 		return; // Done
 	}
 
@@ -837,7 +837,7 @@ void CVLUtil::SearhBuyItem()
 			nTimeWait = 0;
 			return; // Continue
 		}
-		SystemMessage(0, "Mua Æ≠Óc <color=yellow>%s <color=blue>%d l≠Óng", szGotItem, nItemPrice);
+		SystemMessage(0, TV(L"Mua ƒë∆∞·ª£c <color=yellow>%s <color=blue>%d l∆∞·ª£ng"), szGotItem, nItemPrice);
 		CloseAllWindows(0);
 		m_bDoingUtil = 0;
 		return; // Successful
@@ -865,14 +865,14 @@ void CVLUtil::SearhBuyItem()
 				if (pItemSt[i].nPrice > EQUIP_MONEY)
 				{
 					m_bDoingUtil = 0;
-					SystemMessage("<color=yellow>Ti“n mang theo kh´ng ÆÒ mua!!!");
+					SystemMessage(TV(L"<color=yellow>Ti·ªÅn mang theo kh√¥ng ƒë·ªß mua!!!"));
 					return; // Successful
 				}
 				// Check Room
 				if (!EQUIP_ROOM.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos))
 				{
 					m_bDoingUtil = 0;
-					SystemMessage("<color=yellow>Hµnh trang kh´ng ÆÒ chÁ trËng!!!");
+					SystemMessage(TV(L"<color=yellow>H√†nh trang kh√¥ng ƒë·ªß ch·ªó tr·ªëng!!!"));
 					return; // Successful
 				}
 				bFoundIt = TRUE;
@@ -885,8 +885,8 @@ void CVLUtil::SearhBuyItem()
 			else
 			{
 				m_bDoingUtil = 0;
-				SystemMessage(0, "T◊m th y <color=yellow>%s", ComAttr.szItemName);
-				SystemMessage(0, "Vﬁ tr› (cÈt,dﬂng) lµ: <color=yellow>(%d,%d)", pItemSt[i].DataX + 1, pItemSt[i].DataY + 1);
+				SystemMessage(0, TV(L"T√¨m th·∫•y <color=yellow>%s"), ComAttr.szItemName);
+				SystemMessage(0, TV(L"V·ªã tr√≠ (c·ªôt,d√≤ng) l√†: <color=yellow>(%d,%d)"), pItemSt[i].DataX + 1, pItemSt[i].DataY + 1);
 				return; // Successful
 			}
 		}
@@ -908,7 +908,7 @@ void CVLUtil::SearhBuyItem()
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_player) continue;
-		if (g_pNpcArray[i]->m_Doing != do_sit) continue;	// 15-10: KNpc khong con m_bHaveStall
+		if (g_pNpcArray[i]->m_nMenuState != 1) continue;	// 1 = dang bay sap
 		if (m_bVsNpc[i]) continue; // Already Visited.
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 		dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
@@ -923,7 +923,7 @@ void CVLUtil::SearhBuyItem()
 	if (!nCurIndex)
 	{
 		m_bDoingUtil = 0;
-		SystemMessage("<color=yellow>Kh´ng t◊m th y vÀt c«n mua!!!");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y v·∫≠t c·∫ßn mua!!!"));
 		return; // Done
 	}
 
@@ -936,7 +936,7 @@ void CVLUtil::SearhBuyItem()
 void CVLUtil::StopAllUtils()
 {
 	m_bDoingUtil = 0;
-	SystemMessage("<color=yellow>Ng≠ng c∏c hoπt ÆÈng Ti÷n ›ch!!!");
+	SystemMessage(TV(L"<color=yellow>Ng∆∞ng c√°c ho·∫°t ƒë·ªông Ti·ªán √≠ch!!!"));
 }
 
 // Bang hoi Utilities
@@ -944,7 +944,7 @@ void CVLUtil::StartGetLB(int nMaxLBCount)
 {
 	if (m_bDoingUtil)
 	{
-		SystemMessage("VLAuto: <color=yellow>Hi÷n Æang chπy Ti÷n ›ch kh∏c!!!");
+		SystemMessage(TV(L"VLAuto: <color=yellow>Hi·ªán ƒëang ch·∫°y Ti·ªán √≠ch kh√°c!!!"));
 		return;
 	}
 	m_bDoingUtil = TRUE;
@@ -959,7 +959,7 @@ void CVLUtil::DoEventGetLB()
 
 	if (g_pCurPlayer->CheckRoom() >= MAX_ROOM_SPACE)
 	{
-		SystemMessage("<color=yellow>ß∑ Æµy r≠¨ng => K’t thÛc!");
+		SystemMessage(TV(L"<color=yellow>ƒê√£ ƒë√†y r∆∞∆°ng => K·∫øt th√∫c!"));
 		nEventItem = -1;
 		m_bDoingUtil = 0;
 		return;
@@ -970,27 +970,27 @@ void CVLUtil::DoEventGetLB()
 	{
 		nTimeWait = 15;
 		char *szMsg0 = pMsgSel->m_pMessages[0]->Msg;
-		if (strstr(szMsg0, "NhÀn nhi÷m vÙ ng…u nhi™n"))
+		if (strstr(szMsg0, TV(L"Nh·∫≠n nhi·ªám v·ª• ng·∫´u nhi√™n")))
 			pMsgSel->OnClickMsg(0);
-		else if (strstr(szMsg0, "ta muËn ÆÊi"))
+		else if (strstr(szMsg0, TV(L"ta mu·ªën ƒë·ªïi")))
 		{
 			nEventItem = g_pCurPlayer->GetItemsCount(item_special, 2, 1020, -1, 0);
 			pMsgSel->OnClickMsg(0);
 			nTimeWait = 1;
 		}
-		else if (strstr(pMsgSel->m_InfoText, "Kh´ng Æ≠Óc rÂi"))
+		else if (strstr(pMsgSel->m_InfoText, TV(L"Kh√¥ng ƒë∆∞·ª£c r·ªìi")))
 		{
-			SystemMessage("<color=yellow>H’t Æi”m cËng hi’n => K’t thÛc!");
+			SystemMessage(TV(L"<color=yellow>H·∫øt ƒëi·ªÉm c·ªëng hi·∫øn => K·∫øt th√∫c!"));
 			nEventItem = -1;
 			m_bDoingUtil = 0;
 			pMsgSel->OnClickMsg(0);
 		}
-		else if (strstr(szMsg0, "K’t thÛc ÆËi thoπi"))
+		else if (strstr(szMsg0, TV(L"K·∫øt th√∫c ƒë·ªëi tho·∫°i")))
 		{
-			if (strstr(pMsgSel->m_InfoText, "Nhi÷m vÙ ng…u nhi™n h´m nay Æ∑ k’t thÛc"))
-				SystemMessage("<color=yellow>ß∑ ph©n ph∏t h’t LB => K’t thÛc!");
+			if (strstr(pMsgSel->m_InfoText, TV(L"Nhi·ªám v·ª• ng·∫´u nhi√™n h√¥m nay ƒë√£ k·∫øt th√∫c")))
+				SystemMessage(TV(L"<color=yellow>ƒê√£ ph√¢n ph√°t h·∫øt LB => K·∫øt th√∫c!"));
 			else
-				SystemMessage("<color=yellow>Kh´ng ÆÛng Bang m◊nh, h—n l«n sau!");
+				SystemMessage(TV(L"<color=yellow>Kh√¥ng ƒë√∫ng Bang m√¨nh, h·∫πn l·∫ßn sau!"));
 			nEventItem = -1;
 			m_bDoingUtil = 0;
 			pMsgSel->OnClickMsg(0);
@@ -1005,7 +1005,7 @@ void CVLUtil::DoEventGetLB()
 
 	if (nCurItemCount >= m_nMaxLBCount)
 	{
-		SystemMessage("<color=yellow>ß∑ nhÀn ÆÒ sË l≠Óng => K’t thÛc!");
+		SystemMessage(TV(L"<color=yellow>ƒê√£ nh·∫≠n ƒë·ªß s·ªë l∆∞·ª£ng => K·∫øt th√∫c!"));
 		nEventItem = -1;
 		m_bDoingUtil = 0;
 		return;
@@ -1014,7 +1014,7 @@ void CVLUtil::DoEventGetLB()
 	if (nTimeWait)
 	{
 		if (nTimeWait == 20)
-			SystemMessage("<color=yellow>Lag qu∏, chÍ 3s click lπi...");
+			SystemMessage(TV(L"<color=yellow>Lag qu√°, ch·ªù 3s click l·∫°i..."));
 		nTimeWait--;
 		return;
 	}
@@ -1026,12 +1026,12 @@ void CVLUtil::DoEventGetLB()
 		return;
 	}
 
-	int nResult = ClickToNpc("TÊng qu∂n Thi™n ˝ ph≠Íng");
+	int nResult = ClickToNpc(TV(L"T·ªïng qu·∫£n Thi√™n √Ω ph∆∞·ªùng"));
 	if (nResult > 1)
 		nTimeWait = 30; // Wait for 3s for next
 	else if (nResult < 1)
 	{
-		SystemMessage("<color=yellow>Kh´ng t◊m th y TÊng qu∂n Thi™n ˝ ph≠Íng!!!");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y T·ªïng qu·∫£n Thi√™n √Ω ph∆∞·ªùng!!!"));
 		nEventItem = -1;
 		m_bDoingUtil = 0;
 	}

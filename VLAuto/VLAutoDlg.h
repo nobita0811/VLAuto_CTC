@@ -47,11 +47,13 @@ protected:
 	afx_msg void		OnCustomdrawCharList(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LRESULT		OnReceiveFeedBack(WPARAM wParam, LPARAM lParam);
 	afx_msg void		OnBnClickedAutoLoginButton();
+	afx_msg void		OnBnClickedAutoHideButton();
 
 	DECLARE_MESSAGE_MAP()
 
 private:
 	void				InitTabDialogs();
+	void				DockRight();
 	void				OnExitDlg(INT_PTR nExitCode);
 	void				OnShutDown(BOOL bRestart = FALSE);
 };

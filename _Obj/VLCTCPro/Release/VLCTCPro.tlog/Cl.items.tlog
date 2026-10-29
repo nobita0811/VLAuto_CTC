@@ -5,12 +5,16 @@ I:\CTC\VLAuto_CTC\VLAuto\stdafx.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\stda
 I:\CTC\VLAuto_CTC\VLAuto\VLAuto.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\VLAuto.obj
 I:\CTC\VLAuto_CTC\VLAuto\VLAutoDlg.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\VLAutoDlg.obj
 I:\CTC\VLAuto_CTC\CrashHandler.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\CrashHandler.obj
+I:\CTC\VLAuto_CTC\VLAuto\KDtrFix.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\KDtrFix.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgAbout.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgAbout.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgAutoLogin.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgAutoLogin.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgDebug.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgDebug.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgAttack.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgAttack.obj
+I:\CTC\VLAuto_CTC\VLAuto\DlgSettingSkill.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgSettingSkill.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgBasic.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgBasic.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgCollect.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgCollect.obj
+I:\CTC\VLAuto_CTC\VLAuto\DlgCollectSetting.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgCollectSetting.obj
+I:\CTC\VLAuto_CTC\VLAuto\DlgBuySetting.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgBuySetting.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgMap.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgMap.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgMove.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgMove.obj
 I:\CTC\VLAuto_CTC\VLAuto\DlgMovePoints.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCPro\Release\DlgMovePoints.obj

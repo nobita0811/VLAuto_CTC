@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -64,7 +64,7 @@ void CVLBasic::Breathe()
 		nCheckName = 0;
 		if (strcmp(m_szCurName, P_PLAYER->Name))
 		{
-			SystemMessage("Nh©n vËt ®· thay ®æi, khëi ®éng l¹i...");
+			SystemMessage(TV(L"NhÃ¢n váº­t Ä‘Ã£ thay Ä‘á»•i, khá»Ÿi Ä‘á»™ng láº¡i..."));
 			theMain.RestartHook();
 		}
 		return;
@@ -72,7 +72,7 @@ void CVLBasic::Breathe()
 
 	if (g_NetworkOffline > 180)	// no response over 3 minutes
 	{
-		SystemMessage("Ng¾t m¹ng qu¸ 3 phót, kÕt nèi l¹i...");
+		SystemMessage(TV(L"Ngáº¯t máº¡ng quÃ¡ 3 phÃºt, káº¿t ná»‘i láº¡i..."));
 		ExecuteScript("SayPhrase(1)");
 		return;
 	}
@@ -83,7 +83,7 @@ void CVLBasic::Breathe()
 		if (nReviveTime && P_PLAYER->m_FightMode) { nReviveTime--; return; } // wait for AM
 		if (g_UiInformation->IsVisible())
 		{
-			if (strstr(g_UiInformation->m_szInfoText, "B¹n ®· bÞ träng th­¬ng"))
+			if (strstr(g_UiInformation->m_szInfoText, TV(L"Báº¡n Ä‘Ã£ bá»‹ trá»ng thÆ°Æ¡ng")))
 				g_UiInformation->Hide(0);
 			return;
 		}
@@ -117,7 +117,7 @@ void CVLBasic::Breathe()
 	{
 		if (g_UiInformation->IsVisible())
 		{
-			if (strstr(g_UiInformation->m_szInfoText, "B¹n ®· bÞ träng th­¬ng"))
+			if (strstr(g_UiInformation->m_szInfoText, TV(L"Báº¡n Ä‘Ã£ bá»‹ trá»ng thÆ°Æ¡ng")))
 				g_UiInformation->Hide(0);
 			else
 				g_UiInformation->Hide(1);
@@ -132,7 +132,7 @@ void CVLBasic::Breathe()
 			pMsgSel2->OnClickMsg(pMsgSel2->m_nNumMessage);
 
 		m_nIdleTimeCount = 0;
-		char *szMsg = "Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...";
+		const char *szMsg = TV(L"Ngá»«ng hoáº¡t Ä‘á»™ng quÃ¡ 3 phÃºt, khá»Ÿi Ä‘á»™ng láº¡i...");
 		theQuest.SaveYSLog(szMsg);
 		SystemMessage(szMsg);
 		CloseAllWindows(0);

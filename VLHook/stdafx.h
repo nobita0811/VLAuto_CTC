@@ -31,3 +31,4 @@
 #include <tchar.h>
 
 #include "User32.h"
+#include "TcvnText.h"	// TV(L"..."): chuoi Unicode -> TCVN3

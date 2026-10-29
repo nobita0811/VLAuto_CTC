@@ -111,8 +111,8 @@ BOOL CDlgYeSou::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	m_QuestList.InsertColumn(0, _T("Loại nhiệm vụ"), LVCFMT_LEFT, 150);
-	m_QuestList.InsertColumn(1, _T("Xử lý"), LVCFMT_LEFT, 100);
+	m_QuestList.InsertColumn(0, _T("Loại nhiệm vụ"), LVCFMT_LEFT, 104);
+	m_QuestList.InsertColumn(1, _T("Xử lý"), LVCFMT_LEFT, 56);
 	m_QuestList.SetExtendedStyle(LVS_EX_GRIDLINES|LVS_EX_FULLROWSELECT);
 	CImageList imgList;
 	imgList.Create(1, 16, ILC_COLOR4, 1, 1);

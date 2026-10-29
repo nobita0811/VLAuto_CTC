@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -11,7 +11,7 @@
 
 extern KBadObj	g_BadObjs;
 
-#define CNHK_NAME	"C\xC8m nang ho\xB5ng kim"	// "Cam nang hoang kim" (TCVN3) - giong VLCollect.cpp
+#define CNHK_NAME	TV(L"Cẩm nang hoàng kim")	// "Cam nang hoang kim" (TCVN3) - giong VLCollect.cpp
 
 static const char* s_szKeepCause[] =
 {
@@ -543,6 +543,45 @@ static void DecomposeScan(BOOL bClearFail)
 	g_DbgReply.bOK = TRUE;
 }
 
+static void NoSaveList(const char *szText)
+{
+	theMap.LoadNoSaveList();
+	DbgOut("LoadNoSaveList(): %s\\Maps\\RuongItem.txt (khong cat vao ruong)\n", theMain.m_szCurFolder);
+	int i = 0;
+	while (i < MAX_NOSAVE_ITEMS && theMap.m_szNoSaveItems[i][0])
+	{
+		DbgOut("  [%d] %s\n", i, theMap.m_szNoSaveItems[i]);
+		i++;
+	}
+	DbgOut("Tong: %d dong (toi da %d, moi dong 31 ky tu)\n", i, MAX_NOSAVE_ITEMS);
+	if (szText[0])
+		DbgOut("IsInNoSaveList(\"%s\") = %d\n", szText, theMap.IsInNoSaveList(szText));
+	g_DbgReply.nResult[0] = i;
+	g_DbgReply.bOK = TRUE;
+}
+
+static void InvNames()
+{
+	if (!DbgCheckPlayer()) return;
+	char szNames[MAX_PLAYER_ITEM][32];
+	int nCount = 0;
+	for (int i = 0; i < MAX_PLAYER_ITEM; i++)
+	{
+		if (PLAYER_ITEM(i).nPlace != pos_equiproom || !PLAYER_ITEM(i).nIdx) continue;
+		KItem *pItem = GetItem(PLAYER_ITEM(i).nIdx);
+		if (!pItem || !ComAttr.szItemName[0]) continue;
+		int k = 0;
+		while (k < nCount && strcmp(szNames[k], ComAttr.szItemName)) k++;
+		if (k < nCount) continue;
+		strncpy(szNames[nCount], ComAttr.szItemName, 31);
+		szNames[nCount][31] = 0;
+		DbgOut("%s\n", szNames[nCount]);
+		nCount++;
+	}
+	g_DbgReply.nResult[0] = nCount;
+	g_DbgReply.bOK = TRUE;
+}
+
 BOOL DebugCollectCmd(const DEBUG_PARAM *pParam)
 {
 	const int *P = pParam->nParam;
@@ -572,6 +611,12 @@ BOOL DebugCollectCmd(const DEBUG_PARAM *pParam)
 		break;
 	case dbg_cl_redlist:
 		RedList(szText);
+		break;
+	case dbg_cl_nosavelist:
+		NoSaveList(szText);
+		break;
+	case dbg_cl_invnames:
+		InvNames();
 		break;
 	case dbg_cl_keepitems:
 		KeepItems();

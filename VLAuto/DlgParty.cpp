@@ -33,6 +33,7 @@ void CDlgParty::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_AUTOPT_CHECK, g_pCurGameWin->m_prParty.m_bAutoPT);
 	DDX_Check(pDX, IDC_AUTOLEAVE_CHECK, g_pCurGameWin->m_prParty.m_bAutoLeave);
 	DDX_Check(pDX, IDC_AUTOKICK_CHECK, g_pCurGameWin->m_prParty.m_bAutoKick);
+	DDX_Check(pDX, IDC_ALWAYSCAPTAIN_CHECK, g_pCurGameWin->m_prParty.m_bAlwaysCaptain);
 
 	//Comboboxes
 	DDX_CBIndex(pDX, IDC_PTALL_COMBO, g_pCurGameWin->m_prParty.m_nPTAll);
@@ -77,19 +78,23 @@ BOOL CDlgParty::OnInitDialog()
 	pCombo->AddString(_T("Không mời tất cả"));
 	pCombo->AddString(_T("Luôn mời tất cả"));
 	pCombo->AddString(_T("Chỉ mời khi làm DT"));
+	pCombo->AddString(_T("Chỉ mời trong d.sách"));
 
 	pCombo = (CComboBox *)GetDlgItem(IDC_ACCEPTALL_COMBO);
 	pCombo->AddString(_T("Kô nhận t.cả"));
 	pCombo->AddString(_T("Luôn nhận t.cả"));
 	pCombo->AddString(_T("Chỉ nhận khi DT"));
+	pCombo->AddString(_T("Chỉ nhận từ d.sách"));
 
 	if (m_ToolTip.Create(this))
 	{
+		m_ToolTip.SetMaxTipWidth(300);
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOPT_CHECK), _T("Bật/Tắt chế độ tự lập Tổ đội (PT)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_ALWAYSCAPTAIN_CHECK), _T("Tick: luôn tự lập PT và làm chủ PT (mời theo ô Mời).\nKhông tick (khi dùng Mời/Nhận theo d.sách): không tự lập PT, chỉ nhận lời mời theo ô Nhận"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_NEARBYPLAYER_COMBO), _T("Chọn nhân vật vào danh sách PT"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MEMBER_LIST), _T("Danh sách PT theo thứ tự - chủ PT ở trên"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_PTALL_COMBO), _T("Mời PT tất cả mọi người"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_ACCEPTALL_COMBO), _T("Chấp nhận mọi lời mời PT"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_PTALL_COMBO), _T("Mời PT tất cả mọi người.\n\"Chỉ mời trong d.sách\": chỉ mời / nhận xin vào PT những nhân vật có trong danh sách (không theo thứ tự chủ PT)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_ACCEPTALL_COMBO), _T("Chấp nhận mọi lời mời PT.\n\"Chỉ nhận từ d.sách\": chỉ nhận lời mời PT của nhân vật có trong danh sách"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOLEAVE_CHECK), _T("Tự động rời PT khi số thành viên quá ít"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_LEAVEMEMNUM_EDIT), _T("Số lượng thành viên kiểm tra tự rời PT"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_PTLEAVETIME_EDIT), _T("Thời gian kiểm tra tự rời PT"));

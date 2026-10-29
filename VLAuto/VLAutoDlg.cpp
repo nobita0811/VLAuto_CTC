@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CVLAutoDlg, CDialog)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_CHAR_LIST, &CVLAutoDlg::OnCustomdrawCharList)
 	ON_MESSAGE(WM_FEEDBACK, &CVLAutoDlg::OnReceiveFeedBack)
 	ON_BN_CLICKED(IDC_AUTO_LOGIN_BUTTON, &CVLAutoDlg::OnBnClickedAutoLoginButton)
+	ON_BN_CLICKED(IDC_AUTO_HIDE_BUTTON, &CVLAutoDlg::OnBnClickedAutoHideButton)
 END_MESSAGE_MAP()
 
 
@@ -84,9 +85,7 @@ BOOL CVLAutoDlg::OnInitDialog()
 	mainMenu.LoadMenu(IDR_MAIN_MENU);
 	mainMenu.GetSubMenu(0)->SetDefaultItem(ID__SHOWVLAUTO, FALSE);
 
-	UINT uWinX = GetPrivateProfileInt(_T("Options"), _T("WindX"), 0, g_szIniFile);
-	UINT uWinY = GetPrivateProfileInt(_T("Options"), _T("WindY"), 0, g_szIniFile);
-	SetWindowPos(NULL, uWinX, uWinY, NULL, NULL, SWP_NOSIZE | SWP_NOZORDER);
+	DockRight();
 	//m_WebLink.SetURL(_T("https://chatgpt.com"));
 
 	if (m_ToolTip.Create(this))
@@ -98,8 +97,10 @@ BOOL CVLAutoDlg::OnInitDialog()
 	m_TrayIcon.Create(this, IDR_MAIN_MENU);
 	m_TrayIcon.SetIcon(m_hIcon, _TTrayToolTip);
 
-	g_pCharList->InsertColumn(0, _T("Tên NV"), LVCFMT_LEFT, 162);
-	g_pCharList->InsertColumn(1, _T("% KN"), LVCFMT_CENTER, 50);
+	CRect rcList;
+	g_pCharList->GetClientRect(&rcList);
+	g_pCharList->InsertColumn(0, _T("Tên NV"), LVCFMT_LEFT, rcList.Width() - 42 - GetSystemMetrics(SM_CXVSCROLL));
+	g_pCharList->InsertColumn(1, _T("% KN"), LVCFMT_CENTER, 42);
 	g_pCharList->SetExtendedStyle(LVS_EX_CHECKBOXES|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_ONECLICKACTIVATE);
 
 	InitTabDialogs();
@@ -155,6 +156,42 @@ void CVLAutoDlg::OnPaint()
 HCURSOR CVLAutoDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+// Auto luôn nằm sát mép phải màn hình, rộng 220px (màn 1024 - game 800 = 224, chừa 4px khe hở với Game)
+#define VLA_WIN_WIDTH	220
+#define VLA_MARGIN		4
+
+void CVLAutoDlg::DockRight()
+{
+	CRect rcWork, rcWin;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWork, 0);
+	GetWindowRect(&rcWin);
+	int cy = min(rcWin.Height(), rcWork.Height());
+	SetWindowPos(NULL, rcWork.right - VLA_WIN_WIDTH, rcWork.top, VLA_WIN_WIDTH, cy, SWP_NOZORDER);
+
+	// Viền cửa sổ khác nhau giữa Aero/Classic: kéo list, tab theo chiều rộng client thực tế
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	UINT uIDs[] = { IDC_CHAR_LIST, IDC_MAIN_TAB };
+	for (int i = 0; i < _countof(uIDs); i++)
+	{
+		CWnd* pCtrl = GetDlgItem(uIDs[i]);
+		CRect rc;
+		pCtrl->GetWindowRect(&rc);
+		ScreenToClient(&rc);
+		rc.left = VLA_MARGIN;
+		rc.right = rcClient.right - VLA_MARGIN;
+		pCtrl->MoveWindow(&rc, FALSE);
+	}
+
+	// Nút Ẩn Auto bám mép phải
+	CWnd* pHideBtn = GetDlgItem(IDC_AUTO_HIDE_BUTTON);
+	CRect rcBtn;
+	pHideBtn->GetWindowRect(&rcBtn);
+	ScreenToClient(&rcBtn);
+	rcBtn.MoveToX(rcClient.right - VLA_MARGIN - rcBtn.Width());
+	pHideBtn->MoveWindow(&rcBtn, FALSE);
 }
 
 void CVLAutoDlg::InitTabDialogs()
@@ -351,6 +388,12 @@ void CVLAutoDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 	if (bMinimized) ShowWindow(SW_HIDE);
 }
 
+// Thay nút Minimize (đã bỏ WS_MINIMIZEBOX để caption hiện đủ): thu nhỏ -> OnActivate ẩn xuống khay hệ thống
+void CVLAutoDlg::OnBnClickedAutoHideButton()
+{
+	ShowWindow(SW_MINIMIZE);
+}
+
 void CVLAutoDlg::OnBnClickedAutoLoginButton()
 {
 	if (!m_DlgAutoLogin.GetSafeHwnd())
@@ -380,15 +423,6 @@ void CVLAutoDlg::OnDestroy()
 
 		delete pGameWin;
 	}
-
-	RECT rect;
-	GetWindowRect(&rect);
-	TCHAR szValue[16];
-
-	_itot(rect.left, szValue, 10);
-	WritePrivateProfileString(_T("Options"), _T("WindX"), szValue, g_szIniFile);
-	_itot(rect.top, szValue, 10);
-	WritePrivateProfileString(_T("Options"), _T("WindY"), szValue, g_szIniFile);
 
 	CDialog::OnDestroy();
 }

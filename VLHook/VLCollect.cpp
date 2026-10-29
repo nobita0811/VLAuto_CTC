@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "DTextFile.h"
 #include "GameBase.h"
@@ -244,7 +244,7 @@ int CVLCollect::CheckObj(KObj* pObj, int nPlayerX, int nPlayerY)
 			if (m_nVioletLine == 6 && pObj->m_nColorID == 4) return 0; // Ko nhat trang bi tim
 			if (m_nCollectEquip == 1 && nSize > 2 && nWidth > 1) return 0; // Ko nhat do > 2,3,4 o
 		}
-		if (!m_bGetCNHK && strstr(pObj->m_szName, "CÈm nang hoµng kim")) return 0;
+		if (!m_bGetCNHK && strstr(pObj->m_szName, TV(L"Cáº©m nang hoÃ ng kim"))) return 0;
 		if (IsInBlackList(pObj->m_szName)) return 0; // Ko nhat trong BlackList
 		if (m_bNeedFilter && g_BadObjs.IsBadObj(pObj->m_nItemDataID, pObj->m_nID)) return 0; // Ko nhat lai vat pham cu
 		if (!EQUIP_ROOM.FindRoom(nWidth, nHeight, &ptItem)) return 0;
@@ -447,6 +447,19 @@ BOOL CVLCollect::CheckHandItem(int nHandIdx)
 		}
 	}
 
+	// Do tren tay ma hanh trang het cho: ve thanh ngay, khong cho 10s sap xep
+	if (P_PLAYER->m_FightMode && theRecover.m_bAMByFullRoom)
+	{
+		KItem* pItem = (KItem*)(dwItmBaseAdd + nHandIdx * ITM_DATA_SIZE);
+		POINT itmPos;
+		if (ComAttr.nItemGenre != item_townportal &&
+			!EQUIP_ROOM.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos, ComAttr.nItemGenre != item_equip))
+		{
+			theRecover.OnUseAM();
+			return TRUE;
+		}
+	}
+
 	// Check Arrange Items
 	if (m_nArrangeIndex != nHandIdx)
 	{
@@ -579,10 +592,10 @@ void CVLCollect::SetAutoArrange()
 {
 	char szMsg[80];
 	if (m_bAutoArrange)
-		sprintf(szMsg, "<color=yellow>Tù s¾p xÕp ®å (Ctrl+B): <color=green>BËt");
+		sprintf(szMsg, TV(L"<color=yellow>Tá»± sáº¯p xáº¿p Ä‘á»“ (Ctrl+B): <color=green>Báº­t"));
 	else
 	{
-		sprintf(szMsg, "<color=yellow>Tù s¾p xÕp ®å (Ctrl+B): <color>T¾t");
+		sprintf(szMsg, TV(L"<color=yellow>Tá»± sáº¯p xáº¿p Ä‘á»“ (Ctrl+B): <color>Táº¯t"));
 		CheckHandItem(PLAY_HAND_IDX);
 	}
 	SystemMessage(szMsg, 1);

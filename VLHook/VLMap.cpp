@@ -1,4 +1,4 @@
-#include "stdafx.h"
+Ôªø#include "stdafx.h"
 #include "../GameDef.h"
 #include "DTextFile.h"
 #include "GameBase.h"
@@ -14,8 +14,13 @@ static BOOL RunToNearestNode();
 static BOOL s_bNodeDirect = FALSE;	// Da het duong trong thanh (reset o InitValues)
 static BOOL SameMapNodes();
 static BOOL s_bInVisited = FALSE;		// Da chon "Nhung noi da di qua" o xa phu, menu dang mo la danh sach noi da di qua
+static DWORD s_dwReturnTick = 0;		// Vua chon "Tro lai dia diem cu": cho xem co ra ngoai thanh khong
+static int s_nReturnMap = 0;
 static BOOL s_bTriedReturn = FALSE;		// Map train = map thanh: da toi xa phu thu "Tro lai dia diem cu" (reset o InitValues)
 static DWORD s_dwTryReturnTick = 0;
+static int s_nRebuyCount = 0;			// So lan quay lai mua TDP/thuoc truoc khi bam xa phu (reset o InitValues)
+static BOOL NeedBuyMedicine();
+static BOOL NeedBuyAmulet();
 
 //================================Class CVLMap================================
 CVLMap::CVLMap(void)
@@ -24,36 +29,36 @@ CVLMap::CVLMap(void)
 	for (int i = 0; i < MAX_SHOP_ITEMS; i++)
 		m_ShopItem[i].nShopIdx = -1;
 
-	strcpy(m_ShopItem[0].szItemName, "Kim S∏ng D≠Óc (Ti”u)");
-	strcpy(m_ShopItem[1].szItemName, "Kim S∏ng D≠Óc (Trung)");
-	strcpy(m_ShopItem[2].szItemName, "Kim S∏ng D≠Óc (ßπi)");
-	strcpy(m_ShopItem[3].szItemName, "HÂi Thi™n Æan");
-	strcpy(m_ShopItem[4].szItemName, "Ng≠ng Th«n Æan (Ti”u)");
+	strcpy(m_ShopItem[0].szItemName, TV(L"Kim S√°ng D∆∞·ª£c (ti·ªÉu)"));
+	strcpy(m_ShopItem[1].szItemName, TV(L"Kim S√°ng D∆∞·ª£c (trung)"));
+	strcpy(m_ShopItem[2].szItemName, TV(L"Kim S√°ng D∆∞·ª£c (ƒë·∫°i)"));
+	strcpy(m_ShopItem[3].szItemName, TV(L"H·ªìi Thi√™n ƒëan"));
+	strcpy(m_ShopItem[4].szItemName, TV(L"Ng∆∞ng Th·∫ßn ƒëan (ti·ªÉu)"));
 	m_ShopItem[4].nItemType = medicine_mana;
-	strcpy(m_ShopItem[5].szItemName, "Ng≠ng Th«n Æan (Trung)");
+	strcpy(m_ShopItem[5].szItemName, TV(L"Ng∆∞ng Th·∫ßn ƒëan (trung)"));
 	m_ShopItem[5].nItemType = medicine_mana;
-	strcpy(m_ShopItem[6].szItemName, "Ng≠ng Th«n Æan (ßπi)");
+	strcpy(m_ShopItem[6].szItemName, TV(L"Ng∆∞ng Th·∫ßn ƒëan (ƒë·∫°i)"));
 	m_ShopItem[6].nItemType = medicine_mana;
-	strcpy(m_ShopItem[7].szItemName, "ßπi BÊ t∏n");
+	strcpy(m_ShopItem[7].szItemName, TV(L"ƒê·∫°i B·ªï t√°n"));
 	m_ShopItem[7].nItemType = medicine_mana;
-	strcpy(m_ShopItem[8].szItemName, "Thıa Ti™n MÀt (Ti”u)");
+	strcpy(m_ShopItem[8].szItemName, TV(L"Th·ª´a Ti√™n M·∫≠t (ti·ªÉu)"));
 	m_ShopItem[8].nItemType = medicine_both;
-	strcpy(m_ShopItem[9].szItemName, "Thıa Ti™n MÀt (Trung)");
+	strcpy(m_ShopItem[9].szItemName, TV(L"Th·ª´a Ti√™n M·∫≠t (trung)"));
 	m_ShopItem[9].nItemType = medicine_both;
-	strcpy(m_ShopItem[10].szItemName, "Tam Hoa T∏n");
+	strcpy(m_ShopItem[10].szItemName, TV(L"Tam Hoa T√°n"));
 	m_ShopItem[10].nItemType = medicine_stamina;
-	strcpy(m_ShopItem[11].szItemName, "Hoæc H≠¨ng Ch›nh Kh› Hoµn");
+	strcpy(m_ShopItem[11].szItemName, TV(L"Ho·∫Øc H∆∞∆°ng Ch√≠nh kh√≠ ho√†n"));
 	m_ShopItem[11].nItemType = medicine_antipoison;
-	strcpy(m_ShopItem[12].szItemName, "Tam ThuÀn t∏n");
+	strcpy(m_ShopItem[12].szItemName, TV(L"Tam Thu·∫≠n t√°n"));
 	m_ShopItem[12].nItemType = medicine_antipoison;
-	strcpy(m_ShopItem[13].szItemName, "Ng©n Ki“u Kh¯ ÆÈc Æan");
+	strcpy(m_ShopItem[13].szItemName, TV(L"Ng√¢n Ki·ªÅu Kh·ª© ƒë·ªôc ƒëan"));
 	m_ShopItem[13].nItemType = medicine_antipoison;
-	strcpy(m_ShopItem[14].szItemName, "Quy Nguy™n ß¨n");
-	strcpy(m_ShopItem[15].szItemName, "Thanh HÂng ß¨n");
+	strcpy(m_ShopItem[14].szItemName, TV(L"C·ª≠u Chuy·ªÉn Ho√†n H·ªìn ƒëan"));
+	strcpy(m_ShopItem[15].szItemName, TV(L"√î ƒë·∫ßu Ho√†n th·∫ßn ƒëan"));
 	m_ShopItem[15].nItemType = medicine_mana;
-	strcpy(m_ShopItem[16].szItemName, "NgÚ Hoa Ng‰c LÈ Hoµn");
+	strcpy(m_ShopItem[16].szItemName, TV(L"Ng≈© Hoa Ng·ªçc L·ªô Ho√†n"));
 	m_ShopItem[16].nItemType = medicine_both;
-	strcpy(m_ShopItem[17].szItemName, "Long ßµm H„a ßÈc Æan");
+	strcpy(m_ShopItem[17].szItemName, TV(L"Long ƒê√†m H√≥a ƒê·ªôc ƒëan"));
 	m_ShopItem[17].nItemType = medicine_antipoison;
 
 	m_nLastMapID = 0;
@@ -95,43 +100,33 @@ void CVLMap::InitEquipCheck()
 	}
 
 	// Check Amulet
-	m_bNeedGroceries = m_bBuyTDP && g_pCurPlayer->GetItemsCount(AMULET_PAPER) < 1 && NpcPoints[npc_Groceries].x;
+	m_bNeedGroceries = NeedBuyAmulet();
 
 	// Check Medicines
-	int nItemPos;
-	int nItemCount;
-	m_bNeedPharmacy = 0;
-	if (!NpcPoints[npc_Pharmacy].x) return;
-	if (m_TradeItem[0].bBuyCheck)
+	m_bNeedPharmacy = NeedBuyMedicine();
+}
+
+// Con thieu Tho Dia Phu (so luong trong hanh trang < so luong cai dat, it nhat 1)
+static BOOL NeedBuyAmulet()
+{
+	if (!theMap.m_bBuyTDP || !theMap.NpcPoints[npc_Groceries].x) return FALSE;
+	int nNeedTDP = theMap.m_nAMNumbers > 0 ? theMap.m_nAMNumbers : 1;
+	return g_pCurPlayer->GetItemsCount(AMULET_PAPER) < nNeedTDP;
+}
+
+// Con thieu mau/mana/thuoc da chon mua (so luong trong hanh trang < so luong cai dat)
+static BOOL NeedBuyMedicine()
+{
+	if (!theMap.NpcPoints[npc_Pharmacy].x) return FALSE;
+	for (int i = 0; i < 3; i++)
 	{
-		nItemPos = m_TradeItem[0].nItemPos;
-		nItemCount = g_pCurPlayer->GetItemsCount(item_medicine, m_ShopItem[nItemPos].nItemType);
-		if (m_TradeItem[0].nBuyAmout > nItemCount)
-		{
-			m_bNeedPharmacy = TRUE;
-			return;
-		}
+		if (!theMap.m_TradeItem[i].bBuyCheck) continue;
+		int nItemPos = theMap.m_TradeItem[i].nItemPos;
+		int nItemCount = g_pCurPlayer->GetItemsCount(item_medicine, theMap.m_ShopItem[nItemPos].nItemType);
+		if (theMap.m_TradeItem[i].nBuyAmout > nItemCount)
+			return TRUE;
 	}
-	if (m_TradeItem[1].bBuyCheck)
-	{
-		nItemPos = m_TradeItem[1].nItemPos;
-		nItemCount = g_pCurPlayer->GetItemsCount(item_medicine, m_ShopItem[nItemPos].nItemType);
-		if (m_TradeItem[1].nBuyAmout > nItemCount)
-		{
-			m_bNeedPharmacy = TRUE;
-			return;
-		}
-	}
-	if (m_TradeItem[2].bBuyCheck)
-	{
-		nItemPos = m_TradeItem[2].nItemPos;
-		nItemCount = g_pCurPlayer->GetItemsCount(item_medicine, m_ShopItem[nItemPos].nItemType);
-		if (m_TradeItem[2].nBuyAmout > nItemCount)
-		{
-			m_bNeedPharmacy = TRUE;
-			return;
-		}
-	}
+	return FALSE;
 }
 
 void CVLMap::InitValues()
@@ -144,6 +139,9 @@ void CVLMap::InitValues()
 	m_nTimeWait = 2;
 	m_bFinished = 0;
 	m_nDriverStep = 0;
+	s_dwReturnTick = 0;
+	s_nRebuyCount = 0;
+	theMove.GoTrainStop();
 	m_nCurPoint = -1;
 	m_bDoShoping = 0;
 	m_nEntrustStatus = 0;
@@ -258,7 +256,7 @@ void CVLMap::Breathe()
 		{
 			theUtil.m_bDoingUtil = TRUE;
 			theUtil.m_nUtilTask = util_givekcl;
-			SystemMessage("<color=yellow>ßi giao nÈp Khi™u chi’n l÷nh!!!");
+			SystemMessage(TV(L"<color=yellow>ƒêi giao n·ªôp Khi√™u chi·∫øn l·ªánh!!!"));
 		}
 		m_bNeedGiveKCL = 0;
 		return;
@@ -375,6 +373,7 @@ void CVLMap::Breathe()
 		}
 
 		if (!m_bDoShoping && RunningToPos(NpcPoints[m_nDriverIndex])) return;
+		if (!m_bDoShoping) CloseAllWindows(0);	// Toi xa phu: tat het cua so tranh bi de
 		m_bDoShoping = TRUE;
 		GetDriver();
 	}
@@ -384,13 +383,13 @@ void CVLMap::CheckAutoReturn()
 {
 	char szMsg[80];
 	if (m_bAutoReturn)
-		sprintf(szMsg, "<color=yellow>V“ thµnh t˘ quay lπi (Ctrl+G): <color=green>BÀt");
+		sprintf(szMsg, TV(L"<color=yellow>V·ªÅ th√†nh t·ª± quay l·∫°i (Ctrl+T): <color=green>B·∫≠t"));
 	else
 	{
-		sprintf(szMsg, "<color=yellow>V“ thµnh t˘ quay lπi (Ctrl+G): <color>Tæt");
+		sprintf(szMsg, TV(L"<color=yellow>V·ªÅ th√†nh t·ª± quay l·∫°i (Ctrl+T): <color>T·∫Øt"));
 		m_nCurPoint = -1;
 		m_bDoShoping = 0;
-		PathTravelStop("tat Ve thanh tu quay lai");
+		PathTravelStop("tat Ve thanh tu quay lai"); // T·∫Øt v·ªÅ th√†nh quay l·∫°i
 	}
 	SystemMessage(szMsg, 1);
 }
@@ -562,7 +561,7 @@ BOOL CVLMap::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
 		int nDestY = nPlayerY + (int)(((double)number / (double)UINT_MAX * 1024) - 512);
 		m_nLagCount = 0;
 		m_nCurPoint = -1;
-		SystemMessage("<color=yellow>K—t Æ≠Íng rÂi, chπy h≠Ìng kh∏c xem sao.");
+		SystemMessage(TV(L"<color=yellow>K·∫πt ƒë∆∞·ªùng r·ªìi, ch·∫°y h∆∞·ªõng kh√°c xem sao."));
 		g_pCurPlayer->MoveTo(nDestX, nDestY);
 		return TRUE;
 	}
@@ -597,14 +596,30 @@ void CVLMap::WithdrawMoney()
 	int nWithdrawAmount = m_nGetMoneyAmount * 10000 - EQUIP_MONEY;
 	if (nWithdrawAmount > ROOM_MONEY)
 	{
-		SystemMessage("<color=yellow>Ti“n trong r≠¨ng kh´ng ÆÒ!!!");
+		SystemMessage(TV(L"<color=yellow>Ti·ªÅn trong r∆∞∆°ng kh√¥ng ƒë·ªß!!!"));
 		nWithdrawAmount = ROOM_MONEY;
 	}
 	if (nWithdrawAmount > 0)
 		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nWithdrawAmount);
 	m_bNeedMoney = 0;
 }
-
+void CVLMap::WithdrawMoneyForXaPhu()
+{
+	if (theMain.OpenLockRoom(m_nRepositoryPass))
+	{
+		m_bRoomLocked = TRUE;
+		return;
+	}
+	int nWithdrawAmount = 1000 - EQUIP_MONEY;
+	if (nWithdrawAmount > ROOM_MONEY)
+	{
+		SystemMessage(TV(L"<color=yellow>Ti·ªÅn trong r∆∞∆°ng kh√¥ng ƒë·ªß!!!"));
+		nWithdrawAmount = ROOM_MONEY;
+	}
+	if (nWithdrawAmount > 0)
+		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nWithdrawAmount);
+	m_bNeedMoney = 0;
+}
 BOOL CVLMap::ChangeMap(int nNewMapID)
 {
 	char szCityName[64] = "";
@@ -616,29 +631,43 @@ BOOL CVLMap::ChangeMap(int nNewMapID)
 	else
 		theMain.GetCityName(nOwnerID, szCityName);
 
+	QTRACE("ChangeMap: %d -> %d '%s' Shoping=%d Driver=%d (%d,%d) CurPoint=%d", *g_pMapID, nNewMapID, szCityName, m_bDoShoping, m_nDriverIndex, NpcPoints[m_nDriverIndex].x, NpcPoints[m_nDriverIndex].y, m_nCurPoint);
 	if (!m_bDoShoping && RunningToPos(NpcPoints[m_nDriverIndex])) return TRUE;
 	m_bDoShoping = TRUE;
+	//r√∫t ti·ªÅn
 
 	int nCount = theMain.GetMenuCount();
+	QTRACE("ChangeMap: da toi xa phu, MenuCount=%d TimeWait=%d", nCount, m_nTimeWait);
 
 	if (nCount > 0)
 	{
-		// Menu co san ten thanh (vd "D≠¨ng Ch©u ph›") -> chon luon
+		WithdrawMoneyForXaPhu();
+		if (ROOM_MONEY < 500)
+		{
+			PostChatMessage(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Ti·ªÅn trong r∆∞∆°ng kh√¥ng ƒë·ªß, kh√¥ng th·ªÉ r·ª≥t ti·ªÅn!!!"));
+			// t·∫Øt t·∫•t c·∫£ c·ª≠a s·ªï
+			CloseAllWindows(0);
+			return FALSE;
+		}
+		// Menu co san ten thanh (vd "D¬≠¬¨ng Ch¬©u ph√ù") -> chon luon
 		if (szCityName[0] && theMain.ClickMenuStr(szCityName))
 		{
 			m_nTimeWait = 5;
 			return TRUE;
 		}
-		if (theMain.ClickMenuStr("Nh˜ng thµnh thﬁ Æ∑ Æi qua"))
+		if (theMain.ClickMenuStr(TV(L"Nh·ªØng th√†nh th·ªã ƒë√£ ƒëi qua")))
 			m_nTimeWait = 2;
-		else if (theMain.ClickMenuStr("l≠Óng", 0)) // City Selection
+		else if (theMain.ClickMenuStr(TV(L"l∆∞·ª£ng"), 0)) // City Selection
 		{
 			theMain.ClickMenuStr(szCityName);
 			m_nTimeWait = 5;
 		}
+		else
+			QTRACE("ChangeMap: menu %d dong khong co '%s' / 'Nhung thanh thi da di qua' / 'luong'", nCount, szCityName);
 		return TRUE;
 	}
-
+	//c·∫•t ti·ªÅn
+	QTRACE("ChangeMap: chua co menu -> ClickToNpc xa phu");
 	ClickToNpc(NpcPoints[m_nDriverIndex].x, NpcPoints[m_nDriverIndex].y);
 
 	return TRUE;
@@ -665,7 +694,7 @@ int CVLMap::OpenStoreBox()
 			char szScript[32];
 			sprintf(szScript, "MoveTo(%d, 0)", nX);
 			ExecuteScript(szScript);
-			SystemMessage("<color=yellow>Lag qu∏, chÍ 5s click lπi...");
+			SystemMessage(TV(L"<color=yellow>Lag qu√°, ch·ªù 5s click l·∫°i..."));
 		}
 		m_nTimeWait--;
 		return 0;
@@ -677,7 +706,7 @@ int CVLMap::OpenStoreBox()
 		for (int i = 1; i < MAX_NPC; i++)
 		{
 			if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (strcmp(g_pNpcArray[i]->Name, "R≠¨ng ch¯a ÆÂ")) continue;
+			if (strcmp(g_pNpcArray[i]->Name, TV(L"R∆∞∆°ng ch·ª©a ƒë·ªì"))) continue;
 			g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 			dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
 			if (dZ > MAX_MOVE_DISTANCE)
@@ -721,12 +750,12 @@ void CVLMap::SaveNewRepository()
 		return;
 	if ((*g_pMapID) == city_visondao)
 	{
-		SystemMessage("<color=yellow>Kh´ng l≠u R≠¨ng tr™n Vi S¨n ß∂o!!!");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng l∆∞u R∆∞∆°ng tr√™n Vi S∆°n ƒê·∫£o!!!"));
 		return;
 	}
 	if (m_nPoints <= 0)
 	{
-		SystemMessage("<color=yellow>LÁi Æ‰c file MAP thµnh thﬁ!!!");
+		SystemMessage(TV(L"<color=yellow>L·ªói ƒë·ªçc file MAP th√†nh th·ªã!!!"));
 		return;
 	}
 	int nPlayerX, nPlayerY, nObjX, nObjY, dZ;
@@ -753,7 +782,7 @@ void CVLMap::SaveNewRepository()
 		FILE* pFile = fopen(szMapFile, "w");
 		if (pFile == NULL)
 		{
-			SystemMessage("<color=yellow>LÁi ghi file MAP, xin ki”m tra lπi!!!");
+			SystemMessage(TV(L"<color=yellow>L·ªói ghi file MAP, xin ki·ªÉm tra l·∫°i!!!"));
 			return;
 		}
 		//Write NPC Points
@@ -771,13 +800,13 @@ void CVLMap::SaveNewRepository()
 			for (int j = i + 1; j < m_nPoints; j++)
 				if (MapSides[i][j] < MAX_INTNUM)
 					fprintf(pFile, "%d,%d\n", i, j);
-		SystemMessage("<color=yellow>ß∑ l≠u thµnh c´ng t‰a ÆÈ R≠¨ng ÆÂ mÌi!");
+		SystemMessage(TV(L"<color=yellow>ƒê√£ l∆∞u th√†nh c√¥ng t·ªça ƒë·ªô R∆∞∆°ng ƒë·ªì m·ªõi!"));
 		m_nCurPoint = -1;
 		m_bDoShoping = 0;
 		fclose(pFile);
 		return;
 	}
-	SystemMessage("<color=yellow>Kh´ng t◊m th y R≠¨ng ÆÂ!!!");
+	SystemMessage(TV(L"<color=yellow>Kh√¥ng t√¨m th·∫•y R∆∞∆°ng ƒë·ªì!!!"));
 }
 
 void CVLMap::FirstRepository()
@@ -797,7 +826,7 @@ void CVLMap::FirstRepository()
 	if (OpenStoreBox() <= 0)
 		return;
 
-	SystemMessage("<color=yellow>ß∑ nhÌ r≠¨ng v“ thµnh!!!");
+	SystemMessage(TV(L"<color=yellow>ƒê√£ nh·ªõ r∆∞∆°ng v·ªÅ th√†nh!!!"));
 	ResetShoping();
 	m_bFirstSaveRepos = 0;
 }
@@ -815,7 +844,7 @@ void CVLMap::GetSaveItems()
 	{
 		if (nOpeningStore < 0)
 		{
-			SystemMessage("<color=yellow>Kh´ng th y R≠¨ng ÆÂ, l«n sau gˆi vÀy.");
+			SystemMessage(TV(L"<color=yellow>Kh√¥ng th·∫•y R∆∞∆°ng ƒë·ªì, l·∫ßn sau g·ª≠i v·∫≠y."));
 			m_bNeedSaveItems = 0;
 			m_bDoShoping = 0;
 		}
@@ -824,7 +853,7 @@ void CVLMap::GetSaveItems()
 
 	if (SaveItems()) return;
 
-	SystemMessage("<color=yellow>C t ÆÂ vµo r≠¨ng hoµn t t!!!");
+	SystemMessage(TV(L"<color=yellow>C·∫•t ƒë·ªì v√†o r∆∞∆°ng ho√†n t·∫•t!!!"));
 	ResetShoping();
 	m_bNeedSaveItems = 0;
 }
@@ -843,7 +872,7 @@ void CVLMap::GetRepairItems()
 		if (pItem->m_nItemPlus > 5) continue; // Cannot repair this item
 		if (pItem->m_nCurDur < pItem->m_nMaxDur)
 		{	//Sua do
-			SystemMessage(0, "Sˆa ÆÂ: <color=yellow>%s", ComAttr.szItemName);
+			SystemMessage(0, TV(L"S·ª≠a ƒë·ªì: <color=yellow>%s"), ComAttr.szItemName);
 			g_pCurPlayer->RepairItem(nItemIdx);
 			nLastRpEquip = i;
 			return;
@@ -870,7 +899,7 @@ void CVLMap::GetGroceries()
 			if (strstr(pMsgSel->m_pMessages[1]->Msg, FULL_REPAIR))
 			{
 				pMsgSel->OnClickMsg(1); // Full Repair
-				SystemMessage("<color=yellow>Sˆa k¸ ÆÂ Hoµng Kim");
+				SystemMessage(TV(L"<color=yellow>S·ª≠a k·ªπ ƒë·ªì Ho√†ng Kim"));
 			}
 			else
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -909,7 +938,7 @@ void CVLMap::GetGroceries()
 			return;
 		}
 		//Buy TDP
-		if (m_bBuyTDP && (g_pCurPlayer->GetItemsCount(AMULET_PAPER) < m_nAMNumbers))
+		if (NeedBuyAmulet())
 		{
 			g_pCurPlayer->BuyItem(1);
 			return;
@@ -939,7 +968,7 @@ void CVLMap::GetPharmacy()
 			if (strstr(pMsgSel->m_pMessages[1]->Msg, FULL_REPAIR))
 			{
 				pMsgSel->OnClickMsg(1); // Full Repair
-				SystemMessage("<color=yellow>Sˆa k¸ ÆÂ Hoµng Kim");
+				SystemMessage(TV(L"<color=yellow>S·ª≠a k·ªπ ƒë·ªì Ho√†ng Kim"));
 			}
 			else
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -1059,9 +1088,9 @@ BOOL CVLMap::GetReputation(int nRepType)
 	{
 		char szMenuChoice[32] = "_Undefined_";
 		if (nRepType == 0)
-			strcpy(szMenuChoice, "NhÀn Æi”m phÛc duy™n");
+			strcpy(szMenuChoice, TV(L"Nh·∫≠n ƒëi·ªÉm ph√∫c duy√™n"));
 		else
-			strcpy(szMenuChoice, "NhÀn Æi”m danh v‰ng");
+			strcpy(szMenuChoice, TV(L"Nh·∫≠n ƒëi·ªÉm danh v·ªçng"));
 		for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 		{
 			char* szMsg = (char*)pMsgSel2->m_pMessages[i]->Msg;
@@ -1137,6 +1166,14 @@ static BOOL RunToNearestNode()
 	return TRUE;
 }
 
+// Da chon dong xa phu toi map train: bao Tab Di chuyen (CVLMove::GoTrainBreathe) khi ra ngoai thanh thi tu tim duong
+// toi bai train (MapToMap neu xa phu dua toi map ke ben, roi MapPath toi diem dau tien), Tab Chien dau chi buff
+static void GoTrainMark(int nTarget)
+{
+	if (!nTarget || theQuest.m_nYeSouMapID || (theQuest.m_bAutoDoQuest && theQuest.m_bGoTrainGetPK)) return;
+	theMove.GoTrainStart(nTarget);
+}
+
 DWORD g_dwNoRouteTick = 0;	// Xa phu khong co map train + khong co lo trinh MapPath: cho 30s moi noi lai
 
 void CVLMap::GetDriver()
@@ -1153,13 +1190,26 @@ void CVLMap::GetDriver()
 		nDriverOpt = theQuest.m_TongPKOpt.m_nDriverOpt + 10;
 	}
 
+	if (s_dwReturnTick)
+	{	// Vua chon "Tro lai dia diem cu": ra ngoai thanh thi Breathe dung o tren (m_FightMode), Tab Di chuyen tu tim duong.
+		// Sau 3s van trong thanh va chua doi map -> khong tro lai duoc: tat het cua so, bam lai xa phu chon "Nhung noi da di qua"
+		if (GetTickCount() - s_dwReturnTick < 3000) return;
+		s_dwReturnTick = 0;
+		if (!P_PLAYER->m_FightMode && *g_pMapID == s_nReturnMap)
+		{
+			SystemMessage(0, "<color=yellow>Khong tro lai dia diem cu duoc - chon Nhung noi da di qua");
+			CloseAllWindows(0);
+			return;
+		}
+	}
+
 	int nCount = theMain.GetMenuCount();
 	int nTarget = (nDriverOpt < 10) ? DriverTargetMap() : 0;
 	char szTarget[64] = "";
 	if (nTarget)
 	{
 		if (nTarget >= 224 && nTarget <= 227)
-			strcpy(szTarget, "Sa Mπc M™ Cung");
+			strcpy(szTarget, TV(L"Sa M·∫°c M√™ Cung"));
 		else
 			theMain.GetMapName(nTarget, szTarget);
 	}
@@ -1170,9 +1220,16 @@ void CVLMap::GetDriver()
 		if (m_nDriverStep == 0)	// Return the recent place
 		{
 			theMove.m_bFindingWay = 0;
-			BOOL bClicked = theMain.ClickMenuStr("TrÎ lπi Æﬁa Æi”m cÚ");
+			BOOL bClicked = theMain.ClickMenuStr(TV(L"Tr·ªü l·∫°i ƒë·ªãa ƒëi·ªÉm c≈©"));
 			m_nDriverStep = 1;
 			m_nTimeWait = 5;
+			if (bClicked)
+			{
+				GoTrainMark(nTarget);
+				if (!SameMapNodes()) { s_dwReturnTick = GetTickCount(); s_nReturnMap = *g_pMapID; }
+			}
+			else if (!SameMapNodes())
+				CloseAllWindows(0);	// Xa phu khong co dong "Tro lai dia diem cu"
 			if (SameMapNodes())
 			{
 				// Map train = map thanh: thu xong thi Breathe tu chay ra danh sach toa do (khong chon dong khac)
@@ -1198,25 +1255,28 @@ void CVLMap::GetDriver()
 			theMove.m_bFindingWay = TRUE;
 			// Menu chinh co san map can toi (vd ten thanh) -> chon luon
 			if (szTarget[0] && nDriverOpt != 3 && theMain.ClickMenuStr(szTarget))
+			{
+				GoTrainMark(nTarget);
 				return;
+			}
 			if (theMain.ClickMenuStr(VISITED_PLACES, 0))
 			{
 				if (nDriverOpt == 3)
 					theMain.ExitGame();
 				else if (nDriverOpt == 4)
 				{
-					if (theMain.ClickMenuStr("ßi Æ’n n¨i lµm nhi÷m vÙ D∑ T»u"))
+					if (theMain.ClickMenuStr(TV(L"ƒêi ƒë·∫øn n∆°i l√†m nhi·ªám v·ª• D√£ T·∫©u")))
 						return;
 
-					SystemMessage("<color=yellow>Ch≠a nhÀn nhi÷m vÙ D∑ T»u!!!");
+					SystemMessage(TV(L"<color=yellow>Ch∆∞a nh·∫≠n nhi·ªám v·ª• D√£ T·∫©u!!!"));
 					theMain.ClickMenuStr(VISITED_PLACES);
 				}
 				else if (nDriverOpt == 6)
 				{
-					if (theMain.ClickMenuStr("ßi ß’n B∂n ßÂ MÀt CËc"))
+					if (theMain.ClickMenuStr(TV(L"ƒêi ƒê·∫øn B·∫£n ƒê·ªì M·∫≠t C·ªëc")))
 						return;
 
-					SystemMessage("<color=yellow>B∂n ßÂ MÀt CËc ch≠≠a khai mÎ!!!");
+					SystemMessage(TV(L"<color=yellow>B·∫£n ƒê·ªì M·∫≠t C·ªëc ch∆∞∆∞a khai m·ªü!!!"));
 					theMain.ClickMenuStr(VISITED_PLACES);
 				}
 				else
@@ -1224,20 +1284,42 @@ void CVLMap::GetDriver()
 			}
 			else
 			{
-				if (theMain.ClickMenuStr("X∏c nhÀn luy÷n tÀp c∏ nh©n"))
+				if (theMain.ClickMenuStr(TV(L"X√°c nh·∫≠n luy·ªán t·∫≠p c√° nh√¢n")))
 					return;
-				if (theMain.ClickMenuStr("ßÛng vÀy! Mau Æ≠a ta Æi!"))
+				if (theMain.ClickMenuStr(TV(L"ƒê√∫ng v·∫≠y! Mau ƒë∆∞a ta ƒëi!")))
 					return;
 				if (nTarget)
 				{
 					const char* szMapName = szTarget;
 					if (theMain.ClickMenuStr(szMapName))
+					{
+						GoTrainMark(nTarget);
 						return;
+					}
+					// Xa phu ghi ten ngan cua me cung (vd map "M¬™ Cung L¬≠√¨ng Th√±y ¬ß√©ng" -> dong "L¬≠√¨ng Th√±y ¬ß√©ng")
+					if (!TcvnStrNCmpI(szMapName, TV(L"M√™ Cung "), 8) && strlen(szMapName) > 11 && theMain.ClickMenuStr(szMapName + 8))
+					{
+						GoTrainMark(nTarget);
+						return;
+					}
+					// Xa phu khong co ten map train: chon dong "Noi da di qua 1/2/3" theo cai dat (nDriverOpt 0-2)
+					int nVisitedIdx = nDriverOpt;
+					if (nVisitedIdx == 10) nVisitedIdx = 2;	// Nhiem vu PK ko xac dinh
+					else if (nVisitedIdx > 10) nVisitedIdx -= 11;
+					if (nVisitedIdx >= 0 && nVisitedIdx <= 2 && nVisitedIdx < theMain.GetMenuCount() - 1)	// Dong cuoi la dong ket thuc
+					{
+						SystemMessage(0, "<color=yellow>Xa phu khong co %s - chon Noi da di qua %d", szMapName, nVisitedIdx + 1);
+						theMain.ClickMenuIdx(nVisitedIdx);
+						return;
+					}
 					// Xa phu khong co map train (vd rot mang / moi login nen khong "Tro lai dia diem cu" duoc)
 					// -> tu di theo du lieu MapPath (tinh ca cac dong "Nhung noi da di qua" dang hien)
 					if (PathTravelStart(nTarget, TRUE))
+					{
+						GoTrainMark(nTarget);
 						return;
-					// Khong chon "Noi da di qua 1/2/3" vi khong phai map train - dong menu, cho bo sung MapPath
+					}
+					// Che do khac 0-2 (hoac khong du dong) va khong co MapPath - dong menu, cho bo sung MapPath
 					SystemMessage(0, "<color=yellow>Xa phu khong co %s, chua co lo trinh MapPath toi do - khong chon dong %d, thu lai sau 30s", szMapName, nDriverOpt + 1);
 					theMain.ClickMenuIdx(theMain.GetMenuCount());
 					dwNoRouteTick = GetTickCount();
@@ -1261,21 +1343,40 @@ void CVLMap::GetDriver()
 		return;
 	}
 
+	// Kiem tra lai truoc khi bam xa phu: server lag -> tuong da mua TDP/mau/mana nhung chua mua that.	
+	if (g_pCurPlayer->CheckRoom() != MAX_ROOM_SPACE)
+	{
+		BOOL bGroceries = NeedBuyAmulet();
+		BOOL bPharmacy = NeedBuyMedicine();
+		if (bGroceries || bPharmacy)
+		{
+			s_nRebuyCount++;
+			SystemMessage(1, "<color=yellow>Chua mua du%s%s - quay lai mua (lan %d)",
+				bGroceries ? " Tho Dia Phu" : "", bPharmacy ? " mau/mana" : "", s_nRebuyCount);
+			m_bNeedGroceries = bGroceries;
+			m_bNeedPharmacy = bPharmacy;
+			m_bFinished = 0;
+			m_bIsReady = 0;
+			ResetShoping(TRUE);
+			return;
+		}
+	}
+
 	ClickToNpc(NpcPoints[m_nDriverIndex].x, NpcPoints[m_nDriverIndex].y);
 }
 
 void CVLMap::UseThanHanhPhu()
 {
-	if (theMain.ClickMenuStr("Sˆ dÙng thuÀt th«n hµnh c„ th”"))
+	if (theMain.ClickMenuStr(TV(L"S·ª≠ d·ª•ng thu·∫≠t th·∫ßn h√†nh c√≥ th·ªÉ")))
 	{
-		SystemMessage("<color=yellow>Sˆ dÙng thuÀt th«n hµnh c„ th”");
+		SystemMessage(TV(L"<color=yellow>S·ª≠ d·ª•ng thu·∫≠t th·∫ßn h√†nh c√≥ th·ªÉ"));
 		return;
 	}
 
-	if (m_nTrainMapID < 920 && theMain.ClickMenuStr("B∂n ÆÂ c p 90"))
+	if (m_nTrainMapID < 920 && theMain.ClickMenuStr(TV(L"B·∫£n ƒë·ªì c·∫•p 90")))
 		return;
 
-	if (m_nTrainMapID >= 920 && theMain.ClickMenuStr("B∂n ÆÂ luy÷n c´ng mÌi"))
+	if (m_nTrainMapID >= 920 && theMain.ClickMenuStr(TV(L"B·∫£n ƒë·ªì luy·ªán c√¥ng m·ªõi")))
 		return;
 
 	BOOL bClicked = FALSE;
@@ -1289,19 +1390,19 @@ void CVLMap::UseThanHanhPhu()
 	switch (m_nTrainMapID)
 	{
 	case 225:
-		bClicked = theMain.ClickMenuStr("Sa Mπc M™ Cung 1");
+		bClicked = theMain.ClickMenuStr(TV(L"Sa M·∫°c M√™ Cung 1"));
 		break;
 	case 226:
-		bClicked = theMain.ClickMenuStr("Sa Mπc M™ Cung 2");
+		bClicked = theMain.ClickMenuStr(TV(L"Sa M·∫°c M√™ Cung 2"));
 		break;
 	case 227:
-		bClicked = theMain.ClickMenuStr("Sa Mπc M™ Cung 3");
+		bClicked = theMain.ClickMenuStr(TV(L"Sa M·∫°c M√™ Cung 3"));
 		break;
 	case 321:
-		bClicked = theMain.ClickMenuStr("Tr≠Íng Bπch S¨n Nam");
+		bClicked = theMain.ClickMenuStr(TV(L"Tr∆∞·ªùng B·∫°ch S∆°n Nam"));
 		break;
 	case 322:
-		bClicked = theMain.ClickMenuStr("Tr≠Íng Bπch S¨n Bæc");
+		bClicked = theMain.ClickMenuStr(TV(L"Tr∆∞·ªùng B·∫°ch S∆°n B·∫Øc"));
 		break;
 	default:
 		bClicked = theMain.ClickMenuStr(szMapName);
@@ -1313,7 +1414,7 @@ void CVLMap::UseThanHanhPhu()
 
 	if (m_nTrainMapID < 200)
 	{
-		if (theMain.ClickMenuStr("Trang k’"))
+		if (theMain.ClickMenuStr(TV(L"Trang k·∫ø")))
 			return;
 	};
 
@@ -1323,7 +1424,7 @@ void CVLMap::UseThanHanhPhu()
 		return;
 	}
 
-	g_pCurPlayer->UseItem("Th«n Hµnh PhÔ");
+	g_pCurPlayer->UseItem(TV(L"Th·∫ßn H√†nh Ph√π"));
 	m_nTimeWait = MAX_TIME_WAIT;
 }
 
@@ -1394,6 +1495,7 @@ BOOL CVLMap::SaveItems()
 		if (PLAYER_ITEM(i).nY == 9) continue;						// Items at last line
 		pItem = (KItem*)(dwItmBaseAdd + PLAYER_ITEM(i).nIdx * ITM_DATA_SIZE);
 		if (ComAttr.nItemGenre == item_medicine) continue;
+		if (IsInNoSaveList(ComAttr.szItemName)) continue;	// Maps\RuongItem.txt
 		if (theRecover.m_bUseDoubleExp || theQuest.m_AddPointOpt.m_bUseTienThaoLo)
 		{
 			if (theRecover.IsInX2List(ComAttr.szItemName)) continue;	// Tien Thao Lo
@@ -1443,20 +1545,19 @@ BOOL CVLMap::CheckReady()
 		pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
 		if (pItem->m_nCurDur >= 0 && pItem->m_nCurDur < 3)
 		{
-			SystemMessage("<color=yellow>Trang bﬁ sæp h·ng, sao cﬂn Æﬂi Æi Æ©u?");
+			SystemMessage(TV(L"<color=yellow>Trang b·ªã s·∫Øp h·ªèng, sao c√≤n ƒë√≤i ƒëi ƒë√¢u?"));
 			return 0;
 		}
 	}
 	if (P_PLAYER->m_PoisonState.nTime)
 	{
-		SystemMessage("<color=yellow>ßÃn thÔi lÔi, Æi Æ©u ng≠Íi ta c≠Íi ch’t.");
+		SystemMessage(TV(L"<color=yellow>ƒê√®n th√πi l√πi, ƒëi ƒë√¢u ng∆∞·ªùi ta c∆∞·ªùi ch·∫øt."));
 		return 0;
 	}
 
-	auto amuletCount = g_pCurPlayer->GetItemsCount(AMULET_PAPER) + g_pCurPlayer->GetItemsCount(AMULETX_PAPER);
-	if (amuletCount < 1 && (!pUiPlayerBar->m_nHK3Gengre))
+	if (!theMain.HaveTownPortal())
 	{
-		SystemMessage("<color=yellow>Kh´ng mang TßP, sao cﬂn d∏m Æi Æ©u?");
+		SystemMessage(TV(L"<color=yellow>Kh√¥ng mang TƒêP, sao c√≤n d√°m ƒëi ƒë√¢u?"));
 		return 0;
 	}
 	if (bNeedBuffHP)
@@ -1484,10 +1585,10 @@ void CVLMap::ClickToNpc(int nX, int nY)
 			char szScript[32];
 			sprintf(szScript, "MoveTo(%d, 0)", nX);
 			ExecuteScript(szScript);
-			SystemMessage("<color=yellow>Lag qu∏, chÍ 5s click lπi...");
+			SystemMessage(TV(L"<color=yellow>Lag qu√°, ch·ªù 5s click l·∫°i..."));
 		}
-		if (m_nTimeWait == 1)
-			QTRACE("ClickToNpc: het thoi gian cho, PEOPLE_IDX=%d Doing=%d", PEOPLE_IDX, P_PLAYER->m_Doing);
+		//if (m_nTimeWait == 1)
+			//QTRACE("ClickToNpc: het thoi gian cho, PEOPLE_IDX=%d Doing=%d", PEOPLE_IDX, P_PLAYER->m_Doing);
 		m_nTimeWait--;
 		return;
 	}
@@ -1507,19 +1608,17 @@ void CVLMap::ClickToNpc(int nX, int nY)
 		dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
 		if (dZ > PLAYER_PICKUP_DISTANCE)
 		{
-			QTRACE("ClickToNpc: thay #%d %s, cach nguoi %d > %d -> chay toi", i, g_pNpcArray[i]->Name,
-				dZ, PLAYER_PICKUP_DISTANCE);
+			//QTRACE("ClickToNpc: thay #%d %s, cach nguoi %d > %d -> chay toi", i, g_pNpcArray[i]->Name,dZ, PLAYER_PICKUP_DISTANCE);
 			g_pCurPlayer->MoveTo(nNpcX, nNpcY);
 			return;
 		}
 
 		theAttack.SetPeopleIdx(i);
-		QTRACE("ClickToNpc: SetPeopleIdx(#%d %s) -> PEOPLE_IDX=%d", i, g_pNpcArray[i]->Name, PEOPLE_IDX);
+		//QTRACE("ClickToNpc: SetPeopleIdx(#%d %s) -> PEOPLE_IDX=%d", i, g_pNpcArray[i]->Name, PEOPLE_IDX);
 		m_nTimeWait = MAX_TIME_WAIT; //wait for 5s for next
 		return;
 	}
-	QTRACE("ClickToNpc: KHONG co NPC hoi thoai trong 40 quanh (%d,%d). Tong dialoger=%d, gan nhat #%d %s cach %d",
-		nX, nY, nDialogers, nNearIdx, nNearIdx ? g_pNpcArray[nNearIdx]->Name : "-", nNearIdx ? nNearDist : -1);
+	//QTRACE("ClickToNpc: KHONG co NPC hoi thoai trong 40 quanh (%d,%d). Tong dialoger=%d, gan nhat #%d %s cach %d",nX, nY, nDialogers, nNearIdx, nNearIdx ? g_pNpcArray[nNearIdx]->Name : "-", nNearIdx ? nNearDist : -1);
 }
 
 void CVLMap::LoadSellList()
@@ -1533,6 +1632,42 @@ void CVLMap::LoadSellList()
 		return;
 
 	itemFile.ReadAllLines(m_szSellItems[0], MAX_SELL_ITEMS, 80);
+}
+
+void CVLMap::LoadNoSaveList()
+{
+	memset(m_szNoSaveItems, 0, sizeof(m_szNoSaveItems));
+	char szNoSaveFile[MAX_PATH];
+	sprintf(szNoSaveFile, "%s\\Maps\\RuongItem.txt", theMain.m_szCurFolder);
+
+	DTextFile itemFile;
+	if (!itemFile.Open(szNoSaveFile))
+		return;
+
+	itemFile.ReadAllLines(m_szNoSaveItems[0], MAX_NOSAVE_ITEMS, 32);
+
+	int i = 0;
+	while (i < MAX_NOSAVE_ITEMS && m_szNoSaveItems[i][0])
+	{
+		_strlwr(m_szNoSaveItems[i]);
+		i++;
+	}
+}
+
+// Ten vat pham chua 1 dong trong RuongItem.txt (khong phan biet hoa thuong ASCII, giong BlackItems)
+BOOL CVLMap::IsInNoSaveList(const char* szItemName)
+{
+	char szName[84] = "";
+	strncpy(szName, szItemName, 80);
+	_strlwr(szName);
+	int i = 0;
+	while (i < MAX_NOSAVE_ITEMS && m_szNoSaveItems[i][0])
+	{
+		if (strstr(szName, m_szNoSaveItems[i]))
+			return TRUE;
+		i++;
+	}
+	return 0;
 }
 
 BOOL CVLMap::IsInSellList(const char* szItemName)

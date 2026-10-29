@@ -1,9 +1,8 @@
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vc143.pdb
-i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugpath.obj
-i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlexplimit.obj
-i:\ctc\vlauto_ctc\_obj\vlctcdll\release\crashhandler.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebuglowcfg.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugrecover.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugquest.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugfile.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugattack.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugcollect.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugmap.obj
@@ -19,6 +18,7 @@ i:\ctc\vlauto_ctc\_obj\vlctcdll\release\user32.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\stdafx.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\pelib.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlhook.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\textfunc.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\dtextfile.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\diskid32.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\s3client.obj
@@ -29,7 +29,11 @@ i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlrecover.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlquest.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlqtong.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlparty.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\tcvntext.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\magicattrib.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugpath.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlexplimit.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\crashhandler.obj
 i:\ctc\vlauto_ctc\_bin\vlctcdll.dll
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.lib
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.exp

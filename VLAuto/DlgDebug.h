@@ -78,5 +78,6 @@ private:
 	void			CheckHook();
 	LPCTSTR			GetCmdLabel(int nCmd);
 	void			AppendText(LPCTSTR szText, COLORREF crColor, BOOL bBold = FALSE);
+	void			AppendReplyText(LPCSTR szText, COLORREF crColor);
 	void			AppendLog(LPCTSTR szText, COLORREF crColor, BOOL bBold = FALSE);
 };

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -14,7 +14,7 @@ extern BOOL g_SysPause;
 
 static const char* s_szSkillSlot[skill_total] = { "supp01", "supp02", "supp03", "left", "right", "boss", "defence" };
 static const char* s_szAlterType[] = { "DirectShortcutSkill (moi N ms)", "Theo thoi gian", "Theo mana", "Theo mau" };
-static const char* s_szDefence[] = { "Tat", "1", "Dung AM (2)", "3", "4", "Giet PK nhiem vu (5)" };
+static const char* s_szDefence[] = { "Tat", "1", "Dung AM (2)", "Thoat game (3)", "4", "Giet PK nhiem vu (5)" };
 
 static KSkill* GetSkill(int nSkillId)
 {
@@ -38,6 +38,96 @@ static const char* RelationName(int nRelation)
 	case relation_dialog: return "dialog";
 	}
 	return "?";
+}
+
+// Nut "Kiem tra doi tuong dang danh": CVLAttack::Breathe goi moi nhip, doc PEOPLE_IDX (muc tieu game tu danh)
+// va chi gui SystemMessage len kenh chat khi noi dung doi (tranh lag)
+// Res: chen vao CoreDrawGameObj (NPCP_CALL_ADD: call KNpc::Paint) ghi lai lan cuoi game ve hinh (res) cua tung NPC
+// => doi chieu muc tieu auto dang danh voi viec game con ve no hay khong
+static BOOL	s_bWatchTarget = FALSE;
+static char	s_szWatchLast[260] = "";
+static BOOL	s_bPaintPatched = FALSE;
+static BYTE	s_OrgPaintCall[5];
+static DWORD	s_dwNpcPaint[MAX_NPC];		// GetTickCount lan cuoi KNpc::Paint ve NPC [i]
+static DWORD	s_dwPaintLast = 0;			// GetTickCount lan cuoi ve NPC bat ky (khung hinh moi nhat)
+
+#define RES_FRAME_MS	100		// cach khung hinh moi nhat <= 100ms => NPC duoc ve trong khung do
+#define RES_IDLE_MS		2000	// game khong ve NPC nao qua 2s (cua so an/mat focus) => khong doi chieu duoc
+
+typedef void (__thiscall *PFN_NPCPAINT)(void*);
+
+static void __fastcall HookNpcPaint(KNpc *pNpc)
+{
+	DWORD dwNow = GetTickCount();
+	int n = pNpc->m_Index;
+	if (n > 0 && n < MAX_NPC) s_dwNpcPaint[n] = dwNow;
+	s_dwPaintLast = dwNow;
+	((PFN_NPCPAINT)NPCP_FUNC_ADD)(pNpc);
+}
+
+static BOOL PatchNpcPaint(BOOL bOn)
+{
+	if (bOn == s_bPaintPatched) return TRUE;
+	BYTE *p = (BYTE*)NPCP_CALL_ADD;
+	DWORD dwOld;
+	if (!VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &dwOld)) return FALSE;
+	BOOL bOK = TRUE;
+	if (bOn)
+	{
+		if (p[0] != 0xE8 || (DWORD)(p + 5) + *(int*)(p + 1) != NPCP_FUNC_ADD)
+			bOK = FALSE;	// Khong phai "call KNpc::Paint" - sai ban game
+		else
+		{
+			memcpy(s_OrgPaintCall, p, 5);
+			*(int*)(p + 1) = (int)((DWORD)HookNpcPaint - (DWORD)(p + 5));
+		}
+	}
+	else
+		memcpy(p, s_OrgPaintCall, 5);
+	VirtualProtect(p, 5, dwOld, &dwOld);
+	FlushInstructionCache(GetCurrentProcess(), p, 5);
+	if (bOK) s_bPaintPatched = bOn;
+	return bOK;
+}
+
+void DebugAttackUnhook()
+{
+	s_bWatchTarget = FALSE;
+	PatchNpcPaint(FALSE);
+}
+
+// '1' = khung hinh moi nhat co ve NPC nIdx, '0' = khong ve, '?' = chua chen duoc hook / game dang khong ve
+static char NpcResState(int nIdx)
+{
+	if (!s_bPaintPatched || s_dwPaintLast == 0 || GetTickCount() - s_dwPaintLast > RES_IDLE_MS) return '?';
+	DWORD dwTick = s_dwNpcPaint[nIdx];
+	return (dwTick && s_dwPaintLast - dwTick <= RES_FRAME_MS) ? '1' : '0';
+}
+
+void DebugAttackWatch()
+{
+	if (!s_bWatchTarget) return;
+
+	char szMsg[260];
+	int nIdx = PEOPLE_IDX;
+	if (nIdx > 0 && nIdx < MAX_NPC && g_pNpcArray[nIdx]->IsExist())
+	{
+		KNpc *pNpc = g_pNpcArray[nIdx];
+		int nX, nY, nPX, nPY, nGX, nGY;
+		pNpc->GetMapPos(&nX, &nY);
+		pNpc->GetGamePos(&nGX, &nGY);
+		P_PLAYER->GetMapPos(&nPX, &nPY);
+		_snprintf(szMsg, sizeof(szMsg) - 1, TV(L"<color=yellow>[Mục tiêu] <color=white>%.38s<color> | Idx %d | Tọa độ %d/%d (game %d/%d) | Khoảng cách %d | Res %c"),
+			pNpc->Name, nIdx, nX >> 8, nY >> 9, nGX >> 8, nGY >> 9, __distance(nX, nY, nPX, nPY), NpcResState(nIdx));
+	}
+	else
+		_snprintf(szMsg, sizeof(szMsg) - 1, TV(L"<color=yellow>[Mục tiêu] <color>Không có (Idx %d)"), nIdx);
+	szMsg[sizeof(szMsg) - 1] = 0;
+
+	if (strcmp(szMsg, s_szWatchLast) == 0) return;
+	strcpy(s_szWatchLast, szMsg);
+	// Tam danh khong dua vao so sanh: game dat lai theo skill moi nhip (vd 78/75) => bao lien tuc
+	SystemMessage(1, TV(L"%s | Tầm đánh %d"), szMsg, P_PLAYER->m_CurrentAttackRadius);
 }
 
 static BOOL CheckNpcIdx(int nIdx)
@@ -76,6 +166,7 @@ static const char* AliveNpcReason(int i)
 	if (!pNpc->IsExist()) return "khong ton tai";
 	if (pNpc->m_CurrentLife <= 0) return "Life <= 0";
 	if (pNpc->m_Kind != kind_normal) return "khong phai quai (m_Kind)";
+	if (pNpc->IsGhost()) return "NPC ma (GetGamePos lech GetMapPos)";
 	KLagNpc lagNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
 	if (lagNpc == theAttack.m_BadNpc[0] || lagNpc == theAttack.m_BadNpc[1] || lagNpc == theAttack.m_BadNpc[2]) return "m_BadNpc (quai lag)";
 	pNpc->GetMapPos(&nX, &nY);
@@ -91,8 +182,8 @@ static void AttackStatus()
 	KNpc *pPlayer = P_PLAYER;
 
 	DbgOut("m_cbSize = %d (VLAuto gui) - phan public = %d\n", a.m_cbSize, (int)offsetof(CVLAttack, m_LastNpcID));
-	DbgOut("m_bAutoHit %d  m_nSearchRange %d  m_nHorseMode %d  m_bHitClose %d (%d)  m_bAvoidBoss %d\n",
-		a.m_bAutoHit, a.m_nSearchRange, a.m_nHorseMode, a.m_bHitClose, a.m_nSkillRange, a.m_bAvoidBoss);
+	DbgOut("m_bAutoHit %d  m_nSearchRange %d  m_nHorseMode %d  m_bHitClose %d (%d)  m_bAvoidBoss %d  m_bOnlyBlueBoss %d (nguong xanh %d)\n",
+		a.m_bAutoHit, a.m_nSearchRange, a.m_nHorseMode, a.m_bHitClose, a.m_nSkillRange, a.m_bAvoidBoss, a.m_bOnlyBlueBoss, *(int*)GOLD_BLUE_MAX_ADD);
 	DbgOut("Tu ve: m_nAutoDefence %d (%s)  m_nDefenceRange %d  m_bDefHorseMode %d  m_bDefHitClose %d (%d)  m_bAlwaysF9 %d\n",
 		a.m_nAutoDefence, (a.m_nAutoDefence >= 0 && a.m_nAutoDefence < 6) ? s_szDefence[a.m_nAutoDefence] : "?",
 		a.m_nDefenceRange, a.m_bDefHorseMode, a.m_bDefHitClose, a.m_nDefSkillRange, a.m_bAlwaysF9);
@@ -143,6 +234,7 @@ static void AttackStatus()
 	if (a.m_nEnemyIdx || theQuest.m_bNeedGoPCK) { DbgOut("DUNG - dang danh nguoi (m_nEnemyIdx %d) / theQuest.m_bNeedGoPCK %d\n", a.m_nEnemyIdx, theQuest.m_bNeedGoPCK); return; }
 	if (!pPlayer->m_FightMode) { DbgOut("DUNG - trong thanh (m_FightMode 0)\n"); return; }
 	if (!a.m_bAutoHit) { DbgOut("DUNG - chua bat Tu danh quai (m_bAutoHit)\n"); return; }
+	if (theMove.m_bGoTrain) { DbgOut("DUNG - theMove.m_bGoTrain (dang tim duong toi bai train map %d)\n", theMove.m_nGoTrainMap); return; }
 	if (theMove.m_bFindingWay) { DbgOut("DUNG - theMove.m_bFindingWay\n"); return; }
 	if (theMove.m_nStatus == status_movefirst) { DbgOut("DUNG - theMove.m_nStatus = status_movefirst\n"); return; }
 	if (theMove.m_nStatus == status_move && !theMove.m_bAttackWhenMove) { DbgOut("DUNG - dang di chuyen va khong bat danh khi di\n"); return; }
@@ -486,6 +578,24 @@ BOOL DebugAttackCmd(const DEBUG_PARAM *pParam)
 			DbgOut("ExecuteScript(\"%s\") = %d  (PKFlag hien tai %d - doi server cap nhat)\n", szScript, g_DbgReply.nResult[0], P_PLAYER->m_nPKFlag);
 			g_DbgReply.bOK = TRUE;
 		}
+		break;
+	case dbg_at_watchtarget:
+		s_bWatchTarget = !s_bWatchTarget;
+		s_szWatchLast[0] = 0;
+		DbgOut("Kiem tra doi tuong dang danh: %s\n", s_bWatchTarget ? "BAT" : "TAT");
+		if (s_bWatchTarget)
+		{
+			memset(s_dwNpcPaint, 0, sizeof(s_dwNpcPaint));
+			s_dwPaintLast = 0;
+			if (!PatchNpcPaint(TRUE))
+				DbgOut("LOI: khong chen duoc hook ve NPC (0x%08X khong phai call KNpc::Paint 0x%08X) - Res luon la ?\n", NPCP_CALL_ADD, NPCP_FUNC_ADD);
+			DbgOut("Moi nhip CVLAttack::Breathe doc PEOPLE_IDX: ten, Idx, toa do (game), khoang cach, Res hien tren kenh chat khi noi dung thay doi\n");
+			DbgOut("Res = 1: khung hinh moi nhat game co ve NPC do (KNpc::Paint), 0: khong ve, ?: game dang khong ve (cua so an/mat focus)\n");
+		}
+		else
+			PatchNpcPaint(FALSE);
+		g_DbgReply.nResult[0] = s_bWatchTarget;
+		g_DbgReply.bOK = TRUE;
 		break;
 	case dbg_at_autohit:
 		theAttack.m_bAutoHit = !theAttack.m_bAutoHit;

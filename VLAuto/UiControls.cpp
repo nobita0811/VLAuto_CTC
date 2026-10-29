@@ -347,26 +347,18 @@ void CTabCtrlEx::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CTabCtrlEx::ArrageDialogs()
 {
-	CRect tabRect, itemRect;
-	int nX, nY, nXc, nYc;
-
-	GetClientRect(&tabRect);
-	GetItemRect(0, &itemRect);
-
-	nX = itemRect.left;
-	nY = itemRect.bottom + 2;
-	nXc = tabRect.right - itemRect.left - 1;
-	nYc = tabRect.bottom - nY - 2;
+	// Tab nhiều hàng (TCS_MULTILINE): lấy vùng hiển thị thực tế bên dưới tất cả các hàng tab
+	CRect rcPage;
+	GetClientRect(&rcPage);
+	AdjustRect(FALSE, &rcPage);
 
 	for (int i = 0; i < GetItemCount(); i++)
 	{
 		CDialog* pDlg = GetTabDlg(i);
 		if (pDlg == NULL) continue;
 
-		if (i > 0)
-			pDlg->SetWindowPos(&wndTop, nX, nY, nXc, nYc, SWP_HIDEWINDOW);
-		else
-			pDlg->SetWindowPos(&wndTop, nX, nY, nXc, nYc, SWP_SHOWWINDOW);
+		pDlg->SetWindowPos(&wndTop, rcPage.left, rcPage.top, rcPage.Width(), rcPage.Height(),
+			i > 0 ? SWP_HIDEWINDOW : SWP_SHOWWINDOW);
 	}
 
 	ArrageToolTips();

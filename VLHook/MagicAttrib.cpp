@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MagicAttrib.h"
 
 // 15-10: sinh tu dong tu exe (bang ten 0xEE0278 + 4*ID; 10-10: 0x1F18300) va pak settings/item/004/magicattriblevel.txt
@@ -101,25 +101,25 @@ static const char* const s_szMagicAttribName[] =
 static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak settings/magicdesc.ini
 {
 	"",	// 0 skill_begin
-	"Ti\252u hao (\256i\323m)",	// 1 skill_cost_v
-	"Lo\271i h\327nh ti\252u hao",	// 2 skill_costtype_v
-	"Kho\266ng c\270ch th\352i gian",	// 3 skill_mintimepercast_v
-	"\247\345ng th\352i xu\312t x",	// 4 skill_misslenum_v
+	TV(L"Tiêu hao (điểm)"),	// 1 skill_cost_v
+	TV(L"Loại hình tiêu hao"),	// 2 skill_costtype_v
+	TV(L"Khoảng cách thời gian"),	// 3 skill_mintimepercast_v
+	TV(L"Đồng thời xuất x"),	// 4 skill_misslenum_v
 	"",	// 5 skill_misslesform_v
 	"",	// 6 skill_param1_v
 	"",	// 7 skill_param2_v
 	"",	// 8 skill_skillexp_v
 	"",	// 9 skill_waittime
 	"",	// 10 skill_mintimepercastonhorse_v
-	"G\345m k\374 n\250ng x, c\312p cao nh\312t Lvx",	// 11 skill_appendskill
+	TV(L"Gồm kỹ năng x, cấp cao nhất Lvx"),	// 11 skill_appendskill
 	"",	// 12 skill_eventskilllevel
 	"",	// 13 skill_end
 	"",	// 14 missle_begin
 	"",	// 15 missle_movekind_v
-	"T\350c \256\351 xu\312t chi\252u kh\335 c\253ng",	// 16 missle_speed_v
-	"Hi\326u qu\266 xu\312t chi\252u kh\335 c\253ng",	// 17 missle_lifetime_v
+	TV(L"Tốc độ xuất chiêu khí công"),	// 16 missle_speed_v
+	TV(L"Hiệu quả xuất chiêu khí công"),	// 17 missle_lifetime_v
 	"",	// 18 missle_height_v
-	"Ph\271m vi s\270t th\255\254ng kh\335 c\253ng",	// 19 missle_damagerange_v
+	TV(L"Phạm vi sát thương khí công"),	// 19 missle_damagerange_v
 	"",	// 20 missle_radius_v
 	"",	// 21 missle_missrate
 	"",	// 22 missle_hitcount
@@ -128,25 +128,25 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 25 missle_reserve5
 	"",	// 26 missle_end
 	"",	// 27 item_begin
-	"S\270t th\255\254ng nh\341 nh\312t (\256i\323m)",	// 28 weapondamagemin_v
-	"S\270t th\255\254ng l\355n nh\312t (\256i\323m)",	// 29 weapondamagemax_v
-	"N\320 tr\270nh (\256i\323m)",	// 30 armordefense_v
-	"\247\351 b\322n (\256i\323m)",	// 31 durability_v
-	"Y\252u c\307u s\370c m\271nh (\256i\323m)",	// 32 requirestr
-	"Y\252u c\307u th\251n ph\270p (\256i\323m)",	// 33 requiredex
-	"Y\252u c\307u sinh kh\335 (\256i\323m)",	// 34 requirevit
-	"Y\252u c\307u n\351i c\253ng (\256i\323m)",	// 35 requireeng
-	"Y\252u c\307u c\312p",	// 36 requirelevel
-	"Thu\351c t\335nh ng\362 h\265nh",	// 37 requireseries
-	"Gi\355i t\335nh",	// 38 requiresex
-	"M\253n ph\270i",	// 39 requiremenpai
-	"T\250ng s\270t th\255\254ng (%)",	// 40 weapondamageenhance_p
-	"T\250ng n\320 tr\270nh (%)",	// 41 armordefenseenhance_p
-	"Gi\266m thi\323u y\252u c\307u (%)",	// 42 requirementreduce_p
-	"Kh\253ng th\323 ph\270 h\361y",	// 43 indestructible_b
+	TV(L"Sát thương nhỏ nhất (điểm)"),	// 28 weapondamagemin_v
+	TV(L"Sát thương lớn nhất (điểm)"),	// 29 weapondamagemax_v
+	TV(L"Né tránh (điểm)"),	// 30 armordefense_v
+	TV(L"Độ bền (điểm)"),	// 31 durability_v
+	TV(L"Yêu cầu sức mạnh (điểm)"),	// 32 requirestr
+	TV(L"Yêu cầu thân pháp (điểm)"),	// 33 requiredex
+	TV(L"Yêu cầu sinh khí (điểm)"),	// 34 requirevit
+	TV(L"Yêu cầu nội công (điểm)"),	// 35 requireeng
+	TV(L"Yêu cầu cấp"),	// 36 requirelevel
+	TV(L"Thuộc tính ngũ hành"),	// 37 requireseries
+	TV(L"Giới tính"),	// 38 requiresex
+	TV(L"Môn phái"),	// 39 requiremenpai
+	TV(L"Tăng sát thương (%)"),	// 40 weapondamageenhance_p
+	TV(L"Tăng né tránh (%)"),	// 41 armordefenseenhance_p
+	TV(L"Giảm thiểu yêu cầu (%)"),	// 42 requirementreduce_p
+	TV(L"Không thể phá hủy"),	// 43 indestructible_b
 	"",	// 44 item_usagetime_v
 	"",	// 45 req_levelortranslife
-	"Y\252u c\307u v\342 c\253ng",	// 46 require_translife
+	TV(L"Yêu cầu võ công"),	// 46 require_translife
 	"",	// 47 require_fortune_value
 	"",	// 48 item_reserve5
 	"",	// 49 item_reserve6
@@ -156,23 +156,23 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 53 item_reserve10
 	"",	// 54 item_end
 	"",	// 55 damage_begin
-	"\247\351 ch\335nh x\270c (\256i\323m)",	// 56 attackrating_v
-	"\247\351 ch\335nh x\270c (%)",	// 57 attackrating_p
-	"B\341 qua n\320 tr\270nh (%)",	// 58 ignoredefense_p
-	"S\270t th\255\254ng v\313t l\375 (\256i\323m)",	// 59 physicsdamage_v
-	"B\250ng s\270t (\256i\323m)",	// 60 colddamage_v
-	"H\341a s\270t (\256i\323m)",	// 61 firedamage_v
-	"L\253i s\270t (\256i\323m)",	// 62 lightingdamage_v
-	"\247\351c s\270t (\256i\323m)",	// 63 poisondamage_v
-	"S\270t th\255\254ng ng\362 h\265nh x x \256i\323m",	// 64 magicdamage_v
-	"S\270t th\255\254ng v\313t l\375 (%)",	// 65 physicsenhance_p
-	"H\363t Sinh l\371c (%)",	// 66 steallife_p
-	"H\363t N\351i l\371c (%)",	// 67 stealmana_p
-	"H\363t Th\323 l\371c (%)",	// 68 stealstamina_p
-	"\247\310y l\357i \256\350i ph\255\254ng (%)",	// 69 knockback_p
-	"T\312n c\253ng ch\335 m\271ng (%)",	// 70 deadlystrike_p
-	"T\312n c\253ng ch\335 t\366 (%)",	// 71 fatallystrike_p
-	"L\265m cho\270ng (%)",	// 72 stun_p
+	TV(L"Độ chính xác (điểm)"),	// 56 attackrating_v
+	TV(L"Độ chính xác (%)"),	// 57 attackrating_p
+	TV(L"Bỏ qua né tránh (%)"),	// 58 ignoredefense_p
+	TV(L"Sát thương vật lý (điểm)"),	// 59 physicsdamage_v
+	TV(L"Băng sát (điểm)"),	// 60 colddamage_v
+	TV(L"Hỏa sát (điểm)"),	// 61 firedamage_v
+	TV(L"Lôi sát (điểm)"),	// 62 lightingdamage_v
+	TV(L"Độc sát (điểm)"),	// 63 poisondamage_v
+	TV(L"Sát thương ngũ hành x x điểm"),	// 64 magicdamage_v
+	TV(L"Sát thương vật lý (%)"),	// 65 physicsenhance_p
+	TV(L"Hút Sinh lực (%)"),	// 66 steallife_p
+	TV(L"Hút Nội lực (%)"),	// 67 stealmana_p
+	TV(L"Hút Thể lực (%)"),	// 68 stealstamina_p
+	TV(L"Đẩy lùi đối phương (%)"),	// 69 knockback_p
+	TV(L"Tấn công chí mạng (%)"),	// 70 deadlystrike_p
+	TV(L"Tấn công chí tử (%)"),	// 71 fatallystrike_p
+	TV(L"Làm choáng (%)"),	// 72 stun_p
 	"",	// 73 addskillexp1
 	"",	// 74 addskillexp2
 	"",	// 75 seriesdamage_p
@@ -185,220 +185,220 @@ static const char* const s_szMagicAttribDesc[] =	// mo ta ngan (TCVN3) tu pak se
 	"",	// 82 damage_reserve10
 	"",	// 83 damage_end
 	"",	// 84 normal_begin
-	"Sinh l\371c t\350i \256a (\256i\323m)",	// 85 lifemax_v
-	"Sinh l\371c t\350i \256a (%)",	// 86 lifemax_p
-	"Sinh l\371c (\256i\323m)",	// 87 life_v
-	"Ph\364c h\345i sinh l\371c m\347i n\366a gi\251y (\256i\323m)",	// 88 lifereplenish_v
-	"N\351i l\371c t\350i \256a (\256i\323m)",	// 89 manamax_v
-	"N\351i l\371c t\350i \256a (%)",	// 90 manamax_p
-	"N\351i l\371c (\256i\323m)",	// 91 mana_v
-	"Ph\364c h\345i n\351i l\371c m\347i n\366a gi\251y (\256i\323m)",	// 92 manareplenish_v
-	"Th\323 l\371c t\350i \256a (\256i\323m)",	// 93 staminamax_v
-	"Th\323 l\371c t\350i \256a (%)",	// 94 staminamax_p
-	"Th\323 l\371c (%)",	// 95 stamina_v
-	"Ph\364c h\345i th\323 l\371c m\347i n\366a gi\251y (\256i\323m)",	// 96 staminareplenish_v
-	"S\370c m\271nh (\256i\323m)",	// 97 strength_v
-	"Th\251n ph\270p (\256i\323m)",	// 98 dexterity_v
-	"Sinh kh\335 (\256i\323m)",	// 99 vitality_v
-	"N\351i c\253ng (\256i\323m)",	// 100 energy_v
-	"Kh\270ng \256\351c (%)",	// 101 poisonres_p
-	"Kh\270ng h\341a (%)",	// 102 fireres_p
-	"Kh\270ng l\253i (%)",	// 103 lightingres_p
-	"Ph\337ng th\361 v\313t l\375 (%)",	// 104 physicsres_p
-	"Kh\270ng b\250ng (%)",	// 105 coldres_p
-	"Th\352i gian l\265m ch\313m (%)",	// 106 freezetimereduce_p
+	TV(L"Sinh lực tối đa (điểm)"),	// 85 lifemax_v
+	TV(L"Sinh lực tối đa (%)"),	// 86 lifemax_p
+	TV(L"Sinh lực (điểm)"),	// 87 life_v
+	TV(L"Phục hồi sinh lực mỗi nửa giây (điểm)"),	// 88 lifereplenish_v
+	TV(L"Nội lực tối đa (điểm)"),	// 89 manamax_v
+	TV(L"Nội lực tối đa (%)"),	// 90 manamax_p
+	TV(L"Nội lực (điểm)"),	// 91 mana_v
+	TV(L"Phục hồi nội lực mỗi nửa giây (điểm)"),	// 92 manareplenish_v
+	TV(L"Thể lực tối đa (điểm)"),	// 93 staminamax_v
+	TV(L"Thể lực tối đa (%)"),	// 94 staminamax_p
+	TV(L"Thể lực (%)"),	// 95 stamina_v
+	TV(L"Phục hồi thể lực mỗi nửa giây (điểm)"),	// 96 staminareplenish_v
+	TV(L"Sức mạnh (điểm)"),	// 97 strength_v
+	TV(L"Thân pháp (điểm)"),	// 98 dexterity_v
+	TV(L"Sinh khí (điểm)"),	// 99 vitality_v
+	TV(L"Nội công (điểm)"),	// 100 energy_v
+	TV(L"Kháng độc (%)"),	// 101 poisonres_p
+	TV(L"Kháng hỏa (%)"),	// 102 fireres_p
+	TV(L"Kháng lôi (%)"),	// 103 lightingres_p
+	TV(L"Phòng thủ vật lý (%)"),	// 104 physicsres_p
+	TV(L"Kháng băng (%)"),	// 105 coldres_p
+	TV(L"Thời gian làm chậm (%)"),	// 106 freezetimereduce_p
 	"",	// 107 burntimereduce_p
-	"Th\352i gian tr\363ng \256\351c (%)",	// 108 poisontimereduce_p
-	"\247\351c s\270t",	// 109 poisondamagereduce_v
-	"Th\352i gian cho\270ng (%)",	// 110 stuntimereduce_p
-	"T\350c \256\351 di chuy\323n (%)",	// 111 fastwalkrun_p
-	"Ph\271m vi s\270t th\255\254ng (%)",	// 112 visionradius_p
-	"Th\352i gian ph\364c h\345i",	// 113 fasthitrecover_v
-	"Kh\270ng t\312t c\266 (%)",	// 114 allres_p
-	"T\350c \256\351 \256\270nh - ngo\271i c\253ng (%)",	// 115 attackspeed_v
-	"T\350c \256\351 \256\270nh - n\351i c\253ng (%)",	// 116 castspeed_v
-	"Ph\266n \256\337n c\313n chi\325n (\256i\323m)",	// 117 meleedamagereturn_v
-	"Ph\266n \256\337n c\313n chi\325n (%)",	// 118 meleedamagereturn_p
-	"Ph\266n \256\337n t\307m xa (\256i\323m)",	// 119 rangedamagereturn_v
-	"Ph\266n \256\337n t\307m xa (%)",	// 120 rangedamagereturn_p
-	"S\270t th\255\254ng v\313t l\375 - ngo\271i c\253ng (\256i\323m)",	// 121 addphysicsdamage_v
-	"H\341a s\270t - ngo\271i c\253ng (\256i\323m)",	// 122 addfiredamage_v
-	"B\250ng s\270t - ngo\271i c\253ng (\256i\323m)",	// 123 addcolddamage_v
-	"L\253i s\270t - ngo\271i c\253ng (\256i\323m)",	// 124 addlightingdamage_v
-	"\247\351c s\270t - ngo\271i c\253ng (\256i\323m)",	// 125 addpoisondamage_v
-	"S\270t th\255\254ng v\313t l\375 - ngo\271i c\253ng (%)",	// 126 addphysicsdamage_p
-	"Gi\266m t\350c \256\351 xu\312t chi\252u kh\335 c\253ng",	// 127 slowmissle_b
-	"M\252 ho\306c \256\350i ph\255\254ng",	// 128 changecamp_b
-	"Ph\337ng th\361 v\313t l\375 (\256i\323m)",	// 129 physicsarmor_v
-	"Kh\270ng b\250ng (\256i\323m)",	// 130 coldarmor_v
-	"Kh\270ng h\341a (\256i\323m)",	// 131 firearmor_v
-	"Kh\270ng \256\351c (\256i\323m)",	// 132 poisonarmor_v
-	"Kh\270ng l\253i (\256i\323m)",	// 133 lightingarmor_v
-	"Chuy\323n h\343a s\270t th\255\254ng th\265nh n\351i l\371c (%)",	// 134 damage2addmana_p
-	"May m\276n (%)",	// 135 lucky_v
-	"H\363t sinh l\371c (%)",	// 136 steallifeenhance_p
-	"H\363t n\351i l\371c (%)",	// 137 stealmanaenhance_p
-	"H\363t th\323 l\371c (%)",	// 138 stealstaminaenhance_p
-	"T\312t c\266 k\374 n\250ng (c\312p)",	// 139 allskill_v
-	"K\374 n\250ng h\326 Kim (c\312p)",	// 140 metalskill_v
-	"K\374 n\250ng h\326 M\351c (c\312p)",	// 141 woodskill_v
-	"K\374 n\250ng h\326 Th\361y (c\312p)",	// 142 waterskill_v
-	"K\374 n\250ng h\326 H\341a (c\312p)",	// 143 fireskill_v
-	"K\374 n\250ng h\326 Th\346 (c\312p)",	// 144 earthskill_v
-	"\247\310y lui (%)",	// 145 knockbackenhance_p
-	"T\250ng t\312n c\253ng ch\335 m\271ng (%)",	// 146 deadlystrikeenhance_p
-	"L\265m cho\270ng (%)",	// 147 stunenhance_p
-	"Th\352i gian k\320o d\265i tr\271ng th\270i kh\253ng t\350t",	// 148 badstatustimereduce_v
-	"N\351i l\371c h\351 th\251n (%)",	// 149 manashield_p
-	"N\320 tr\270nh (\256i\323m)",	// 150 adddefense_v
-	"N\320 tr\270nh (%)",	// 151 adddefense_p
-	"T\312n c\253ng ch\335 m\271ng (%)",	// 152 fatallystrikeenhance_p
-	"Ph\364c h\345i sinh l\371c m\347i n\366a gi\251y (\256i\323m)",	// 153 lifepotion_v
-	"Ph\364c h\345i n\351i l\371c m\347i n\366a gi\251y (\256i\323m)",	// 154 manapotion_v
-	"Ph\337ng th\361 v\313t l\375 t\350i \256a (%)",	// 155 physicsresmax_p
-	"Kh\270ng b\250ng t\350i \256a (%)",	// 156 coldresmax_p
-	"Kh\270ng h\341a t\350i \256a (%)",	// 157 fireresmax_p
-	"Kh\270ng l\253i t\350i \256a (%)",	// 158 lightingresmax_p
-	"Kh\270ng \256\351c t\350i \256a (%)",	// 159 poisonresmax_p
-	"Kh\270ng t\312t c\266 t\350i \256a (%)",	// 160 allresmax_p
-	"Th\352i gian l\265m ch\313m (%)",	// 161 coldenhance_p
-	"H\341a s\270t t\350i \256a (%)",	// 162 fireenhance_p
-	"L\253i s\270t t\350i thi\323u (%)",	// 163 lightingenhance_p
-	"Th\352i gian \256\351c ph\270t (%)",	// 164 poisonenhance_p
-	"T\250ng x s\270t th\255\254ng ng\362 h\265nh",	// 165 magicenhance_p
-	"T\330 l\326 c\253ng k\335ch ch\335nh x\270c (\256i\323m)",	// 166 attackratingenhance_v
-	"T\330 l\326 c\253ng k\335ch ch\335nh x\270c (%)",	// 167 attackratingenhance_p
-	"S\270t th\255\254ng v\313t l\375 - n\351i c\253ng (\256i\323m)",	// 168 addphysicsmagic_v
-	"B\250ng s\270t - n\351i c\253ng (\256i\323m)",	// 169 addcoldmagic_v
-	"H\341a s\270t - n\351i c\253ng (\256i\323m)",	// 170 addfiremagic_v
-	"L\253i s\270t - n\351i c\253ng (\256i\323m)",	// 171 addlightingmagic_v
-	"\247\351c s\270t - n\351i c\253ng (\256i\323m)",	// 172 addpoisonmagic_v
-	"Kh\270ng t\312n c\253ng ch\335 t\366 (%)",	// 173 fatallystrikeres_p
+	TV(L"Thời gian trúng độc (%)"),	// 108 poisontimereduce_p
+	TV(L"Độc sát"),	// 109 poisondamagereduce_v
+	TV(L"Thời gian choáng (%)"),	// 110 stuntimereduce_p
+	TV(L"Tốc độ di chuyển (%)"),	// 111 fastwalkrun_p
+	TV(L"Phạm vi sát thương (%)"),	// 112 visionradius_p
+	TV(L"Thời gian phục hồi"),	// 113 fasthitrecover_v
+	TV(L"Kháng tất cả (%)"),	// 114 allres_p
+	TV(L"Tốc độ đánh - ngoại công (%)"),	// 115 attackspeed_v
+	TV(L"Tốc độ đánh - nội công (%)"),	// 116 castspeed_v
+	TV(L"Phản đòn cận chiến (điểm)"),	// 117 meleedamagereturn_v
+	TV(L"Phản đòn cận chiến (%)"),	// 118 meleedamagereturn_p
+	TV(L"Phản đòn tầm xa (điểm)"),	// 119 rangedamagereturn_v
+	TV(L"Phản đòn tầm xa (%)"),	// 120 rangedamagereturn_p
+	TV(L"Sát thương vật lý - ngoại công (điểm)"),	// 121 addphysicsdamage_v
+	TV(L"Hỏa sát - ngoại công (điểm)"),	// 122 addfiredamage_v
+	TV(L"Băng sát - ngoại công (điểm)"),	// 123 addcolddamage_v
+	TV(L"Lôi sát - ngoại công (điểm)"),	// 124 addlightingdamage_v
+	TV(L"Độc sát - ngoại công (điểm)"),	// 125 addpoisondamage_v
+	TV(L"Sát thương vật lý - ngoại công (%)"),	// 126 addphysicsdamage_p
+	TV(L"Giảm tốc độ xuất chiêu khí công"),	// 127 slowmissle_b
+	TV(L"Mê hoặc đối phương"),	// 128 changecamp_b
+	TV(L"Phòng thủ vật lý (điểm)"),	// 129 physicsarmor_v
+	TV(L"Kháng băng (điểm)"),	// 130 coldarmor_v
+	TV(L"Kháng hỏa (điểm)"),	// 131 firearmor_v
+	TV(L"Kháng độc (điểm)"),	// 132 poisonarmor_v
+	TV(L"Kháng lôi (điểm)"),	// 133 lightingarmor_v
+	TV(L"Chuyển hóa sát thương thành nội lực (%)"),	// 134 damage2addmana_p
+	TV(L"May mắn (%)"),	// 135 lucky_v
+	TV(L"Hút sinh lực (%)"),	// 136 steallifeenhance_p
+	TV(L"Hút nội lực (%)"),	// 137 stealmanaenhance_p
+	TV(L"Hút thể lực (%)"),	// 138 stealstaminaenhance_p
+	TV(L"Tất cả kỹ năng (cấp)"),	// 139 allskill_v
+	TV(L"Kỹ năng hệ Kim (cấp)"),	// 140 metalskill_v
+	TV(L"Kỹ năng hệ Mộc (cấp)"),	// 141 woodskill_v
+	TV(L"Kỹ năng hệ Thủy (cấp)"),	// 142 waterskill_v
+	TV(L"Kỹ năng hệ Hỏa (cấp)"),	// 143 fireskill_v
+	TV(L"Kỹ năng hệ Thổ (cấp)"),	// 144 earthskill_v
+	TV(L"Đẩy lui (%)"),	// 145 knockbackenhance_p
+	TV(L"Tăng tấn công chí mạng (%)"),	// 146 deadlystrikeenhance_p
+	TV(L"Làm choáng (%)"),	// 147 stunenhance_p
+	TV(L"Thời gian kéo dài trạng thái không tốt"),	// 148 badstatustimereduce_v
+	TV(L"Nội lực hộ thân (%)"),	// 149 manashield_p
+	TV(L"Né tránh (điểm)"),	// 150 adddefense_v
+	TV(L"Né tránh (%)"),	// 151 adddefense_p
+	TV(L"Tấn công chí mạng (%)"),	// 152 fatallystrikeenhance_p
+	TV(L"Phục hồi sinh lực mỗi nửa giây (điểm)"),	// 153 lifepotion_v
+	TV(L"Phục hồi nội lực mỗi nửa giây (điểm)"),	// 154 manapotion_v
+	TV(L"Phòng thủ vật lý tối đa (%)"),	// 155 physicsresmax_p
+	TV(L"Kháng băng tối đa (%)"),	// 156 coldresmax_p
+	TV(L"Kháng hỏa tối đa (%)"),	// 157 fireresmax_p
+	TV(L"Kháng lôi tối đa (%)"),	// 158 lightingresmax_p
+	TV(L"Kháng độc tối đa (%)"),	// 159 poisonresmax_p
+	TV(L"Kháng tất cả tối đa (%)"),	// 160 allresmax_p
+	TV(L"Thời gian làm chậm (%)"),	// 161 coldenhance_p
+	TV(L"Hỏa sát tối đa (%)"),	// 162 fireenhance_p
+	TV(L"Lôi sát tối thiểu (%)"),	// 163 lightingenhance_p
+	TV(L"Thời gian độc phát (%)"),	// 164 poisonenhance_p
+	TV(L"Tăng x sát thương ngũ hành"),	// 165 magicenhance_p
+	TV(L"Tỉ lệ công kích chính xác (điểm)"),	// 166 attackratingenhance_v
+	TV(L"Tỉ lệ công kích chính xác (%)"),	// 167 attackratingenhance_p
+	TV(L"Sát thương vật lý - nội công (điểm)"),	// 168 addphysicsmagic_v
+	TV(L"Băng sát - nội công (điểm)"),	// 169 addcoldmagic_v
+	TV(L"Hỏa sát - nội công (điểm)"),	// 170 addfiremagic_v
+	TV(L"Lôi sát - nội công (điểm)"),	// 171 addlightingmagic_v
+	TV(L"Độc sát - nội công (điểm)"),	// 172 addpoisonmagic_v
+	TV(L"Kháng tấn công chí tử (%)"),	// 173 fatallystrikeres_p
 	"",	// 174 statusimmunity_b
 	"",	// 175 expenhance_v
-	"Di\326t qu\270i nh\313n EXP (%)",	// 176 expenhance_p
+	TV(L"Diệt quái nhận EXP (%)"),	// 176 expenhance_p
 	"",	// 177 seriesres_p
 	"",	// 178 seriesenhance_p
 	"",	// 179 createnpc
 	"",	// 180 autoattacknpc
-	"N\351i l\371c h\351 th\251n (\256i\323m)",	// 181 dynamicmagicshield_v
+	TV(L"Nội lực hộ thân (điểm)"),	// 181 dynamicmagicshield_v
 	"",	// 182 nomovespeed
 	"",	// 183 execscript
 	"",	// 184 changefeature1
 	"",	// 185 changefeature2
 	"",	// 186 stealfeature
-	"S\350 l\307n s\366 d\364ng c\337n l\271i c\361a k\374 n\250ng ng\364y trang",	// 187 addstealfeatureskill
-	"May m\276n t\346 \256\351i (\256i\323m)",	// 188 lucky_v_partner
+	TV(L"Số lần sử dụng còn lại của kỹ năng ngụy trang"),	// 187 addstealfeatureskill
+	TV(L"May mắn tổ đội (điểm)"),	// 188 lucky_v_partner
 	"",	// 189 listen_msg
-	"T\250ng hi\326u su\312t h\345i sinh l\371c (%)",	// 190 lifereplenish_p
-	"X\270c su\312t b\341 qua Ch\363 Thu\313t Gi\266m Kh\270ng T\335nh (%)",	// 191 ignoreskill_p
-	"X\270c su\312t ph\266n \256\337n Ch\363 Thu\313t (%)",	// 192 returnskill_p
-	"Ph\266n \256\337n khi ch\336u s\270t th\255\254ng \247\351c (\256i\323m)",	// 193 poisondamagereturn_v
-	"Ph\266n \256\337n khi ch\336u s\270t th\255\254ng \247\351c (%)",	// 194 poisondamagereturn_p
-	"Khi b\336 t\312n c\253ng c\343 x t\371 \256\351ng thi tri\323nxc\312pxTh\352i gian ch\352x gi\251y",	// 195 autoreplyskill
+	TV(L"Tăng hiệu suất hồi sinh lực (%)"),	// 190 lifereplenish_p
+	TV(L"Xác suất bỏ qua Chú Thuật Giảm Kháng Tính (%)"),	// 191 ignoreskill_p
+	TV(L"Xác suất phản đòn Chú Thuật (%)"),	// 192 returnskill_p
+	TV(L"Phản đòn khi chịu sát thương Độc (điểm)"),	// 193 poisondamagereturn_v
+	TV(L"Phản đòn khi chịu sát thương Độc (%)"),	// 194 poisondamagereturn_p
+	TV(L"Khi bị tấn công có x tự động thi triểnxcấpxThời gian chờx giây"),	// 195 autoreplyskill
 	"",	// 196 autoattackskill
 	"",	// 197 autorescueskill
 	"",	// 198 autodeathskill
 	"",	// 199 randmove
-	"\310n th\251n x gi\251y, thi tri\323n v\342 c\253ng s\317 hi\326n h\327nh tr\353 l\271i",	// 200 hide
+	TV(L"ẩn thân x giây, thi triển võ công sẽ hiện hình trở lại"),	// 200 hide
 	"",	// 201 ignorenegativestate_p
-	"Khi\325n m\364c ti\252u khi ch\336u s\270t th\255\254ng \247\351c s\317 \256\345ng th\352i b\336 m\312t n\351i l\371c v\355i t\330 l\326 x, duy tr\327 x gi\251y",	// 202 poison2decmana_p
+	TV(L"Khiến mục tiêu khi chịu sát thương Độc sẽ đồng thời bị mất nội lực với tỉ lệ x, duy trì x giây"),	// 202 poison2decmana_p
 	"",	// 203 staticmagicshield_v
 	"",	// 204 staticmagicshield_p
-	"Kh\270ng ph\266n \256\337n (%)",	// 205 returnres_p
+	TV(L"Kháng phản đòn (%)"),	// 205 returnres_p
 	"",	// 206 add120skillexpenhance_p
-	"Gi\266m th\352i gian ch\352",	// 207 dec_percasttimehorse
-	"Gi\266m th\352i gian ch\352",	// 208 dec_percasttime
-	"X\270c su\312t k\335ch ho\271t [S\255 T\366 H\350ng] (%)",	// 209 enhance_709_auto
-	"Hi\326u su\312t h\345i sinh l\371c t\365 [\247\266o H\255 Thi\252n] t\250ng x",	// 210 enhance_708_life_p
-	"\247i\323m h\345i ph\364c sinh l\371c t\365 [T\365 H\265ng Ph\346 \247\351] (\256i\323m)",	// 211 enhance_93_life_v
-	"X\270c su\312t k\335ch ho\271t [H\312p Tinh Y\323m] (%)",	// 212 enhance_711_auto
-	"X\270c su\312t k\335ch ho\271t [H\347n Thi\252n Kh\335 C\253ng] (%)",	// 213 enhance_714_auto
-	"X\270c su\312t k\335ch ho\271t [L\255\354ng Nghi Ch\251n Kh\335] (%)",	// 214 enhance_717_auto
-	"X\270c su\312t [Ma \242m Ph\326 Ph\270ch] khi\325n k\316 \256\336ch Ho\266ng S\356 (%)",	// 215 enhance_723_miss_p
+	TV(L"Giảm thời gian chờ"),	// 207 dec_percasttimehorse
+	TV(L"Giảm thời gian chờ"),	// 208 dec_percasttime
+	TV(L"Xác suất kích hoạt [Sư Tử Hống] (%)"),	// 209 enhance_709_auto
+	TV(L"Hiệu suất hồi sinh lực từ [Đảo Hư Thiên] tăng x"),	// 210 enhance_708_life_p
+	TV(L"Điểm hồi phục sinh lực từ [Từ Hàng Phổ Độ] (điểm)"),	// 211 enhance_93_life_v
+	TV(L"Xác suất kích hoạt [Hấp Tinh Yểm] (%)"),	// 212 enhance_711_auto
+	TV(L"Xác suất kích hoạt [Hỗn Thiên Khí Công] (%)"),	// 213 enhance_714_auto
+	TV(L"Xác suất kích hoạt [Lưỡng Nghi Chân Khí] (%)"),	// 214 enhance_717_auto
+	TV(L"Xác suất [Ma Âm Phệ Phách] khiến kẻ địch Hoảng Sợ (%)"),	// 215 enhance_723_miss_p
 	"",	// 216 showpersoninfo
 	"",	// 217 ignoredamage
-	"Tri\326t ti\252u s\270t th\255\254ng",	// 218 sorbdamage_p
-	"T\271o th\265nh s\270t th\255\254ng c\343 th\352i gian ho\271t \256\351ng",	// 219 anti_hitrecover
-	"T\271o th\265nh th\352i gian cho\270ng (%)",	// 220 anti_stuntimereduce_p
-	"B\341 qua \247\351c Ph\337ng m\364c ti\252u (%)",	// 221 anti_poisonres_p
-	"B\341 qua H\341a Ph\337ng m\364c ti\252u (%)",	// 222 anti_fireres_p
-	"B\341 qua L\253i Ph\337ng m\364c ti\252u (%)",	// 223 anti_lightingres_p
-	"B\341 qua Ph\337ng Th\361 m\364c ti\252u (%)",	// 224 anti_physicsres_p
-	"B\341 qua B\250ng Ph\337ng m\364c ti\252u (%)",	// 225 anti_coldres_p
-	"X\270c su\312t h\343a gi\266i s\270t th\255\254ng (%)",	// 226 block_rate
-	"X\270c su\312t tr\344ng k\335ch (%)",	// 227 enhancehit_rate
-	"Kh\270ng \256\351c (%) (D\255\254ng)",	// 228 poisonres_yan_p
-	"Kh\270ng l\253i (%) (D\255\254ng)",	// 229 lightingres_yan_p
-	"Kh\270ng h\341a (%) (D\255\254ng)",	// 230 fireres_yan_p
-	"Ph\337ng th\361 v\313t l\375 (%) (D\255\254ng)",	// 231 physicsres_yan_p
-	"Kh\270ng b\250ng (%) (D\255\254ng)",	// 232 coldres_yan_p
-	"Sinh l\371c t\350i \256a (\256i\323m) (D\255\254ng)",	// 233 lifemax_yan_v
-	"Sinh l\371c t\350i \256a (%) (D\255\254ng)",	// 234 lifemax_yan_p
-	"N\351i l\371c t\350i \256a (\256i\323m) (D\255\254ng)",	// 235 manamax_yan_v
-	"N\351i l\371c t\350i \256a (%) (D\255\254ng)",	// 236 manamax_yan_p
-	"Tri\326t ti\252u s\270t th\255\254ng (D\255\254ng)",	// 237 sorbdamage_yan_p
-	"T\350c \256\351 ch\271y (%) (D\255\254ng)",	// 238 fastwalkrun_yan_p
-	"T\350c \256\351 \256\270nh - ngo\271i c\253ng (%) (D\255\254ng)",	// 239 attackspeed_yan_v
-	"T\350c \256\351 \256\270nh - n\351i c\253ng (%) (D\255\254ng)",	// 240 castspeed_yan_v
-	"Kh\270ng t\312t c\266 (%) (D\255\254ng)",	// 241 allres_yan_p
-	"Khi\325n Kh\270ng t\312t c\266 c\361a \256\350i ph\255\254ng \256\255\356c (%)",	// 242 anti_maxres_p
-	"T\250ng c\253ng k\335ch k\374 n\250ng (%)",	// 243 skill_enhance
-	"S\270t th\255\254ng v\313t l\375 - n\351i c\253ng (%)",	// 244 magicdamage_p
-	"Th\352i gian ph\364c h\345i (D\255\254ng)",	// 245 fasthitrecover_yan_v
-	"Ng\362 H\265nh C\255\352ng H\343a (\256i\323m)",	// 246 five_elements_enhance_v
-	"Nh\255\356c h\343a Ng\362 H\265nh (\256i\323m)",	// 247 five_elements_resist_v
-	"N\251ng cao hi\326u su\312t ph\364c h\345i n\351i l\371c (%)",	// 248 manareplenish_p
-	"L\371c c\253ng k\335ch (%)",	// 249 add_damage_p
+	TV(L"Triệt tiêu sát thương"),	// 218 sorbdamage_p
+	TV(L"Tạo thành sát thương có thời gian hoạt động"),	// 219 anti_hitrecover
+	TV(L"Tạo thành thời gian choáng (%)"),	// 220 anti_stuntimereduce_p
+	TV(L"Bỏ qua Độc Phòng mục tiêu (%)"),	// 221 anti_poisonres_p
+	TV(L"Bỏ qua Hỏa Phòng mục tiêu (%)"),	// 222 anti_fireres_p
+	TV(L"Bỏ qua Lôi Phòng mục tiêu (%)"),	// 223 anti_lightingres_p
+	TV(L"Bỏ qua Phòng Thủ mục tiêu (%)"),	// 224 anti_physicsres_p
+	TV(L"Bỏ qua Băng Phòng mục tiêu (%)"),	// 225 anti_coldres_p
+	TV(L"Xác suất hóa giải sát thương (%)"),	// 226 block_rate
+	TV(L"Xác suất trọng kích (%)"),	// 227 enhancehit_rate
+	TV(L"Kháng độc (%) (Dương)"),	// 228 poisonres_yan_p
+	TV(L"Kháng lôi (%) (Dương)"),	// 229 lightingres_yan_p
+	TV(L"Kháng hỏa (%) (Dương)"),	// 230 fireres_yan_p
+	TV(L"Phòng thủ vật lý (%) (Dương)"),	// 231 physicsres_yan_p
+	TV(L"Kháng băng (%) (Dương)"),	// 232 coldres_yan_p
+	TV(L"Sinh lực tối đa (điểm) (Dương)"),	// 233 lifemax_yan_v
+	TV(L"Sinh lực tối đa (%) (Dương)"),	// 234 lifemax_yan_p
+	TV(L"Nội lực tối đa (điểm) (Dương)"),	// 235 manamax_yan_v
+	TV(L"Nội lực tối đa (%) (Dương)"),	// 236 manamax_yan_p
+	TV(L"Triệt tiêu sát thương (Dương)"),	// 237 sorbdamage_yan_p
+	TV(L"Tốc độ chạy (%) (Dương)"),	// 238 fastwalkrun_yan_p
+	TV(L"Tốc độ đánh - ngoại công (%) (Dương)"),	// 239 attackspeed_yan_v
+	TV(L"Tốc độ đánh - nội công (%) (Dương)"),	// 240 castspeed_yan_v
+	TV(L"Kháng tất cả (%) (Dương)"),	// 241 allres_yan_p
+	TV(L"Khiến Kháng tất cả của đối phương được (%)"),	// 242 anti_maxres_p
+	TV(L"Tăng công kích kỹ năng (%)"),	// 243 skill_enhance
+	TV(L"Sát thương vật lý - nội công (%)"),	// 244 magicdamage_p
+	TV(L"Thời gian phục hồi (Dương)"),	// 245 fasthitrecover_yan_v
+	TV(L"Ngũ Hành Cường Hóa (điểm)"),	// 246 five_elements_enhance_v
+	TV(L"Nhược hóa Ngũ Hành (điểm)"),	// 247 five_elements_resist_v
+	TV(L"Nâng cao hiệu suất phục hồi nội lực (%)"),	// 248 manareplenish_p
+	TV(L"Lực công kích (%)"),	// 249 add_damage_p
 	"",	// 250 forbit_attack
 	"",	// 251 frozen_action
 	"",	// 252 forbit_takemedicine
 	"",	// 253 invincibility
-	"T\330 l\326 kh\253ng t\250ng tr\336 s\350 PK (%)",	// 254 not_add_pkvalue_p
-	"S\270t th\255\254ng l\252n boss Ho\265ng Kim (%)",	// 255 add_boss_damage
+	TV(L"Tỉ lệ không tăng trị số PK (%)"),	// 254 not_add_pkvalue_p
+	TV(L"Sát thương lên boss Hoàng Kim (%)"),	// 255 add_boss_damage
 	"",	// 256 pk_punish_weaken
 	"",	// 257 pk_punish_enhance
-	"Th\352i gian t\271o th\265nh tr\363ng \256\351c (%)",	// 258 anti_poisontimereduce_p
-	"T\373 l\326 t\271o th\265nh s\270t th\255\254ng (%)",	// 259 do_hurt_p
-	"T\373 l\326 s\270t th\255\254ng gi\266m kh\270ng (%)",	// 260 anti_do_hurt_p
-	"T\373 l\326 t\271o th\265nh cho\270ng (%)",	// 261 do_stun_p
-	"T\330 l\326 kh\270ng cho\270ng (%)",	// 262 anti_do_stun_p
-	"B\341 qua ph\346 ph\337ng \256\350i ph\255\254ng (%) (D\255\254ng)",	// 263 anti_physicsres_yan_p
-	"B\341 qua \256\351c ph\337ng \256\350i ph\255\254ng (%) (D\255\254ng)",	// 264 anti_poisonres_yan_p
-	"B\341 qua b\250ng ph\337ng \256\350i ph\255\254ng (%) (D\255\254ng)",	// 265 anti_coldres_yan_p
-	"B\341 qua h\341a ph\337ng \256\350i ph\255\254ng (%) (D\255\254ng)",	// 266 anti_fireres_yan_p
-	"B\341 qua l\253i ph\337ng \256\350i ph\255\254ng (%) (D\255\254ng)",	// 267 anti_lightingres_yan_p
-	"B\341 qua t\312t c\266 kh\270ng t\335nh \256\350i ph\255\254ng (%) (D\255\254ng)",	// 268 anti_allres_yan_p
-	"T\250ng s\270t th\255\254ng",	// 269 anti_sorbdamage_yan_p
-	"T\373 l\326 h\343a gi\266i c\270ch \256\266ng (%)",	// 270 anti_block_rate
-	"T\373 l\326 gi\266m tr\344ng k\335ch (%)",	// 271 anti_enhancehit_rate
+	TV(L"Thời gian tạo thành trúng độc (%)"),	// 258 anti_poisontimereduce_p
+	TV(L"Tỷ lệ tạo thành sát thương (%)"),	// 259 do_hurt_p
+	TV(L"Tỷ lệ sát thương giảm kháng (%)"),	// 260 anti_do_hurt_p
+	TV(L"Tỷ lệ tạo thành choáng (%)"),	// 261 do_stun_p
+	TV(L"Tỉ lệ kháng choáng (%)"),	// 262 anti_do_stun_p
+	TV(L"Bỏ qua phổ phòng đối phương (%) (Dương)"),	// 263 anti_physicsres_yan_p
+	TV(L"Bỏ qua độc phòng đối phương (%) (Dương)"),	// 264 anti_poisonres_yan_p
+	TV(L"Bỏ qua băng phòng đối phương (%) (Dương)"),	// 265 anti_coldres_yan_p
+	TV(L"Bỏ qua hỏa phòng đối phương (%) (Dương)"),	// 266 anti_fireres_yan_p
+	TV(L"Bỏ qua lôi phòng đối phương (%) (Dương)"),	// 267 anti_lightingres_yan_p
+	TV(L"Bỏ qua tất cả kháng tính đối phương (%) (Dương)"),	// 268 anti_allres_yan_p
+	TV(L"Tăng sát thương"),	// 269 anti_sorbdamage_yan_p
+	TV(L"Tỷ lệ hóa giải cách đảng (%)"),	// 270 anti_block_rate
+	TV(L"Tỷ lệ giảm trọng kích (%)"),	// 271 anti_enhancehit_rate
 	"",	// 272 autocastskill
 	"",	// 273 transfigure
 	"",	// 274 oncastskill
 	"",	// 275 enhancehiteffect_rate
-	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 Kim (%)",	// 276 me2metaldamage_p
-	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 Kim (%)",	// 277 metal2medamage_p
-	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 M\351c (%)",	// 278 me2wooddamage_p
-	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 M\351c (%)",	// 279 wood2medamage_p
-	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 Th\361y (%)",	// 280 me2waterdamage_p
-	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 Th\361y (%)",	// 281 water2medamage_p
-	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 H\341a (%)",	// 282 me2firedamage_p
-	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 H\341a (%)",	// 283 fire2medamage_p
-	"T\250ng s\270t th\255\254ng \256\350i v\355i h\326 Th\346 (%)",	// 284 me2earthdamage_p
-	"Gi\266m s\270t th\255\254ng \256\325n t\365 h\326 Th\346 (%)",	// 285 earth2medamage_p
-	"Gi\266m n\351i l\371c phe \256\336ch khi ch\336u s\270t th\255\254ng t\312n c\253ng t\307m g\307n (%)",	// 286 meleedamagereturnmana_p
-	"Gi\266m n\351i l\371c phe \256\336ch khi ch\336u s\270t th\255\254ng t\312n c\253ng t\307m xa (%)",	// 287 rangedamagereturnmana_p
-	"Gi\266m x Th\352i gian \256\343ng b\250ngx gi\251y",	// 288 reduceskillcd1
-	"Gi\266m x Th\352i gian \256\343ng b\250ngx gi\251y",	// 289 reduceskillcd2
-	"Gi\266m x Th\352i gian \256\343ng b\250ngx gi\251y",	// 290 reduceskillcd3
-	"x x\270c su\312t x\343a t\312t c\266 th\352i gian ch\352 k\374 n\250ng c\361a b\266n th\251n",	// 291 clearallcd
-	"Xung quanh m\347i x c\270 nh\251n x t\373 l\326 h\343a gi\266i s\270t th\255\254ng",	// 292 addblockrate
-	"L\250ng Ba Vi B\351",	// 293 walkrunshadow
+	TV(L"Tăng sát thương đối với hệ Kim (%)"),	// 276 me2metaldamage_p
+	TV(L"Giảm sát thương đến từ hệ Kim (%)"),	// 277 metal2medamage_p
+	TV(L"Tăng sát thương đối với hệ Mộc (%)"),	// 278 me2wooddamage_p
+	TV(L"Giảm sát thương đến từ hệ Mộc (%)"),	// 279 wood2medamage_p
+	TV(L"Tăng sát thương đối với hệ Thủy (%)"),	// 280 me2waterdamage_p
+	TV(L"Giảm sát thương đến từ hệ Thủy (%)"),	// 281 water2medamage_p
+	TV(L"Tăng sát thương đối với hệ Hỏa (%)"),	// 282 me2firedamage_p
+	TV(L"Giảm sát thương đến từ hệ Hỏa (%)"),	// 283 fire2medamage_p
+	TV(L"Tăng sát thương đối với hệ Thổ (%)"),	// 284 me2earthdamage_p
+	TV(L"Giảm sát thương đến từ hệ Thổ (%)"),	// 285 earth2medamage_p
+	TV(L"Giảm nội lực phe địch khi chịu sát thương tấn công tầm gần (%)"),	// 286 meleedamagereturnmana_p
+	TV(L"Giảm nội lực phe địch khi chịu sát thương tấn công tầm xa (%)"),	// 287 rangedamagereturnmana_p
+	TV(L"Giảm x Thời gian đóng băngx giây"),	// 288 reduceskillcd1
+	TV(L"Giảm x Thời gian đóng băngx giây"),	// 289 reduceskillcd2
+	TV(L"Giảm x Thời gian đóng băngx giây"),	// 290 reduceskillcd3
+	TV(L"x xác suất xóa tất cả thời gian chờ kỹ năng của bản thân"),	// 291 clearallcd
+	TV(L"Xung quanh mỗi x cá nhân x tỷ lệ hóa giải sát thương"),	// 292 addblockrate
+	TV(L"Lăng Ba Vi Bộ"),	// 293 walkrunshadow
 	"",	// 294 -
 	"",	// 295 candetonate1
 	"",	// 296 candetonate2
 	"",	// 297 candetonate3
-	"Khi n\351i c\253ng \256\307y t\250ng k\374 n\250ng c\253ng k\335ch (%)",	// 298 manatoskill_enhance
+	TV(L"Khi nội công đầy tăng kỹ năng công kích (%)"),	// 298 manatoskill_enhance
 	"",	// 299 melee_returnres_p
 	"",	// 300 range_returnres_p
 	"",	// 301 forbit_usetownportal

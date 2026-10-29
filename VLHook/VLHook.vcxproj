@@ -86,6 +86,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="TextFunc.cpp" />
     <ClCompile Include="VLHook.cpp" />
     <ClCompile Include="PELib.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -101,12 +102,15 @@
     <ClCompile Include="VLDebugMap.cpp" />
     <ClCompile Include="VLDebugCollect.cpp" />
     <ClCompile Include="VLDebugAttack.cpp" />
+    <ClCompile Include="VLDebugFile.cpp" />
+    <ClCompile Include="VLDebugQuest.cpp" />
     <ClCompile Include="VLDebugRecover.cpp" />
     <ClCompile Include="VLDebugLowCfg.cpp" />
     <ClCompile Include="..\CrashHandler.cpp" />
     <ClCompile Include="VLExpLimit.cpp" />
     <ClCompile Include="VLDebugPath.cpp" />
     <ClCompile Include="MagicAttrib.cpp" />
+    <ClCompile Include="TcvnText.cpp" />
     <ClCompile Include="VLParty.cpp" />
     <ClCompile Include="VLQTong.cpp" />
     <ClCompile Include="VLQuest.cpp" />
@@ -120,6 +124,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MagicAttrib.h" />
+    <ClInclude Include="TcvnText.h" />
+    <ClInclude Include="TextFunc.h" />
     <ClInclude Include="VLHook.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="User32.h" />

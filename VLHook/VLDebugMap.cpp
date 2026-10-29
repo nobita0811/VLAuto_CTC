@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -10,7 +10,7 @@
 
 extern BOOL g_SysPause;
 
-#define STOREBOX_NPC_NAME	"R\xAD""\xAC""ng ch\xF8""a \xAE""\xE5"""	// "Ruong chua do" (TCVN3) - giong VLMap.cpp
+#define STOREBOX_NPC_NAME	TV(L"Rương chứa đồ")	// "Ruong chua do" (TCVN3) - giong VLMap.cpp
 
 static const char* s_szNpcPointNames[npc_Nums] =
 {
@@ -471,9 +471,10 @@ static void CheckReadyInfo()
 		bReady = FALSE;
 	}
 	int nAmulet = g_pCurPlayer->GetItemsCount(AMULET_PAPER) + g_pCurPlayer->GetItemsCount(AMULETX_PAPER);
-	DbgOut("%s TDP/HTP = %d  phim tat 3 m_nHK3Gengre = %d\n", (nAmulet < 1 && !pUiPlayerBar->m_nHK3Gengre) ? "x" : "v",
-		nAmulet, pUiPlayerBar->m_nHK3Gengre);
-	if (nAmulet < 1 && !pUiPlayerBar->m_nHK3Gengre) bReady = FALSE;
+	BOOL bHaveTP = theMain.HaveTownPortal();
+	DbgOut("%s HaveTownPortal = %d (hanh trang TDP/HTP = %d, phim tat 3 m_nHK3Gengre = %d)\n", bHaveTP ? "v" : "x",
+		bHaveTP, nAmulet, pUiPlayerBar->m_nHK3Gengre);
+	if (!bHaveTP) bReady = FALSE;
 	DbgOut("  Mau %d (tu an < %d: %d)  Mana %d (tu an < %d: %d)\n", P_PLAYER->m_CurrentLife, theRecover.m_nAutoHPAmount,
 		theRecover.m_bAutoHP, P_PLAYER->m_CurrentMana, theRecover.m_nAutoMPAmount, theRecover.m_bAutoMP);
 	DbgOut("=> CheckReady %s\n", bReady ? "SAN SANG (sau 1 luot an thuoc)" : "CHUA san sang");
@@ -666,6 +667,12 @@ BOOL DebugMapCmd(const DEBUG_PARAM *pParam)
 			DbgOut("OperationRequest(GOI_MONEY_INOUT_STORE_BOX, %d, %d) = %d  (can mo ruong truoc)\n", bIn, P[2], g_DbgReply.nResult[0]);
 			g_DbgReply.bOK = TRUE;
 		}
+		break;
+	case dbg_mp_filelog:
+		DebugFileLogToggle(P[0]);
+		break;
+	case dbg_mp_filelogview:
+		DebugFileLogView(P[0], szText);
 		break;
 	case dbg_mp_tongmoney:
 		{

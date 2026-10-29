@@ -1,3 +1,4 @@
+I:\CTC\VLAuto_CTC\VLHook\TextFunc.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\TextFunc.obj
 I:\CTC\VLAuto_CTC\VLHook\VLHook.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLHook.obj
 I:\CTC\VLAuto_CTC\VLHook\PELib.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\PELib.obj
 I:\CTC\VLAuto_CTC\VLHook\stdafx.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\stdafx.obj
@@ -13,12 +14,15 @@ I:\CTC\VLAuto_CTC\VLHook\VLDebug.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLD
 I:\CTC\VLAuto_CTC\VLHook\VLDebugMap.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugMap.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugCollect.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugCollect.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugAttack.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugAttack.obj
+I:\CTC\VLAuto_CTC\VLHook\VLDebugFile.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugFile.obj
+I:\CTC\VLAuto_CTC\VLHook\VLDebugQuest.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugQuest.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugRecover.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugRecover.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugLowCfg.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugLowCfg.obj
 I:\CTC\VLAuto_CTC\CrashHandler.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\CrashHandler.obj
 I:\CTC\VLAuto_CTC\VLHook\VLExpLimit.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLExpLimit.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugPath.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugPath.obj
 I:\CTC\VLAuto_CTC\VLHook\MagicAttrib.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\MagicAttrib.obj
+I:\CTC\VLAuto_CTC\VLHook\TcvnText.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\TcvnText.obj
 I:\CTC\VLAuto_CTC\VLHook\VLParty.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLParty.obj
 I:\CTC\VLAuto_CTC\VLHook\VLQTong.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLQTong.obj
 I:\CTC\VLAuto_CTC\VLHook\VLQuest.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLQuest.obj

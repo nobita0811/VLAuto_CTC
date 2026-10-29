@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "PELib.h"
 #include "AntiRE.h"
@@ -117,6 +117,8 @@ LRESULT HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 			goto END;
 
 		DebugPathUnhook();
+		DebugAttackUnhook();
+		DebugFileUnhook();
 		DebugLowCfgUnhook();
 		theMain.ClearEverything();
 		CrashUninstall();
@@ -163,7 +165,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	{
 		{ CRASH_STAGE("theRecover.Breathe"); theRecover.Breathe(); }
 		if (!theMain.m_nTongMoney)	// Dang gom tien len bang: khong nhat do
-			{ CRASH_STAGE("theCollect.Breathe"); theCollect.Breathe(); }
+			{ CRASH_STAGE("theCollect.Breathe"); CQuestMoveAllow qa; theCollect.Breathe(); }
 	}
 
 	if (g_RunningTimer % 2 == 0) // Chu ky 100ms
@@ -172,6 +174,8 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	{
 		{ CRASH_STAGE("DebugPathBreathe"); DebugPathBreathe(); }
 		{ CRASH_STAGE("DebugLowCfgBreathe"); DebugLowCfgBreathe(); }
+		{ CRASH_STAGE("DebugFileBreathe"); DebugFileBreathe(); }
+		{ CRASH_STAGE("DebugQuestBreathe"); CQuestMoveAllow qa; DebugQuestBreathe(); }
 		{ CRASH_STAGE("theBasic.TrimRamBreathe"); theBasic.TrimRamBreathe(); }
 		{ CRASH_STAGE("theMain.TongMoneyBreathe"); theMain.TongMoneyBreathe(); }
 	}
@@ -189,7 +193,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	}
 
 	if (g_RunningTimer % 2 == 1)		// Chu ky 100ms
-		{ CRASH_STAGE("theAttack.Breathe"); theAttack.Breathe(); }
+		{ CRASH_STAGE("theAttack.Breathe"); CQuestMoveAllow qa; theAttack.Breathe(); }
 	if (g_RunningTimer % 4 == 1)		// Chu ky 200ms - tu di theo MapPath
 		{ CRASH_STAGE("PathTravelBreathe"); PathTravelBreathe(); }
 	if (g_RunningTimer % 4 == 2)		// Chu ky 200ms
@@ -291,7 +295,7 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theMain.PostFeedBack(cmd_autohit);
 			else if (wParam == 'B')
 				theMain.PostFeedBack(cmd_autoarng);
-			else if (wParam == 'G')
+			else if (wParam == 'T')
 				theMain.PostFeedBack(cmd_setmap);
 			else if (wParam == 'D')
 				theMain.PostFeedBack(cmd_setyesou);
@@ -299,7 +303,7 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theMove.SavePoint();
 			else if (wParam == 'Z')
 				theUtil.OpenCloseStoreBox();
-			else if (wParam == 'T')
+			else if (wParam == 'G')
 				theUtil.OpenCloseNpcShop();
 			else if (wParam == VK_SPACE)
 				theUtil.ReadPosition();
@@ -345,7 +349,7 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDBLCLK:
 		if ((wParam & MK_CONTROL) && _PtInRect(&rcCenter, ptPos))
 		{
-			SystemMessage("<color=yellow>Khëi ®éng l¹i VLAuto!!!");
+			SystemMessage(TV(L"<color=yellow>Khá»Ÿi Ä‘á»™ng láº¡i VLAuto!!!"));
 			theMain.RestartHook();
 
 		}
@@ -355,10 +359,10 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		g_SysPause = !g_SysPause;
 		if (g_SysPause)
 		{
-			SystemMessage("<color=yellow>Auto: T¹m ng­ng!!!<color>", 1);
+			SystemMessage(TV(L"<color=yellow>Auto: Táº¡m ngÆ°ng!!!<color>"), 1);
 		}
 		else
-			SystemMessage("<color=yellow>Auto: <color=green>Më l¹i!!!", 1);
+			SystemMessage(TV(L"<color=yellow>Auto: <color=green>Má»Ÿ láº¡i!!!"), 1);
 		break;
 	}
 	}

@@ -1,36 +1,31 @@
-﻿  stdafx.cpp
-  AutoParams.cpp
-  GameWindow.cpp
-  LoginSck.cpp
-  VLAuto.cpp
-  VLAutoDlg.cpp
-  CrashHandler.cpp
-  DlgAbout.cpp
-  DlgAutoLogin.cpp
-  DlgDebug.cpp
+﻿  DlgAbout.cpp
   DlgAttack.cpp
+  DlgAutoLogin.cpp
   DlgBasic.cpp
+  DlgBuySetting.cpp
   DlgCollect.cpp
-  DlgMap.cpp
-  DlgMove.cpp
-  DlgMovePoints.cpp
-  DlgParty.cpp
-  DlgRecover.cpp
-  DlgYeSou.cpp
-  DiskID32.cpp
-  DWinProcess.cpp
-  Generating Code...
-  Compiling...
-  MiniBrowser.cpp
-  MyListCtrl.cpp
-  UiControls.cpp
-  VNUnicode.cpp
+  DlgCollectSetting.cpp
+  DlgDebug.cpp
   DlgExit.cpp
   DlgFindItem.cpp
   DlgLogin.cpp
+  DlgMap.cpp
+  DlgMove.cpp
+  DlgMovePoints.cpp
   DlgOption.cpp
   DlgPKQFilter.cpp
+  DlgParty.cpp
+  DlgRecover.cpp
+  DlgSettingSkill.cpp
   DlgUtility.cpp
+  Generating Code...
+  Compiling...
+  DlgYeSou.cpp
+  GameWindow.cpp
+  LoginSck.cpp
+  MyListCtrl.cpp
+  VLAuto.cpp
+  VLAutoDlg.cpp
   YSAddPoint.cpp
   YSBuyItem.cpp
   YSPrizeSel.cpp

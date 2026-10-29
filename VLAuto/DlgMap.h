@@ -9,7 +9,6 @@ class CDlgMap : public CDialog
 public:
 	CDlgMap(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgMap();
-	void			InitComboBox(CComboBox *pComboBox);
 	void			UpdateTrainMap(BOOL bSave);
 
 // Dialog Data

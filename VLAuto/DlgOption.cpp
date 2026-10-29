@@ -13,7 +13,6 @@ COptionDlg::COptionDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(COptionDlg::IDD, pParent)
 {
 	m_bSilentMode = TRUE;
-	m_bAutoChat = TRUE;
 	m_bPrintScreen = FALSE;
 	m_bAttackBossFirst = TRUE;
 	m_szControlPass = "";
@@ -27,7 +26,6 @@ void COptionDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_SILENTMODE_CHECK, m_bSilentMode);
-	DDX_Check(pDX, IDC_AUTOCHAT_CHECK, m_bAutoChat);
 	DDX_Check(pDX, IDC_PRINTSCREEN_CHECK, m_bPrintScreen);
 	DDX_Check(pDX, IDC_ATTACKBOSSFIRST_CHECK, m_bAttackBossFirst);
 	DDX_Text(pDX, IDC_CTRLPASS_EDIT, m_szControlPass);
@@ -43,7 +41,6 @@ BOOL COptionDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	m_bSilentMode = GetPrivateProfileInt(_T("Options"), _T("SilentMode"), 1, g_szIniFile);
-	m_bAutoChat = GetPrivateProfileInt(_T("Options"), _T("AutoChat"), 1, g_szIniFile);
 	m_bPrintScreen = GetPrivateProfileInt(_T("Options"), _T("PrintScreen"), 0, g_szIniFile);
 	m_bAttackBossFirst = GetPrivateProfileInt(_T("Options"), _T("AttackBossFirst"), 1, g_szIniFile);
 
@@ -62,8 +59,6 @@ void COptionDlg::OnOK()
 	TCHAR szValue[16];
 	_itot(m_bSilentMode, szValue, 10);
 	WritePrivateProfileString(_T("Options"), _T("SilentMode"), szValue, g_szIniFile);
-	_itot(m_bAutoChat, szValue, 10);
-	WritePrivateProfileString(_T("Options"), _T("AutoChat"), szValue, g_szIniFile);
 	_itot(m_bPrintScreen, szValue, 10);
 	WritePrivateProfileString(_T("Options"), _T("PrintScreen"), szValue, g_szIniFile);
 	_itot(m_bAttackBossFirst, szValue, 10);

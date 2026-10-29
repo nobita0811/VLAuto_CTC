@@ -1,6 +1,10 @@
 ﻿#pragma once
 
-// CDlgMovePoints dialog - Danh sach toa do Hanh trinh (mo tu tab Di chuyen)
+// CDlgMovePoints dialog - mo tu tab Di chuyen
+// Danh sach 0: toa do Hanh trinh luyen cong (m_Nodes)
+// Danh sach 1: toa do di den noi luyen cong (m_GoNodes) - sau khi vao cong map train, MapPath toi diem dau roi di theo danh sach
+
+#define MOVEPOINTS_LISTS	2
 
 class CDlgMovePoints : public CDialog
 {
@@ -9,15 +13,15 @@ class CDlgMovePoints : public CDialog
 public:
 	CDlgMovePoints(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgMovePoints();
-	void			UpdatePointsList(BOOL bSave);
+	void			UpdatePointsList(int nList, BOOL bSave);
 	void			UpdateMapName();
-	void			OnBnClickedAddButton();
-	void			OnBnClickedDelButton();
-	void			OnBnClickedUpButton();
-	void			OnBnClickedDownButton();
-	void			OnBnClickedDelAllButton();
-	void			OnBnClickedSaveButton();
-	void			OnBnClickedLoadButton();
+	void			OnBnClickedAddButton(int nList);
+	void			OnBnClickedDelButton(int nList);
+	void			OnBnClickedUpButton(int nList);
+	void			OnBnClickedDownButton(int nList);
+	void			OnBnClickedDelAllButton(int nList);
+	void			OnBnClickedSaveButton(int nList);
+	void			OnBnClickedLoadButton(int nList);
 
 // Dialog Data
 	enum { IDD = IDD_MOVEPOINTS_DIALOG };
@@ -28,9 +32,11 @@ protected:
 	virtual void	DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void	OnOK() {}
 	afx_msg void	OnButtonsClicked(UINT nID);
+	POINT*			GetNodes(int nList);
+	int&			GetNodesMapID(int nList);
 
 	DECLARE_MESSAGE_MAP()
 public:
-	CListBox		m_PoinList;
+	CListBox		m_PoinList[MOVEPOINTS_LISTS];
 	CToolTipCtrl	m_ToolTip;
 };

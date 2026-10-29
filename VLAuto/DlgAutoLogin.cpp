@@ -31,17 +31,46 @@
 #define LOGIN_STATS_INTERVAL	2000	// ms: nhịp cập nhật bảng Thống kê
 #define DEFAULT_TONG_KEEP		10		// vạn: mặc định số tiền giữ lại khi gom tiền lên bang
 #define WAIT_ROLE_LIST			20000	// ms chờ danh sách nhân vật sau khi đăng nhập
+#define EXIT_CHECK_INTERVAL		1000	// ms: nhịp kiểm tra Cài đặt thoát
+#define NET_LOST_SEC			20		// giây: nhân vật không được server đồng bộ quá lâu => coi là mất kết nối
 
 #define AUTOLOGIN_DATA_FILE		_T("%s\\AutoLogin.ini")
 #define SERVERLIST_FILE			_T("%s\\UiConfig\\serverlist_.txt")
 #define MAX_ROLE_COUNT			3		// Số nhân vật tối đa trên một tài khoản
 #define DEFAULT_RELOGIN_DELAY	10000	// ms
+static void LoginLog(LPCTSTR szFormat, ...);
 #define LOGIN_RETRY_DELAY		2000	// ms: đăng nhập thất bại thì chờ rồi thử lại
 #define DEFAULT_RETRY_COUNT		3		// Số lần thử lại mặc định
 #define DEFAULT_LOGINALL_DELAY	10000	// ms: mặc định của "Tự động login all sau"
 #define MIN_LOGINALL_DELAY		2000	// ms: tối thiểu, để VLAuto kịp quét các Game đang chạy (tránh mở thêm Game cho tài khoản đã online)
 
 std::vector<AutoLoginEntry> g_AutoLoginList;
+
+// Cài đặt thoát (bảng Thống kê), lưu ở [AutoLogin] trong AutoLogin.ini. nOn / nVal: offset trong AutoLoginExitOpt (-1 = không có)
+struct EXIT_OPT_CTRL
+{
+	UINT	nCheck, nEdit;
+	LPCTSTR	szOnKey, szValKey;
+	int		nDefOn, nDefVal, nMinVal;
+	int		nOn, nVal;
+};
+
+#define EXIT_OFF(m) ((int)offsetof(AutoLoginExitOpt, m))
+static const EXIT_OPT_CTRL s_ExitOpts[] =
+{
+	{ IDC_LOGIN_EXIT_LOST_CHECK,	IDC_LOGIN_EXIT_LOST_EDIT,	_T("ExitLost"),		_T("ExitLostMin"),	0, 5,	1,	EXIT_OFF(bLost),	EXIT_OFF(nLostMin) },
+	{ IDC_LOGIN_EXIT_NOEXP_CHECK,	IDC_LOGIN_EXIT_NOEXP_EDIT,	_T("ExitNoExp"),	_T("ExitNoExpMin"),	0, 3,	1,	EXIT_OFF(bNoExp),	EXIT_OFF(nNoExpMin) },
+	{ IDC_LOGIN_EXIT_HUNG_CHECK,	IDC_LOGIN_EXIT_HUNG_EDIT,	_T("ExitHung"),		_T("ExitHungSec"),	0, 210,	10,	EXIT_OFF(bHung),	EXIT_OFF(nHungSec) },
+	{ IDC_LOGIN_EXIT_STAY_CHECK,	IDC_LOGIN_EXIT_STAY_EDIT,	_T("ExitStay"),		_T("ExitStayMin"),	0, 5,	1,	EXIT_OFF(bStay),	EXIT_OFF(nStayMin) },
+	{ 0,							IDC_LOGIN_EXIT_DIST_EDIT,	NULL,				_T("ExitStayDist"),	0, 211,	10,	-1,					EXIT_OFF(nStayDist) },
+	{ IDC_LOGIN_EXIT_FIGHT_CHECK,	0,							_T("ExitStayFight"),	NULL,			1, 0,	0,	EXIT_OFF(bStayFight), -1 },
+};
+#undef EXIT_OFF
+
+static int& ExitOptField(AutoLoginExitOpt& opt, int nOffset)
+{
+	return *(int*)((BYTE*)&opt + nOffset);
+}
 
 // Ô thời gian chờ sau mỗi thao tác đăng nhập (nhóm Thiết lập), lưu ở [AutoLogin] trong AutoLogin.ini
 struct WAIT_TIME_EDIT
@@ -225,13 +254,25 @@ CDlgAutoLogin::CDlgAutoLogin(CWnd* pParent /*=NULL*/)
 	m_bUpdatingList = FALSE;
 	m_nNextId = 0;
 	m_Job.nId = 0;
+	m_Job.hRemote = NULL;
+	m_Job.pRemote = NULL;
+	m_Job.dwRemotePID = 0;
 	m_bRunAll = FALSE;
-	m_nRound = 0;
 	m_dwStartAllTick = 0;
+	m_dwExitCheckTick = 0;
+	for (int i = 0; i < _countof(s_ExitOpts); i++)
+	{
+		if (s_ExitOpts[i].nOn >= 0)
+			ExitOptField(m_ExitOpt, s_ExitOpts[i].nOn) = s_ExitOpts[i].nDefOn;
+		if (s_ExitOpts[i].nVal >= 0)
+			ExitOptField(m_ExitOpt, s_ExitOpts[i].nVal) = s_ExitOpts[i].nDefVal;
+	}
 }
 
 CDlgAutoLogin::~CDlgAutoLogin()
 {
+	if (m_Job.hRemote)
+		CloseHandle(m_Job.hRemote);
 }
 
 void CDlgAutoLogin::DoDataExchange(CDataExchange* pDX)
@@ -346,7 +387,7 @@ BOOL CDlgAutoLogin::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_WAIT_CHOSEROLE_LOGIN_EDIT5), _T("ms chờ sau khi chọn nhân vật và vào game (mặc định 8000, tối thiểu 500)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_REPORT_LOGIN_BUTTON), _T("Bảng thống kê tiền, số lần dùng Thổ Địa Phù, số lần chết của các nhân vật trong danh sách"));
 		m_ToolTip.SetMaxTipWidth(400);
-		m_ToolTip.AddTool(GetDlgItem(IDC_AUTO_RELOGIN_LOOP_CHECK), _T("LOGIN ALL xong danh sách thì lấy lại các tài khoản được check để login tiếp (tài khoản có \"Tự động đăng nhập lại\" bị văng game sẽ được login lại sau thời gian chờ của nó)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_AUTO_RELOGIN_LOOP_CHECK), _T("Tài khoản được check có \"Tự động đăng nhập lại\" mà Game bị văng / tắt / crash (đã từng vào game) thì login lại sau thời gian chờ của nó, không cần LOGIN ALL.\nĐang LOGIN ALL thì login lại cả tài khoản đăng nhập thất bại. STOP / Tắt game: ngừng login lại tới khi tài khoản vào game lần nữa"));
 	}
 
 	// Mở Auto: chờ "Tự động login all sau" rồi tự LOGIN ALL (một lần)
@@ -394,6 +435,14 @@ void CDlgAutoLogin::LoadAccounts()
 	SetDlgItemInt(IDC_DELAYTIME_LOGINALL_EDIT, GetPrivateProfileInt(_T("AutoLogin"), _T("AutoLoginAllDelay"), DEFAULT_LOGINALL_DELAY, m_strDataFile), FALSE);
 	CheckDlgButton(IDC_HIDEGAME_LOGIN_CHECK, GetPrivateProfileInt(_T("AutoLogin"), _T("HideGame"), 0, m_strDataFile) ? BST_CHECKED : BST_UNCHECKED);
 	m_nTongKeep = (int)GetPrivateProfileInt(_T("AutoLogin"), _T("TongKeep"), DEFAULT_TONG_KEEP, m_strDataFile);
+	for (int i = 0; i < _countof(s_ExitOpts); i++)
+	{
+		const EXIT_OPT_CTRL& ctrl = s_ExitOpts[i];
+		if (ctrl.nOn >= 0)
+			ExitOptField(m_ExitOpt, ctrl.nOn) = GetPrivateProfileInt(_T("AutoLogin"), ctrl.szOnKey, ctrl.nDefOn, m_strDataFile) != 0;
+		if (ctrl.nVal >= 0)
+			ExitOptField(m_ExitOpt, ctrl.nVal) = max((int)GetPrivateProfileInt(_T("AutoLogin"), ctrl.szValKey, ctrl.nDefVal, m_strDataFile), ctrl.nMinVal);
+	}
 	for (int i = 0; i < _countof(s_WaitEdits); i++)
 	{
 		UINT nWait = GetPrivateProfileInt(_T("AutoLogin"), s_WaitEdits[i].szKey, s_WaitEdits[i].dwDefault, m_strDataFile);
@@ -455,6 +504,14 @@ void CDlgAutoLogin::SaveAccounts()
 	for (int i = 0; i < _countof(s_WaitEdits); i++)
 		strData.AppendFormat(_T("%s=%d\r\n"), s_WaitEdits[i].szKey, (int)GetWaitTime(i + 1));
 	strData.AppendFormat(_T("TongKeep=%d\r\n"), m_nTongKeep);
+	for (int i = 0; i < _countof(s_ExitOpts); i++)
+	{
+		const EXIT_OPT_CTRL& ctrl = s_ExitOpts[i];
+		if (ctrl.nOn >= 0)
+			strData.AppendFormat(_T("%s=%d\r\n"), ctrl.szOnKey, ExitOptField(m_ExitOpt, ctrl.nOn));
+		if (ctrl.nVal >= 0)
+			strData.AppendFormat(_T("%s=%d\r\n"), ctrl.szValKey, ExitOptField(m_ExitOpt, ctrl.nVal));
+	}
 	for (int i = 0; i < (int)m_Accounts.size(); i++)
 	{
 		const AutoLoginAccount& acc = m_Accounts[i];
@@ -1051,7 +1108,7 @@ CString CDlgAutoLogin::GetStatusText(int nIndex)
 		return strStatus;
 	}
 
-	if (m_bRunAll && IsDlgButtonChecked(IDC_AUTO_RELOGIN_LOOP_CHECK) == BST_CHECKED && acc.bChecked && acc.bAutoRelogin && acc.dwOfflineTick)
+	if ((m_bRunAll || acc.bSeenInGame) && IsDlgButtonChecked(IDC_AUTO_RELOGIN_LOOP_CHECK) == BST_CHECKED && acc.bChecked && acc.bAutoRelogin && acc.dwOfflineTick)
 	{
 		int nLeft = acc.nReloginDelay - (int)(GetTickCount() - acc.dwOfflineTick);
 		strStatus.Format(_T("Login lại sau %ds"), (max(nLeft, 0) + 999) / 1000);
@@ -1187,20 +1244,23 @@ void CDlgAutoLogin::AddLoginEntry(int nIndex)
 }
 
 // Bước 2: làm trống danh sách cần login rồi thêm các tài khoản được check theo thứ tự trên bảng.
-// Từ vòng thứ 2 (vòng lặp): chỉ lấy lại tài khoản có "Tự động đăng nhập lại" và đã không ở trong game quá ReloginDelay
-void CDlgAutoLogin::BuildLoginList()
+// Vòng lặp (!bFirst): chỉ lấy lại tài khoản có "Tự động đăng nhập lại" và đã không ở trong game quá ReloginDelay;
+// ngoài LOGIN ALL thì chỉ tài khoản đã từng vào game (Game bị văng / tắt / crash)
+void CDlgAutoLogin::BuildLoginList(BOOL bFirst)
 {
 	g_AutoLoginList.clear();
-	m_nRound++;
 	DWORD dwNow = GetTickCount();
 	for (int i = 0; i < (int)m_Accounts.size(); i++)
 	{
 		AutoLoginAccount& acc = m_Accounts[i];
+		BOOL bInGame = IsAccountInGame(i);
+		if (bInGame)
+			acc.bSeenInGame = TRUE;
 		if (!acc.bChecked)
 			continue;
-		if (m_nRound > 1)
+		if (!bFirst)
 		{
-			if (!acc.bAutoRelogin || IsAccountInGame(i))
+			if (!acc.bAutoRelogin || bInGame || (!m_bRunAll && !acc.bSeenInGame))
 			{
 				acc.dwOfflineTick = 0;
 				continue;
@@ -1248,9 +1308,8 @@ void CDlgAutoLogin::StartLoginAll(BOOL bWarn)
 	}
 	m_dwStartAllTick = 0;
 	m_bRunAll = TRUE;
-	m_nRound = 0;
 	m_Job.nId = 0;
-	BuildLoginList();
+	BuildLoginList(TRUE);
 	RemoveOnlineEntries();
 	UpdateGameStatus();
 }
@@ -1260,6 +1319,7 @@ void CDlgAutoLogin::StopAccount(int nIndex)
 {
 	AutoLoginAccount& acc = m_Accounts[nIndex];
 	acc.dwOfflineTick = 0;
+	acc.bSeenInGame = FALSE;	// Không tự login lại tới khi vào game lần nữa
 	int nEntry = FindLoginEntry(acc.nId);
 	if (nEntry >= 0)
 		g_AutoLoginList.erase(g_AutoLoginList.begin() + nEntry);
@@ -1274,7 +1334,10 @@ void CDlgAutoLogin::StopAllLogin()
 	m_bRunAll = FALSE;
 	m_dwStartAllTick = 0;
 	for (int i = 0; i < (int)m_Accounts.size(); i++)
+	{
 		m_Accounts[i].dwOfflineTick = 0;
+		m_Accounts[i].bSeenInGame = FALSE;	// Không tự login lại tới khi vào game lần nữa
+	}
 	UpdateGameStatus();
 }
 
@@ -1320,6 +1383,7 @@ void CDlgAutoLogin::OnLoginOptionChanged()
 // bCloseGame: đóng Game để lần sau mở lại từ đầu
 void CDlgAutoLogin::EndJob(int nIndex, LPCTSTR szError, BOOL bRetry, BOOL bCloseGame)
 {
+	LoginLog(_T("Kết thúc lượt: %s"), szError ? szError : _T("thành công"));
 	int nId = m_Job.nId;
 	m_Job.nId = 0;
 	int nEntry = FindLoginEntry(nId);
@@ -1332,6 +1396,8 @@ void CDlgAutoLogin::EndJob(int nIndex, LPCTSTR szError, BOOL bRetry, BOOL bClose
 	AutoLoginAccount& acc = m_Accounts[nIndex];
 	acc.strError = szError ? szError : _T("");
 	acc.dwOfflineTick = 0;
+	if (!szError)
+		acc.bSeenInGame = TRUE;
 	if (szError && bCloseGame && acc.dwProcessId)
 		CloseGames(std::vector<DWORD>(1, acc.dwProcessId));
 	if (!szError && acc.dwProcessId && IsDlgButtonChecked(IDC_HIDEGAME_LOGIN_CHECK) == BST_CHECKED)
@@ -1365,12 +1431,98 @@ BOOL CDlgAutoLogin::LoginAction(int nScreen, LPCTSTR szStatus, DWORD dwWait)
 	m_Job.strStatus = szStatus;
 	m_Job.dwActionTick = GetTickCount();
 	m_Job.dwWait = dwWait;
+	LoginLog(_T("Màn hình %d lần %d: %s (chờ %d ms, %d ms từ đầu lượt)"), nScreen, m_Job.nTries, szStatus, dwWait, GetTickCount() - m_Job.dwStartTick);
 	return m_Job.nTries <= LOGIN_MAX_TRIES;
+}
+
+// Nhật ký đăng nhập <Auto>\AutoLogin.log (UTF-8) để dò lỗi kẹt màn hình
+static void LoginLog(LPCTSTR szFormat, ...)
+{
+	CString strLine;
+	va_list args;
+	va_start(args, szFormat);
+	strLine.FormatV(szFormat, args);
+	va_end(args);
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	CString strOut;
+	strOut.Format(_T("%02d:%02d:%02d.%03d %s\r\n"), st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, (LPCTSTR)strLine);
+	TCHAR szFile[MAX_PATH];
+	_stprintf_s(szFile, _T("%s\\AutoLogin.log"), g_szAppFolder);
+	HANDLE hFile = CreateFile(szFile, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return;
+	CT2A szUtf8(strOut, CP_UTF8);
+	DWORD dwWritten;
+	WriteFile(hFile, (LPCSTR)szUtf8, (DWORD)strlen(szUtf8), &dwWritten, NULL);
+	CloseHandle(hFile);
+}
+
+static void LogGameScreens(HANDLE hGame, LPCTSTR szWhat)
+{
+	static const DWORD s_dwPtrs[] = { LG_UIN_BASE_ADD, LG_NOTICE_SELF, LG_SEL_SELF, LG_LOGIN_SELF, LG_ROLE_SELF, LG_SMC_BASE_ADD };
+	CString str;
+	for (int i = 0; i < _countof(s_dwPtrs); i++)
+	{
+		DWORD dwWnd = ReadGameDword(hGame, s_dwPtrs[i]);
+		str.AppendFormat(_T(" %08X/%08X"), dwWnd, dwWnd && i < 5 ? ReadGameDword(hGame, dwWnd + 4) : 0);
+	}
+	LoginLog(_T("PID %d %s: init notice sel login role smc =%s"), GetProcessId(hGame), szWhat, (LPCTSTR)str);
+}
+
+// Chạy mã thao tác trong Game. Quá REMOTE_TIMEOUT mà thread chưa chạy xong (Game đang bận, vd lần mở đầu còn nạp
+// dữ liệu nên thread mới phải chờ) => giữ thread lại, RunLoginStep chờ nó xong mới thao tác tiếp (CheckJobRemote)
+BOOL CDlgAutoLogin::ExecJobCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code, DWORD* pdwExit)
+{
+	HANDLE hPending = NULL;
+	DWORD dwTick = GetTickCount();
+	BOOL bOK = ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, pdwExit, &hPending);
+	LoginLog(_T("  %s: chạy mã %s sau %d ms, exit %d (GetLastError %d)"), (LPCTSTR)m_Job.strStatus,
+		bOK ? _T("xong") : hPending ? _T("CHƯA XONG") : _T("LỖI"), GetTickCount() - dwTick, *pdwExit, GetLastError());
+	if (bOK)
+	{
+		LogGameScreens(hGame, _T("sau thao tác"));
+		return TRUE;
+	}
+	if (hPending)
+	{
+		if (m_Job.hRemote)
+			CloseHandle(m_Job.hRemote);	// Thread cũ ở Game khác (đã bỏ lượt đó)
+		m_Job.hRemote = hPending;
+		m_Job.pRemote = pRemote;
+		m_Job.dwRemotePID = GetProcessId(hGame);
+		m_Job.strStatus = _T("Chờ game phản hồi");
+	}
+	return FALSE;
+}
+
+// Thread của ExecJobCode còn chạy => TRUE. Đã xong (hoặc Game đã tắt) => xóa + giải phóng vùng nhớ mã, FALSE
+BOOL CDlgAutoLogin::CheckJobRemote()
+{
+	if (m_Job.hRemote == NULL)
+		return FALSE;
+	if (WaitForSingleObject(m_Job.hRemote, 0) == WAIT_TIMEOUT)
+		return TRUE;
+	CloseHandle(m_Job.hRemote);
+	m_Job.hRemote = NULL;
+	LoginLog(_T("  Mã chờ trong Game PID %d đã chạy xong"), m_Job.dwRemotePID);
+	HANDLE hGame = OpenProcess(PROCESS_VM_WRITE | PROCESS_VM_OPERATION, FALSE, m_Job.dwRemotePID);
+	if (hGame)
+	{
+		BYTE buf[CRemoteCode::TOTAL_SIZE] = { 0 };	// Mã có thể chứa mật khẩu
+		WriteGameMemory(hGame, m_Job.pRemote, buf, sizeof(buf));
+		VirtualFreeEx(hGame, m_Job.pRemote, 0, MEM_RELEASE);
+		CloseHandle(hGame);
+	}
+	m_Job.pRemote = NULL;
+	m_Job.dwActionTick = GetTickCount();	// Thời gian chờ sau thao tác tính từ lúc nó thực sự chạy
+	return FALSE;
 }
 
 // Đăng nhập lần lượt danh sách cần login; hết danh sách mà đang LOGIN ALL có check vòng lặp thì lấy lại danh sách (bước 2)
 void CDlgAutoLogin::RunLogin()
 {
+	CheckJobRemote();
 	if (m_dwStartAllTick && (int)(GetTickCount() - m_dwStartAllTick) >= 0)
 		StartLoginAll(FALSE);
 
@@ -1380,14 +1532,12 @@ void CDlgAutoLogin::RunLogin()
 			g_AutoLoginList.erase(g_AutoLoginList.begin());
 		if (g_AutoLoginList.empty())
 		{
-			if (!m_bRunAll)
-				return;
 			if (IsDlgButtonChecked(IDC_AUTO_RELOGIN_LOOP_CHECK) != BST_CHECKED)
 			{
 				m_bRunAll = FALSE;	// Đã login xong danh sách
 				return;
 			}
-			BuildLoginList();
+			BuildLoginList(FALSE);	// Lặp lại: login lại tài khoản bị văng game (có hay không LOGIN ALL)
 			RemoveOnlineEntries();
 			if (g_AutoLoginList.empty())
 				return;
@@ -1462,6 +1612,11 @@ void CDlgAutoLogin::RunLogin()
 // Một bước đăng nhập theo màn hình Game đang hiện
 void CDlgAutoLogin::RunLoginStep(int nIndex, HANDLE hGame)
 {
+	if (m_Job.hRemote && m_Job.dwRemotePID == GetProcessId(hGame))
+	{
+		m_Job.strStatus = _T("Chờ game phản hồi");	// Thao tác trước chưa chạy xong: không bấm thêm, không tính lần thử
+		return;
+	}
 	CString strError;
 	if (ReadGameDword(hGame, LG_SMC_BASE_ADD))
 	{
@@ -1515,7 +1670,7 @@ void CDlgAutoLogin::RunLoginStep(int nIndex, HANDLE hGame)
 			code.Call(LG_NOTICE_WNDPROC);
 			code.End();
 			DWORD dwExit = 0;
-			ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit);
+			ExecJobCode(hGame, pRemote, code, &dwExit);
 		}
 		return;
 	}
@@ -1536,7 +1691,7 @@ void CDlgAutoLogin::RunLoginStep(int nIndex, HANDLE hGame)
 			code.Call(LG_IOC_FUNC_ADD);
 			code.End();
 			DWORD dwExit = 0;
-			ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit);
+			ExecJobCode(hGame, pRemote, code, &dwExit);
 		}
 		return;
 	}
@@ -1607,7 +1762,7 @@ BOOL CDlgAutoLogin::DoSelectServer(int nIndex, HANDLE hGame, DWORD dwSel, CStrin
 		code.EcxThis(LG_SEL_IPLIST);
 		code.Call(LG_LIST_FOCUS);
 		code.End();
-		ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit);
+		ExecJobCode(hGame, pRemote, code, &dwExit);
 		// Chọn server + Xác định ở nhịp sau (WAIT_SERVER): OnLogin dừng thread ping (TerminateThread),
 		// gọi ngay khi thread ping vừa tạo còn đang khởi tạo sẽ làm treo Game
 		m_Job.strStatus = _T("Đã chọn cụm server");
@@ -1635,7 +1790,7 @@ BOOL CDlgAutoLogin::DoSelectServer(int nIndex, HANDLE hGame, DWORD dwSel, CStrin
 	code.Call(LG_SEL_LOGIN_FUNC);
 	code.End();
 	m_Job.strStatus = _T("Chọn server + Xác định");
-	ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit);
+	ExecJobCode(hGame, pRemote, code, &dwExit);
 	return TRUE;
 }
 
@@ -1668,7 +1823,8 @@ BOOL CDlgAutoLogin::DoAccountLogin(int nIndex, HANDLE hGame)
 	code.End();
 	SecureZeroMemory(szPassword, sizeof(szPassword));
 	DWORD dwExit = 0;
-	BOOL bOK = ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit) && dwExit;
+	BOOL bOK = ExecJobCode(hGame, pRemote, code, &dwExit) ? dwExit != 0
+		: (m_Job.hRemote && m_Job.dwRemotePID == GetProcessId(hGame));	// Game đang bận: chờ thread chạy xong
 	return bOK;
 }
 
@@ -1730,7 +1886,7 @@ BOOL CDlgAutoLogin::DoSelectRole(int nIndex, HANDLE hGame, DWORD dwRoleWnd, CStr
 	code.Call(LG_ROLE_ENTER);
 	code.End();
 	DWORD dwExit = 0;
-	ExecRemoteCode(hGame, pRemote, code, REMOTE_TIMEOUT, &dwExit);
+	ExecJobCode(hGame, pRemote, code, &dwExit);
 	return TRUE;
 }
 
@@ -1739,12 +1895,133 @@ void CDlgAutoLogin::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == TIMER_AUTO_LOGIN)
 	{
 		CheckClosingGames();
+		CheckExitGames();
 		RunLogin();
 		UpdateGameStatus();
 		UpdatePlayerNames();
 		return;
 	}
 	CDialog::OnTimer(nIDEvent);
+}
+
+// Cửa sổ Game của tiến trình dwPID (NULL = chưa có)
+static HWND FindGameWnd(DWORD dwPID)
+{
+	HWND hWnd = NULL;
+	while ((hWnd = ::FindWindowEx(NULL, hWnd, VLTK_WINCLASS, NULL)) != NULL)
+	{
+		DWORD dwWndPID = 0;
+		GetWindowThreadProcessId(hWnd, &dwWndPID);
+		if (dwWndPID == dwPID)
+			return hWnd;
+	}
+	return NULL;
+}
+
+// Cài đặt thoát (bảng Thống kê): Game của tài khoản bị treo / mất kết nối / không tăng kinh nghiệm / quanh quẩn 1 điểm
+// quá thời gian đặt thì thoát game (check Lặp lại và tài khoản bật Login lại thì Auto Login tự đăng nhập lại)
+void CDlgAutoLogin::CheckExitGames()
+{
+	DWORD dwNow = GetTickCount();
+	if (dwNow - m_dwExitCheckTick < EXIT_CHECK_INTERVAL)
+		return;
+	m_dwExitCheckTick = dwNow;
+	const AutoLoginExitOpt& opt = m_ExitOpt;
+	if (!opt.bLost && !opt.bNoExp && !opt.bHung && !opt.bStay)
+		return;
+
+	for (int i = 0; i < (int)m_Accounts.size(); i++)
+	{
+		AutoLoginAccount& acc = m_Accounts[i];
+		GameWindow* pGameWin = NULL;
+		DWORD dwPID = GetAccountGame(i, &pGameWin);
+		BOOL bSkip = dwPID == 0 || (m_Job.nId && m_Job.nId == acc.nId);	// Đang đăng nhập: Auto Login tự xử lý
+		for (int j = 0; dwPID && j < (int)m_Closing.size(); j++)
+			bSkip |= m_Closing[j].dwPID == dwPID;
+		if (bSkip || dwPID != acc.dwExitPID)
+			acc.ResetExitTrack(dwPID);
+		if (bSkip)
+			continue;
+		HANDLE hGame = OpenProcess(PROCESS_VM_READ, FALSE, dwPID);
+		if (hGame == NULL)
+			continue;
+
+		// Treo: cửa sổ Game không xử lý message
+		HWND hWnd = pGameWin ? pGameWin->m_hWnd : FindGameWnd(dwPID);
+		if (hWnd && IsHungAppWindow(hWnd))
+		{
+			if (!acc.dwHungTick)
+				acc.dwHungTick = dwNow;
+		}
+		else
+			acc.dwHungTick = 0;
+
+		// Kết nối: đang trong thế giới game và server còn đồng bộ nhân vật
+		BOOL bConnected = FALSE;
+		if (ReadGameDword(hGame, LG_SMC_BASE_ADD) && pGameWin && pGameWin->m_bLoadDone && pGameWin->m_dwLoginTick)
+		{
+			DWORD dwNpc = ReadGameDword(hGame, NPC_BASE_ADD) + pGameWin->m_nPlayerIndex * NPC_DATA_SIZE;
+			DWORD dwID = ReadGameDword(hGame, dwNpc + offsetof(KNpc, m_dwID));
+			int nSync = (int)ReadGameDword(hGame, dwNpc + offsetof(KNpc, m_SyncSignal));
+			DWORD dwWorld = ReadGameDword(hGame, WLD_BASE_ADD);
+			int nTime = dwWorld ? (int)ReadGameDword(hGame, dwWorld + WLD_TIME_OFFSET) : 0;
+			bConnected = dwID && nSync && dwWorld && (nTime - nSync) / 18 < NET_LOST_SEC;
+		}
+		if (bConnected)
+		{
+			acc.bWasInGame = TRUE;
+			acc.dwLostTick = 0;
+		}
+		else if (acc.bWasInGame && !acc.dwLostTick)
+			acc.dwLostTick = dwNow;
+
+		// Kinh nghiệm / vị trí: chỉ đếm khi đang kết nối
+		if (bConnected)
+		{
+			__int64 nExp = 0;
+			DWORD dwPlayer = ReadGameDword(hGame, PLR_BASE_ADD);
+			if (dwPlayer && ReadProcessMemory(hGame, (LPCVOID)(UINT_PTR)(dwPlayer + PLAYER_OFFSET + PLR_EXP_OFFSET), &nExp, sizeof(nExp), NULL)
+				&& (!acc.dwExpTick || nExp != acc.nExpLast))
+			{
+				acc.nExpLast = nExp;
+				acc.dwExpTick = dwNow;
+			}
+
+			if (!opt.bStayFight && pGameWin->m_FightMode)
+				acc.dwStayTick = 0;
+			else
+			{
+				__int64 dx = pGameWin->m_nOffX - acc.nStayX, dy = pGameWin->m_nOffY - acc.nStayY;
+				if (!acc.dwStayTick || pGameWin->m_nMapID != acc.nStayMap || dx * dx + dy * dy > (__int64)opt.nStayDist * opt.nStayDist)
+				{
+					acc.nStayMap = pGameWin->m_nMapID;
+					acc.nStayX = pGameWin->m_nOffX;
+					acc.nStayY = pGameWin->m_nOffY;
+					acc.dwStayTick = dwNow;
+				}
+			}
+		}
+		else
+			acc.dwExpTick = acc.dwStayTick = 0;
+		CloseHandle(hGame);
+
+		CString strReason;
+		if (opt.bHung && acc.dwHungTick && dwNow - acc.dwHungTick >= (DWORD)opt.nHungSec * 1000)
+			strReason.Format(_T("game treo %d giây"), opt.nHungSec);
+		else if (opt.bLost && acc.dwLostTick && dwNow - acc.dwLostTick >= (DWORD)opt.nLostMin * 60000)
+			strReason.Format(_T("mất kết nối %d phút"), opt.nLostMin);
+		else if (opt.bNoExp && acc.dwExpTick && dwNow - acc.dwExpTick >= (DWORD)opt.nNoExpMin * 60000)
+			strReason.Format(_T("không tăng kinh nghiệm %d phút"), opt.nNoExpMin);
+		else if (opt.bStay && acc.dwStayTick && dwNow - acc.dwStayTick >= (DWORD)opt.nStayMin * 60000)
+			strReason.Format(_T("quanh quẩn 1 điểm %d phút"), opt.nStayMin);
+		if (strReason.IsEmpty())
+			continue;
+
+		acc.strError = _T("Đã thoát game: ") + strReason;
+		LoginLog(_T("%s: %s"), (LPCTSTR)acc.strAccount, (LPCTSTR)acc.strError);
+		acc.ResetExitTrack(dwPID);
+		CloseGames(std::vector<DWORD>(1, dwPID));
+	}
 }
 
 // Ghi nhớ nhân vật đang vào game của mỗi tài khoản (file cfg giữ số tiền để bảng Thống kê hiện khi offline)
@@ -1798,11 +2075,24 @@ enum STATS_COLUMN
 	sc_death,
 };
 
-// 12345678 -> "12.345.678"
+// Tên bản đồ theo MapNames.ini (giống tab Cơ bản)
+static CString GetMapName(int nMapID)
+{
+	TCHAR szMapID[12], szInfo[64], szMapNameFile[MAX_PATH];
+	_stprintf(szMapID, _T("%d"), nMapID);
+	_stprintf(szMapNameFile, _T("%s\\Maps\\MapNames.ini"), g_szAppFolder);
+	GetPrivateProfileString(_T("Map_Name"), szMapID, _T("<Unknown_Map>"), szInfo, 64, szMapNameFile);
+	char szTCNV3Str[64];
+	WideCharToMultiByte(CP_ACP, 0, szInfo, -1, szTCNV3Str, 64, 0, 0);
+	TCVN3ToUnicode(szTCNV3Str, szInfo, 63);
+	return szInfo;
+}
+
+// Đơn vị vạn (1 vạn = 10.000 lượng): 123456789 -> "12.345 vạn"
 static CString FormatMoney(__int64 nMoney)
 {
 	CString strDigits;
-	strDigits.Format(_T("%I64d"), nMoney < 0 ? -nMoney : nMoney);
+	strDigits.Format(_T("%I64d"), (nMoney < 0 ? -nMoney : nMoney) / 10000);
 	CString strText;
 	for (int i = 0; i < strDigits.GetLength(); i++)
 	{
@@ -1810,7 +2100,8 @@ static CString FormatMoney(__int64 nMoney)
 			strText += _T('.');
 		strText += strDigits[i];
 	}
-	return nMoney < 0 ? _T("-") + strText : strText;
+	strText += _T(" vạn");
+	return nMoney <= -10000 ? _T("-") + strText : strText;
 }
 
 // Các control dời theo kích thước cửa sổ (m_rcInit cùng thứ tự)
@@ -1823,6 +2114,19 @@ static const UINT s_StatsCtrls[] =
 	IDC_LOGIN_STATS_TONG_BUTTON,
 	IDC_LOGIN_STATS_TONG_STATIC,	// Dời xuống + giãn ngang
 	IDC_LOGIN_STATS_STATIC,
+	IDC_LOGIN_EXIT_GROUP,			// Dời xuống
+	IDC_LOGIN_EXIT_LOST_CHECK,
+	IDC_LOGIN_EXIT_LOST_EDIT,
+	IDC_LOGIN_EXIT_NOEXP_CHECK,
+	IDC_LOGIN_EXIT_NOEXP_EDIT,
+	IDC_LOGIN_EXIT_HUNG_CHECK,
+	IDC_LOGIN_EXIT_HUNG_EDIT,
+	IDC_LOGIN_EXIT_STAY_CHECK,
+	IDC_LOGIN_EXIT_STAY_EDIT,
+	IDC_LOGIN_EXIT_DIST_STATIC,
+	IDC_LOGIN_EXIT_DIST_EDIT,
+	IDC_LOGIN_EXIT_FIGHT_CHECK,
+	IDC_LOGIN_EXIT_NOTE_STATIC,
 };
 
 BEGIN_MESSAGE_MAP(CDlgLoginStats, CDialog)
@@ -1832,6 +2136,8 @@ BEGIN_MESSAGE_MAP(CDlgLoginStats, CDialog)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LOGIN_STATS_LIST, &CDlgLoginStats::OnStatsItemChanged)
 	ON_EN_KILLFOCUS(IDC_LOGIN_STATS_KEEP_EDIT, &CDlgLoginStats::OnKeepMoneyChanged)
 	ON_BN_CLICKED(IDC_LOGIN_STATS_TONG_BUTTON, &CDlgLoginStats::OnBnClickedTongMoney)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_LOGIN_EXIT_LOST_CHECK, IDC_LOGIN_EXIT_FIGHT_CHECK, &CDlgLoginStats::OnExitOptionChanged)
+	ON_CONTROL_RANGE(EN_KILLFOCUS, IDC_LOGIN_EXIT_LOST_CHECK, IDC_LOGIN_EXIT_FIGHT_CHECK, &CDlgLoginStats::OnExitOptionChanged)
 END_MESSAGE_MAP()
 
 void CDlgLoginStats::DoDataExchange(CDataExchange* pDX)
@@ -1848,7 +2154,7 @@ BOOL CDlgLoginStats::OnInitDialog()
 	m_StatsList.InsertColumn(sc_index, _T("#"), LVCFMT_LEFT, 42);
 	m_StatsList.InsertColumn(sc_account, _T("Tài khoản"), LVCFMT_LEFT, 95);
 	m_StatsList.InsertColumn(sc_player, _T("Nhân vật"), LVCFMT_LEFT, 110);
-	m_StatsList.InsertColumn(sc_status, _T("Trạng thái"), LVCFMT_LEFT, 80);
+	m_StatsList.InsertColumn(sc_status, _T("Trạng thái"), LVCFMT_LEFT, 170);
 	m_StatsList.InsertColumn(sc_money, _T("Tổng tiền"), LVCFMT_RIGHT, 100);
 	m_StatsList.InsertColumn(sc_earned, _T("Kiếm được"), LVCFMT_RIGHT, 90);
 	m_StatsList.InsertColumn(sc_tong, _T("Đã gom"), LVCFMT_RIGHT, 90);
@@ -1859,8 +2165,17 @@ BOOL CDlgLoginStats::OnInitDialog()
 
 	SetDlgItemText(IDC_LOGIN_STATS_STATIC, _T("Cập nhật mỗi 2 giây. Tổng tiền = tiền trên người + rương (offline: số tiền lưu lần cuối). ")
 		_T("Kiếm được (đã cộng tiền đã gom), Đã gom, TB / giờ, Thổ Địa Phù, Chết: tính từ lúc vào game lần này (Thổ Địa Phù chỉ đếm lần Auto dùng).\n")
-		_T("Gom tiền: check các nhân vật (check dòng TỔNG = chọn tất cả) rồi bấm nút. Chỉ góp tiền trên người, nhân vật phải online và đã gắn Auto; đang ở ngoài thành thì dùng Thổ Địa Phù về thành rồi mới góp."));
+		_T("Gom tiền: check các nhân vật (check dòng TỔNG = chọn tất cả) rồi bấm nút. Góp cả tiền trên người lẫn trong rương (tiền trên người không đủ thì rút thêm từ rương, không cần mở rương), nhân vật phải online và đã gắn Auto; đang ở ngoài thành thì dùng Thổ Địa Phù về thành rồi mới góp."));
 	SetDlgItemInt(IDC_LOGIN_STATS_KEEP_EDIT, m_pAutoLogin->m_nTongKeep, FALSE);
+	AutoLoginExitOpt& opt = m_pAutoLogin->m_ExitOpt;
+	for (int i = 0; i < _countof(s_ExitOpts); i++)
+	{
+		if (s_ExitOpts[i].nCheck)
+			CheckDlgButton(s_ExitOpts[i].nCheck, ExitOptField(opt, s_ExitOpts[i].nOn) ? BST_CHECKED : BST_UNCHECKED);
+		if (s_ExitOpts[i].nEdit)
+			SetDlgItemInt(s_ExitOpts[i].nEdit, ExitOptField(opt, s_ExitOpts[i].nVal), FALSE);
+	}
+	OnExitOptionChanged(0);
 
 	CRect rcClient;
 	GetClientRect(&rcClient);
@@ -1982,7 +2297,11 @@ void CDlgLoginStats::UpdateStats()
 			strName = szName;
 		}
 		SetCell(i, sc_player, strName);
-		SetCell(i, sc_status, bOnline ? _T("Online") : _T("Offline"));
+		if (bOnline)	// Tọa độ + tên map, vd "192,200 - Lưỡng Thủy Động"
+			strText.Format(_T("%d,%d - %s"), pGameWin->m_nOffX >> 8, pGameWin->m_nOffY >> 9, (LPCTSTR)GetMapName(pGameWin->m_nMapID));
+		else
+			strText = _T("Offline");
+		SetCell(i, sc_status, strText);
 
 		CString strMoney, strEarned, strTong, strPerHour, strTime, strAmulet, strDeath;
 		if (bOnline)
@@ -2080,6 +2399,37 @@ void CDlgLoginStats::OnStatsItemChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	UpdateStats();
 }
 
+// Đổi ô trong nhóm Cài đặt thoát: lấy giá trị (số không hợp lệ thì trả lại giá trị cũ), lưu file
+void CDlgLoginStats::OnExitOptionChanged(UINT nID)
+{
+	AutoLoginExitOpt& opt = m_pAutoLogin->m_ExitOpt;
+	AutoLoginExitOpt old = opt;
+	for (int i = 0; i < _countof(s_ExitOpts); i++)
+	{
+		const EXIT_OPT_CTRL& ctrl = s_ExitOpts[i];
+		if (ctrl.nCheck)
+			ExitOptField(opt, ctrl.nOn) = IsDlgButtonChecked(ctrl.nCheck) == BST_CHECKED;
+		if (ctrl.nEdit)
+		{
+			BOOL bOK = FALSE;
+			int nValue = (int)GetDlgItemInt(ctrl.nEdit, &bOK, FALSE);
+			if (bOK && nValue >= ctrl.nMinVal)
+				ExitOptField(opt, ctrl.nVal) = nValue;
+			else if (GetFocus() != GetDlgItem(ctrl.nEdit))
+				SetDlgItemInt(ctrl.nEdit, ExitOptField(opt, ctrl.nVal), FALSE);
+		}
+	}
+	GetDlgItem(IDC_LOGIN_EXIT_LOST_EDIT)->EnableWindow(opt.bLost);
+	GetDlgItem(IDC_LOGIN_EXIT_NOEXP_EDIT)->EnableWindow(opt.bNoExp);
+	GetDlgItem(IDC_LOGIN_EXIT_HUNG_EDIT)->EnableWindow(opt.bHung);
+	GetDlgItem(IDC_LOGIN_EXIT_STAY_EDIT)->EnableWindow(opt.bStay);
+	GetDlgItem(IDC_LOGIN_EXIT_DIST_STATIC)->EnableWindow(opt.bStay);
+	GetDlgItem(IDC_LOGIN_EXIT_DIST_EDIT)->EnableWindow(opt.bStay);
+	GetDlgItem(IDC_LOGIN_EXIT_FIGHT_CHECK)->EnableWindow(opt.bStay);
+	if (nID && memcmp(&old, &opt, sizeof(opt)) != 0)
+		m_pAutoLogin->SaveAccounts();
+}
+
 void CDlgLoginStats::OnKeepMoneyChanged()
 {
 	BOOL bOK = FALSE;
@@ -2096,7 +2446,7 @@ void CDlgLoginStats::OnKeepMoneyChanged()
 	}
 }
 
-// Góp tiền trên người của các nhân vật được check vào quỹ bang, mỗi nhân vật giữ lại m_nTongKeep vạn (tính cả rương)
+// Góp tiền (trên người + rương) của các nhân vật được check vào quỹ bang, mỗi nhân vật giữ lại m_nTongKeep vạn
 void CDlgLoginStats::OnBnClickedTongMoney()
 {
 	OnKeepMoneyChanged();
@@ -2111,7 +2461,7 @@ void CDlgLoginStats::OnBnClickedTongMoney()
 	}
 	__int64 nKeep = (__int64)m_pAutoLogin->m_nTongKeep * 10000;
 	CString strText;
-	strText.Format(_T("Góp tiền trên người của %d nhân vật đã check vào quỹ bang?\nMỗi nhân vật giữ lại %s lượng (tính cả tiền trong rương).\nNhân vật ở ngoài thành sẽ dùng Thổ Địa Phù về thành trước."),
+	strText.Format(_T("Góp tiền (trên người + rương) của %d nhân vật đã check vào quỹ bang?\nMỗi nhân vật giữ lại %s (tính cả tiền trong rương).\nNhân vật ở ngoài thành sẽ dùng Thổ Địa Phù về thành trước; tiền trên người không đủ thì rút thêm từ rương."),
 		nChecked, (LPCTSTR)FormatMoney(nKeep));
 	if (MessageBox(strText, _T("Gom tiền lên bang"), MB_YESNO | MB_ICONQUESTION) != IDYES)
 		return;
@@ -2148,7 +2498,7 @@ void CDlgLoginStats::OnBnClickedTongMoney()
 		nSent += nMoney;
 		nSentCount++;
 	}
-	strText.Format(_T("[%s] Đã gửi lệnh góp %s lượng (%d nhân vật)"), (LPCTSTR)CTime::GetCurrentTime().Format(_T("%H:%M:%S")),
+	strText.Format(_T("[%s] Đã gửi lệnh góp %s (%d nhân vật)"), (LPCTSTR)CTime::GetCurrentTime().Format(_T("%H:%M:%S")),
 		(LPCTSTR)FormatMoney(nSent), nSentCount);
 	if (!strSkip.IsEmpty())
 		strText += _T(". Bỏ qua: ") + strSkip;

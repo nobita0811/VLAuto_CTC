@@ -1,9 +1,10 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include "VLDebug.h"
 
 SHORT __stdcall _VLGetKeyState(int nVirKey)
 {
@@ -20,6 +21,14 @@ struct __MapLagNpc
 	int nX, nY;
 } MapLagNpc[MAX_MAPLAG_NPC] = { {124,51808,104064} };
 
+// Boss xanh: game to ten quai mau xanh khi GetGoldType (0x6D4600) = m_nGoldType + 1 (can ca IsGold va IsGolding)
+// tu 1 toi [GOLD_BLUE_MAX_ADD]; lon hon = boss vang (xem KNpc ve ten 0x5FDD6C)
+static BOOL IsBlueBoss(KNpc *pNpc)
+{
+	if (!pNpc->m_cGold.m_nIsGold || !pNpc->m_cGold.m_nIsGolding) return FALSE;
+	return pNpc->m_cGold.m_nGoldType + 1 <= *(int*)GOLD_BLUE_MAX_ADD;
+}
+
 //================================KAliveNpc================================
 void KAliveNpc::RefreshNpcs()
 {
@@ -29,6 +38,9 @@ void KAliveNpc::RefreshNpcs()
 	{
 		if (!g_pNpcArray[i]->IsExist()) continue;
 		if (g_pNpcArray[i]->m_CurrentLife <= 0 || g_pNpcArray[i]->m_Kind != kind_normal) continue;
+		if (theAttack.m_bOnlyBlueBoss == TRUE && !IsBlueBoss(g_pNpcArray[i])) continue;	// Chi danh boss xanh
+		if (!DebugQuestTargetOK(g_pNpcArray[i]->Name)) continue;	// DEBUG > Nhiem vu > Buoc 4: chi danh quai nhiem vu
+		if (g_pNpcArray[i]->IsGhost()) continue;	// NPC "ma": game ra skill vao cho trong (xem KNpc::IsGhost)
 		KLagNpc lagNpc(g_pNpcArray[i]->m_dwID, g_pNpcArray[i]->m_CurrentLife);
 		if (lagNpc == theAttack.m_BadNpc[0] || lagNpc == theAttack.m_BadNpc[1] || lagNpc == theAttack.m_BadNpc[2]) continue;
 		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
@@ -66,6 +78,20 @@ void KAliveNpc::RefreshNpcs()
 
 //================================Class CVLAttack================================
 
+// Tam danh khi bat "Ap sat" (0 = khong ap sat). Nho hon 75 (vd 70) thi lay 75 - giong SetAutoHit.
+// Truoc day SetActiveSkill doi tam < 75 thanh 1000 => ap sat 70 lai thanh danh tu 1000 (ra skill khi quai con xa 400+)
+static int HitCloseRange(CVLAttack *p)
+{
+	BOOL bClose;
+	int nRange;
+	if (p->m_nEnemyIdx && p->m_bDefHitClose)
+		bClose = TRUE, nRange = p->m_nDefSkillRange;
+	else
+		bClose = p->m_bHitClose, nRange = p->m_nSkillRange;
+	if (!bClose) return 0;
+	return (nRange < 75) ? 75 : nRange;
+}
+
 CVLAttack::CVLAttack(void)
 {
 	m_LastNpcID = 0;
@@ -82,12 +108,35 @@ void CVLAttack::Breathe()
 
 	if (g_NetworkOffline) return;
 
+	DebugAttackWatch();	// Cua so DEBUG > Chien dau: Kiem tra doi tuong dang danh
 	HandleDirectSkills();
 	HandleInDirectSkills();
+	// Tab Di chuyen dang tim duong toi bai train / dang tu di MapPath: chi buff (o tren), chua tu ve / tim quai.
+	// Bo quai dang nham (neu khong PathTravelBreathe cho "danh quai doc duong" ma khong ai danh -> dung im)
+	BOOL bFindingTrain = (theMove.m_bGoTrain || PathTravelActive()) && P_PLAYER->m_FightMode;
+	if (bFindingTrain && m_nEnemyIdx) { SetPeopleIdx(0); m_nEnemyIdx = 0; }
+	// Dang tim duong toi bai train (GoTrain / MapPath / RouteFinding cach cu): bo ca quai muc tieu con sot tu truoc
+	// (PEOPLE_IDX van tro quai => game KNpcAI::FollowAttack tu chay theo danh quai doc duong, bo lo trinh).
+	// Chi bo quai (kind_normal) - xa phu / NPC hoi thoai (kind_dialoger) MapPath can PEOPLE_IDX de mo menu
+	if (bFindingTrain || (theMove.m_bFindingWay && P_PLAYER->m_FightMode))
+	{
+		int nPeople = PEOPLE_IDX;
+		if (nPeople > 0 && nPeople < MAX_NPC && g_pNpcArray[nPeople]->m_Kind == kind_normal)
+		{
+			SetPeopleIdx(0);
+			m_LastNpcID = 0;
+		}
+	}
 	if (m_bDoingSkill || m_bDoingSkillEx || theRecover.m_bDoingBuff || theMain.m_bPause) return;
+	if (bFindingTrain) return;
 
 	// ActiveSkill Adjustment
-	if (P_PLAYER->m_CurrentAttackRadius < 75)
+	// Ap sat: ep tam danh moi nhip - game tu dat lai m_CurrentAttackRadius theo tam skill (doi skill, dong bo...)
+	// ma truoc day chi SetActiveSkill (luc doi muc tieu) moi dat lai => game ra skill tu xa
+	int nCloseRange = HitCloseRange(this);
+	if (nCloseRange)
+		P_PLAYER->m_CurrentAttackRadius = nCloseRange;
+	else if (P_PLAYER->m_CurrentAttackRadius < 75)
 		P_PLAYER->m_CurrentAttackRadius = 1000;
 
 	AutoDefence();
@@ -220,12 +269,12 @@ void CVLAttack::SetPeopleIdx(int nIndex)
 void CVLAttack::SetAutoHit()
 {
 	if (m_bAutoHit)
-		SystemMessage("<color=yellow>Tù ®¸nh qu¸i (Ctrl+A): <color=green>BËt", 1);
+		SystemMessage(TV(L"<color=yellow>Tá»± Ä‘Ã¡nh quÃ¡i (Ctrl+A): <color=green>Báº­t"), 1);
 	else
 	{
 		SetPeopleIdx(0);
 		m_LastNpcID = 0;
-		SystemMessage("<color=yellow>Tù ®¸nh qu¸i (Ctrl+A): <color>T¾t", 1);
+		SystemMessage(TV(L"<color=yellow>Tá»± Ä‘Ã¡nh quÃ¡i (Ctrl+A): <color>Táº¯t"), 1);
 	}
 
 	if (m_nSkillRange < 75)
@@ -258,15 +307,14 @@ void CVLAttack::SetDefSkills(int nLeftID, int nRightID)
 void CVLAttack::SetActiveSkill(int nSkillId)
 {
 	P_PLAYER->m_ActiveSkillID = nSkillId;
-	int nSkillRange = P_PLAYER->m_CurrentAttackRadius;
+	int nSkillRange = HitCloseRange(this);
 
-	if (m_nEnemyIdx && m_bDefHitClose)
-		nSkillRange = m_nDefSkillRange;
-	else if (m_bHitClose)
-		nSkillRange = m_nSkillRange;
-
-	if (nSkillRange < 75)
-		nSkillRange = 1000;
+	if (!nSkillRange)
+	{
+		nSkillRange = P_PLAYER->m_CurrentAttackRadius;
+		if (nSkillRange < 75)
+			nSkillRange = 1000;
+	}
 
 	P_PLAYER->m_CurrentAttackRadius = nSkillRange;
 }
@@ -473,9 +521,43 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 		SetPeopleIdx(0);
 		return TRUE;
 	}
+	// NPC "ma": region game dang giu da nap lai cho vung khac => game (FollowAttack) thay quai "trong tam"
+	// va ra skill vao cho trong, quai khong mat mau nhung phai doi het nLagAttCheck. Bo ngay.
+	if (pNpc->IsGhost())
+	{
+		SetPeopleIdx(0);
+		m_LastNpcLife = 0;
+		dwLastNpcID = 0;
+		nLagCount = 0;
+		return TRUE;
+	}
+	// Quai da chet (Life <= 0 / dang nam xac / hoi sinh) bo ngay.
+	// Truoc day Life == 0 lot vao nhanh "quai dang mat mau" roi "chua mat mau" => giu muc tieu
+	// toi het nLagAttCheck => game van ra skill vao xac / cho trong.
+	if (pNpc->m_CurrentLife <= 0 || pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive)
+	{
+		SetPeopleIdx(0);
+		m_LastNpcLife = 0;
+		dwLastNpcID = 0;
+		nLagCount = 0;
+		return TRUE;
+	}
 	if (m_bAvoidBoss && pNpc->m_cGold.m_nGoldType == 16)
 	{
 		SetPeopleIdx(0);
+		return TRUE;
+	}
+	if (m_bOnlyBlueBoss == TRUE && !IsBlueBoss(pNpc))
+	{	// Chi danh boss xanh: bo muc tieu khac (vd quai dang danh truoc khi bat)
+		SetPeopleIdx(0);
+		return TRUE;
+	}
+	if (!DebugQuestTargetOK(pNpc->Name))
+	{	// DEBUG > Nhiem vu > Buoc 4: bo quai khong phai quai nhiem vu (vd dang danh truoc khi bat Buoc 4)
+		SetPeopleIdx(0);
+		m_LastNpcLife = 0;
+		dwLastNpcID = 0;
+		nLagCount = 0;
 		return TRUE;
 	}
 	if (pNpc->m_cGold.m_nIsGold || pNpc->m_cGold.m_nIsGolding)
@@ -521,12 +603,6 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 				if (m_BadNpc[i].IsNull())
 				{
 					m_BadNpc[i].SetValue(pNpc->m_dwID, pNpc->m_CurrentLife);
-					if (theMain.m_bAutoChat)
-					{
-						char szChat[16];
-						sprintf(szChat, "SayPhrase(%d)", nIndex % 10);
-						ExecuteScript(szChat);
-					}
 					break;
 				}
 			}
@@ -627,21 +703,29 @@ void CVLAttack::AutoDefence()
 		theQuest.m_TongPKOpt.m_bKillOther)
 		nDefenceMode = 5;
 
-	if (!P_PLAYER->m_FightMode || !nDefenceMode) return;
-	if (P_PLAYER->m_CurrentCamp == camp_begin) return;
+	// Tat tu ve / ve thanh / tan thu: nha ke thu dang giu - neu khong m_nEnemyIdx ket lai,
+	// Breathe "if (m_nEnemyIdx) return" => khong danh quai nua, dung im ke ca khi chuyen lai "Bo qua"
+	if (!P_PLAYER->m_FightMode || !nDefenceMode || P_PLAYER->m_CurrentCamp == camp_begin)
+	{
+		ReleaseEnemy();
+		return;
+	}
 
 	//Search for Enemies
 	int nEnemyIdx[3] = { 0, 0, 0 };
 	int nEnemyIndex = 0;
 	int nMaxConquer = -1;
 
-	int nNpcX, nNpcY, nPlayerX, nPlayerY, dZ, nRelation;
+	int nNpcX, nNpcY, nPlayerX, nPlayerY, dZ, nRelation, nEnemyRelation = relation_none;
+	int nSelfIdx = g_pCurPlayer->m_nIndex;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 
 	for (int i = 1; i < MAX_NPC; i++)
 	{
+		if (i == nSelfIdx) continue;	// Chinh minh (PK do sat + phe tu do => tu chon minh lam ke thu => dung im)
 		if (!g_pNpcArray[i]->IsExist()) continue;
 		if (g_pNpcArray[i]->m_CurrentLife <= 0 || g_pNpcArray[i]->m_Kind != kind_player) continue;
+		if (g_pNpcArray[i]->IsGhost()) continue;
 		if (g_pNpcArray[i]->m_CurrentCamp == camp_begin) continue;
 		if (nDefenceMode == 5 && !strcmp(g_pNpcArray[i]->Name, theQuest.m_TongPKOpt.m_szVictimName))
 		{
@@ -682,6 +766,11 @@ void CVLAttack::AutoDefence()
 				theRecover.OnUseAM();
 				return;
 			}
+			if (nDefenceMode == 3)
+			{	// Thoat game: giet tien trinh ngay, khong cho Exit() / dem nguoc cua game
+				TerminateProcess(GetCurrentProcess(), 0);
+				return;
+			}
 			int nConquer = theMain.GetConquerVal(P_PLAYER->m_Series, g_pNpcArray[i]->m_Series);
 			if (!nEnemyIdx[0])
 			{
@@ -690,6 +779,7 @@ void CVLAttack::AutoDefence()
 				{
 					nMaxConquer = nConquer;
 					nEnemyIndex = i;
+					nEnemyRelation = nRelation;
 				}
 			}
 			else if (!nEnemyIdx[1])
@@ -699,6 +789,7 @@ void CVLAttack::AutoDefence()
 				{
 					nMaxConquer = nConquer;
 					nEnemyIndex = i;
+					nEnemyRelation = nRelation;
 				}
 			}
 			else if (!nEnemyIdx[2])
@@ -708,6 +799,7 @@ void CVLAttack::AutoDefence()
 				{
 					nMaxConquer = nConquer;
 					nEnemyIndex = i;
+					nEnemyRelation = nRelation;
 				}
 				break;
 			}
@@ -732,19 +824,26 @@ void CVLAttack::AutoDefence()
 				ExecuteScript(SCK_SHORTCUT_HORSE);
 		}
 
-		if (!P_PLAYER->m_nPKFlag && nRelation == relation_none)
+		if (!P_PLAYER->m_nPKFlag && nEnemyRelation == relation_none)
 			ExecuteScript("Switch('PK',1)");
 	}
-	else if (m_nEnemyIdx)
-	{
-		SetDefSkills(m_SettingSkills[skill_left], 0);
-		m_nEnemyIdx = 0;
-	}
+	else
+		ReleaseEnemy();
+}
+
+// Bo ke thu dang giu: tra skill trai, xoa muc tieu PK de Breathe tu tim quai lai
+void CVLAttack::ReleaseEnemy()
+{
+	if (!m_nEnemyIdx) return;
+	if (PEOPLE_IDX == m_nEnemyIdx) SetPeopleIdx(0);
+	SetDefSkills(m_SettingSkills[skill_left], 0);
+	m_nEnemyIdx = 0;
+	m_bSkillChanged = TRUE;
 }
 
 void CVLAttack::ProcessAttack()
 {
-#ifndef VLTK_FREE_MODE
+
 	if (!P_PLAYER->m_FightMode || PEOPLE_IDX != 0)
 		return;
 
@@ -782,33 +881,15 @@ void CVLAttack::ProcessAttack()
 		int nY = (nEnemyY - nPlayerY) / 2 + 280;
 		SendVLCmdSkill(g_pCurPlayer->m_nLeftSkillID, nX, nY);
 	}
-#endif
+
 }
 
 int CVLAttack::GetCurTargetIdx()
 {
-#ifndef VLTK_FREE_MODE
-	if (PEOPLE_IDX)
-		return PEOPLE_IDX;
-	return m_nPeopleIdx;
-#else
 	return PEOPLE_IDX;
-#endif
 }
 
 void CVLAttack::SendVLCmdSkill(int nSkillId, int nX, int nY)
 {
-#ifndef VLTK_FREE_MODE
-	KAutoLua::SenCmdSkill(nSkillId, nX, nY);
-	//KUiSkillData* pShortcutSkills = (KUiSkillData*)0x00612B20;
-	//KUiSkillData oldSkill = pShortcutSkills[8];
-	//pShortcutSkills[8].uGenre = SKILL_SHORTCUT;
-	//pShortcutSkills[8].uId = nSkillId;
-	//pShortcutSkills[8].DataX = 1;
-
-	//_SendMessage(theMain.m_hWndGame, WM_MOUSEMOVE, 0, MAKELPARAM((WORD)nX, (WORD)nY));
-	//_SendMessage(theMain.m_hWndGame, WM_KEYDOWN, VK_F10, 0x00440001);
-#else
 	::SendClientCmdSkill(nSkillId, nX, nY);
-#endif
 }

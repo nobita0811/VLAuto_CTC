@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MyListCtrl.h"
+#include "DlgSettingSkill.h"
 
 // CDlgAttack dialog
 
@@ -11,7 +11,6 @@ class CDlgAttack : public CDialog
 public:
 	CDlgAttack(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgAttack();
-	void				UpdateSkillList(BOOL bSave);
 
 // Dialog Data
 	enum { IDD = IDD_ATTACK_DIALOG };
@@ -24,11 +23,10 @@ protected:
 	virtual void		OnCancel() {}
 	afx_msg void		OnButtonsClicked(UINT nID);
 	afx_msg void		OnCbnSelchanged(UINT nID);
-	afx_msg LRESULT		OnSetTextSkillList(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 
 public:
 	CToolTipCtrl		m_ToolTip;
-	CMyListCtrl			m_SkillList;
+	CDlgSettingSkill	m_dlgSkill;			// Cua so Cai dat skill (modal)
 };

@@ -14,7 +14,7 @@
 // Khoi tien o cuoi file cfg nhan vat
 #define CFG_MONEY_TAG		0x594E4F4D	// 'MONY'
 #define STAT_START_DELAY	5000		// ms sau khi vao game moi lay tien ban dau (cho dong bo vat pham)
-#define TONG_MONEY_TIMEOUT	45000		// ms cho tien tren nguoi giam sau lenh gom tien len bang (gom phu ve thanh)
+#define TONG_MONEY_TIMEOUT	60000		// ms cho tien giam sau lenh gom tien len bang (phu ve thanh + rut tien ruong + gop)
 #define MONEY_SAVE_INTERVAL	30000		// ms: tien thay doi thi ghi vao cfg toi da moi 30s
 
 #pragma pack(push, 4)
@@ -466,13 +466,13 @@ void GameWindow::UpdateStats(DWinProcess& winProcess, int nDoing)
 	}
 }
 
-// Gom tien tren nguoi len quy bang, giu lai nKeep (tinh ca tien trong ruong).
+// Gom tien len quy bang (tien tren nguoi + ruong), giu lai nKeep. Phan tien tren nguoi khong du: VLHook rut tu ruong truoc khi gop.
 // Tra ve so tien da gui lenh gom, 0 = khong gom (chua vao game / dang cho lenh truoc / khong du tien), -1 = loi gui lenh
 int GameWindow::StoreTongMoney(__int64 nKeep)
 {
 	if (!m_hWnd || !m_bAttached || !m_bStatReady || m_nTongPending)
 		return 0;
-	__int64 nMoney = min(m_nEquipMoney, m_nMoney - nKeep);
+	__int64 nMoney = min(m_nMoney - nKeep, (__int64)INT_MAX);
 	if (nMoney <= 0)
 		return 0;
 	if (!::PostMessage(m_hWnd, WM_HOOK_MAIN, cmd_tongmoney, (LPARAM)nMoney))

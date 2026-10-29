@@ -108,7 +108,7 @@ BOOL CDlgMove::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_POINTY_EDIT), _T("Tọa độ đánh quanh điểm"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_POINTRANGE_EDIT), _T("Phạm vi đánh Quanh điểm và theo Tọa độ"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_ROUTEPOINT_CHECK), _T("Hành trình luyện công - Đánh quái theo tọa độ"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_MOVE_LIST_BUTTON), _T("Sửa danh sách tọa độ Hành trình"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_MOVE_LIST_BUTTON), _T("Sửa danh sách tọa độ Hành trình (số TĐ luyện công / số TĐ đi đến nơi luyện công)"));
 	}
 
 	return FALSE;
@@ -183,11 +183,15 @@ void CDlgMove::UpdateNearByPlayers(BOOL bSave)
 
 void CDlgMove::UpdatePointsList()
 {
-	int nCount = 0;
+	int nCount = 0, nGoCount = 0;
 	for (int i = 0; i < MAX_NODES; i++)
+	{
 		if (g_pCurGameWin->m_prMove.m_Nodes[i].x && g_pCurGameWin->m_prMove.m_Nodes[i].y)
 			nCount++;
+		if (g_pCurGameWin->m_prMove.m_GoNodes[i].x && g_pCurGameWin->m_prMove.m_GoNodes[i].y)
+			nGoCount++;
+	}
 	CString szText;
-	szText.Format(_T("Danh sách tọa độ (%d)"), nCount);
+	szText.Format(_T("Danh sách tọa độ (%d/%d)"), nCount, nGoCount);
 	SetDlgItemText(IDC_MOVE_LIST_BUTTON, szText);
 }

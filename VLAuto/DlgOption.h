@@ -20,7 +20,6 @@ protected:
 
 public:
 	BOOL			m_bSilentMode;
-	BOOL			m_bAutoChat;
 	BOOL			m_bPrintScreen;
 	BOOL			m_bAttackBossFirst;
 	CString			m_szControlPass;

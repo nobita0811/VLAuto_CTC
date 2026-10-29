@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -8,8 +8,8 @@
 
 // Tab Hoi phuc cua cua so DEBUG: cac ham game dung trong VLRecover.cpp (an thuoc, sua do, ve thanh, buff Nga Mi, X2)
 
-#define SDT_NAME	"S\xAD \xAE\xE5 thi\xD5p"	// "Su do thiep" (TCVN3) - giong VLRecover.cpp
-#define VAN_NAME	"v\xB9n"					// "van" trong gia sua do
+#define SDT_NAME	TV(L"Sư đồ thiếp")	// "Su do thiep" (TCVN3) - giong VLRecover.cpp
+#define VAN_NAME	TV(L"vạn")					// "van" trong gia sua do
 
 static const char* s_szMedicine[medicine_detailnum] = { "mau", "mana", "ca hai", "the luc", "giai doc" };
 static const char* s_szFullRoom[] = { "do 2 o (2x1 + 1x2)", "do 3 o (1x3)", "do 4 o (2x2)", "do 6 o (2x3)" };

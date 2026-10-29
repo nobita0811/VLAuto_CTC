@@ -65,6 +65,12 @@
     <ClCompile Include="VLDebugCollect.cpp">
       <Filter>Source Files\VLClasses</Filter>
     </ClCompile>
+    <ClCompile Include="VLDebugQuest.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="VLDebugFile.cpp">
+      <Filter>Source Files\VLClasses</Filter>
+    </ClCompile>
     <ClCompile Include="VLDebugAttack.cpp">
       <Filter>Source Files\VLClasses</Filter>
     </ClCompile>
@@ -116,8 +122,14 @@
     <ClCompile Include="MagicAttrib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcvnText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\CrashHandler.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextFunc.cpp">
+      <Filter>Header Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,8 +166,14 @@
     <ClInclude Include="MagicAttrib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TcvnText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="VLDebug.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextFunc.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

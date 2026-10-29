@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "../GameDef.h"
 #include "DTextFile.h"
 #include "GameBase.h"
@@ -145,6 +145,7 @@ void CVLRecover::DoNgaMiBuff()
 void CVLRecover::CheckEquip()
 {
 	static int nRepairingItem = 0;
+	static int nCloseShop = 0;		// Da mo Ky Tran Cac (OnClickGShop) de sua do: sua xong thi tat
 	static int nTimerCount = 0;
 	nTimerCount++;
 
@@ -154,12 +155,12 @@ void CVLRecover::CheckEquip()
 		if (pMsgSel && pMsgSel->IsVisible() && pMsgSel->m_nNumMessage >= 4)
 		{
 			char *szMsg1 = (char*)pMsgSel->m_pMessages[1]->Msg;
-			if (strstr(szMsg1, FULL_REPAIR))	// Söa kü [%d v¹n%d l­îng]
+			if (strstr(szMsg1, FULL_REPAIR))	// SÃ¶a kÃ¼ [%d vÂ¹n%d lÂ­Ã®ng]
 			{
 				char *szPriceV = szMsg1 + strlen(FULL_REPAIR);
 				int nRepairPrice = atoi(szPriceV);
 
-				char *szPriceL = strstr(szPriceV, "v¹n");
+				char *szPriceL = strstr(szPriceV, TV(L"váº¡n"));
 				if (szPriceL)
 				{
 					szPriceL += 3;
@@ -169,20 +170,23 @@ void CVLRecover::CheckEquip()
 				if (nRepairPrice <= EQUIP_MONEY)
 				{
 					pMsgSel->OnClickMsg(1);
-					SystemMessage("<color=yellow>Söa kü ®å Hoµng Kim");
+					SystemMessage(TV(L"<color=yellow>Sá»­a ká»¹ Ä‘á»“ HoÃ ng Kim"));
 				}
 				else
 				{
 					pMsgSel->OnClickMsg(3);
-					SystemMessage("<color=yellow>Kh«ng ®ñ tiÒn söa ®å");
+					SystemMessage(TV(L"<color=yellow>KhÃ´ng Ä‘á»§ tiá»n sá»­a Ä‘á»“"));
 				}
 				return;
 			}
 		}
+		if (nCloseShop && !nRepairingItem && --nCloseShop == 0)
+			CloseAllWindows(0);		// Sua do xong (0.5s sau RepairItem): tat cua so Ky Tran Cac
 		if (nRepairingItem)
 		{
 			g_pCurPlayer->RepairItem(nRepairingItem);
 			nRepairingItem = 0;
+			nCloseShop = 2;
 		}
 		return;
 	}
@@ -208,10 +212,10 @@ void CVLRecover::CheckEquip()
 					KUiPlayerBar *pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
 					pUiPlayerBar->OnClickGShop();
 					nRepairingItem = nEquipIndex;
-					sprintf(szMsg, "Tù söa ®å: <color=yellow><%s>", ComAttr.szItemName);
+					sprintf(szMsg, TV(L"Tá»± sá»­a Ä‘á»“: <color=yellow><%s>"), ComAttr.szItemName);
 				}
 				else
-					sprintf(szMsg, "<color=yellow>Kh«ng ®ñ tiÒn söa ®å");
+					sprintf(szMsg, TV(L"<color=yellow>KhÃ´ng Ä‘á»§ tiá»n sá»­a Ä‘á»“"));
 				SystemMessage(szMsg);
 			}
 		}
@@ -219,7 +223,8 @@ void CVLRecover::CheckEquip()
 		if (pItem->m_nCurDur < m_nAMByDurAmount)
 		{
 			char szMessage[128];
-			sprintf(szMessage, "Trang bŞ s¾p háng: <color=green><%s>", ComAttr.szItemName);
+			// Trang bá»‹ sáº¯p há»ng
+			sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Trang bá»‹ sáº¯p há»ng: <color=red><%s>"), ComAttr.szItemName); 
 			PostChatMessage(szMessage);
 			if (P_PLAYER->m_FightMode)
 			{
@@ -235,13 +240,18 @@ void CVLRecover::CheckEquip()
 
 void CVLRecover::CheckInventory()
 {
+	// Truoc day ca 2 kiem tra chi chay moi 600 nhip (~30s) => day ruong phai cho toi 30s moi ve thanh.
+	// Gio kiem tra moi 60 nhip (~3s).
 	static int nTimerCount = 0;
 	nTimerCount++;
-	if (nTimerCount % 600 != 340) return;
+	if (nTimerCount % 60 != 7) return;
 
 	//Check Money
 	if (m_bAMByMoney && EQUIP_MONEY > m_nAMByMoneyAmount * 10000)
 	{
+		char szMessage[128];
+		sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Tiá»n <color=red>%d váº¡n <color>  vá» thÃ nh cáº¥t tiá»n (!cy) "), EQUIP_MONEY/10000);
+		PostChatMessage(szMessage);
 		OnUseAM();
 		return;
 	}
@@ -268,7 +278,11 @@ void CVLRecover::CheckInventory()
 			break;
 		}
 		if (!bHaveRoom)
+		{			
+			PostChatMessage(TV(L"<color=green>VLCTCPro<color> : <color=red> HÃ nh trang Ä‘Ã£ Ä‘áº§y cáº§n vá» thÃ nh<color> (!cy)"));
 			OnUseAM();
+		}
+			
 	}
 }
 
@@ -278,7 +292,7 @@ void CVLRecover::CheckPKQuest()
 	{
 		OnUseAM();
 		if (!m_nAMBuffCount)
-			SystemMessage("<color=yellow>§¹t PK, vÒ thµnh tr¶ nhiÖm vô!");
+			SystemMessage(TV(L"<color=yellow>Äáº¡t PK, vá» thÃ nh tráº£ nhiá»‡m vá»¥!"));
 		m_nAMBuffCount++;
 	}
 }
@@ -305,7 +319,7 @@ void CVLRecover::OnUseAM(BOOL bUrgent)
 				dY = nDestY - nPlayerY;
 				KUiMiniMap *pMiniMap = (KUiMiniMap*)(MMP_BASE_ADD);
 				if (pMiniMap) pMiniMap->SetMapFlag(dX >> 4, dY >> 5);
-				SystemMessage("<color=yellow>Quay vÒ t©m ®¶o!!!");
+				SystemMessage(TV(L"<color=yellow>Quay vá» tÃ¢m Ä‘áº£o!!!"));
 			}
 		}
 		else if ((*g_pMapID) >= 387 && (*g_pMapID) <= 395)
@@ -323,9 +337,9 @@ void CVLRecover::OnUseAM(BOOL bUrgent)
 				}
 				else if (bUrgent)
 					//theMain.ExitGame(); // Sap chet ma het AM -> thoat game
-					SystemMessage("<color=yellow>HÕt Thæ ®Şa phï - kh«ng vÒ thµnh ®­îc!",1);
+					SystemMessage(TV(L"<color=yellow>Háº¿t Thá»• Ä‘á»‹a phÃ¹ - khÃ´ng vá» thÃ nh Ä‘Æ°á»£c!"),1);
 				else // Do hu / day ruong / nhieu tien ma het AM -> chi thong bao
-					SystemMessage("<color=yellow>HÕt Thæ ®Şa phï - kh«ng vÒ thµnh ®­îc!",1);
+					SystemMessage(TV(L"<color=yellow>Háº¿t Thá»• Ä‘á»‹a phÃ¹ - khÃ´ng vá» thÃ nh Ä‘Æ°á»£c!"),1);
 			}
 			else
 				theMain.PostFeedBack(cmd_useam);
@@ -353,7 +367,7 @@ void CVLRecover::OnUseSDT()
 		theUtil.m_bPausingEntrust = TRUE;
 		if (g_pCurPlayer->m_nEntrustMode)
 			nTimerCount = g_RunningTimer + 100; // wait for 5s
-		else if (g_pCurPlayer->UseItem("S­ ®å thiÕp"))
+		else if (g_pCurPlayer->UseItem(TV(L"SÆ° Ä‘á»“ thiáº¿p")))
 			nTimerCount = g_RunningTimer + 600; // wait for 30s
 		else
 		{
@@ -364,7 +378,7 @@ void CVLRecover::OnUseSDT()
 	}
 	if (theUtil.m_bPausingEntrust && pMsgSel && pMsgSel->IsVisible())
 	{
-		if (strstr(pMsgSel->m_InfoText, "H·y lùa chän thao t¸c liªn quan"))
+		if (strstr(pMsgSel->m_InfoText, TV(L"HÃ£y lá»±a chá»n thao tÃ¡c liÃªn quan")))
 		{
 			pMsgSel->OnClickMsg(0);
 			nTimerCount = g_RunningTimer + 30000; // 25 minutes
@@ -376,7 +390,7 @@ void CVLRecover::OnUseSDT()
 void CVLRecover::LoadX2List()
 {
 	memset(m_szX2Items, 0, sizeof(m_szX2Items));
-	strcpy(m_szX2Items[0], "Tiªn Th¶o Lé");
+	strcpy(m_szX2Items[0], TV(L"TiÃªn Tháº£o Lá»™"));
 	char szX2ItemFile[MAX_PATH];
 	sprintf(szX2ItemFile, "%s\\Maps\\X2Items.txt", theMain.m_szCurFolder);
 
@@ -427,7 +441,7 @@ void CVLRecover::OnUseTTL()
 	{
 		theUtil.m_bPausingEntrust = TRUE;
 		nTimerCount = g_RunningTimer + 100; // 5 seconds to go
-		SystemMessage("<color=yellow>T¹m ng­ng ñy th¸c, ¨n Tiªn Th¶o Lé...");
+		SystemMessage(TV(L"<color=yellow>Táº¡m ngÆ°ng á»§y thÃ¡c, Äƒn TiÃªn Tháº£o Lá»™..."));
 		return;
 	}
 

@@ -1,0 +1,77 @@
+; VLAuto MapPath - Map 1 Ph­îng T­êng
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,52838,105006
+1,52556,104836
+2,51979,104333
+3,51376,103640
+4,50998,102593
+5,50602,102099
+6,50005,102747
+7,49005,103759
+8,48652,103376
+9,50764,101936
+10,51511,101292
+11,50991,100817
+12,50304,100155
+13,49711,99558
+14,49850,99468
+15,51747,101302
+16,52150,101690
+17,52455,101994
+18,52918,101468
+19,52714,101316
+[Sides]
+0,1
+1,2
+2,3
+3,4
+4,5
+5,6
+6,7
+7,8
+5,9
+9,10
+10,11
+11,12
+12,13
+13,14
+10,15
+15,16
+16,17
+17,18
+18,19
+[Doors]
+[Driver]
+0,11, Thµnh §« phñ [200 L­îng]
+0,162, §¹i Lý phñ [500 L­îng]
+0,37, BiÖn Kinh phñ [300 L­îng]
+0,78, T­¬ng D­¬ng phñ [300 L­îng]
+0,80, D­¬ng Ch©u phñ [400 L­îng]
+0,176, L©m An phñ [500 L­îng]
+0,121,Long M«n TrÊn[200 L­îng]
+0,99,VÜnh L¹c TrÊn[100 L­îng]
+8,11, Thµnh §« phñ [200 L­îng]
+8,162, §¹i Lý phñ [500 L­îng]
+8,37, BiÖn Kinh phñ [300 L­îng]
+8,78, T­¬ng D­¬ng phñ [300 L­îng]
+8,80, D­¬ng Ch©u phñ [400 L­îng]
+8,176, L©m An phñ [500 L­îng]
+8,121,Long M«n TrÊn[200 L­îng]
+8,99,VÜnh L¹c TrÊn[100 L­îng]
+14,11, Thµnh §« phñ [200 L­îng]
+14,162, §¹i Lý phñ [500 L­îng]
+14,37, BiÖn Kinh phñ [300 L­îng]
+14,78, T­¬ng D­¬ng phñ [300 L­îng]
+14,80, D­¬ng Ch©u phñ [400 L­îng]
+14,176, L©m An phñ [500 L­îng]
+14,121,Long M«n TrÊn[200 L­îng]
+14,99,VÜnh L¹c TrÊn[100 L­îng]
+19,11, Thµnh §« phñ [200 L­îng]
+19,162, §¹i Lý phñ [500 L­îng]
+19,37, BiÖn Kinh phñ [300 L­îng]
+19,78, T­¬ng D­¬ng phñ [300 L­îng]
+19,80, D­¬ng Ch©u phñ [400 L­îng]
+19,176, L©m An phñ [500 L­îng]
+19,121,Long M«n TrÊn[200 L­îng]
+19,99,VÜnh L¹c TrÊn[100 L­îng]

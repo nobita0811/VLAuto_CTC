@@ -142,16 +142,31 @@ inline DWORD GetVisibleGameWnd(HANDLE hGame, DWORD dwSelfPtr)
 	return 0;
 }
 
+// Ghi vào bộ nhớ Game. Game 15_10: WriteProcessMemory từ Auto (32-bit) báo lỗi 6 (ERROR_INVALID_HANDLE) dù handle
+// đủ quyền (VirtualAllocEx / ReadProcessMemory vẫn được) => ghi thẳng bằng NtWriteVirtualMemory
+inline BOOL WriteGameMemory(HANDLE hGame, LPVOID pAddr, LPCVOID pData, SIZE_T nSize)
+{
+	if (WriteProcessMemory(hGame, pAddr, pData, nSize, NULL))
+		return TRUE;
+	typedef LONG (NTAPI *PFN_NtWriteVirtualMemory)(HANDLE, PVOID, PVOID, SIZE_T, SIZE_T*);
+	static PFN_NtWriteVirtualMemory pfnWrite = (PFN_NtWriteVirtualMemory)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "NtWriteVirtualMemory");
+	SIZE_T nWritten = 0;
+	return pfnWrite && pfnWrite(hGame, pAddr, (PVOID)pData, nSize, &nWritten) >= 0 && nWritten == nSize;
+}
+
 // Ghi mã (CRemoteCode tạo với base = pRemote) vào Game, chạy bằng CreateRemoteThread, chờ xong
 // thì xóa vùng nhớ (có thể chứa mật khẩu) rồi giải phóng. Thread chưa xong sau dwTimeout thì
-// không giải phóng (Game còn đang chạy đoạn mã) và trả về FALSE.
-inline BOOL ExecRemoteCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code, DWORD dwTimeout, DWORD* pdwExit)
+// không giải phóng (Game còn đang chạy đoạn mã) và trả về FALSE; phPending != NULL thì nhận handle
+// thread đó (người gọi chờ xong rồi xóa + giải phóng pRemote), ngược lại handle bị đóng.
+inline BOOL ExecRemoteCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code, DWORD dwTimeout, DWORD* pdwExit, HANDLE* phPending = NULL)
 {
+	if (phPending)
+		*phPending = NULL;
 	*pdwExit = 0;
 	BYTE buf[CRemoteCode::TOTAL_SIZE];
 	code.Build(buf);
 	HANDLE hThread = NULL;
-	if (WriteProcessMemory(hGame, pRemote, buf, sizeof(buf), NULL))
+	if (WriteGameMemory(hGame, pRemote, buf, sizeof(buf)))
 		hThread = CreateRemoteThread(hGame, NULL, 0, (LPTHREAD_START_ROUTINE)pRemote, NULL, 0, NULL);
 	SecureZeroMemory(buf, sizeof(buf));
 	if (!hThread)
@@ -161,10 +176,15 @@ inline BOOL ExecRemoteCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code
 	}
 	DWORD dwWait = WaitForSingleObject(hThread, dwTimeout);
 	GetExitCodeThread(hThread, pdwExit);
+	if (dwWait != WAIT_OBJECT_0 && phPending)
+	{
+		*phPending = hThread;
+		return FALSE;
+	}
 	CloseHandle(hThread);
 	if (dwWait != WAIT_OBJECT_0)
 		return FALSE;
-	WriteProcessMemory(hGame, pRemote, buf, sizeof(buf), NULL);	// buf đã xóa về 0
+	WriteGameMemory(hGame, pRemote, buf, sizeof(buf));	// buf đã xóa về 0
 	VirtualFreeEx(hGame, pRemote, 0, MEM_RELEASE);
 	return TRUE;
 }

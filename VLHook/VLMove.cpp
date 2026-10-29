@@ -1,4 +1,4 @@
-#include "stdafx.h"
+Ôªø#include "stdafx.h"
 #include "../GameDef.h"
 #include "DTextFile.h"
 #include "GameBase.h"
@@ -15,7 +15,13 @@ CVLMove::CVLMove(void)
 	m_nStatus = status_idle;
 	m_nLeaderIdx = 0;
 	memset(m_Nodes, 0, sizeof(m_Nodes));
+	memset(m_GoNodes, 0, sizeof(m_GoNodes));
+	m_nGoNodesMapID = 0;
+	m_nGoNode = -1;
 	m_bFindingWay = TRUE;
+	m_bGoTrain = 0;
+	m_nGoTrainMap = 0;
+	m_dwGoTrainTick = 0;
 	nLastMapID = 0;
 	m_nMapPoints = 0;
 	m_nPathPoints = 0;
@@ -34,6 +40,7 @@ void CVLMove::Breathe()
 	if (g_NetworkOffline) return;
 	if (theMain.m_bPause || theAttack.m_nEnemyIdx) return;
 	if (PathTravelActive()) return;	// Dang tu di theo MapPath
+	if (DebugQuestHoldMove()) return;	// DEBUG > Nhiem vu: Buoc 3 dung tai map / Buoc 4 tu di vong theo MapPath
 
 	if ((*g_pMapID) >= city_phongky1 && (*g_pMapID) <= city_baokho3)
 	{	// Map PCK
@@ -86,6 +93,17 @@ void CVLMove::Breathe()
 
 	m_bMoveByMapYS = bCurMoveByMap;
 	if (theQuest.m_nYeSouMapID) m_bMoveByMapYS = TRUE;
+	if (m_bGoTrain || m_bFindingWay)
+	{	// Khong co TDP: khong tu tim duong sang map train (chi danh tai map dang dung)
+		int nGoMap = m_bGoTrain ? m_nGoTrainMap : theMap.m_nTrainMapID;
+		if (nGoMap && *g_pMapID != nGoMap && !theMain.HaveTownPortal())
+		{
+			SystemMessage("<color=yellow>Khong co Tho Dia Phu - khong tu di toi map luyen cong");
+			GoTrainStop();
+			m_bFindingWay = 0;
+		}
+	}
+	if (m_bGoTrain && GoTrainBreathe()) return;	// Vua chon xa phu: tim duong toi bai train
 	if (m_bFindingWay && theMap.m_nTrainMapID && !theQuest.m_nYeSouMapID)
 		if (RouteFinding(theMap.m_nTrainMapID)) return;
 
@@ -120,7 +138,7 @@ void CVLMove::Breathe()
 		if (m_nNodesMapID && *g_pMapID != m_nNodesMapID)
 		{	// Danh sach toa do thuoc ban do khac (vd "Tro lai dia diem cu" dua sai map): tu di theo MapPath, 30s thu 1 lan
 			static DWORD dwTryTick = 0;
-			if (!theMap.m_nTrainMapID && GetTickCount() - dwTryTick > 30000)
+			if (!theMap.m_nTrainMapID && GetTickCount() - dwTryTick > 30000 && theMain.HaveTownPortal())
 			{
 				dwTryTick = GetTickCount();
 				if (PathTravelStart(m_nNodesMapID, FALSE)) return;
@@ -309,13 +327,13 @@ void CVLMove::SavePoint()
 		if (m_bMoveWithPK) return;
 		m_nPointX = nX;
 		m_nPointY = nY;
-		sprintf(szMsg, "<color=white>Quanh Æi”m: Ghi t‰a ÆÈ <color=yellow>hi÷n tπi <color=green>(%d/%d)", nX >> 8, nY >> 9);
+		sprintf(szMsg, TV(L"<color=white>Quanh ƒëi·ªÉm: Ghi t·ªça ƒë·ªô <color=yellow>hi·ªán t·∫°i <color=green>(%d/%d)"), nX >> 8, nY >> 9);
 		KUiMiniMap *pMiniMap = (KUiMiniMap*)(MMP_BASE_ADD);
 		if (pMiniMap) pMiniMap->SetMapFlag(0, 0);
 	}
 	else //m_bRouteMove
 	{
-		strcpy(szMsg, "<color=yellow>LÁi: SË Æi”m Æ∑ ÆÒ, kh´ng th” ghi th™m!");
+		strcpy(szMsg, TV(L"<color=yellow>L·ªói: S·ªë ƒëi·ªÉm ƒë√£ ƒë·ªß, kh√¥ng th·ªÉ ghi th√™m!"));
 		for (int i = 0; i < MAX_NODES; i++)
 		{
 			if (m_Nodes[i].x && m_Nodes[i].y) continue;
@@ -325,10 +343,10 @@ void CVLMove::SavePoint()
 			{
 				nX = nFlagX << 4;
 				nY = nFlagY << 5;
-				sprintf(szMsg, "<color=white>Hµnh tr◊nh: Ghi t‰a ÆÈ <color=yellow>cæm cÍ <color=green>(%d/%d)", nX >> 8, nY >> 9);
+				sprintf(szMsg, TV(L"<color=white>H√†nh tr√¨nh: Ghi t·ªça ƒë·ªô <color=yellow>c·∫Øm c·ªù <color=green>(%d/%d)"), nX >> 8, nY >> 9);
 			}
 			else
-				sprintf(szMsg, "<color=white>Hµnh tr◊nh: Ghi t‰a ÆÈ <color=yellow>hi÷n tπi <color=green>(%d/%d)", nX >> 8, nY >> 9);
+				sprintf(szMsg, TV(L"<color=white>H√†nh tr√¨nh: Ghi t·ªça ƒë·ªô <color=yellow>hi·ªán t·∫°i <color=green>(%d/%d)"), nX >> 8, nY >> 9);
 			m_nCurNode = i;
 			m_Nodes[m_nCurNode].x = nX;
 			m_Nodes[m_nCurNode].y = nY;
@@ -410,7 +428,7 @@ void CVLMove::LoadMap(const char *szMapFile)
 	pFile = fopen(szMapFileName, "r");
 	if (pFile == NULL)
 	{
-		SystemMessage(0, "Kh´ng Æ‰c Æ≠Óc file MAP: %s!", szMapFile);
+		SystemMessage(0, TV(L"Kh√¥ng ƒë·ªçc ƒë∆∞·ª£c file MAP: %s!"), szMapFile);
 		return;
 	}
 	int i = 0;
@@ -423,7 +441,7 @@ void CVLMove::LoadMap(const char *szMapFile)
 	m_nMapPoints = i;
 	if (m_nMapPoints == 0)
 	{
-		SystemMessage("LÁi file MAP, xin Æ‰c lπi H≠Ìng d…n!");
+		SystemMessage(TV(L"L·ªói file MAP, xin ƒë·ªçc l·∫°i H∆∞·ªõng d·∫´n!"));
 		return;
 	}
 	for (int i = 0; i < m_nMapPoints; i++)
@@ -467,7 +485,7 @@ void CVLMove::LoadPath(const char *szPathFile)
 	pFile = fopen(szPathFileName, "r");
 	if (pFile == NULL)
 	{
-		SystemMessage(0, "Kh´ng Æ‰c Æ≠Óc file PATH: %s!", szPathFile);
+		SystemMessage(0, TV(L"Kh√¥ng ƒë·ªçc ƒë∆∞·ª£c file PATH: %s!"), szPathFile);
 		return;
 	}
 	int i = 0;
@@ -480,7 +498,7 @@ void CVLMove::LoadPath(const char *szPathFile)
 	m_nPathPoints = i;
 	if (m_nPathPoints == 0)
 	{
-		SystemMessage("LÁi file PATH, xin Æ‰c lπi H≠Ìng d…n!");
+		SystemMessage(TV(L"L·ªói file PATH, xin ƒë·ªçc l·∫°i H∆∞·ªõng d·∫´n!"));
 		return;
 	}
 	fclose(pFile);
@@ -491,6 +509,7 @@ BOOL CVLMove::IsNpcInRange(int nNpcX, int nNpcY)
 	int dZ;
 	POINT ptNpc = { nNpcX, nNpcY };
 
+	if (DebugQuestHoldMove()) return TRUE;	// Khong di theo danh sach toa do: khong gioi han quanh diem / duong
 	if (m_bMoveByMapYS)
 	{
 		if (m_nMapPoints <= 0) return TRUE;
@@ -560,7 +579,7 @@ void CVLMove::MoveOut()
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-		if (strcmp(g_pNpcArray[i]->Name, "Dﬁch Quan")) continue;
+		if (strcmp(g_pNpcArray[i]->Name, TV(L"D·ªãch Quan"))) continue;
 		theAttack.SetPeopleIdx(i);
 		nTimeWait = 15;
 		break;
@@ -599,7 +618,7 @@ void CVLMove::MoveInPCK()
 		for (int i = 1; i < MAX_NPC; i++)
 		{
 			if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (strcmp(g_pNpcArray[i]->Name, "Dﬁch Quan")) continue;
+			if (strcmp(g_pNpcArray[i]->Name, TV(L"D·ªãch Quan"))) continue;
 			theAttack.SetPeopleIdx(i);
 			nTimeWait = 15;
 			break;
@@ -633,9 +652,9 @@ void CVLMove::MoveInPCK()
 		for (int i = 1; i < MAX_NPC; i++)
 		{
 			if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (strcmp(g_pNpcArray[i]->Name, "C∏nh træng") &&
-				strcmp(g_pNpcArray[i]->Name, "Ti™u Tr n") &&
-				strcmp(g_pNpcArray[i]->Name, "Nπp Lan Thanh Thµnh")) continue;
+			if (strcmp(g_pNpcArray[i]->Name, TV(L"C√°nh tr·∫Øng")) &&
+				strcmp(g_pNpcArray[i]->Name, TV(L"Ti√™u Tr·∫•n")) &&
+				strcmp(g_pNpcArray[i]->Name, TV(L"N·∫°p Lan Thanh Th√†nh"))) continue;
 			theAttack.SetPeopleIdx(i);
 			nTimeWait = 15;
 			break;
@@ -666,7 +685,7 @@ void CVLMove::MoveInPCK()
 		{
 			if (!g_pNpcArray[i]->IsExist()) continue;
 			if (g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (!strstr(g_pNpcArray[i]->Name, "T‰a ÆÈ trinh s∏t")) continue;
+			if (!strstr(g_pNpcArray[i]->Name, TV(L"T·ªça ƒë·ªô trinh s√°t"))) continue;
 			if (g_pNpcArray[i]->m_dwID == dwLastID1 || g_pNpcArray[i]->m_dwID == dwLastID2) continue;
 			g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 			dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
@@ -772,16 +791,181 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
 			{
 				m_nTotalLagCount = 0;
 				theMap.m_bNoDriverRecent = TRUE;
-				SystemMessage("<color=yellow>K—t hºn rÂi, v“ thµnh l∏t quay lπi.");
+				SystemMessage(TV(L"<color=yellow>K·∫πt h·∫≥n r·ªìi, v·ªÅ th√†nh l√°t quay l·∫°i."));
 				theRecover.OnUseAM();
 				return TRUE;
 			}
 		}
-		SystemMessage("<color=yellow>K—t Æ≠Íng rÂi, chπy h≠Ìng kh∏c xem sao.");
+		SystemMessage(TV(L"<color=yellow>K·∫πt ƒë∆∞·ªùng r·ªìi, ch·∫°y h∆∞·ªõng kh√°c xem sao."));
 		g_pCurPlayer->MoveTo(nDestX, nDestY);
 		return TRUE;
 	}
 	return 0;
+}
+
+void CVLMove::GoTrainStart(int nMapID)
+{
+	m_bGoTrain = TRUE;
+	m_nGoTrainMap = nMapID;
+	m_dwGoTrainTick = 0;
+	m_nGoNode = -1;
+}
+
+void CVLMove::GoTrainStop()
+{
+	m_bGoTrain = 0;
+	m_nGoTrainMap = 0;
+	m_dwGoTrainTick = 0;
+	m_nGoNode = -1;
+}
+
+// Co danh sach toa do di den noi luyen cong o map dang dung
+BOOL CVLMove::HaveGoNodes()
+{
+	if (!m_GoNodes[0].x || !m_GoNodes[0].y) return FALSE;
+	return !m_nGoNodesMapID || m_nGoNodesMapID == *g_pMapID;
+}
+
+// Nhan vat da o gan bai train (vd "Tro lai dia diem cu" dua thang toi bai): khong can di theo danh sach di den
+BOOL CVLMove::NearTrainArea(int nPlayerX, int nPlayerY)
+{
+	const int nNear = 400;
+	if (m_bMoveByMapYS)
+	{
+		for (int i = 0; i < m_nMapPoints; i++)
+			if (__distance(nPlayerX, nPlayerY, MapPoints[i].x, MapPoints[i].y) <= nNear) return TRUE;
+		return FALSE;
+	}
+	if (m_bAroundPointPK)
+		return (m_nPointX || m_nPointY) && __distance(nPlayerX, nPlayerY, m_nPointX, m_nPointY) <= nNear;
+	if (m_bRouteMove && (!m_nNodesMapID || m_nNodesMapID == *g_pMapID))
+		for (int i = 0; i < MAX_NODES && m_Nodes[i].x && m_Nodes[i].y; i++)
+			if (__distance(nPlayerX, nPlayerY, m_Nodes[i].x, m_Nodes[i].y) <= nNear) return TRUE;
+	return FALSE;
+}
+
+// O map train, co danh sach di den noi luyen cong: MapPath (khong co thi game tu tim duong) toi diem dau tien,
+// sau do chay thang lan luot qua cac diem con lai. TRUE = dang di; FALSE + m_bGoTrain tat = da toi diem cuoi;
+// FALSE + m_bGoTrain con = khong co danh sach -> GoTrainBreathe di toi diem dau tien cua bai train nhu cu
+BOOL CVLMove::GoNodesBreathe()
+{
+	if (!HaveGoNodes()) return FALSE;
+	int nCount = 0;
+	while (nCount < MAX_NODES && m_GoNodes[nCount].x && m_GoNodes[nCount].y) nCount++;
+
+	int nPlayerX, nPlayerY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	if (m_nGoNode < 0)
+	{	// Chon diem bat dau: da o bai train -> bo qua; dang dung sat 1 diem cua danh sach -> di tiep tu diem do
+		m_nGoNode = 0;
+		if (NearTrainArea(nPlayerX, nPlayerY))
+			m_nGoNode = nCount;
+		else
+			for (int i = nCount - 1; i > 0; i--)
+				if (__distance(nPlayerX, nPlayerY, m_GoNodes[i].x, m_GoNodes[i].y) <= 300) { m_nGoNode = i; break; }
+		m_nLagCount = 0;
+		m_nLastdZ = MAX_INTNUM;
+		m_dwGoTrainTick = GetTickCount();
+	}
+
+	if (m_nGoNode >= nCount || GetTickCount() - m_dwGoTrainTick > 180000)
+	{
+		if (m_nGoNode < nCount) SystemMessage(0, "<color=yellow>Di theo danh sach toa do di den noi luyen cong qua 3 phut - bat dau danh tai cho");
+		else SystemMessage(0, "<color=green>Da toi noi luyen cong - bat dau danh quai");
+		GoTrainStop();
+		m_bFindingWay = 0;
+		m_nPreNode = -1;
+		m_nCurNode = -1;
+		m_nStatus = status_idle;
+		return FALSE;
+	}
+
+	int nDestX = m_GoNodes[m_nGoNode].x, nDestY = m_GoNodes[m_nGoNode].y;
+	int dZ = __distance(nPlayerX, nPlayerY, nDestX, nDestY);
+	if (dZ <= 64)
+	{	// Toi diem -> diem tiep theo (moi doan duoc 3 phut)
+		m_nGoNode++;
+		m_nLagCount = 0;
+		m_nLastdZ = MAX_INTNUM;
+		m_dwGoTrainTick = GetTickCount();
+		return TRUE;
+	}
+	if (m_nGoNode == 0)
+	{	// Diem dau tien: theo MapPath cua map tu cong vao
+		if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
+		{
+			m_nLagCount = 0;
+			m_nLastdZ = MAX_INTNUM;
+			return TRUE;
+		}
+		if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+		g_pCurPlayer->GoTo(nDestX, nDestY);
+		return TRUE;
+	}
+	// Cac diem sau: chay thang theo danh sach
+	static int nTimeCount = 0;
+	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	g_pCurPlayer->MoveTo(nDestX, nDestY);
+	return TRUE;
+}
+
+// Ra ngoai thanh sau khi chon xa phu: map hien tai khac map train -> MapToMap (PathTravelStart);
+// dung map train -> co "Danh sach toa do di den noi luyen cong" thi MapPath toi diem dau tien cua danh sach roi chay
+// theo danh sach toi diem cuoi (GoNodesBreathe); khong co danh sach thi MapPath toi diem dau tien cua bai train.
+// Toi noi thi tat co (Tab Chien dau bat dau danh). TRUE = dang xu ly (Breathe dung lai)
+BOOL CVLMove::GoTrainBreathe()
+{
+	int nTarget = m_nGoTrainMap;
+	if (!nTarget) { GoTrainStop(); return FALSE; }
+	if (!m_dwGoTrainTick) m_dwGoTrainTick = GetTickCount();
+
+	if (*g_pMapID != nTarget)
+	{
+		if (PathTravelStart(nTarget, FALSE))
+		{
+			m_dwGoTrainTick = GetTickCount();
+			return TRUE;	// PathTravelBreathe di; toi map train thi Breathe goi lai day
+		}
+		// Khong co lo trinh MapPath: tra ve cach cu (RouteFinding theo file .map / danh sach toa do)
+		char szName[64] = "";
+		theMain.GetMapName(nTarget, szName);
+		SystemMessage(0, "<color=yellow>Khong co lo trinh MapPath toi map train %s (%d) - di theo cach cu", szName, nTarget);
+		GoTrainStop();
+		return FALSE;
+	}
+
+	if (GoNodesBreathe()) return TRUE;
+	if (!m_bGoTrain) return FALSE;	// Da di het danh sach di den noi luyen cong
+
+	// Diem dau tien cua bai train
+	int nDestX = 0, nDestY = 0;
+	if (m_bMoveByMapYS && m_nMapPoints > 0) { nDestX = MapPoints[0].x; nDestY = MapPoints[0].y; }
+	else if (m_bAroundPointPK) { nDestX = m_nPointX; nDestY = m_nPointY; }
+	else if (m_bRouteMove && (!m_nNodesMapID || m_nNodesMapID == *g_pMapID)) { nDestX = m_Nodes[0].x; nDestY = m_Nodes[0].y; }
+
+	int nPlayerX, nPlayerY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	int dZ = (nDestX || nDestY) ? __distance(nPlayerX, nPlayerY, nDestX, nDestY) : 0;
+	if (dZ <= 64 || GetTickCount() - m_dwGoTrainTick > 180000)
+	{
+		if (dZ > 64) SystemMessage(0, "<color=yellow>Di toi bai train qua 3 phut - bat dau danh tai cho");
+		else SystemMessage(0, "<color=green>Da toi bai train - bat dau danh quai");
+		GoTrainStop();
+		m_bFindingWay = 0;
+		m_nPreNode = -1;
+		m_nCurNode = -1;
+		m_nStatus = status_idle;
+		return FALSE;
+	}
+	if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
+	{
+		m_nLagCount = 0;
+		m_nLastdZ = MAX_INTNUM;
+		return TRUE;
+	}
+	if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	g_pCurPlayer->GoTo(nDestX, nDestY);
+	return TRUE;
 }
 
 BOOL CVLMove::RouteFinding(int nTrainMapID)
@@ -807,7 +991,7 @@ BOOL CVLMove::RunningToDoor()
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 
 	if (m_nCurPoint < 0)
-		SystemMessage("ßang Æi t◊m b∂n ÆÂ luy÷n c´ng...");
+		SystemMessage(TV(L"ƒêang ƒëi t√¨m b·∫£n ƒë·ªì luy·ªán c√¥ng..."));
 	else
 	{
 		dZ = __distance(LastPos.x, LastPos.y, nPlayerX, nPlayerY);
@@ -868,13 +1052,13 @@ BOOL CVLMove::RunningToPos()
 
 	if (m_nCurPoint < 0)
 	{
-		SystemMessage("ß’n b∂n ÆÂ luy÷n c´ng! ßi t◊m b∑i...");
+		SystemMessage(TV(L"ƒê·∫øn b·∫£n ƒë·ªì luy·ªán c√¥ng! ƒêi t√¨m b√£i..."));
 		//Finding Start Point (near the destination)
 		POINT ptnStart = { 0, 0 };
 		nStart = m_nMapPoints / 2;
 		if (m_bMoveByMapYS)
 		{
-			SystemMessage("ß’n khu v˘c luy÷n c´ng! Bæt Æ«u...");
+			SystemMessage(TV(L"ƒê·∫øn khu v·ª±c luy·ªán c√¥ng! B·∫Øt ƒë·∫ßu..."));
 			return 0;
 		}
 		else if (m_bAroundPointPK)
@@ -932,7 +1116,7 @@ BOOL CVLMove::RunningToPos()
 			}
 			else
 			{
-				SystemMessage("ß’n khu v˘c luy÷n c´ng! Bæt Æ«u...");
+				SystemMessage(TV(L"ƒê·∫øn khu v·ª±c luy·ªán c√¥ng! B·∫Øt ƒë·∫ßu..."));
 				m_nCurPoint = -1;
 				return 0;
 			}
@@ -1041,4 +1225,16 @@ int AutoGoTo(int tx, int ty)
 	PathNoteMove(tx, ty, "GoTo");
 	g_pCurPlayer->GoTo(tx, ty);
 	return 1;
+}
+// h√†m di chuy·ªÉn ƒë·∫øn b·∫•t k·ª≥ n∆°i n√†o trong th·∫ø gi∆°i game (y√™u c·∫ßu c·∫ßn l√†m full map path , c√≥ th·ªÉ kh√¥ng t√¨m ƒë∆∞·ªùng ƒë∆∞·ª£c)
+BOOL CVLMove::GoToWorld(int MapId, int nDestX, int nDestY)
+{
+	// l·∫≠p ƒë∆∞·ªùng ƒëi t·ª´ map hi·ªán t·∫°i t·ªõi (mapid, nDestX, nDestY)
+	// n·∫øu c√≥ nhi·ªÅu ƒë∆∞·ªùng ƒëi th√¨ ch·ªçn ƒë∆∞·ªùng ƒëi ng·∫Øn nh·∫•t
+	// c√°ch t√≠nh ƒë∆∞·ªùng ƒëi: BFS, Dijkstra, A*, ... ∆∞u ti√™n c√°ch n√†o nhanh nh·∫•t, √≠t t·ªën t√†i nguy√™n nh·∫•t
+	// kho·∫£ng c√°ch gi·ªØa a v√† b: __distance(a.x, a.y, b.x, b.y)
+	// d√πng ƒë√£ ch·∫°y t·ªõi XaPhu ch·ªçn qua map th√¨ kho·∫£ng c√°ch l√† 0. v√≠ d·ª• map A -> B n·∫øu d√πng xa phu th√¨ l√† 0, 
+	// n·∫øu kh√¥ng d√πng xa phu th√¨ kho·∫£ng c√°ch t·ªïng kho·∫£ng c√°ch gi·ªØa c√°c ƒëi·ªÉm tr√™n ƒë∆∞·ªùng ƒëi ƒë·∫øn c·ªïng v√†o map B
+	// di chuy·ªÉn gi·ªØa 2 ƒëi·ªÉm d√πng h√†m KPlayer::GoTo(int nX, int nY)
+	return FALSE;
 }

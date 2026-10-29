@@ -19,6 +19,7 @@
 	#define CORE_BASE_ADD		0x00848314	// KCoreShell (pointer) (15-10)
 	#define NPC_BASE_ADD		0x017220F0	// KNpc (pointer) (15-10)
 	#define PLR_BASE_ADD		0x00EE403C	// KPlayer (pointer) (15-10)
+	#define WLD_BASE_ADD		0x017286B0	// KSubWorld (pointer) (15-10)
 #else
 	#define ACNT_ID_ADD			theGameData.AccountID
 	#define MAP_ID_ADD			theGameData.MapAddress
@@ -27,6 +28,7 @@
 	#define CORE_BASE_ADD		theGameData.KCoreShell
 #endif
 
+#define WLD_TIME_OFFSET	0x0050		// KSubWorld::m_dwCurrentTime (frame, 18 frame / giay)
 #define PLAYER_OFFSET	0xA878		// 15-10 (khong doi)
 #define PLR_IDX_OFFSET	0x013C		// 15-10: PLAYER_OFFSET + PLR_IDX_OFFSET = 0xA9B4 (10-10: 0x1854)
 #define PLR_EXP_OFFSET	0x75F0		// 15-10 (10-10: 0x7220)
@@ -124,7 +126,9 @@ public:
 	int				m_nObjectIdx;		// 0x1458
 	BYTE			NpcData9[0x05FC];
 	BOOL			m_FightMode;		// 0x1A58 (15-10: nam truoc m_RegX)
-	BYTE			NpcDataA[0x0028];
+	BYTE			NpcDataA[0x0018];
+	int				m_SyncSignal;		// 0x1A74 frame server dong bo lan cuoi
+	BYTE			NpcDataA2[0x000C];
 	WORD			m_RegX, m_RegY;		// 0x1A84
 	BYTE			NpcDataB[0xFF78];
 	int				m_CurLifeMaxA;		// 0x11A00 game dung max(A, B)
@@ -148,6 +152,6 @@ CHECK_NPC(m_NpcKind, 0x0024);	CHECK_NPC(m_Series, 0x0028);	CHECK_NPC(m_Doing, 0x
 CHECK_NPC(m_Skills, 0x0148);	CHECK_NPC(m_CurLife, 0x1048);	CHECK_NPC(m_CurMana, 0x105C);	CHECK_NPC(m_MapX, 0x1354);
 CHECK_NPC(m_OffX, 0x1360);		CHECK_NPC(Name, 0x13B9);		CHECK_NPC(m_nPeopleIdx, 0x1448);
 CHECK_NPC(m_RegX, 0x1A84);		CHECK_NPC(m_FightMode, 0x1A58);	CHECK_NPC(m_CurLifeMaxA, 0x11A00);
-CHECK_NPC(m_CurManaMaxA, 0x11A08);
+CHECK_NPC(m_CurManaMaxA, 0x11A08);	CHECK_NPC(m_SyncSignal, 0x1A74);
 #undef CHECK_NPC
 

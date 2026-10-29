@@ -21,10 +21,37 @@ struct AutoLoginAccount
 	int				nId;			// Định danh cố định trong lúc chạy (dòng có thể bị đổi chỗ / xóa)
 	DWORD			dwProcessId;	// Game đang chạy của tài khoản
 	DWORD			dwOfflineTick;	// Mốc bắt đầu không ở trong game, để đếm ReloginDelay ở vòng lặp (0 = chưa đếm)
+	BOOL			bSeenInGame;	// Đã thấy vào thế giới game (Game bị văng / tắt / crash thì được login lại khi check Lặp lại)
 	CString			strError;		// Lỗi của lần đăng nhập gần nhất
 
+	// Cài đặt thoát (bảng Thống kê): theo dõi Game dwExitPID, đổi Game thì đếm lại
+	DWORD			dwExitPID;
+	BOOL			bWasInGame;		// Game này đã từng vào thế giới game (để nhận ra mất kết nối)
+	DWORD			dwLostTick;		// Mốc bắt đầu mất kết nối (0 = đang kết nối)
+	DWORD			dwHungTick;		// Mốc bắt đầu treo (0 = không treo)
+	__int64			nExpLast;
+	DWORD			dwExpTick;		// Mốc kinh nghiệm thay đổi lần cuối (0 = chưa đếm)
+	int				nStayMap, nStayX, nStayY;	// Điểm đang quanh quẩn
+	DWORD			dwStayTick;		// Mốc bắt đầu quanh quẩn điểm đó (0 = chưa đếm)
+
 	AutoLoginAccount() : nRoleIndex(0), bChecked(TRUE), bAutoRelogin(FALSE), nReloginDelay(10000), bTongGather(FALSE),
-		nId(0), dwProcessId(0), dwOfflineTick(0) {}
+		nId(0), dwProcessId(0), dwOfflineTick(0), bSeenInGame(FALSE) { ResetExitTrack(0); }
+	void ResetExitTrack(DWORD dwPID)
+	{
+		dwExitPID = dwPID; bWasInGame = FALSE; dwLostTick = dwHungTick = dwExpTick = dwStayTick = 0;
+		nExpLast = 0; nStayMap = nStayX = nStayY = 0;
+	}
+};
+
+// Cài đặt thoát game (bảng Thống kê), áp dụng cho Game của mọi tài khoản trong bảng Auto Login
+struct AutoLoginExitOpt
+{
+	BOOL			bLost;			int nLostMin;		// Mất kết nối quá nLostMin phút
+	BOOL			bNoExp;			int nNoExpMin;		// Kinh nghiệm không tăng quá nNoExpMin phút
+	BOOL			bHung;			int nHungSec;		// Game treo (không xử lý message) quá nHungSec giây
+	BOOL			bStay;			int nStayMin;		// Quanh quẩn trong bán kính nStayDist quá nStayMin phút
+	int				nStayDist;
+	BOOL			bStayFight;		// Áp dụng cả khi ở nơi chiến đấu (FALSE: chỉ khi ở trạng thái phi chiến đấu)
 };
 
 // Một tài khoản trong danh sách cần login
@@ -59,6 +86,9 @@ struct AutoLoginJob
 	int				nScreen;		// Màn hình của thao tác gần nhất
 	int				nTries;			// Số lần thao tác liên tiếp trên cùng màn hình
 	CString			strStatus;
+	HANDLE			hRemote;		// Thread thao tác trong Game chưa chạy xong (Game đang bận, vd lần mở đầu), NULL = không có
+	LPVOID			pRemote;		// Vùng nhớ mã của thread đó trong Game
+	DWORD			dwRemotePID;
 };
 
 // Game đang chờ đóng: đã gửi WM_CLOSE, quá hạn thì TerminateProcess
@@ -69,6 +99,7 @@ struct ClosingGame
 };
 
 class CDlgAutoLogin;
+class CRemoteCode;
 
 // CDlgLoginStats - Thống kê các nhân vật trong bảng Auto Login (nút "Xem Thống Kê", cửa sổ không modal)
 class CDlgLoginStats : public CDialog
@@ -85,7 +116,7 @@ protected:
 	CListCtrl		m_StatsList;
 	BOOL			m_bUpdating;	// Đang đổi ô check bằng code, bỏ qua LVN_ITEMCHANGED
 	int				m_cxInit, m_cyInit;	// Kích thước client lúc tạo, để OnSize dời các control
-	CRect			m_rcInit[8];
+	CRect			m_rcInit[24];
 
 	virtual BOOL	OnInitDialog();
 	virtual void	DoDataExchange(CDataExchange* pDX);
@@ -103,6 +134,7 @@ protected:
 	afx_msg void	OnStatsItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void	OnKeepMoneyChanged();
 	afx_msg void	OnBnClickedTongMoney();
+	afx_msg void	OnExitOptionChanged(UINT nID);
 	DECLARE_MESSAGE_MAP()
 };
 
@@ -137,11 +169,12 @@ protected:
 	std::vector<AutoLoginRegion>	m_Regions;
 	AutoLoginJob					m_Job;
 	BOOL							m_bRunAll;		// Đang chạy LOGIN ALL (vòng lặp lấy lại danh sách tài khoản được check)
-	int								m_nRound;		// Vòng thứ mấy của LOGIN ALL (từ 1)
 	DWORD							m_dwStartAllTick;	// Mở Auto: chờ tới mốc này mới tự LOGIN ALL (0 = không)
 	std::vector<ClosingGame>		m_Closing;
 	CDlgLoginStats					m_DlgStats;
 	int								m_nTongKeep;	// Vạn: số tiền mỗi nhân vật giữ lại khi gom tiền lên bang (bảng Thống kê)
+	AutoLoginExitOpt				m_ExitOpt;		// Cài đặt thoát (bảng Thống kê)
+	DWORD							m_dwExitCheckTick;
 
 	virtual BOOL	OnInitDialog();
 	virtual void	DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -174,6 +207,7 @@ protected:
 	void			UpdateGameStatus();
 	void			UpdatePlayerNames();
 	DWORD			GetWaitTime(int nScreen);
+	void			CheckExitGames();
 
 	// Đăng nhập
 	void			StartLoginAll(BOOL bWarn);
@@ -181,11 +215,13 @@ protected:
 	void			StopAllLogin();
 	int				FindLoginEntry(int nId);
 	void			AddLoginEntry(int nIndex);
-	void			BuildLoginList();
+	void			BuildLoginList(BOOL bFirst);
 	void			RemoveOnlineEntries();
 	int				GetRetryCount();
 	void			RunLogin();
 	void			RunLoginStep(int nIndex, HANDLE hGame);
+	BOOL			ExecJobCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code, DWORD* pdwExit);
+	BOOL			CheckJobRemote();
 	void			EndJob(int nIndex, LPCTSTR szError, BOOL bRetry, BOOL bCloseGame);
 	BOOL			LoginAction(int nScreen, LPCTSTR szStatus, DWORD dwWait);
 	BOOL			DoSelectServer(int nIndex, HANDLE hGame, DWORD dwSel, CString& strError);

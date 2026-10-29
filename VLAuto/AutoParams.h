@@ -107,7 +107,9 @@ struct PARAM_ATTACK : public AutoParams
 	BOOL	m_bAlwaysF9;
 	int		m_SettingSkills[MAXSETSKILL];
 	ALTER_SKILLS m_AlterSkill[2];
-	int		m_Revserved[3];
+	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
+	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
+	int		m_Revserved2;
 
 public:
 	void	InitValue();
@@ -162,6 +164,8 @@ struct PARAM_MOVE : public AutoParams
 	BOOL	m_bNoAttackFollow;
 	BOOL	m_bMoveByMap;
 	int		m_nNodesMapID;	// Ban do cua danh sach toa do (0 = chua xac dinh)
+	POINT	m_GoNodes[MAX_NODES];	// Danh sach toa do di den noi luyen cong (sau khi vao cong map train)
+	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = chua xac dinh)
 
 public:
 	void	InitValue();
@@ -179,6 +183,7 @@ struct PARAM_PARTY : public AutoParams
 	int		m_nAutoLeaveTime;
 	BOOL	m_bAutoKick;
 	int		m_nAutoKickTime;
+	BOOL	m_bAlwaysCaptain;	// Luon lam chu PT; khong tick: chi nhan loi moi
 
 public:
 	void	InitValue();
