@@ -1,6 +1,6 @@
 ﻿//GameDef.h
 #pragma once
-
+#define QUANGCAOAUTO	0
 #define CLIENT_SERIAL		683251
 
 enum OBJ_ATTRIBYTE_TYPE
@@ -149,6 +149,7 @@ enum MEDICINEDETAILTYPE
 	medicine_stamina,
 	medicine_antipoison,
 	medicine_detailnum,
+	medicine_both_ex = 8,
 };
 
 enum ITEM_PART

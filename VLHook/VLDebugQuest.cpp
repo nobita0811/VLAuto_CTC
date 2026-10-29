@@ -798,6 +798,8 @@ static char		s_StepLog[QS_LOG][QS_LINE];
 static int		s_nLogNext = 0, s_nLogTotal = 0;
 static char		s_szLastDialog[0x800] = "";	// hop thoai Da Tau chua biet lam gi (Buoc 1 / 5 dung lai)
 static int		s_nHoldMap = 0;		// Buoc 3 / 4 xong o map nay: CVLMove dung (khong di theo danh sach toa do) toi khi bat buoc khac
+static BOOL		s_bAutoQuest = FALSE;	// Dang chay do Auto goi (QuestKillStart), khong phai nut bam
+static int		s_nAutoResult = qk_idle;
 
 // Buoc 4: di vong cac diem MapPath cua map (Maps\Path\<MapID>_*.txt), khong dung danh sach toa do tab Di chuyen
 #define QS_ROAM_MAX		512
@@ -860,6 +862,11 @@ static void StepEnd(BOOL bOK, const char *szFormat, ...)
 	if (s_nStep == qs_kill) PathWalkNoDoor(FALSE);
 	s_szKillName[0] = 0;
 	int nDone = s_nStep;
+	if (s_bAutoQuest)
+	{
+		if (!bOK) s_nAutoResult = qk_failed;
+		else if (nDone == qs_return) s_nAutoResult = qk_done;
+	}
 	s_nStep = qs_none;
 	if (!bOK) s_bChain = FALSE;
 	else StepNext(nDone);
@@ -1248,6 +1255,11 @@ static BOOL RoamTick()
 
 static DWORD	s_dwNoTargetTick = 0;	// Buoc 4: luc thay quai nhiem vu ma chua co muc tieu
 static DWORD	s_dwNoTargetSaid = 0;
+#define QS_LAG_MS	10000				// Buoc 4: muc tieu khong mat mau ngan nay ms = quai lag
+static DWORD	s_dwLagWatchID = 0;		// Buoc 4: muc tieu dang canh lag
+static int		s_nLagWatchLife = 0;
+static DWORD	s_dwLagWatchTick = 0;	// Luc muc tieu mat mau lan cuoi (hoac moi nhan)
+static DWORD	s_dwLagSaid = 0;
 
 // Quai nhiem vu gan nhat danh duoc (bo quai "lag" Chien dau da ghi trong m_BadNpc, quai ma, dang chet)
 static int NearestKillable(int *pDist)
@@ -1358,44 +1370,70 @@ static void StepKill()
 	// Co che do di nao bat lai: Chien dau bo muc tieu / khong tim quai (CVLAttack::Breathe)
 	if (theMove.m_bGoTrain) theMove.GoTrainStop();
 	theMove.m_bFindingWay = 0;
-	// Dang danh: de Chien dau lam
+	// Dang danh: de Chien dau lam, nhung tu canh quai lag - IsLagTarget chi dem khi Chien dau chay toi buoc tim quai
+	// (dang buff / ra skill phu / di chuyen thi khong dem) => muc tieu khong mat mau QS_LAG_MS thi bo
 	int nPeople = PEOPLE_IDX;
 	if (nPeople > 0 && nPeople < MAX_NPC && g_pNpcArray[nPeople]->m_Kind == kind_normal)
 	{
+		KNpc *pNpc = g_pNpcArray[nPeople];
+		if (pNpc->m_dwID != s_dwLagWatchID || pNpc->m_CurrentLife < s_nLagWatchLife)
+		{
+			s_dwLagWatchID = pNpc->m_dwID;
+			s_nLagWatchLife = pNpc->m_CurrentLife;
+			s_dwLagWatchTick = GetTickCount();
+		}
+		else if (GetTickCount() - s_dwLagWatchTick >= QS_LAG_MS)
+		{
+			int nX, nY, px, py;
+			pNpc->GetMapPos(&nX, &nY);
+			P_PLAYER->GetMapPos(&px, &py);
+			StepMsg("'%s' (ID %u) %ds khong mat mau (mau %d, cach %d) - quai lag, bo qua %ds", pNpc->Name, pNpc->m_dwID,
+				QS_LAG_MS / 1000, pNpc->m_CurrentLife, __distance(px, py, nX, nY), LAG_NPC_TIME / 10);
+			theAttack.AddBadNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
+			theAttack.SetPeopleIdx(0);
+			theAttack.m_LastNpcID = 0;
+			theAttack.m_LastNpcLife = 0;
+			s_dwLagWatchID = 0;
+			s_dwNoTargetTick = GetTickCount();
+			return;
+		}
 		s_dwNoMonsterTick = 0;
 		s_dwNoTargetTick = 0;
 		return;
 	}
-	if (nCount)
+	s_dwLagWatchID = 0;
+	// Quai nhiem vu danh duoc (bo quai lag / ma). Chi con quai lag thi di vong tim con khac, khong chay toi quai lag
+	int nKillDist = 0x7FFFFFFF;
+	int nKill = nCount ? NearestKillable(&nKillDist) : 0;
+	if (nKill)
 	{
 		s_dwNoMonsterTick = 0;
 		s_bNoMonsterSaid = FALSE;
 		if (!s_dwNoTargetTick) s_dwNoTargetTick = GetTickCount();
-		// Chien dau chua nhan quai nhiem vu dang thay (400ms): tu nhan con gan nhat (khong chay ngang qua quai)
-		int nPick = GetTickCount() - s_dwNoTargetTick >= 400 ? NearestKillable(&nNearDist) : 0;
-		if (nPick)
-		{
-			int nX, nY;
-			g_pNpcArray[nPick]->GetMapPos(&nX, &nY);
+		int nX, nY;
+		g_pNpcArray[nKill]->GetMapPos(&nX, &nY);
+		if (GetTickCount() - s_dwNoTargetTick >= 400)
+		{	// Chien dau chua nhan quai nhiem vu dang thay (400ms): tu nhan con gan nhat (khong chay ngang qua quai)
 			if (GetTickCount() - s_dwNoTargetSaid >= 10000)
 			{
 				s_dwNoTargetSaid = GetTickCount();
-				StepMsg("Chien dau chua nhan '%s' cach %d (tam tim %d%s) - tu nhan muc tieu", g_pNpcArray[nPick]->Name, nNearDist,
+				StepMsg("Chien dau chua nhan '%s' cach %d (tam tim %d%s) - tu nhan muc tieu", g_pNpcArray[nKill]->Name, nKillDist,
 					theAttack.m_nSearchRange, AttackBlockReason());
 			}
-			theAttack.SetPeopleIdx(nPick);
-			theAttack.m_LastNpcLife = g_pNpcArray[nPick]->m_CurrentLife;
+			theAttack.SetPeopleIdx(nKill);
+			theAttack.m_LastNpcLife = g_pNpcArray[nKill]->m_CurrentLife;
 			theMove.m_nStatus = status_attack;
 			g_pCurPlayer->MoveTo(nX, nY);
 			s_dwNoTargetTick = GetTickCount();
 		}
-		else if (nNearDist > theAttack.m_nSearchRange)
-		{	// Quai o ngoai tam tim cua Auto: chay lai gan con gan nhat
-			int nX, nY;
-			g_pNpcArray[nNear]->GetMapPos(&nX, &nY);
+		else if (nKillDist > theAttack.m_nSearchRange)	// Ngoai tam tim cua Auto: chay lai gan
 			g_pCurPlayer->MoveTo(nX, nY);
-		}
 		return;
+	}
+	if (nCount && GetTickCount() - s_dwLagSaid >= 10000)
+	{
+		s_dwLagSaid = GetTickCount();
+		StepMsg("%d con '%s' quanh day deu la quai lag / ma (gan nhat cach %d) - di vong tim con khac", nCount, s_szKillName, nNearDist);
 	}
 	s_dwNoTargetTick = 0;
 	// Khong thay quai nhiem vu: di vong theo MapPath
@@ -1412,6 +1450,15 @@ static void StepKill()
 static void StepReturn()
 {
 	KUiPrizeSel *pPrzSel = GetPrizeSel();
+	if (pPrzSel && s_bAutoQuest)
+	{	// Auto: khong chon o o day, CVLQuest::ChoosePrize chon theo thiet lap Phan thuong
+		s_Quest.nKilled = s_Quest.nKillNeed = -1;
+		s_Quest.nKill = 0;
+		s_Quest.szMonster[0] = 0;
+		s_Quest.nMapID = 0;
+		StepEnd(TRUE, "bang phan thuong da hien, Auto chon o");
+		return;
+	}
 	if (s_nStage == 1)
 	{	// Da bam o phan thuong: cho bang dong
 		if (!pPrzSel || StageSec() >= 3)
@@ -1786,12 +1833,59 @@ static void StepNext(int nDone)
 	s_bChain = FALSE;
 }
 
+//============================== Auto: CVLQuest::DoQuestAttackNpc ==============================
+// Chay Buoc 2 (mua -> di toi map -> danh quai) roi Buoc 3 (ve Da Tau, chon Hoan thanh) nhu bam nut,
+// dung lai khi bang phan thuong hien de CVLQuest::ChoosePrize chon o.
+
+BOOL QuestKillStart(int nCount, int nMapID, const char *szNpcName, const char *szMapName)
+{
+	if (!s_bQuestInit) ResetQuestInfo();
+	if (s_nStep) StepEnd(FALSE, "Auto bat dau lai nhiem vu diet quai");
+	EnsureWatch();	// Tien do "Tieu diet: a / b" chi co trong tin kenh chat server
+	// Nhiem vu khac lan truoc: bo tien do cu (server bao lai o con quai ke tiep)
+	if (s_Quest.nKill != nCount || s_Quest.nMapID != nMapID || !NameMatch(s_Quest.szMonster, szNpcName))
+		s_Quest.nKilled = s_Quest.nKillNeed = -1;
+	strncpy(s_Quest.szMap, szMapName, sizeof(s_Quest.szMap) - 1);
+	s_Quest.szMap[sizeof(s_Quest.szMap) - 1] = 0;
+	s_bAutoQuest = TRUE;
+	s_nAutoResult = qk_running;
+	s_bChain = TRUE;
+	if (DoQuestKillNpc(nCount, nMapID, szNpcName)) return TRUE;
+	s_nAutoResult = qk_failed;
+	return FALSE;
+}
+
+int QuestKillState(int *pKilled, int *pNeed)
+{
+	if (pKilled) *pKilled = s_Quest.nKilled;
+	if (pNeed) *pNeed = s_Quest.nKillNeed;
+	if (!s_bAutoQuest) return qk_idle;
+	if (s_nStep) return qk_running;
+	return s_nAutoResult == qk_done ? qk_done : qk_failed;	// Chuoi buoc dung giua chung (khong bat dau duoc buoc sau) = loi
+}
+
+void QuestKillStop()
+{
+	if (!s_bAutoQuest) return;
+	if (s_nStep) StepEnd(FALSE, "Auto thoi lam nhiem vu diet quai");
+	s_bAutoQuest = FALSE;
+	s_nAutoResult = qk_idle;
+	s_nHoldMap = 0;
+}
+
+const char* QuestKillLastMsg()
+{
+	if (!s_nLogTotal) return "";
+	return s_StepLog[(s_nLogNext + QS_LOG - 1) % QS_LOG];
+}
+
 // Nut "Buoc N" (1 nhan, 2 diet quai, 3 tra): X = 1 chi kiem tra, X = 2 chi lam buoc nay (khong tu sang buoc sau);
 // Idx = o phan thuong Buoc 3. Dang chay buoc nay thi dung
 static void StepCmd(int nBtn, int nX, int nIdx)
 {
 	if (!DbgCheckPlayer()) return;
 	g_DbgReply.bOK = TRUE;
+	s_bAutoQuest = FALSE;	// Nut bam: Buoc 3 tu chon o phan thuong
 	if (s_nStep && StepButton(s_nStep) == nBtn)
 	{
 		DbgOut("=> DA DUNG %s\n", s_szStepName[s_nStep]);

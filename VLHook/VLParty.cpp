@@ -43,7 +43,7 @@ static void PartyChat(const char* szFormat, const char* szName)
 	char szMsg[128];
 	_snprintf(szMsg, sizeof(szMsg) - 1, szFormat, szName);
 	szMsg[sizeof(szMsg) - 1] = 0;
-	PostChatMessage(szMsg);
+	PostChatMessage2(szMsg);
 }
 
 //================================Class CVLParty================================

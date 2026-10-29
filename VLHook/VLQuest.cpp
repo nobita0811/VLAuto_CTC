@@ -20,6 +20,15 @@ static const char* const YS_KW_AT = TV(L" ở ");						// " o "
 static const char* const YS_KW_FIND = TV(L"Tìm Trang bị");						// Tìm Trang bị
 static const char* const YS_KW_INC = TV(L"tăng");						// tăng
 static const char* const YS_KW_GREATER = TV(L"lớn hơn");				// lon hon
+static const char* const YS_KW_DEC = TV(L"giảm");						// giảm
+
+// szText bat dau bang szKey (khong phan biet hoa thuong) va sau do la het chuoi / khoang trang
+static BOOL YsStartFold(const char* szText, const char* szKey)
+{
+	int i = 0;
+	while (szKey[i] && YsFold(szText[i]) == YsFold(szKey[i])) i++;
+	return !szKey[i] && (!szText[i] || szText[i] == ' ');
+}
 //================================Quest Trace================================
 
 extern const char* CANCEL_BY_USER;	// VLYeSou.cpp
@@ -205,6 +214,11 @@ void CVLQuest::CheckStatus()
 
 		return;
 	}
+
+	// Nhiem vu diet quai: ngoai thanh CVLMap::Breathe khong goi Breath => theo doi / lam lai o day
+	if (m_bAutoDoQuest && m_nGenDoing == qt_yesou && m_nYSDoing == ys_doing && m_nYesouKind == ys_attackNpc &&
+		m_nDoQuestStep && P_PLAYER->m_FightMode && !g_pCurPlayer->m_nEntrustMode)
+		DoQuestAttackNpc();
 
 	YESOU_TASK_DOING ysResult = ReportQuest(TRUE);
 	if (P_PLAYER->m_FightMode && ysResult > ys_doing)
@@ -410,7 +424,7 @@ void CVLQuest::StopNoVip()
 	SaveYSLog("Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!\n");
 	//SystemMessage("<color=yellow>Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!", 1);
 	SystemMessage(TV(L"<<color=green>VLCTCPro<color> : <color=yellow>Chưa kích hoạt thẻ Vip , Auto Dã Tẩu STOP!"), 1);
-	PostChatMessage(TV(L"<color=green>VLCTCPro<color> : <color=yellow>Chưa kích hoạt thẻ Vip , Auto Dã Tẩu STOP!"));
+	PostChatMessage2(TV(L"<color=green>VLCTCPro<color> : <color=yellow>Chưa kích hoạt thẻ Vip , Auto Dã Tẩu STOP!"));
 }
 
 
@@ -513,10 +527,12 @@ void CVLQuest::GetYesouQuestFromKUiMsgSel2(KUiMsgSel2* pMsgSel2)
 			m_nYesouKind = ys_attackNpc;
 		}
 	}
-	else if ((q = YsFindFold(szQuest, YS_KW_FIND)) != NULL && (q = YsFindFold(q, YS_KW_INC)) != NULL)
+	else if ((q = YsFindFold(szQuest, YS_KW_FIND)) != NULL)
 	{
 		// Tim Trang bi tang <thuoc tinh> lon hon N diem
-		q += strlen(YS_KW_INC);
+		// Tim Trang Bi Giam Thoi Gian Choang lon hon 10 %  (khong co "tang": giu ca "Giam" - YsFindMagicAttrib tu bo neu can)
+		q = YsSkipSpace(q + strlen(YS_KW_FIND));
+		if (YsStartFold(q, YS_KW_INC)) q += strlen(YS_KW_INC);
 		const char* pGt = YsFindFold(q, YS_KW_GREATER);
 		if (pGt)
 		{
@@ -583,9 +599,97 @@ int CVLQuest::FindMapID(const char* szName, char* szFound, int nFound, BOOL bPri
 	return nExact;
 }
 
+// Diet m_nYesouCount quai m_szYesouTarget o map m_nYesouMapID. Viec that do tab Nhiem vu lam (VLDebugQuest.cpp,
+// DebugQuestBreathe chay ca ngoai thanh): mua mau/mana/TDP -> MapPath toi map -> chi danh quai nhiem vu ->
+// du so quai (tin kenh chat "Tieu diet: a / b") thi ve Da Tau chon Hoan thanh. Ham nay chi bat dau, theo doi,
+// lam lai khi loi va giao bang phan thuong cho ChoosePrize. Goi tu BreathYS (trong thanh) va CheckStatus (ngoai thanh).
+#define YS_KILL_RETRY		5		// So lan lam lai toi da khi tab Nhiem vu dung giua chung
+#define YS_KILL_RETRY_WAIT	10000	// Cho truoc khi lam lai (ms)
+
 void CVLQuest::DoQuestAttackNpc()
 {
-	
+	static int s_nFail = 0;
+	static DWORD s_dwFailTick = 0;
+	char szLog[256];
+
+	if (m_nDoQuestStep == 0)
+	{
+		s_nFail = 0;
+		s_dwFailTick = 0;
+		if (!m_nYesouMapID)
+		{
+			_snprintf(szLog, sizeof(szLog) - 1, TV(L"Không biết map '%s' (Maps\\MapNames.ini) => %s!"), m_szYesouMap,
+				m_TuZhiOpt.m_bCancelNoMap ? TV(L"Hủy nhiệm vụ") : TV(L"Tạm ngưng"));
+			szLog[sizeof(szLog) - 1] = 0;
+			SaveYSLog(szLog);
+			SystemMessage(TV(L"<color=yellow>Nơi cần đến chưa có MAP!"));
+			if (m_TuZhiOpt.m_bCancelNoMap)
+			{
+				m_nYSDoing = ys_cancel;
+				theMap.NearestDriver();
+			}
+			else
+				m_nYSDoing = ys_suspending;
+			return;
+		}
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Diệt %d %s ở %s (map %d)"), m_nYesouCount, m_szYesouTarget, m_szYesouMap, m_nYesouMapID);
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		QTRACE("DoQuestAttackNpc: bat dau diet %d '%s' map %d, dang o map %d", m_nYesouCount, m_szYesouTarget, m_nYesouMapID, *g_pMapID);
+		theMap.ResetShoping();
+		m_tmStart = time(NULL);
+		m_nDoQuestStep = 1;
+		if (!QuestKillStart(m_nYesouCount, m_nYesouMapID, m_szYesouTarget, m_szYesouMap))
+			s_dwFailTick = GetTickCount();
+		return;
+	}
+
+	int nKilled, nNeed;
+	int nState = QuestKillState(&nKilled, &nNeed);
+	QTRACE("DoQuestAttackNpc: State=%d Fail=%d Map=%d", nState, s_nFail, *g_pMapID);
+	if (nState == qk_running) return;	// Tab Nhiem vu dang lam
+
+	if (nState == qk_done)
+	{
+		QuestKillStop();
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Đã diệt đủ %d %s, về Dã Tẩu hoàn thành nhiệm vụ."), m_nYesouCount, m_szYesouTarget);
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		m_nDoQuestStep = 0;
+		KUiPrizeSel* pPrzSel = (KUiPrizeSel*)GetPtrAddress(PZS_BASE_ADD);
+		if (pPrzSel && pPrzSel->IsVisible())
+		{
+			m_nQuestStatus = 2;				// BreathYS -> ChoosePrize chon o theo thiet lap Phan thuong
+			theMap.m_bDoShoping = TRUE;		// Dang dung canh Da Tau: ChoosePrize khong chay lai
+		}
+		else
+			m_nYSDoing = ys_none;			// Bang phan thuong da dong: GetNewQuest hoi lai Da Tau
+		return;
+	}
+
+	// qk_failed / qk_idle (vua khoi dong lai, hoac nut bam tab Nhiem vu): lam lai tu dau
+	if (!s_dwFailTick)
+	{	// Vua thay dung: cho mot luc (vd chet ve thanh, dang hoi sinh) roi moi lam lai
+		s_dwFailTick = GetTickCount();
+		return;
+	}
+	if (GetTickCount() - s_dwFailTick < YS_KILL_RETRY_WAIT) return;
+	s_dwFailTick = 0;
+	if (++s_nFail > YS_KILL_RETRY)
+	{
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Diệt quái lỗi %d lần (%s) => Tạm ngưng!"), YS_KILL_RETRY, QuestKillLastMsg());
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		SystemMessage(TV(L"<color=yellow>Không làm được nhiệm vụ diệt quái!"));
+		QuestKillStop();
+		m_nYSDoing = ys_suspending;
+		return;
+	}
+	_snprintf(szLog, sizeof(szLog) - 1, TV(L"Diệt quái dừng (%s), tiến độ %d / %d => làm lại lần %d"), QuestKillLastMsg(), nKilled, nNeed, s_nFail);
+	szLog[sizeof(szLog) - 1] = 0;
+	SaveYSLog(szLog);
+	theMap.ResetShoping();
+	QuestKillStart(m_nYesouCount, m_nYesouMapID, m_szYesouTarget, m_szYesouMap);
 }
 
 
@@ -645,6 +749,13 @@ void CVLQuest::DoQuestItemOption()
 		m_nRqGenre = -1; m_nRqDetail = -1; m_nRqParticular = -1;
 		m_nRqLevel = -1; m_nRqSeries = -1; m_nRqQuantity = 1;
 		m_nReqAttrib = YsFindMagicAttrib(m_szYesouTarget, nUnit);
+		if (m_nReqAttrib < 0)
+		{	// "Giam Thoi Gian Choang" -> mo ta "Thoi gian choang (%)" (110 stuntimereduce_p); "Giam" / "Tang" chi la loi dan
+			const char* szName = m_szYesouTarget;
+			if (YsStartFold(szName, YS_KW_DEC)) szName = YsSkipSpace(szName + strlen(YS_KW_DEC));
+			else if (YsStartFold(szName, YS_KW_INC)) szName = YsSkipSpace(szName + strlen(YS_KW_INC));
+			if (szName != m_szYesouTarget) m_nReqAttrib = YsFindMagicAttrib(szName, nUnit);
+		}
 		m_nMinValue = m_nYesouCount + 1;		// "lon hon N" => >= N+1
 		m_nMaxValue = 0x7FFFFFFF;
 		m_nQuestID = 2;							// CheckMyItem/SearchBuyItem/DoQuest0203: tim do, khong cat tra

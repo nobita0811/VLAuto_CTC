@@ -595,6 +595,7 @@ extern void(*SendClientCmdSkill)(int, int, int);
 
 unsigned int			HashString2ID(char* szFileName);
 void					PostChatMessage(const char *szChatMsg);
+void					PostChatMessage2(const char *szChatMsg); // dành cho quang cáo auto kênh chat lân cận
 int						__distance(int X1, int Y1, int X2, int Y2);
 int						__distance(POINT p1, POINT p2);
 int						__getheight(POINT p1, POINT p2, POINT p3);

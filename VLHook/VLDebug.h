@@ -32,6 +32,13 @@ void		DebugQuestMoveAllow(BOOL bAllow);			// Bao quanh Chien dau / Nhat do / Nhi
 struct CQuestMoveAllow { CQuestMoveAllow() { DebugQuestMoveAllow(TRUE); } ~CQuestMoveAllow() { DebugQuestMoveAllow(FALSE); } };
 void		DebugQuestChannelMsg(DWORD nChannelID, const char *szSend, const char *szMsg, int nLen);	// Goi tu hook ChannelMessageArrival
 BOOL		DebugFileCoreDataHook(BOOL bOn);			// Tab Nhiem vu: hook CoreDataChanged (dung chung voi Ghi file/lua)
+
+// Auto lam nhiem vu Da Tau diet quai (CVLQuest::DoQuestAttackNpc) bang Buoc 2 + 3 cua tab Nhiem vu (VLDebugQuest.cpp)
+enum { qk_idle, qk_running, qk_done, qk_failed };
+BOOL		QuestKillStart(int nCount, int nMapID, const char *szNpcName, const char *szMapName);	// TRUE = da bat dau
+int			QuestKillState(int *pKilled, int *pNeed);	// qk_...; qk_done = dang hien bang phan thuong (chua chon o)
+void		QuestKillStop();							// Auto thoi lam (dung buoc dang chay neu do Auto bat)
+const char*	QuestKillLastMsg();						// Dong nhat ky buoc gan nhat (ly do dung)
 void		DebugLowCfgBreathe();						// Giu tat hinh + tu giam RAM (200ms)
 void		DebugLowCfgUnhook();						// Tra lai FPS/hinh/nguoi choi truoc khi FreeLibrary
 BOOL		DebugPathCmd(const DEBUG_PARAM *pParam);
@@ -42,6 +49,7 @@ void		DebugPathUnhook();						// Go patch ve truoc khi FreeLibrary
 // Tu di theo MapPath (VLDebugPath.cpp) - dung trong Auto khi xa phu khong co map can toi
 BOOL		PathTravelStart(int nTarget, BOOL bUseMenu);	// TRUE = co lo trinh, bat dau di. bUseMenu: tinh ca menu xa phu dang mo
 void		PathTravelBreathe();						// 200ms
+BOOL		PathTravelItemStart(int nTarget);				// TRUE = co vat pham ([Item]) toi nTarget, bat dau di (CVLMap::ChangeMap)
 BOOL		PathTravelActive();
 void		PathTravelStop(const char *szReason = NULL);
 void		PathTravelInfo(char *szInfo, int nMax);

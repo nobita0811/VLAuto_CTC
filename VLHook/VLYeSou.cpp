@@ -4,6 +4,7 @@
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include "VLDebug.h"
 #include "MagicAttrib.h"
 
 #define PLAYER_SHOP_LOG 0 // = 1 bật ghi log danh sách đồ trong shop của người chơi khi mua đồ làm nv dã tẩu
@@ -97,6 +98,7 @@ void CVLQuest::BreathYS()
 		m_nGenDoing = qt_suspending;
 		m_nDoQuestStep = 0;
 		theMap.ResetShoping();
+		QuestKillStop();	// Dang diet quai (tab Nhiem vu): thoi
 		return;
 	}
 
@@ -324,10 +326,10 @@ void CVLQuest::ReturnQuest()
 	if (pMsgSel2 && pMsgSel2->IsVisible())
 	{
 		QTRACE("ReturnQuest: MsgSel2 %d dong: %s", pMsgSel2->m_nNumMessage, QTJoinMsg(pMsgSel2));
-		if (pMsgSel2->m_nNumMessage == 6)
+		if (pMsgSel2->m_nNumMessage == 4)
 		{
-			if (strstr(pMsgSel2->m_pMessages[1]->Msg, TV(L"Ta đã hoàn thành nhiệm vụ")))
-				pMsgSel2->OnClickMsg(1);
+			if (strstr(pMsgSel2->m_pMessages[0]->Msg, TV(L"Hoàn thành nhiệm vụ")))
+				pMsgSel2->OnClickMsg(0);
 		}
 
 		return;
@@ -365,6 +367,7 @@ void CVLQuest::ReturnQuest()
 		if (YeSouRoom.m_pArray[0])
 		{
 			pYSBox->OnConfirm();
+			m_nQuestStatus = 2;
 			theMap.ResetShoping(0);
 		}
 		else if (PLAY_HAND_IDX)
@@ -381,7 +384,7 @@ void CVLQuest::ReturnQuest()
 			}
 			else
 			{
-				pYSBox->OnConfirm(0);
+				pYSBox->OnConfirm(0);				
 				theMap.ResetShoping(0);
 				m_nYSDoing = ys_suspending;
 				SystemMessage(TV(L"<color=yellow>Không thấy vật phẩm nhiệm vụ!"));
@@ -574,6 +577,7 @@ void CVLQuest::ChoosePrize()
 		pPrzSel->OnClickBtn(nMaxIdx);
 		m_nDoQuestStep = 0;
 		m_nYSDoing = ys_none;
+		m_nQuestStatus = 1;	// Xong: GetNewQuest hoi Da Tau (khong o lai ChoosePrize bam NPC mai)
 		if (m_bReturnItem)
 			theMap.m_bDoShoping = 0;
 		theMap.m_nTimeWait = 2;
@@ -818,10 +822,10 @@ void CVLQuest::GetNewQuest()
 			  Lua chon[2] [TCVN3]:  KÕt thóc ®èi tho¹i!
 			*/
 			// 15-10: click NPC hien menu chinh truoc, chon dong "Nhan nhiem vu"
-			size_t nKeyLen = strlen(YS_MENU_GETQUEST);
+			size_t nKeyLen = strlen(TV(L"Biết rồi, ta đi làm ngay"));
 			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 			{				
-				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, YS_MENU_GETQUEST, nKeyLen))
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Biết rồi, ta đi làm ngay"), nKeyLen))
 				{
 					m_nQuestStatus = 1;
 					m_nYSDoing = ys_none;
@@ -880,6 +884,7 @@ void CVLQuest::GetNewQuest()
 					GetYesouQuestFromKUiMsgSel2(pMsgSel2);
 					m_nQuestStatus = 1;
 					m_nYSDoing = ys_doing;
+					m_nDoQuestStep = 0;	// DoQuestAttackNpc / DoQuestItemOption bat dau tu buoc 0
 					QTRACE(TV(L"GetNewQuest: chon dong [%d] Ta biết rồi"), i);
 					pMsgSel2->OnClickMsg(i);
 					// Xong voi Da Tau: tra co Shoping, neu khong ChangeMap bo qua buoc chay toi xa phu
@@ -1162,6 +1167,92 @@ void CVLQuest::DoQuest01()
 	theMap.ClickToNpc(ptNpcPoint.x, ptNpcPoint.y);
 }
 
+// Tim mua do o sap (DoQuest0203): rut tien du gia toi da (tab Mua do) truoc khi tim, mua xong / thoi tim thi cat lai
+// phan da rut. Truoc day khong rut => "Tim duoc do phu hop, ma khong du tien!"
+static int		s_nBuyMoneyStage = 0;	// 0 chua kiem tra, 1 rut, 2 cho tien ve, 3 xong
+static int		s_nBuyMoneyBefore = -1;	// Tien tren nguoi truoc khi rut (-1 = chua rut)
+static DWORD	s_dwBuyMoneyTick = 0;
+static int		s_nBuyMoneyReq = 0;		// Tien tren nguoi luc gui lenh rut
+
+// Gia toi da (van) cho mon dang tim - giong SearchBuyItem (khong tim theo ten)
+static int BuyMaxPrice(CVLQuest *q, int nGenre, int nDetail, int nParticular)
+{
+	int nMaxPrice = q->m_BuyItemOpt.m_MaxPrice[price_other];
+	if (nGenre == item_equip)
+	{
+		if (nDetail == equip_ring)
+			nMaxPrice = q->m_BuyItemOpt.m_MaxPrice[price_ring];
+		else if (nDetail == equip_amulet || nDetail == equip_pendant)
+			nMaxPrice = q->m_BuyItemOpt.m_MaxPrice[price_pendant];
+	}
+	else if (nGenre == item_special && nParticular == 400)
+		nMaxPrice = q->m_BuyItemOpt.m_MaxPrice[price_satthugian];
+	return nMaxPrice;
+}
+
+// TRUE = dang rut tien (cho nhip sau)
+static BOOL BuyMoneyTick(CVLQuest *q, int nGenre, int nDetail, int nParticular)
+{
+	char szLog[160];
+	if (s_nBuyMoneyStage == 0)
+	{
+		if (s_nBuyMoneyBefore < 0) s_nBuyMoneyBefore = EQUIP_MONEY;
+		s_dwBuyMoneyTick = GetTickCount();
+		s_nBuyMoneyStage = 1;
+	}
+	if (s_nBuyMoneyStage == 1)
+	{
+		int nWant = BuyMaxPrice(q, nGenre, nDetail, nParticular) * 10000;
+		if (nWant <= EQUIP_MONEY) { s_nBuyMoneyStage = 3; return FALSE; }
+		if (ROOM_MONEY <= 0)
+		{
+			sprintf(szLog, TV(L"Cần %d vạn để mua, trên người %d vạn, rương hết tiền."), nWant / 10000, EQUIP_MONEY / 10000);
+			q->SaveYSLog(szLog);
+			s_nBuyMoneyStage = 3;
+			return FALSE;
+		}
+		if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+		{	// Ruong khoa: da gui lenh mo (mat khau tab Ban do)
+			theMap.m_bRoomLocked = TRUE;
+			if (GetTickCount() - s_dwBuyMoneyTick < 15000) return TRUE;
+			q->SaveYSLog(TV(L"Mở khóa rương 15s không được => tìm mua bằng tiền đang có."));
+			s_nBuyMoneyStage = 3;
+			return FALSE;
+		}
+		int nTake = nWant - EQUIP_MONEY;
+		if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
+		sprintf(szLog, TV(L"Rút %d vạn từ rương để mua đồ (giá tối đa %d vạn, trên người %d vạn)."),
+			nTake / 10000, nWant / 10000, EQUIP_MONEY / 10000);
+		q->SaveYSLog(szLog);
+		s_nBuyMoneyReq = EQUIP_MONEY;
+		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
+		s_dwBuyMoneyTick = GetTickCount();
+		s_nBuyMoneyStage = 2;
+		return TRUE;
+	}
+	if (s_nBuyMoneyStage == 2)
+	{	// Cho tien ve tren nguoi (toi da 5s)
+		if (EQUIP_MONEY <= s_nBuyMoneyReq && GetTickCount() - s_dwBuyMoneyTick < 5000) return TRUE;
+		s_nBuyMoneyStage = 3;
+	}
+	return FALSE;
+}
+
+// Cat lai tien da rut (giu bang so tien truoc khi rut)
+static void BuyMoneyPutBack(CVLQuest *q)
+{
+	if (s_nBuyMoneyBefore >= 0 && EQUIP_MONEY > s_nBuyMoneyBefore)
+	{
+		int nSave = EQUIP_MONEY - s_nBuyMoneyBefore;
+		char szLog[128];
+		sprintf(szLog, TV(L"Cất %d lượng vào rương (giữ %d lượng như trước khi rút)."), nSave, s_nBuyMoneyBefore);
+		q->SaveYSLog(szLog);
+		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, TRUE, nSave);
+	}
+	s_nBuyMoneyBefore = -1;
+	s_nBuyMoneyStage = 0;
+}
+
 void CVLQuest::DoQuest0203()
 {
 	static int nNextCityID = 0;
@@ -1178,6 +1269,8 @@ void CVLQuest::DoQuest0203()
 		m_bReturnItem = 0;
 		memset(&theItem, -1, sizeof(PlayerItem));
 		memset(m_bVsNpc, 0, sizeof(m_bVsNpc));
+		s_nBuyMoneyStage = 0;
+		s_nBuyMoneyBefore = -1;
 		m_nDoQuestStep = 1;
 	}
 
@@ -1213,6 +1306,7 @@ void CVLQuest::DoQuest0203()
 			KItem* pItem = (KItem*)(dwItmBaseAdd + theItem.nIdx * ITM_DATA_SIZE);
 			if (ComAttr.bStack && pItem->m_nCurDur > 1)
 				g_pCoreShell->OperationRequest(GOI_SHIFT_ITEM, theItem.nIdx, 1);
+			BuyMoneyPutBack(this);	// Da co do (vd mua xong o thanh truoc): cat tien da rut
 			m_nYSDoing = ys_return;
 			theMap.NearestDriver();
 		}
@@ -1264,6 +1358,8 @@ void CVLQuest::DoQuest0203()
 	if (bRunToYeSou && theMap.RunningToPos(theMap.NpcPoints[npc_YeSou])) return;
 	bRunToYeSou = 0;
 
+	if (BuyMoneyTick(this, m_nRqGenre, m_nRqDetail, m_nRqParticular)) return;	// Rut tien du gia toi da truoc khi tim mua
+
 	int nBuyResult = SearchBuyItem();
 	QTRACE("DoQuest0203: SearchBuyItem => %d (0=khong thay, 1=dang tim, 2=da mua)", nBuyResult);
 	if (nBuyResult == 1) return; // Continue
@@ -1272,9 +1368,11 @@ void CVLQuest::DoQuest0203()
 	bRunToYeSou = TRUE;
 	theMap.NearestDriver();
 	memset(m_bVsNpc, 0, sizeof(m_bVsNpc));
+	s_nBuyMoneyStage = 0;	// Thanh sau kiem tra lai tien
 
 	if (nBuyResult == 2)
 	{
+		BuyMoneyPutBack(this);	// Mua xong: cat lai tien da rut
 		nNextCityID = GetNextSearchCity(TRUE);
 		return;
 	}
@@ -1284,6 +1382,7 @@ void CVLQuest::DoQuest0203()
 		nNextCityID = GetNextSearchCity();
 		if (!nNextCityID)
 		{
+			BuyMoneyPutBack(this);	// Thoi tim: cat lai tien da rut
 			if (m_BuyItemOpt.m_bNotFoundCancel)
 			{
 				m_nYSDoing = ys_cancel;

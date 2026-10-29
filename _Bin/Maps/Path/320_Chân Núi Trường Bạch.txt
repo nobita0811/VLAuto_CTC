@@ -1,4 +1,4 @@
-; VLAuto MapPath - Map 320 Ch©n Nói Tr­êng B¹ch
+; VLAuto MapPath - Map 320 Ch©n nói Tr­êng B¹ch
 ; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
 [Points]
 0,36384,100832

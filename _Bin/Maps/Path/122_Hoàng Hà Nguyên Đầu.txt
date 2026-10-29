@@ -1,0 +1,14 @@
+; VLAuto MapPath - Map 122 Hoµng Hµ Nguyªn §Çu
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)
+[Points]
+0,50608,106872
+1,50740,106500
+2,52506,102708
+3,52728,102300
+[Sides]
+0,1
+2,3
+[Doors]
+1,125,57952,103008
+3,125,54464,95744
+[Driver]

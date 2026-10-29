@@ -225,7 +225,8 @@ void CVLRecover::CheckEquip()
 			char szMessage[128];
 			// Trang bị sắp hỏng
 			sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Trang bị sắp hỏng: <color=red><%s>"), ComAttr.szItemName); 
-			PostChatMessage(szMessage);
+			PostChatMessage2(szMessage);
+			SystemMessage(1,szMessage);
 			if (P_PLAYER->m_FightMode)
 			{
 				if (m_bAMByDur || pItem->m_nCurDur < 3)
@@ -251,7 +252,8 @@ void CVLRecover::CheckInventory()
 	{
 		char szMessage[128];
 		sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Tiền <color=red>%d vạn <color>  về thành cất tiền (!cy) "), EQUIP_MONEY/10000);
-		PostChatMessage(szMessage);
+		PostChatMessage2(szMessage);
+		SystemMessage(1,szMessage);
 		OnUseAM();
 		return;
 	}
@@ -279,7 +281,8 @@ void CVLRecover::CheckInventory()
 		}
 		if (!bHaveRoom)
 		{			
-			PostChatMessage(TV(L"<color=green>VLCTCPro<color> : <color=red> Hành trang đã đầy cần về thành<color> (!cy)"));
+			PostChatMessage2(TV(L"<color=green>VLCTCPro<color> : <color=red> Hành trang đã đầy cần về thành<color> (!cy)"));
+			SystemMessage(TV(L"<color=green>VLCTCPro<color> : <color=red> Hành trang đã đầy cần về thành<color> (!cy)"));
 			OnUseAM();
 		}
 			

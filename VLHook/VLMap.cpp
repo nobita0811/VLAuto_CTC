@@ -114,6 +114,30 @@ static BOOL NeedBuyAmulet()
 	return g_pCurPlayer->GetItemsCount(AMULET_PAPER) < nNeedTDP;
 }
 
+// So mon Tho Dia Phu con phai mua (moi mon 1 o)
+static int AmuletNeedCount()
+{
+	if (!theMap.m_bBuyTDP) return 0;
+	int nNeedTDP = theMap.m_nAMNumbers > 0 ? theMap.m_nAMNumbers : 1;
+	int nHave = g_pCurPlayer->GetItemsCount(AMULET_PAPER);
+	return nNeedTDP > nHave ? nNeedTDP - nHave : 0;
+}
+
+// So mon mau/mana/thuoc con phai mua (moi mon 1 o)
+static int MedicineNeedCount()
+{
+	int nNeed = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		if (!theMap.m_TradeItem[i].bBuyCheck) continue;
+		int nItemPos = theMap.m_TradeItem[i].nItemPos;
+		int nItemCount = g_pCurPlayer->GetItemsCount(item_medicine, theMap.m_ShopItem[nItemPos].nItemType);
+		if (theMap.m_TradeItem[i].nBuyAmout > nItemCount)
+			nNeed += theMap.m_TradeItem[i].nBuyAmout - nItemCount;
+	}
+	return nNeed;
+}
+
 // Con thieu mau/mana/thuoc da chon mua (so luong trong hanh trang < so luong cai dat)
 static BOOL NeedBuyMedicine()
 {
@@ -625,6 +649,14 @@ BOOL CVLMap::ChangeMap(int nNewMapID)
 	char szCityName[64] = "";
 	if ((*g_pMapID) == nNewMapID) return 0;
 
+	// Uu tien vat pham ([Item] trong Maps\Path) neu co trong hanh trang; dang tu di thi cho (cac noi goi tra ve)
+	if (PathTravelActive()) return TRUE;
+	if (PathTravelItemStart(nNewMapID))
+	{
+		QTRACE("ChangeMap: %d -> %d dung vat pham (MapPath [Item])", *g_pMapID, nNewMapID);
+		return TRUE;
+	}
+
 	int nOwnerID = theMain.GetOwnerCity(*g_pMapID);
 	if (nOwnerID == (*g_pMapID))
 		theMain.GetCityName(nNewMapID, szCityName);
@@ -644,7 +676,7 @@ BOOL CVLMap::ChangeMap(int nNewMapID)
 		WithdrawMoneyForXaPhu();
 		if (ROOM_MONEY < 500)
 		{
-			PostChatMessage(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Tiền trong rương không đủ, không thể rỳt tiền!!!"));
+			PostChatMessage2(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Tiền trong rương không đủ, không thể rỳt tiền!!!"));
 			// tắt tất cả cửa sổ
 			CloseAllWindows(0);
 			return FALSE;
@@ -931,6 +963,8 @@ void CVLMap::GetGroceries()
 			GetRepairItems();
 			return;
 		}
+		//Thieu cho trong: ban do (SellItems.txt / Nhat do khong giu) truoc khi mua
+		if (MakeShopRoom(AmuletNeedCount())) return;
 		//Full Room
 		if (g_pCurPlayer->CheckRoom() == MAX_ROOM_SPACE)
 		{
@@ -1020,6 +1054,10 @@ void CVLMap::GetPharmacy()
 			GetRepairItems();
 			return;
 		}
+		//Thieu cho trong: ban do (SellItems.txt / Nhat do khong giu) truoc khi mua
+		int nNeedCells = MedicineNeedCount();
+		if (theRecover.m_bUsePoison && P_PLAYER->m_PoisonState.nTime) nNeedCells++;
+		if (MakeShopRoom(nNeedCells)) return;
 		//Full Room
 		if (g_pCurPlayer->CheckRoom() == MAX_ROOM_SPACE)
 		{
@@ -1426,6 +1464,44 @@ void CVLMap::UseThanHanhPhu()
 
 	g_pCurPlayer->UseItem(TV(L"Thần Hành Phù"));
 	m_nTimeWait = MAX_TIME_WAIT;
+}
+
+// Goi khi bang shop dang mo, truoc khi mua (bat "Ban do" tab Ban do): ban HET do trong SellItems.txt / do Nhat do
+// khong giu (SellItems, moi nhip 1 mon, bo do dang cam tren chuot vao hanh trang) roi moi mua.
+// Truoc day day ruong thi GetGroceries / GetPharmacy bo qua luon, khong mua gi.
+// Mon khong ban duoc (server tu choi) se bi chon lai mai => toi da MAX_SHOP_SELL lan trong 60s
+#define MAX_SHOP_SELL	60
+BOOL CVLMap::MakeShopRoom(int nNeed)
+{
+	static int s_nSold = 0;
+	static DWORD s_dwFirstTick = 0;
+	static BOOL s_bSaid = FALSE;
+	if (s_dwFirstTick && GetTickCount() - s_dwFirstTick > 60000)
+	{
+		s_nSold = 0;
+		s_dwFirstTick = 0;
+		s_bSaid = FALSE;
+	}
+	if (!m_bSellItems || nNeed <= 0) return FALSE;
+	if (s_nSold < MAX_SHOP_SELL && SellItems())
+	{
+		if (!s_nSold)
+		{
+			s_dwFirstTick = GetTickCount();
+			SystemMessage(TV(L"<color=yellow>Bán đồ trước khi mua..."));
+		}
+		s_nSold++;
+		return TRUE;
+	}
+	int nFree = EQUIP_ROOM.m_nWidth * EQUIP_ROOM.m_nHeight - g_pCurPlayer->CheckRoom();
+	if (!s_bSaid && (s_nSold || nFree < nNeed))
+	{
+		s_bSaid = TRUE;
+		if (!s_dwFirstTick) s_dwFirstTick = GetTickCount();
+		SystemMessage(0, TV(L"<color=yellow>Đã bán %d lần, hành trang còn %d ô trống (cần %d)%s"), s_nSold, nFree, nNeed,
+			s_nSold >= MAX_SHOP_SELL ? TV(L" - bán quá nhiều lần, dừng bán") : "");
+	}
+	return FALSE;
 }
 
 BOOL CVLMap::SellItems()

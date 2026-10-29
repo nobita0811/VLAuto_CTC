@@ -44,7 +44,15 @@ void PostChatMessage(const char *szChatMsg)
 	sprintf(szScript, "Chat('CH_NEARBY','%s')", szChatMsg);
 	ExecuteScript(szScript);
 }
-
+void PostChatMessage2(const char* szChatMsg)
+{
+	if (QUANGCAOAUTO)
+	{
+		char szScript[MAX_PATH];
+		sprintf(szScript, "Chat('CH_NEARBY','%s')", szChatMsg);
+		ExecuteScript(szScript);
+	}	
+}
 // Chu hoa TCVN3: a-z -> A-Z, ¨ © ª « ¬ ­ ® (0xA8-0xAE) -> ¡ ¢ £ ¤ ¥ ¦ § (0xA1-0xA7).
 // Chu co dau (a sac, a mu sac, o mu huyen...) TCVN3 chi co 1 ma dung chung cho hoa/thuong => giu nguyen.
 // Khong dung toupper/CharUpper: chung doi theo code page Windows (0xE0-0xFE...) lam hong ma TCVN3
@@ -504,7 +512,7 @@ BOOL KPlayer::EatMedicine(int nDetailType)
 			if (ComAttr.nItemGenre == item_medicine)
 			{
 				bFound = ((ComAttr.nDetailType == nDetailType) ||
-					(ComAttr.nDetailType == medicine_both && nDetailType <= medicine_mana));
+					(ComAttr.nDetailType == medicine_both && nDetailType <= medicine_mana) || (ComAttr.nDetailType == medicine_both_ex && nDetailType <= medicine_mana));
 			}
 			else if (ComAttr.nItemGenre == item_special)
 			{

@@ -1,4 +1,4 @@
-; VLAuto MapPath - Map 195 Nh¹n §·ng S¬n
+; VLAuto MapPath - Map 195 Nh¹n §·ng s¬n
 ; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
 [Points]
 0,47744,107616

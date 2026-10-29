@@ -1,0 +1,13 @@
+; VLAuto MapPath - Map 322 Tr­êng B¹ch s¬n B¾c
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,65536,131840
+1,50624,100704
+2,50250,100200
+[Sides]
+1,2
+[Doors]
+0,320,50478,74400
+1,320,44355,71400
+2,320,44352,72096
+[Driver]

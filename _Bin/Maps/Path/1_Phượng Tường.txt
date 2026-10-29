@@ -1,5 +1,5 @@
 ; VLAuto MapPath - Map 1 Ph­îng T­êng
-; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)
 [Points]
 0,52838,105006
 1,52556,104836
@@ -21,6 +21,8 @@
 17,52455,101994
 18,52918,101468
 19,52714,101316
+20,51543,102682
+21,53429,100871
 [Sides]
 0,1
 1,2
@@ -41,6 +43,9 @@
 16,17
 17,18
 18,19
+17,20
+20,4
+18,21
 [Doors]
 [Driver]
 0,11, Thµnh §« phñ [200 L­îng]

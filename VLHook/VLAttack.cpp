@@ -598,17 +598,34 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 			if (P_PLAYER->m_Doing == do_attack && nLagCount < nLagRunCheck && nLagCount > 2)
 				nLagCount = nLagRunCheck; //attacking then increase check lag
 			if (nLagCount < nLagAttCheck) return 0;
-			for (int i = 0; i < 3; i++)
-			{
-				if (m_BadNpc[i].IsNull())
-				{
-					m_BadNpc[i].SetValue(pNpc->m_dwID, pNpc->m_CurrentLife);
-					break;
-				}
-			}
+			// Quai lag: ghi vao m_BadNpc va bo han. Truoc day du 3 o thi khong ghi duoc, nLagCount giu nguyen
+			// => moi nhip deu "lag" nhung SearchNearestNpc van nhan lai chinh con do (khoa cung muc tieu)
+			AddBadNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
+			SetPeopleIdx(0);
+			m_LastNpcLife = 0;
+			dwLastNpcID = 0;
+			nLagCount = 0;
 		}
 	}
 	return TRUE;
+}
+
+void CVLAttack::AddBadNpc(DWORD dwID, int nLife)
+{
+	int iSlot = -1;
+	for (int i = 0; i < 3 && iSlot < 0; i++)
+		if (m_BadNpc[i].m_dwID == dwID) iSlot = i;
+	if (iSlot < 0)
+	{	// O trong truoc, khong co thi o sap het han nhat
+		iSlot = 0;
+		for (int i = 1; i < 3; i++)
+		{
+			int nCur = m_BadNpc[i].IsNull() ? -1 : m_BadNpc[i].m_LifeTime;
+			int nBest = m_BadNpc[iSlot].IsNull() ? -1 : m_BadNpc[iSlot].m_LifeTime;
+			if (nCur < nBest) iSlot = i;
+		}
+	}
+	m_BadNpc[iSlot].SetValue(dwID, nLife);
 }
 
 int CVLAttack::SearchNearestNpc(int nX, int nY, int nRange)

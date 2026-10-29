@@ -1,0 +1,8 @@
+; VLAuto MapPath - Map 13 Nga My ph¸i
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,63232,168704
+[Sides]
+[Doors]
+0,11,90800,162976
+[Driver]

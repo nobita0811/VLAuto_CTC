@@ -1,4 +1,4 @@
-; VLAuto MapPath - Map 82 Mª Cung §¸y GiÕng
+; VLAuto MapPath - Map 82 Mª cung §¸y giÕng
 ; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
 [Points]
 0,50793,102112

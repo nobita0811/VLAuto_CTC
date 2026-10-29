@@ -204,6 +204,8 @@ public:
 	static void RefreshNpcs();
 };
 
+#define LAG_NPC_TIME		600		// ~60s (giam moi lan IsLagTarget, 100ms)
+
 class KLagNpc
 {
 public:
@@ -211,9 +213,9 @@ public:
 	int		m_CurLife;
 	int		m_LifeTime;
 public:
-	KLagNpc() { m_dwID = 0; m_CurLife = 0; m_LifeTime = 180; }
+	KLagNpc() { m_dwID = 0; m_CurLife = 0; m_LifeTime = LAG_NPC_TIME; }
 	KLagNpc(DWORD dwID, int CurLife) { m_dwID = dwID; m_CurLife = CurLife; }
-	void SetValue(DWORD dwID, int CurLife) { m_dwID = dwID; m_CurLife = CurLife; m_LifeTime = 180; }
+	void SetValue(DWORD dwID, int CurLife) { m_dwID = dwID; m_CurLife = CurLife; m_LifeTime = LAG_NPC_TIME; }
 	BOOL IsNull() { return (m_dwID==0); }
 	void operator = (DWORD dwID) { m_dwID = dwID; m_CurLife = 0; }
 	void operator = (const KLagNpc& _Right)
@@ -221,13 +223,15 @@ public:
 		m_dwID = _Right.m_dwID;
 		m_CurLife = _Right.m_CurLife;
 	}
+	// Chi so ID: truoc day so ca mau => quai lag hoi mau / server dong bo lai mau la khong con khop,
+	// Chien dau nhan lai ngay con lag do (khoa cung muc tieu). Het m_LifeTime moi thu lai.
 	BOOL operator == (const KLagNpc& _Right)
 	{
-		return (m_dwID == _Right.m_dwID &&	m_CurLife == _Right.m_CurLife);
+		return (m_dwID == _Right.m_dwID);
 	}
 	BOOL operator != (const KLagNpc& _Right)
 	{
-		return (m_dwID != _Right.m_dwID || m_CurLife != _Right.m_CurLife);
+		return (m_dwID != _Right.m_dwID);
 	}
 };
 
@@ -291,6 +295,7 @@ public:
 	void	HandleInDirectSkills();
 	void	DoSpecialSkill(int nSkillIdx, BOOL bDirect = TRUE);
 	BOOL	IsLagTarget(int nIndex);
+	void	AddBadNpc(DWORD dwID, int nLife);	// Ghi quai lag vao m_BadNpc (da co: gia han, day: thay o sap het han)
 	int		SearchNearestNpc(int nX, int nY, int nRange);
 	void	AutoDefence();
 	void	ReleaseEnemy();
@@ -653,6 +658,7 @@ public:
 	void GetDriver();
 	void UseThanHanhPhu();
 	BOOL SellItems();
+	BOOL MakeShopRoom(int nNeed);	// Shop dang mo: hanh trang thieu cho cho nNeed mon thi ban 1 mon (TRUE = da ban, cho nhip sau)
 	BOOL SaveItems();//Put Items into Repository
 	BOOL CheckReady();
 	void ClickToNpc(int nX, int nY);

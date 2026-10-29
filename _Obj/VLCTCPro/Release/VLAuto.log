@@ -1,31 +1,40 @@
-﻿  DlgAbout.cpp
-  DlgAttack.cpp
+﻿  stdafx.cpp
+  AutoParams.cpp
+  GameWindow.cpp
+  LoginSck.cpp
+  VLAuto.cpp
+  VLAutoDlg.cpp
+  CrashHandler.cpp
+  KDtrFix.cpp
+  DlgAbout.cpp
   DlgAutoLogin.cpp
+  DlgDebug.cpp
+  DlgAttack.cpp
+  DlgSettingSkill.cpp
   DlgBasic.cpp
-  DlgBuySetting.cpp
   DlgCollect.cpp
   DlgCollectSetting.cpp
-  DlgDebug.cpp
-  DlgExit.cpp
-  DlgFindItem.cpp
-  DlgLogin.cpp
+  DlgBuySetting.cpp
   DlgMap.cpp
   DlgMove.cpp
   DlgMovePoints.cpp
-  DlgOption.cpp
-  DlgPKQFilter.cpp
   DlgParty.cpp
-  DlgRecover.cpp
-  DlgSettingSkill.cpp
-  DlgUtility.cpp
   Generating Code...
   Compiling...
+  DlgRecover.cpp
   DlgYeSou.cpp
-  GameWindow.cpp
-  LoginSck.cpp
+  DiskID32.cpp
+  DWinProcess.cpp
+  MiniBrowser.cpp
   MyListCtrl.cpp
-  VLAuto.cpp
-  VLAutoDlg.cpp
+  UiControls.cpp
+  VNUnicode.cpp
+  DlgExit.cpp
+  DlgFindItem.cpp
+  DlgLogin.cpp
+  DlgOption.cpp
+  DlgPKQFilter.cpp
+  DlgUtility.cpp
   YSAddPoint.cpp
   YSBuyItem.cpp
   YSPrizeSel.cpp

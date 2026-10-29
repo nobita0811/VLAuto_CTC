@@ -2109,20 +2109,22 @@ static int TvFindNpc()
 	return nBest;
 }
 
+// Obj cong gan diem ghi nhat: uu tien dung ten da ghi, khong co thi lay Obj cong gan nhat (ten co the khac/chua ghi)
 static int TvFindObj()
 {
-	int nBest = 0, dMin = TV_NPC_RANGE;
+	int nBest = 0, dMin = TV_NPC_RANGE, nAny = 0, dAny = TV_NPC_RANGE;
 	for (int i = 1; i < MAX_OBJ; i++)
 	{
 		KObj *pObj = g_pObjArray[i];
 		if (pObj->m_nID == -1 || !IsDoorObjKind(pObj->m_Kind)) continue;
-		if (s_TvLink.szMenu[0] && strcmp(pObj->m_szName, s_TvLink.szMenu)) continue;
 		int ox, oy;
 		pObj->GetMapPos(&ox, &oy);
 		int d = __distance(ox, oy, s_ptTvGoal.x, s_ptTvGoal.y);
+		if (d < dAny) { dAny = d; nAny = i; }
+		if (s_TvLink.szMenu[0] && strcmp(pObj->m_szName, s_TvLink.szMenu)) continue;
 		if (d < dMin) { dMin = d; nBest = i; }
 	}
-	return nBest;
+	return nBest ? nBest : nAny;
 }
 
 // Dung vat pham roi chon lan luot cac dong menu. s_dwTvTick tinh lai sau moi lan tien trien
@@ -2203,11 +2205,14 @@ static void TvAct(int x, int y)
 		return;
 	}
 	if (s_TvLink.nKind == door_obj)
-	{
+	{	// Giong mo ruong (CVLMap::OpenStoreBox): chay toi gan Obj roi dat m_nObjectIdx de game tu click Obj
 		if (s_dwTvAct && dwNow - s_dwTvAct < 2000) return;
 		int nObj = TvFindObj();
 		if (!nObj) { TvMoveTo(x, y, s_ptTvGoal.x, s_ptTvGoal.y); return; }
-		g_pCurPlayer->PickUpObj(nObj);
+		int ox, oy;
+		g_pObjArray[nObj]->GetMapPos(&ox, &oy);
+		if (__distance(ox, oy, x, y) > PLAYER_PICKUP_DISTANCE) { g_pCurPlayer->MoveTo(ox, oy); return; }
+		P_PLAYER->m_nObjectIdx = nObj;
 		s_dwTvAct = dwNow;
 		return;
 	}
@@ -2374,6 +2379,28 @@ BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
 	CloseMenu();
 	s_nTvMap = 0;	// Lap ke hoach o PathTravelBreathe
 	return TRUE;
+}
+
+// CVLMap::ChangeMap: co vat pham ([Item]) dua toi nTarget (lo trinh tot nhat bat dau bang vat pham) thi tu di bang MapPath.
+// FALSE = khong co (dung xa phu nhu cu). Khong co thi 10s sau moi xet lai cung map (LoadLinks doc het file)
+BOOL PathTravelItemStart(int nTarget)
+{
+	static int s_nNoTarget = 0, s_nNoMap = 0;
+	static DWORD s_dwNoTick = 0;
+	static PT_LINK Steps[PT_MAX_STEPS];
+	int nMap = *g_pMapID;
+	if (!nTarget || nMap == nTarget || !IsPlayerOk() || PathTravelActive()) return FALSE;
+	DWORD dwNow = GetTickCount();
+	if (nTarget == s_nNoTarget && nMap == s_nNoMap && dwNow - s_dwNoTick < 10000) return FALSE;
+	if (nTarget == s_nTvFailTarget && dwNow - s_dwTvFailTick < 300000) return FALSE;	// vua that bai: dung xa phu
+	LoadLinks();
+	if (MapBFS(nMap, nTarget, Steps) <= 0 || !Steps[0].bItem)
+	{
+		s_nNoTarget = nTarget; s_nNoMap = nMap; s_dwNoTick = dwNow;
+		return FALSE;
+	}
+	s_nNoTarget = 0;
+	return PathTravelStart(nTarget, FALSE);
 }
 
 // Trang thai tu di (cho nut Trang thai tab Ban do)
