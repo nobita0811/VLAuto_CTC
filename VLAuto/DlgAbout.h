@@ -31,6 +31,7 @@ protected:
 	afx_msg void	OnBnClickedHcopyButton();
 	afx_msg void	OnBnClickedCcopyButton();
 	afx_msg void	OnBnClickedDebugButton();
+	afx_msg void	OnBnClickedMoveMap37Button();
 
 	DECLARE_MESSAGE_MAP()
 

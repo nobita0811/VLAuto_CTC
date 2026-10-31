@@ -152,6 +152,8 @@
 34,78, T­¬ng D­¬ng phñ [300 L­îng]
 34,80, D­¬ng Ch©u phñ [200 L­îng]
 34,174,Long TuyÒn th«n[200 L­îng]
+[Item]
+T©n Thñ thiÕp,1,1,7,1
 [NPC]
 50369,93883
 43278,96463

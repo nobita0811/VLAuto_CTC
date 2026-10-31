@@ -775,6 +775,7 @@ enum SENDCMD
 	cmd_attack,			// Gui lenh tan cong doi thu
 	cmd_useam,			// Da dung 1 Tho Dia Phu / Hoi Thanh Phu (VLAuto dem cho bang Thong ke)
 	cmd_tongmoney,		// VLAuto -> Game: gop lParam luong tien tren nguoi vao quy bang (bang Thong ke > Gom tien)
+	cmd_walkcitybox,	// VLAuto -> Game: chay bo (MapPath, khong xa phu / vat pham) toi map lParam roi mo ruong de luu ruong (tab Tro giup)
 };
 
 //=============================== DEBUG ===============================

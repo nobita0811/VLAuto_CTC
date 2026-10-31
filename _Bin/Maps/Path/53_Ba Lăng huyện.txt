@@ -1,19 +1,46 @@
 ; VLAuto MapPath - Map 53 Ba L¨ng huyÖn
-; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
 [Points]
 0,51819,101689
 1,51280,102762
 2,50595,103642
 3,51190,101730
 4,50658,101278
+5,51668,101380
+6,51908,102960
+7,52560,103325
+8,53150,103977
+9,54140,104912
+10,54823,104495
+11,55463,104049
+12,56079,103728
+13,56495,102749
+14,56921,102000
+15,57288,101558
+16,56918,101742
 [Sides]
 0,1
 0,3
 1,2
 1,3
 3,4
+0,5
+1,6
+6,7
+7,8
+8,9
+9,10
+10,11
+11,12
+12,13
+13,14
+14,15
+14,16
 [Doors]
+16,59,45481,110994,2,Ng­ d©n,0,0
 [Driver]
+[Item]
+T©n Thñ thiÕp,1,1,0
 [NPC]
 51593,101357
 50507,103567

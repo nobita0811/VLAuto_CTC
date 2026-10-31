@@ -1,5 +1,5 @@
 ; VLAuto MapPath - Map 37 BiÖn Kinh
-; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten[,dong1,dong2,... (NPC: chon dong menu dem tu 0)]]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
 [Points]
 0,52349,102160
 1,52583,101968
@@ -680,6 +680,8 @@
 282,78, T­¬ng D­¬ng phñ [200 L­îng]
 282,80, D­¬ng Ch©u phñ [300 L­îng]
 282,176, L©m An phñ [500 L­îng]
+[Item]
+T©n Thñ thiÕp,1,1,5,1
 [NPC]
 55154,98548
 51030,95774

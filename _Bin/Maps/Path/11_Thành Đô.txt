@@ -471,6 +471,8 @@
 194,176, L©m An phñ [500 L­îng]
 194,80, D­¬ng Ch©u phñ [400 L­îng]
 194,20,Giang T©n Th«n[100 L­îng]
+[Item]
+T©n Thñ thiÕp,1,1,1,1
 [NPC]
 101022,162451
 96892,158668

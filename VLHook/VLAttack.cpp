@@ -228,7 +228,7 @@ void CVLAttack::Breathe()
 				nRange = P_PLAYER->m_CurrentAttackRadius;
 		}
 	}
-	//if (theRecover.m_bEmptyMana) nRange = 0;
+	if (theRecover.m_bEmptyMana) nRange = 0;
 	if (theQuest.m_bAutoDoQuest && theQuest.m_bGoTrainGetPK) nRange = PLAYER_PICKUP_DISTANCE;
 
 	nTargetIdx = SearchNearestNpc(nX, nY, nRange);

@@ -323,6 +323,8 @@
 21,80, D­¬ng Ch©u phñ [500 L­îng]
 21,20,Giang T©n Th«n[200 L­îng]
 21,153,Th¹ch Cæ trÊn[100 L­îng]
+[Item]
+T©n Thñ thiÕp,1,1,4,1
 [NPC]
 50452,100235
 0,0

@@ -51,6 +51,9 @@ public:
 	int		m_nTongCityTimer;	// g_RunningTimer: da ve thanh, cho toi moc nay moi gop (0 = chua ve thanh)
 	int		m_nTongStep;		// TONG_STEP (VLMain.cpp): ve thanh -> rut tien ruong -> gop
 	int		m_nTongEquipBase;	// Tien tren nguoi luc gui lenh rut tien ruong
+	int		m_nWcbStep;			// Chay bo ve thanh luu ruong (tab Tro giup): WCB_STEP (VLMain.cpp), 0 = khong chay
+	int		m_nWcbMap;			// Map dich (thanh co ruong)
+	DWORD	m_dwWcbTick;		// Luc bat dau buoc hien tai
 
 private:
 	unsigned m_uHardDiskID;
@@ -61,6 +64,9 @@ public:
 	BOOL PostFeedBack(WPARAM wParam, LPARAM lParam = -1);
 	BOOL StoreTongMoney(int nMoney);
 	void TongMoneyBreathe();
+	void StartWalkCityBox(int nMapID);
+	void WalkCityBoxStop(const char *szMsg);
+	void WalkCityBoxBreathe();
 	BOOL UseAmuletPaper();
 	BOOL HaveTownPortal();
 	void SetDllFilePath(char *szDllFile);

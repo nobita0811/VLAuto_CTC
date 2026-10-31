@@ -164,7 +164,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	if (!bExpLimit)
 	{
 		{ CRASH_STAGE("theRecover.Breathe"); theRecover.Breathe(); }
-		if (!theMain.m_nTongMoney)	// Dang gom tien len bang: khong nhat do
+		if (!theMain.m_nTongMoney && !theMain.m_nWcbStep)	// Dang gom tien len bang / chay bo ve thanh luu ruong: khong nhat do (nhat do keo nhan vat lai, dung im)
 			{ CRASH_STAGE("theCollect.Breathe"); CQuestMoveAllow qa; theCollect.Breathe(); }
 	}
 
@@ -178,6 +178,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 		{ CRASH_STAGE("DebugQuestBreathe"); CQuestMoveAllow qa; CPauseMoveAllow pa; DebugQuestBreathe(); }
 		{ CRASH_STAGE("theBasic.TrimRamBreathe"); theBasic.TrimRamBreathe(); }
 		{ CRASH_STAGE("theMain.TongMoneyBreathe"); theMain.TongMoneyBreathe(); }
+		{ CRASH_STAGE("theMain.WalkCityBoxBreathe"); CPauseMoveAllow pa; theMain.WalkCityBoxBreathe(); }
 	}
 
 	// Vua tam ngung: dung lenh di dang do (GoTo cua game tu tim duong tiep ke ca khi Auto khong goi nua)
@@ -198,6 +199,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 
 	if (g_SysPause) return;
 	if (theMain.m_nTongMoney) return;	// Dang gom tien len bang (phu ve thanh -> gop quy): tam dung Auto
+	if (theMain.m_nWcbStep) return;		// Dang chay bo ve thanh luu ruong (WalkCityBoxBreathe): tam dung Auto
 
 	if (bExpLimit)
 	{
@@ -243,6 +245,8 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theMain.LoadOptions();
 			else if (wParam == cmd_tongmoney)
 				theMain.StoreTongMoney((int)lParam);
+			else if (wParam == cmd_walkcitybox)
+				theMain.StartWalkCityBox((int)lParam);
 			break;
 		case WM_HOOK_BASIC:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theBasic, lParam, NULL);

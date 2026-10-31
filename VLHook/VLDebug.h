@@ -56,7 +56,7 @@ BOOL		DebugPathKey(WPARAM wParam, LPARAM lParam);	// Phim tat MapPath (TRUE = da
 void		DebugPathUnhook();						// Go patch ve truoc khi FreeLibrary
 
 // Tu di theo MapPath (VLDebugPath.cpp) - dung trong Auto khi xa phu khong co map can toi
-BOOL		PathTravelStart(int nTarget, BOOL bUseMenu);	// TRUE = co lo trinh, bat dau di. bUseMenu: tinh ca menu xa phu dang mo
+BOOL		PathTravelStart(int nTarget, BOOL bUseMenu, BOOL bWalkOnly = FALSE);	// TRUE = co lo trinh, bat dau di. bUseMenu: tinh ca menu xa phu dang mo. bWalkOnly: chi chay bo (khong xa phu / vat pham)
 void		PathTravelBreathe();						// 200ms
 BOOL		PathTravelItemStart(int nTarget);				// TRUE = co vat pham ([Item]) toi nTarget, bat dau di (CVLMap::ChangeMap)
 BOOL		PathTravelActive();

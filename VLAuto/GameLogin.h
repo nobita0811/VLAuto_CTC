@@ -54,6 +54,12 @@
 #define LG_ROLE_INFO_SIZE	0x28		// 15_10 (10_10: 0x24, short Level +0x22)
 #define LG_ROLE_INFO_LEVEL	0x24
 #define LG_WND_S_VISIBLE	0x80000000
+#define LG_CI_SELF			0x007BE5E4	// KUiConnectInfo::m_pSelf ("登陆过程提示.ini", OpenWindow 0x481D50): bảng thông báo lúc kết nối / đăng nhập
+#define LG_CI_DESIRE		0x2814		// int m_nDesireLoginStatus: >= 1000 (CI_NS_*) hoặc 0 = thông báo lỗi, chờ bấm Xác định; còn lại = đang chờ trạng thái đăng nhập đó
+#define LG_CI_MESSAGE		0x2818		// char m_szMessage[0x180] (TCVN3): sprintf(chuỗi InfoString[eIndex] của UiCommon, m_szParam) trong SetInfoMsg 0x4828E0
+#define LG_CI_MESSAGE_SIZE	0x180
+#define LG_CI_MSGLEN		0x2998		// int m_nMsgLen
+#define LG_CI_NS_FIRST		1000		// CI_NS_INIT_WND
 
 static const DWORD s_dwInitButtons[] = { 0x039C, 0x0E64, 0x23F4, 0x192C };
 #define INIT_BUTTON_NUM		(sizeof(s_dwInitButtons) / sizeof(s_dwInitButtons[0]))

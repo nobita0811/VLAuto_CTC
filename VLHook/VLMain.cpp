@@ -5,6 +5,7 @@
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include "VLDebug.h"
 
 const int MapIDArray[] =
 { 0,1,1,1,1,1,1,1,1,11,11,11,11,11,11,0,0,0,0,11,11,11,11,11,11,11,11,11,11,0,0,0,0,0,0,0,0,37,37,37,37,80,80,80,0,37,37,37,37,37,
@@ -53,6 +54,8 @@ CVLMain::CVLMain(void)
 	m_bQuitingGame = 0;
 	m_uHardDiskID = 0;
 	m_nTongMoney = m_nTongTimeout = m_nTongCityTimer = m_nTongStep = m_nTongEquipBase = 0;
+	m_nWcbStep = m_nWcbMap = 0;
+	m_dwWcbTick = 0;
 }
 
 BOOL CVLMain::IsPEPacked()
@@ -185,6 +188,167 @@ void CVLMain::TongMoneyBreathe()
 	char buf[0x138] = { 0 };
 	g_pCoreShell->TongOperation(4, (int)p, (int)buf);
 	SystemMessage("<color=yellow>Auto: da gom tien len bang - chay tiep", 1);
+}
+
+//------------------------------------------------------------------ chay bo ve thanh luu ruong
+// Nut "Chay ve Bien Kinh luu ruong" (tab Tro giup) -> cmd_walkcitybox (lParam = map).
+// Chay bo theo MapPath (PathTravelStart bWalkOnly: khong xa phu / vat pham) toi map dich, roi chay toi ruong
+// (muc [NPC] cua file MapPath) va mo ruong => game nho ruong o thanh nay (Tho dia phu ve day).
+// Trong luc chay: Auto (danh quai, di chuyen, ban do...) tam dung, chi con Phuc hoi / Nhat do. Bam lai nut = huy.
+enum WCB_STEP { wcb_none, wcb_travel, wcb_box };
+#define WCB_BOX_TIMEOUT		300000	// 5 phut chua mo duoc ruong => dung (di bo tu cong thanh toi ruong kha xa)
+#define WCB_STILL_TIME		3000	// Dung im 3s ma chua mo duoc ruong => chay lai
+#define WCB_STILL_MAX		15		// Chay lai qua so lan nay => dung
+
+void CVLMain::WalkCityBoxStop(const char *szMsg)
+{
+	if (!m_nWcbStep) return;
+	m_nWcbStep = wcb_none;
+	if (PathTravelActive()) PathTravelStop(NULL);
+	PathWalkReset();
+	if (szMsg) SystemMessage(szMsg, 1);
+}
+
+void CVLMain::StartWalkCityBox(int nMapID)
+{
+	if (m_nWcbStep)
+	{
+		WalkCityBoxStop(TV(L"<color=yellow>Auto: đã hủy chạy về thành lưu rương"));
+		return;
+	}
+	if (!g_pCurPlayer || !g_pNpcArray[0] || g_pCurPlayer->m_nIndex <= 0 || !P_PLAYER->m_dwID || nMapID <= 0) return;
+	char szName[64];
+	GetMapName(nMapID, szName);
+	m_nWcbMap = nMapID;
+	m_dwWcbTick = GetTickCount();
+	PathWalkReset();
+	theMap.m_nTimeWait = 0;
+	if (*g_pMapID == nMapID)
+		m_nWcbStep = wcb_box;
+	else
+	{
+		if (PathTravelActive()) PathTravelStop(NULL);
+		if (!PathTravelStart(nMapID, FALSE, TRUE))
+		{
+			SystemMessage(1, TV(L"<color=red>Auto: không có đường chạy bộ tới %s (%d) trong Maps\\Path"), szName, nMapID);
+			return;
+		}
+		m_nWcbStep = wcb_travel;
+	}
+	SystemMessage(1, TV(L"<color=yellow>Auto: chạy bộ về %s lưu rương (bấm lại nút để hủy)"), szName);
+}
+
+// Chu ky 200ms, chay ca khi tam ngung (VLHook.cpp, trong CPauseMoveAllow)
+void CVLMain::WalkCityBoxBreathe()
+{
+	if (!m_nWcbStep || !g_pCurPlayer || !g_pNpcArray[0]) return;
+	if (g_pCurPlayer->m_nIndex <= 0 || !P_PLAYER->m_dwID) return;
+
+	if (m_nWcbStep == wcb_travel)
+	{
+		if (PathTravelActive())
+		{
+			theAttack.m_nEnemyIdx = 0;	// Khong danh quai doc duong (PathTravel dung cho khi co muc tieu)
+			PathTravelBreathe();
+			return;
+		}
+		if (*g_pMapID != m_nWcbMap)
+		{
+			WalkCityBoxStop(TV(L"<color=red>Auto: MapPath dừng giữa đường - chưa tới thành lưu rương"));
+			return;
+		}
+		m_nWcbStep = wcb_box;
+		m_dwWcbTick = GetTickCount();
+		theMap.m_nTimeWait = 0;
+		PathWalkReset();
+	}
+
+	if (*g_pMapID != m_nWcbMap)
+	{
+		WalkCityBoxStop(TV(L"<color=red>Auto: đã rời thành - hủy lưu rương"));
+		return;
+	}
+	DWORD dwNow = GetTickCount();
+	if (dwNow - m_dwWcbTick > WCB_BOX_TIMEOUT)
+	{
+		WalkCityBoxStop(TV(L"<color=red>Auto: 5 phút chưa mở được Rương - hủy lưu rương"));
+		return;
+	}
+
+	// Toa do Ruong trong muc [NPC] cua file MapPath (doc 1 lan moi lan bat dau buoc mo ruong)
+	static DWORD s_dwRepoTick = 0;
+	static POINT s_ptRepo = { 0, 0 };
+	BOOL bNew = s_dwRepoTick != m_dwWcbTick;
+	if (bNew)
+	{
+		POINT Npc[npc_Nums];
+		s_dwRepoTick = m_dwWcbTick;
+		s_ptRepo.x = s_ptRepo.y = 0;
+		if (PathLoadNpcs(m_nWcbMap, Npc) >= 0) s_ptRepo = Npc[npc_Repository];
+	}
+	BOOL bRepo = s_ptRepo.x || s_ptRepo.y;
+
+	// Kiem tra dung im: 3s khong nhuc nhich ma chua mo duoc ruong => chay lai
+	// (gan ruong: click ruong lai; xa ruong: lach sang ben 1 doan roi tinh lai duong MapPath tu cho dang dung)
+	static DWORD s_dwStillTick = 0, s_dwNudgeEnd = 0;
+	static POINT s_ptStill = { 0, 0 };
+	static int s_nStill = 0;
+	int x, y;
+	P_PLAYER->GetMapPos(&x, &y);
+	if (bNew) { s_nStill = 0; s_dwNudgeEnd = 0; }
+	if (bNew || __distance(x, y, s_ptStill.x, s_ptStill.y) > 32)
+	{	// Con di chuyen (hoac vua bat dau): moc lai
+		s_ptStill.x = x; s_ptStill.y = y;
+		s_dwStillTick = dwNow;
+	}
+	else if (dwNow - s_dwStillTick > WCB_STILL_TIME && dwNow > s_dwNudgeEnd)
+	{
+		if (++s_nStill > WCB_STILL_MAX)
+		{
+			s_nStill = 0;
+			WalkCityBoxStop(TV(L"<color=red>Auto: đứng im quá nhiều lần, chưa mở được Rương - hủy lưu rương"));
+			return;
+		}
+		s_dwStillTick = dwNow;
+		theMap.m_nTimeWait = 0;
+		PathWalkReset();
+		int d = bRepo ? __distance(x, y, s_ptRepo.x, s_ptRepo.y) : 0;
+		if (bRepo && d > PLAYER_PICKUP_DISTANCE * 3)
+		{	// Lach ngang 1 doan (doi huong moi lan), 1.5s sau moi chay tiep theo MapPath
+			static const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 }, dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+			int k = (s_nStill * 3) & 7;
+			g_pCurPlayer->MoveTo(x + dx[k] * 200, y + dy[k] * 200);
+			s_dwNudgeEnd = dwNow + 1500;
+		}
+		SystemMessage(1, TV(L"<color=yellow>Auto: đứng im %ds chưa mở được Rương - chạy lại (lần %d/%d, cách rương %d)"),
+			WCB_STILL_TIME / 1000, s_nStill, WCB_STILL_MAX, d);
+		return;
+	}
+	if (dwNow < s_dwNudgeEnd) return;	// Dang lach ra
+
+	// Chay theo MapPath toi Ruong truoc: OpenStoreBox thay ruong trong tam nhin la MoveTo thang toi ruong,
+	// di bo de ket sau cay / tuong (dung im). Het duong MapPath (0) hoac map chua co do thi (-1) moi mo ruong
+	if (bRepo && PathWalkTo(s_ptRepo.x, s_ptRepo.y) > 0) return;
+
+	int nOpen = theMap.OpenStoreBox();	// 1 da mo, 0 dang chay toi / cho mo, -1 khong thay ruong quanh day
+	if (nOpen > 0)
+	{
+		char szName[64];
+		GetMapName(m_nWcbMap, szName);
+		char szMsg[160];
+		sprintf(szMsg, TV(L"<color=green>Auto: đã mở Rương - lưu rương tại %s"), szName);
+		WalkCityBoxStop(szMsg);
+		return;
+	}
+	if (nOpen < 0)
+	{	// Toi cuoi duong ma chua thay ruong: chay thang toi toa do Ruong
+		if (!bRepo)
+		{
+			WalkCityBoxStop(TV(L"<color=red>Auto: không có tọa độ Rương trong file MapPath của thành - hủy lưu rương"));
+			return;
+		}
+		g_pCurPlayer->MoveTo(s_ptRepo.x, s_ptRepo.y);
+	}
 }
 
 // Co Tho Dia Phu / Hoi Thanh Phu that: trong hanh trang hoac dat o o phim tat (pos_immediacy), ke ca vat pham ve thanh (item_townportal).

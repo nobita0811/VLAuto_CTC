@@ -12,7 +12,10 @@
 // File Maps\Path\<MapID>_<Ten map Unicode>.txt (moi map 1 file, file cu <MapID>.txt van doc duoc):
 //   [Points]  i,x,y                    diem duong di (toa do that - P_PLAYER->GetMapPos)
 //   [Sides]   i,j                      canh noi 2 diem (2 chieu)
-//   [Doors]   i,mapDich,xVao,yVao      diem i la cong sang mapDich, xuat hien tai (xVao,yVao)
+//   [Doors]   i,mapDich,xVao,yVao[,loai,ten[,o1,o2,...]]
+//                                      diem i la cong sang mapDich, xuat hien tai (xVao,yVao); loai 0 di bo/trap, 1 Obj, 2 NPC.
+//                                      NPC co o1,o2...: click NPC roi lan luot chon dong menu so o1, o2... (dem tu 0, nhu [Item]);
+//                                      khong co thi chon dong co ten map dich
 //   [Driver]  i,mapDich,menu           diem i la xa phu, chon dong menu (TCVN3) de toi mapDich
 //   [Item]    ten,o1,o2,...            dung vat pham ten (TCVN3 hoac UTF-8) o map bat ky, lan luot chon dong
 //                                      menu so o1, o2... (dem tu 0) -> toi map cua file nay (vd: Thần Hành Phù,0,1,3,4)
@@ -43,7 +46,7 @@
 // Loai cong
 enum { door_walk = 0, door_obj, door_npc };	// di bo/trap, click Obj, doi thoai NPC
 
-struct PT_DOOR		{ int nPoint, nDestMap, xIn, yIn, nKind; char szName[32]; };	// nDestMap 0 = chua biet (tu dien khi qua cong)
+struct PT_DOOR		{ int nPoint, nDestMap, xIn, yIn, nKind; char szName[32]; int nOpts, nOpt[PT_MAX_ITEM_OPTS]; };	// nDestMap 0 = chua biet (tu dien khi qua cong)
 struct PT_TRAP		{ DWORD dwID; int nCells, xNear, yNear, dNear, xSum, ySum; };
 struct PT_DRIVER	{ int nPoint, nDestMap; char szMenu[64]; };
 struct PT_ITEM		{ char szName[64]; int nOpts, nOpt[PT_MAX_ITEM_OPTS]; };	// Dich = map cua file
@@ -331,6 +334,7 @@ static BOOL AddDoor(int nPoint, int nDestMap, int xIn, int yIn, int nKind = door
 	PT_DOOR &d = s_G.door[s_G.nDoors++];
 	d.nPoint = nPoint; d.nDestMap = nDestMap; d.xIn = xIn; d.yIn = yIn;
 	d.nKind = nKind; strncpy(d.szName, szName, 31); d.szName[31] = 0;
+	d.nOpts = 0;
 	s_G.bDirty = TRUE;
 	return TRUE;
 }
@@ -373,7 +377,8 @@ static void ItemNameToTcvn3(const char *sz, char *szOut, int nOut)
 	strncpy(szOut, sz, nOut - 1); szOut[nOut - 1] = 0;
 }
 
-// Dong [Item]: ten,o1,o2,... (khong co so nao = chi dung vat pham)
+// Dong [Item]: ten,o1,o2,... (khong co so nao = chi dung vat pham). Cung dung cho phan ten,o1,... cua cong NPC.
+// FALSE = ten rong (cac dong menu van doc)
 static BOOL ParseItem(char *p, PT_ITEM *pItem)
 {
 	memset(pItem, 0, sizeof(PT_ITEM));
@@ -381,8 +386,7 @@ static BOOL ParseItem(char *p, PT_ITEM *pItem)
 	if (pOpt) *pOpt++ = 0;
 	int nLen = (int)strlen(p);
 	while (nLen > 0 && (p[nLen - 1] == ' ' || p[nLen - 1] == '\t')) p[--nLen] = 0;
-	if (!nLen) return FALSE;
-	ItemNameToTcvn3(p, pItem->szName, sizeof(pItem->szName));
+	if (nLen) ItemNameToTcvn3(p, pItem->szName, sizeof(pItem->szName));
 	while (pOpt && *pOpt && pItem->nOpts < PT_MAX_ITEM_OPTS)
 	{
 		while (*pOpt == ' ' || *pOpt == '\t') pOpt++;
@@ -391,7 +395,7 @@ static BOOL ParseItem(char *p, PT_ITEM *pItem)
 		pOpt = strchr(pOpt, ',');
 		if (pOpt) pOpt++;
 	}
-	return TRUE;
+	return nLen > 0;
 }
 
 static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
@@ -440,11 +444,18 @@ static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
 			{
 				PT_DOOR &dr = g->door[g->nDoors++];
 				dr.nPoint = a; dr.nDestMap = b; dr.xIn = c; dr.yIn = d;
-				int k = 0, m = 0;	// tuy chon: ,loai,ten
+				int k = 0, m = 0;	// tuy chon: ,loai,ten[,o1,o2,...]
 				if (n && sscanf(p + n, ",%d,%n", &k, &m) >= 1)
 				{
 					dr.nKind = k;
-					if (m) { strncpy(dr.szName, p + n + m, 31); dr.szName[31] = 0; }
+					if (m)
+					{
+						PT_ITEM it;
+						ParseItem(p + n + m, &it);
+						strncpy(dr.szName, it.szName, 31); dr.szName[31] = 0;
+						dr.nOpts = it.nOpts;
+						memcpy(dr.nOpt, it.nOpt, sizeof(dr.nOpt));
+					}
 				}
 			}
 			break;
@@ -487,7 +498,7 @@ static BOOL SaveGraph(PT_GRAPH *g)
 	FILE *pFile = _wfopen(wszFile, L"w");
 	if (!pFile) return FALSE;
 	fprintf(pFile, "; VLAuto MapPath - Map %d %s\n", g->nMapID, MapName(g->nMapID));
-	fprintf(pFile, "; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu"
+	fprintf(pFile, "; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten[,dong1,dong2,... (NPC: chon dong menu dem tu 0)]]  [Driver] diem,mapDich,menu"
 		"  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)"
 		"  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)\n");
 	fprintf(pFile, "[Points]\n");
@@ -500,8 +511,13 @@ static BOOL SaveGraph(PT_GRAPH *g)
 	for (int i = 0; i < g->nDoors; i++)
 	{
 		const PT_DOOR &d = g->door[i];
-		if (d.nKind != door_walk || d.szName[0])
-			fprintf(pFile, "%d,%d,%d,%d,%d,%s\n", d.nPoint, d.nDestMap, d.xIn, d.yIn, d.nKind, d.szName);
+		if (d.nKind != door_walk || d.szName[0] || d.nOpts)
+		{
+			fprintf(pFile, "%d,%d,%d,%d,%d,%s", d.nPoint, d.nDestMap, d.xIn, d.yIn, d.nKind, d.szName);
+			for (int k = 0; k < d.nOpts; k++)
+				fprintf(pFile, ",%d", d.nOpt[k]);
+			fprintf(pFile, "\n");
+		}
 		else
 			fprintf(pFile, "%d,%d,%d,%d\n", d.nPoint, d.nDestMap, d.xIn, d.yIn);
 	}
@@ -1565,6 +1581,8 @@ static int LoadLinks()
 			memset(&l, 0, sizeof(l));
 			l.nFrom = nMap; l.nTo = g.door[i].nDestMap; l.nPoint = g.door[i].nPoint; l.bDriver = FALSE;
 			l.nKind = g.door[i].nKind; strcpy(l.szMenu, g.door[i].szName);
+			l.nOpts = g.door[i].nOpts;
+			memcpy(l.nOpt, g.door[i].nOpt, sizeof(l.nOpt));
 		}
 		for (int i = 0; i < g.nDrivers && s_nLinks < PT_MAX_LINKS; i++)
 		{
@@ -1643,6 +1661,9 @@ static void MarkLinkBad(const PT_LINK &l)
 	s_Bad[nSlot].dwTick = GetTickCount();
 }
 
+// Tu di chi chay bo (PathTravelStart bWalkOnly): MapBFS bo qua xa phu va vat pham
+static BOOL		s_bTvWalkOnly = FALSE;
+
 // Tim lo trinh chi phi nho nhat (Dijkstra, LinkCost) tren pExtra (xet truoc) + s_Links. pSteps nhan cac buoc theo thu tu di.
 // Tra ve so buoc (0 = dang o nTarget), -1 = khong co duong
 static int MapBFS(int nStart, int nTarget, PT_LINK *pSteps, const PT_LINK *pExtra = NULL, int nExtra = 0)
@@ -1666,6 +1687,7 @@ static int MapBFS(int nStart, int nTarget, PT_LINK *pSteps, const PT_LINK *pExtr
 			const PT_LINK &l = (k < nExtra) ? pExtra[k] : s_Links[k - nExtra];
 			if ((l.nFrom != Maps[mi] && l.nFrom != 0) || !l.nTo || l.nTo == Maps[mi]) continue;	// nFrom 0 = vat pham, map nao cung dung duoc
 			if (LinkBad(l)) continue;
+			if (s_bTvWalkOnly && (l.bDriver || l.bItem)) continue;
 			int j;
 			for (j = 0; j < nMaps && Maps[j] != l.nTo; j++);
 			if (j == nMaps)
@@ -1728,6 +1750,9 @@ static void MapRoute(int nTarget)
 				ItemOptsText(l), MapName(l.nTo), l.nTo);
 		else if (l.bDriver)
 			DbgOut("  %d. %s (%d): toi xa phu diem %d, chon \"%s\" -> %s (%d)\n", s + 1, MapName(l.nFrom), l.nFrom, l.nPoint, l.szMenu, MapName(l.nTo), l.nTo);
+		else if (l.nKind == door_npc && l.nOpts)
+			DbgOut("  %d. %s (%d): chay toi cong NPC \"%s\" diem %d, chon dong %s -> %s (%d)\n", s + 1, MapName(l.nFrom), l.nFrom, l.szMenu, l.nPoint,
+				ItemOptsText(l), MapName(l.nTo), l.nTo);
 		else
 			DbgOut("  %d. %s (%d): chay toi cong %s diem %d -> %s (%d)\n", s + 1, MapName(l.nFrom), l.nFrom, DoorKindName(l.nKind), l.nPoint, MapName(l.nTo), l.nTo);
 	}
@@ -2417,6 +2442,7 @@ void PathTravelStop(const char *szReason)
 	}
 	s_nTvTarget = 0;
 	s_nTvExtra = 0;
+	s_bTvWalkOnly = FALSE;
 }
 
 // Dong menu dang mo co dan toi map nTo? (ten trong MapNames.ini hoac dong menu da ghi)
@@ -2462,7 +2488,7 @@ BOOL PathMapHasDriver(int nMap)
 // "Len map = Xa phu hoac THP": tu map co xa phu chi di bang xa phu/vat pham, khong di bo qua cong sang map khac
 static BOOL DriverOnlyBlocked(const PT_LINK &l, int nMap)
 {
-	return theMap.m_bDriverOnly && !l.bDriver && !l.bItem && PathMapHasDriver(nMap);
+	return theMap.m_bDriverOnly && !s_bTvWalkOnly && !l.bDriver && !l.bItem && PathMapHasDriver(nMap);
 }
 
 static BOOL TvPlan()
@@ -2549,6 +2575,9 @@ static BOOL TvPlan()
 	if (s_TvLink.bDriver)
 		TvMsg("<color=yellow>MapPath: %s -> xa phu chon \"%s\" -> %s (con %d buoc)", MapName(nMap),
 			s_TvLink.szMenu[0] ? s_TvLink.szMenu : MapName(s_TvLink.nTo), MapName(s_TvLink.nTo), nSteps);
+	else if (s_TvLink.nKind == door_npc && s_TvLink.nOpts)
+		TvMsg("<color=yellow>MapPath: %s -> cong NPC \"%s\", chon dong %s -> %s (con %d buoc)", MapName(nMap),
+			s_TvLink.szMenu, ItemOptsText(s_TvLink), MapName(s_TvLink.nTo), nSteps);
 	else
 		TvMsg("<color=yellow>MapPath: %s -> cong %s sang %s (con %d buoc)", MapName(nMap),
 			DoorKindName(s_TvLink.nKind), MapName(s_TvLink.nTo), nSteps);
@@ -2722,9 +2751,12 @@ static void TvAct(int x, int y)
 	}
 	if (s_TvLink.bDriver || s_TvLink.nKind == door_npc)
 	{
+		BOOL bOpts = !s_TvLink.bDriver && s_TvLink.nOpts > 0;	// Cong NPC co ghi dong menu: chon theo so dong nhu [Item]
+		if (bOpts && s_nTvItemStep >= 0) { TvItemAct(); return; }	// Dang chon dong / da chon het, cho doi map
 		if (theMain.GetMenuCount() > 0)
 		{
 			if (dwNow - s_dwTvAct < 1000) return;
+			if (bOpts) { s_nTvItemStep = 0; TvItemAct(); return; }
 			s_dwTvAct = dwNow;
 			if (!TvClickMenu())
 				TvFail("menu khong co dong toi map can toi");
@@ -2803,6 +2835,7 @@ static void TvBreathe()
 			TvMsg("<color=green>MapPath: da toi %s", MapName(nMap));
 			s_nTvTarget = 0;
 			s_nTvExtra = 0;
+			s_bTvWalkOnly = FALSE;
 			return;
 		}
 		if (s_nTvMap) s_nTvFails = 0;	// qua map thanh cong
@@ -2853,11 +2886,13 @@ static void TvBreathe()
 	TvAct(x, y);
 }
 
-BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
+BOOL PathTravelStart(int nTarget, BOOL bUseMenu, BOOL bWalkOnly)
 {
 	static PT_LINK Steps[PT_MAX_STEPS];
 	int nMap = *g_pMapID;
 	if (!nTarget || nMap == nTarget || !IsPlayerOk()) return FALSE;
+	s_bTvWalkOnly = bWalkOnly;
+	if (bWalkOnly) bUseMenu = FALSE;
 	// Lan that bai truoc chi bo qua dung lien ket hong (LinkBad), con duong khac thi van di
 
 	// Dong menu dang mo (vd "Nhung noi da di qua") = lien ket xa phu tu map hien tai
@@ -2894,6 +2929,7 @@ BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
 		if (int nBad = BadLinkCount())
 			TvMsg(TV(L"<color=red>MapPath: đang bỏ qua %d chặng vừa đi hỏng (5 phút)"), nBad);
 		s_nTvExtra = 0;
+		s_bTvWalkOnly = FALSE;
 		return FALSE;
 	}
 

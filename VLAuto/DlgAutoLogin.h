@@ -10,21 +10,30 @@ struct AutoLoginAccount
 	CString			strRegion;		// Tên cụm server (Region_x trong UiConfig\serverlist_.txt)
 	CString			strServer;		// Tên server (x_Title trong [Region_x])
 	int				nRoleIndex;		// Nhân vật thứ mấy (0..2)
-	BOOL			bChecked;		// Được chọn để chạy LOGIN ALL
+	BOOL			bChecked;		// Ô check: gom tiền lên bang + login / out theo giờ của nhóm (không dùng cho LOGIN ALL)
 	BOOL			bAutoRelogin;	// Chưa đăng nhập (mất kết nối, Game tắt...) thì đăng nhập lại
 	int				nReloginDelay;	// ms chờ trước khi đăng nhập lại
-	CString			strPlayerName;	// Nhân vật vào game gần nhất (để bảng Thống kê hiện tiền khi offline)
+	CString			strPlayerName;	// Nhân vật vào game gần nhất (để cột Tổng tiền hiện khi offline)
 	CString			strPlayerCfg;	// Tên file cfg của nhân vật đó trong UserConfig
-	BOOL			bTongGather;	// Được chọn trong bảng Thống kê để gom tiền lên bang
+
+	// Dòng Nhóm (tab Hẹn giờ): quản lý các tài khoản phía dưới tới Nhóm kế tiếp. Không phải tài khoản (không login, không ô check)
+	BOOL			bGroup;
+	CString			strGroupName;
+	int				nLoginMin;		// Giờ login, phút trong ngày (-1 = không hẹn)
+	int				nOutMin;		// Giờ out game, phút trong ngày (-1 = không hẹn)
 
 	// Không lưu file
+	BOOL			bHenGioOut;		// Đã bị thoát theo giờ out của nhóm: không tự login lại tới khi được login lần nữa
+	BOOL			bHenGioActive;	// Đã login theo giờ của nhóm: Game tắt trước giờ out thì login lại
+	DWORD			dwHenGioOffTick;	// Mốc bắt đầu không ở trong game khi bHenGioActive (0 = đang trong game / đang login)
 	int				nId;			// Định danh cố định trong lúc chạy (dòng có thể bị đổi chỗ / xóa)
 	DWORD			dwProcessId;	// Game đang chạy của tài khoản
 	DWORD			dwOfflineTick;	// Mốc bắt đầu không ở trong game, để đếm ReloginDelay ở vòng lặp (0 = chưa đếm)
+	BOOL			bBadLogin;		// Game báo sai tài khoản / mật khẩu: không login tài khoản này tới khi sửa thông tin
 	BOOL			bSeenInGame;	// Đã thấy vào thế giới game (Game bị văng / tắt / crash thì được login lại khi check Lặp lại)
 	CString			strError;		// Lỗi của lần đăng nhập gần nhất
 
-	// Cài đặt thoát (bảng Thống kê): theo dõi Game dwExitPID, đổi Game thì đếm lại
+	// Cài đặt thoát (tab Thống kê): theo dõi Game dwExitPID, đổi Game thì đếm lại
 	DWORD			dwExitPID;
 	BOOL			bWasInGame;		// Game này đã từng vào thế giới game (để nhận ra mất kết nối)
 	DWORD			dwLostTick;		// Mốc bắt đầu mất kết nối (0 = đang kết nối)
@@ -34,8 +43,8 @@ struct AutoLoginAccount
 	int				nStayMap, nStayX, nStayY;	// Điểm đang quanh quẩn
 	DWORD			dwStayTick;		// Mốc bắt đầu quanh quẩn điểm đó (0 = chưa đếm)
 
-	AutoLoginAccount() : nRoleIndex(0), bChecked(TRUE), bAutoRelogin(FALSE), nReloginDelay(10000), bTongGather(FALSE),
-		nId(0), dwProcessId(0), dwOfflineTick(0), bSeenInGame(FALSE) { ResetExitTrack(0); }
+	AutoLoginAccount() : nRoleIndex(0), bChecked(TRUE), bAutoRelogin(FALSE), nReloginDelay(10000),
+		bGroup(FALSE), nLoginMin(-1), nOutMin(-1), bHenGioOut(FALSE), bHenGioActive(FALSE), dwHenGioOffTick(0), nId(0), dwProcessId(0), dwOfflineTick(0), bBadLogin(FALSE), bSeenInGame(FALSE) { ResetExitTrack(0); }
 	void ResetExitTrack(DWORD dwPID)
 	{
 		dwExitPID = dwPID; bWasInGame = FALSE; dwLostTick = dwHungTick = dwExpTick = dwStayTick = 0;
@@ -43,7 +52,7 @@ struct AutoLoginAccount
 	}
 };
 
-// Cài đặt thoát game (bảng Thống kê), áp dụng cho Game của mọi tài khoản trong bảng Auto Login
+// Cài đặt thoát game (tab Thống kê), áp dụng cho Game của mọi tài khoản trong bảng Auto Login
 struct AutoLoginExitOpt
 {
 	BOOL			bLost;			int nLostMin;		// Mất kết nối quá nLostMin phút
@@ -86,6 +95,7 @@ struct AutoLoginJob
 	int				nScreen;		// Màn hình của thao tác gần nhất
 	int				nTries;			// Số lần thao tác liên tiếp trên cùng màn hình
 	CString			strStatus;
+	CString			strGameInfo;	// Thông báo đăng nhập gần nhất của Game (đã ghi log)
 	HANDLE			hRemote;		// Thread thao tác trong Game chưa chạy xong (Game đang bận, vd lần mở đầu), NULL = không có
 	LPVOID			pRemote;		// Vùng nhớ mã của thread đó trong Game
 	DWORD			dwRemotePID;
@@ -101,41 +111,31 @@ struct ClosingGame
 class CDlgAutoLogin;
 class CRemoteCode;
 
-// CDlgLoginStats - Thống kê các nhân vật trong bảng Auto Login (nút "Xem Thống Kê", cửa sổ không modal)
-class CDlgLoginStats : public CDialog
+// Nút tô màu nền (owner draw): nút START / STOP Hẹn giờ
+class CColorButton : public CButton
 {
 public:
-	CDlgLoginStats(CDlgAutoLogin* pAutoLogin) : CDialog(IDD_LOGIN_STATS_DIALOG), m_pAutoLogin(pAutoLogin), m_bUpdating(FALSE), m_cyInit(0) {}
-
-	enum { IDD = IDD_LOGIN_STATS_DIALOG };
-
-	void			ShowStats();
+	CColorButton() : m_clrFace(RGB(200, 0, 0)) {}
+	void			SetFaceColor(COLORREF clrFace) { m_clrFace = clrFace; if (m_hWnd) Invalidate(); }
 
 protected:
-	CDlgAutoLogin*	m_pAutoLogin;
-	CListCtrl		m_StatsList;
-	BOOL			m_bUpdating;	// Đang đổi ô check bằng code, bỏ qua LVN_ITEMCHANGED
-	int				m_cxInit, m_cyInit;	// Kích thước client lúc tạo, để OnSize dời các control
-	CRect			m_rcInit[24];
+	COLORREF		m_clrFace;
+	virtual void	DrawItem(LPDRAWITEMSTRUCT lpDIS);
+};
 
-	virtual BOOL	OnInitDialog();
-	virtual void	DoDataExchange(CDataExchange* pDX);
+// Trang của tab trong Auto Login (dialog con IDD_AUTO_LOGIN_SETTING_PAGE / IDD_AUTO_LOGIN_STATS_PAGE).
+// Thông báo của control chuyển hết lên CDlgAutoLogin xử lý
+class CDlgAutoLoginPage : public CDialog
+{
+public:
+	CDlgAutoLoginPage(UINT nIDTemplate) : CDialog(nIDTemplate) {}
+
+protected:
 	virtual void	OnOK() {}
-	virtual void	OnCancel();
-
-	void			UpdateStats();
-	void			SetCell(int nRow, int nCol, LPCTSTR szText);
-
-	void			SetRowCheck(int nRow, BOOL bCheck);
-
-	afx_msg void	OnTimer(UINT_PTR nIDEvent);
-	afx_msg void	OnSize(UINT nType, int cx, int cy);
-	afx_msg void	OnGetMinMaxInfo(MINMAXINFO* lpMMI);
-	afx_msg void	OnStatsItemChanged(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void	OnKeepMoneyChanged();
-	afx_msg void	OnBnClickedTongMoney();
-	afx_msg void	OnExitOptionChanged(UINT nID);
-	DECLARE_MESSAGE_MAP()
+	virtual void	OnCancel() {}
+	virtual BOOL	OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual BOOL	OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+	virtual BOOL	PreTranslateMessage(MSG* pMsg);
 };
 
 // CDlgAutoLogin dialog - Tự động đăng nhập (cửa sổ không modal)
@@ -143,7 +143,6 @@ protected:
 class CDlgAutoLogin : public CDialog
 {
 	DECLARE_DYNAMIC(CDlgAutoLogin)
-	friend class CDlgLoginStats;
 
 public:
 	CDlgAutoLogin(CWnd* pParent = NULL);   // standard constructor
@@ -171,9 +170,15 @@ protected:
 	BOOL							m_bRunAll;		// Đang chạy LOGIN ALL (vòng lặp lấy lại danh sách tài khoản được check)
 	DWORD							m_dwStartAllTick;	// Mở Auto: chờ tới mốc này mới tự LOGIN ALL (0 = không)
 	std::vector<ClosingGame>		m_Closing;
-	CDlgLoginStats					m_DlgStats;
-	int								m_nTongKeep;	// Vạn: số tiền mỗi nhân vật giữ lại khi gom tiền lên bang (bảng Thống kê)
-	AutoLoginExitOpt				m_ExitOpt;		// Cài đặt thoát (bảng Thống kê)
+	CTabCtrl						m_Tab;			// Cài đặt / Thống kê
+	CDlgAutoLoginPage				m_PageSetting;	// Tab Cài đặt: nhóm Tài khoản + Thiết lập
+	CDlgAutoLoginPage				m_PageStats;	// Tab Thống kê: gom tiền + Cài đặt thoát
+	CDlgAutoLoginPage				m_PageHenGio;	// Tab Hẹn giờ: thêm / sửa / xóa Nhóm
+	CColorButton					m_HenGioButton;
+	BOOL							m_bHenGio;		// Đang bật hẹn giờ theo nhóm
+	__int64							m_nHenGioMinute;	// Phút (tính từ 1970) đã xử lý hẹn giờ gần nhất
+	int								m_nTongKeep;	// Vạn: số tiền mỗi nhân vật giữ lại khi gom tiền lên bang (tab Thống kê)
+	AutoLoginExitOpt				m_ExitOpt;		// Cài đặt thoát (tab Thống kê)
 	DWORD							m_dwExitCheckTick;
 
 	virtual BOOL	OnInitDialog();
@@ -189,12 +194,40 @@ protected:
 	void			InsertRow(int nIndex);
 	void			UpdateRow(int nIndex);
 	void			SelectRow(int nIndex);
-	int				GetSelectedRow();
+	int				GetSelectedRow();		// Dòng đang chọn (tài khoản hoặc Nhóm), -1 = không có / dòng TỔNG
+	int				GetSelectedAccount();	// Tài khoản đang chọn, -1 = không có / đang chọn Nhóm
+	BOOL			IsGroupSelected();
 	int				FindAccount(const AutoLoginAccount& acc, int nExcept);
 	int				FindAccountById(int nId);
 	BOOL			GetFields(AutoLoginAccount& acc);
 	void			SetFields(const AutoLoginAccount& acc);
 	void			MoveRow(int nFrom, int nTo);
+	void			LayoutDialog();
+	void			ShowTab(int nTab);
+
+	// Control nằm ở dialog chính hoặc ở trang của tab: các hàm cùng tên của CWnd tìm cả trong các trang
+	CWnd*			GetCtrlParent(int nID) const;
+	CWnd*			GetDlgItem(int nID) const;
+	UINT			IsDlgButtonChecked(int nID) const;
+	void			CheckDlgButton(int nID, UINT nCheck);
+	void			SetDlgItemText(int nID, LPCTSTR szText);
+	int				GetDlgItemText(int nID, CString& strText) const;
+	void			SetDlgItemInt(int nID, UINT nValue, BOOL bSigned = TRUE);
+	UINT			GetDlgItemInt(int nID, BOOL* pTrans = NULL, BOOL bSigned = TRUE) const;
+
+public:
+	void			RelayToolTip(MSG* pMsg) { if (m_ToolTip.m_hWnd) m_ToolTip.RelayEvent(pMsg); }
+
+protected:
+	void			UpdateStats();
+	void			SetCell(int nRow, int nCol, LPCTSTR szText);
+
+	// Hẹn giờ theo nhóm
+	BOOL			GetGroupFields(AutoLoginAccount& group, int& nPos);
+	void			SetGroupFields(int nIndex);
+	void			PlaceGroup(int nIndex, int nPos);
+	void			UpdateHenGioButton();
+	void			CheckHenGio();
 
 	// Game
 	BOOL			IsGameProcess(DWORD dwPID);
@@ -203,6 +236,7 @@ protected:
 	BOOL			LaunchGame(int nIndex, CString& strError);
 	void			CloseGames(const std::vector<DWORD>& PIDs);
 	void			CheckClosingGames();
+	BOOL			IsClosingGame(DWORD dwPID);
 	CString			GetStatusText(int nIndex);
 	void			UpdateGameStatus();
 	void			UpdatePlayerNames();
@@ -215,11 +249,12 @@ protected:
 	void			StopAllLogin();
 	int				FindLoginEntry(int nId);
 	void			AddLoginEntry(int nIndex);
-	void			BuildLoginList(BOOL bFirst);
+	void			BuildLoginList(BOOL bFirst, BOOL bAutoOnly = FALSE);
 	void			RemoveOnlineEntries();
 	int				GetRetryCount();
 	void			RunLogin();
 	void			RunLoginStep(int nIndex, HANDLE hGame);
+	BOOL			HandleConnectInfo(int nIndex, HANDLE hGame);
 	BOOL			ExecJobCode(HANDLE hGame, LPVOID pRemote, const CRemoteCode& code, DWORD* pdwExit);
 	BOOL			CheckJobRemote();
 	void			EndJob(int nIndex, LPCTSTR szError, BOOL bRetry, BOOL bCloseGame);
@@ -246,7 +281,17 @@ protected:
 	afx_msg void	OnBnClickedStartLoginAll();
 	afx_msg void	OnBnClickedStopLogin();
 	afx_msg void	OnLoginOptionChanged();
-	afx_msg void	OnBnClickedReport();
+	afx_msg void	OnTabSelChange(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void	OnKeepMoneyChanged();
+	afx_msg void	OnBnClickedTongMoney();
+	afx_msg void	OnExitOptionChanged(UINT nID);
+	afx_msg void	OnAccountListCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void	OnAccountListRClick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void	OnAccountListDblClk(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void	OnBnClickedAddGroup();
+	afx_msg void	OnBnClickedDeleteGroup();
+	afx_msg void	OnBnClickedEditGroup();
+	afx_msg void	OnBnClickedHenGio();
 	afx_msg void	OnTimer(UINT_PTR nIDEvent);
 	DECLARE_MESSAGE_MAP()
 

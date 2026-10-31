@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CDlgAbout, CDialog)
 	ON_BN_CLICKED(IDC_HCOPY_BUTTON, &CDlgAbout::OnBnClickedHcopyButton)
 	ON_BN_CLICKED(IDC_CCOPY_BUTTON, &CDlgAbout::OnBnClickedCcopyButton)
 	ON_BN_CLICKED(IDC_DEBUG_BUTTON, &CDlgAbout::OnBnClickedDebugButton)
+	ON_BN_CLICKED(IDC_MOVE_MAP37_BUTTON, &CDlgAbout::OnBnClickedMoveMap37Button)
 END_MESSAGE_MAP()
 
 // CDlgAbout message handlers
@@ -228,6 +229,24 @@ void CDlgAbout::OnBnClickedDebugButton()
 		}
 	}
 	m_DlgDebug.ShowDebug();
+}
+
+// Nhan vat dang chon: chay bo (MapPath) ve Bien Kinh roi mo ruong de luu ruong tai Bien Kinh (VLHook: CVLMain::StartWalkCityBox).
+// Bam lai khi dang chay = huy.
+void CDlgAbout::OnBnClickedMoveMap37Button()
+{
+	if (g_pCurGameWin == NULL)
+	{
+		MessageBox(_T("Chưa chọn nhân vật!"), 0, MB_ICONEXCLAMATION);
+		return;
+	}
+	char *szPlayerName = g_pCurGameWin->m_szPlayerName;
+	if (!szPlayerName[0] || strstr(szPlayerName, VLTK_ERROR) || !g_pCurGameWin->m_hWnd || !g_pCurGameWin->m_bAttached)
+	{
+		MessageBox(_T("Nhân vật chưa chạy Auto, không thể thực hiện chức năng này!"), 0, MB_ICONEXCLAMATION);
+		return;
+	}
+	::PostMessage(g_pCurGameWin->m_hWnd, WM_HOOK_MAIN, cmd_walkcitybox, (LPARAM)city_bienkinh);
 }
 
 BOOL CDlgAbout::CopyToCliboard(char* szData)

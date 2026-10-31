@@ -302,3 +302,37 @@ Engine UI mới: widget gốc nhỏ hơn 0x200 byte. `m_Style` vẫn ở +4 (bit
 | KPlayerTask::GetTaskVal | 0x609990 | n > 0x176F trả 0; std::map ở this+0x54C |
 
 Khi đối thoại với Dã Tẩu, client không nạp/chạy lua nào: nội dung hoàn toàn do server gửi (nút "Ghi file/lua game nạp", VLDebugFile.cpp).
+
+## Bảng thông báo lúc đăng nhập (KUiConnectInfo)
+
+| Mục | 15_10 | Ghi chú |
+|---|---|---|
+| KUiConnectInfo::m_pSelf | 0x7BE5E4 | OpenWindow 0x481D50 (eIndex, eDesire, nParam, szParam), new 0x2A14 |
+| SetInfoMsg | 0x4828E0 | GetString("InfoString", eIndex) rồi sprintf(this+0x2818, chuỗi, this+0x29F4) |
+| Breathe | 0x482D30 | kết quả đăng nhập -> SetInfoMsg + m_nDesireLoginStatus |
+| m_nDesireLoginStatus | +0x2814 | >= 1000 (CI_NS_*) hoặc 0 = thông báo lỗi chờ bấm Xác định |
+| m_szMessage | +0x2818 | char[0x180] TCVN3; m_nMsgLen +0x2998 |
+| m_nParam / m_szParam | +0x29F0 / +0x29F4 | szParam char[0x20] (strncpy trong OpenWindow) |
+
+Chuỗi thông báo: `\Ui\Setting.ini` (KUiBase::GetCommConfigFile 0x42B580, push 0x74F37C), mục `[InfoString]`, key = eIndex.
+
+Breathe 0x482D30, switch (kết quả g_LoginLogic - 1) qua bảng 0x482FE0, dạng `kết quả -> eIndex / m_nDesireLoginStatus`:
+
+| Kq | eIndex | Desire | | Kq | eIndex | Desire |
+|---|---|---|---|---|---|---|
+| 1 | 2 | 1002 | | 12 | 10 | 6 |
+| 2 | 3 | 1002 | | 13 | 10 | 6 |
+| 3 | 4 | 1002 | | 14 | 11 | (giữ) |
+| 4 | 5 | 1003 | | 15 | (không hiện, gọi 0x4BCF80) | |
+| 5 | 30 | 1003 | | 16 | 19 | 1003 |
+| 6 | 6 | 0 | | 17 | 34 | 1003 |
+| 7 | 7 | 1006 | | 18 | 35 | 1004 |
+| 8 | 12 | 1002 | | 19 | 39 | 1002 |
+| 9 | 14 | 1000 | | 20 | 38 | 1002 |
+| 10 | 20 | 1007 | | 21 | 40 | 1003 |
+| 11 | 31 | 1005 | | | | |
+
+Nơi khác gọi OpenWindow/SetInfoMsg: 0x484CB3 (1, 6) và 0x484E06 (44, 1003), 0x484E2E (15, 1003) trong KUiLogin::OnLogin; 0x487D84 (1, 1); 0x490FD9 (1, 11); 0x49B187 (8, 11), 0x49B285 (18, 1006), 0x49B2A3 (17, 1006); 0x4A03E9 (11, 11), 0x4A04F8 (13, 1005), 0x4A057C (36, 1005); GotoNextStep 0x482C20: 1, 10, 8, 9, 11; khác: 13, 37, 9, 2, 16.
+
+Mã 6 ("Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản này?", desire 0): SetInfoMsg thêm nút +0xBFC (Đồng ý -> 0x4826C0) và +0x1C28 (Hủy -> 0x482890: về chọn máy chủ), focus KWndEdit +0x218C.
+0x4826C0 khi desire == 0: lấy chữ trong edit +0x218C (0x448B60, tối đa 0x20), desire = 5, xóa edit (0x4488F0 ""), SetInfoMsg(37 "Đang mở khóa tài khoản..."), gọi g_LoginLogic 0x5AD1C0(chuỗi đó) để đá. Kết quả: 19 -> mã 39 (quá thời gian), 20 -> mã 38 (không mở được, thử lại sau 5 phút), 21 -> mã 40 (tạm thời bị khóa).
