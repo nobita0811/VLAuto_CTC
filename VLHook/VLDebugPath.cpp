@@ -5,6 +5,7 @@
 #include "S3Client.h"
 #include "VLClasses.h"
 #include "VLDebug.h"
+#include "VLObstacle.h"
 
 // Tab MapPath cua cua so DEBUG: ghi/sua/kiem tra du lieu duong di (Auto dung qua PathTravelStart khi xa phu khong co map train)
 //
@@ -15,6 +16,9 @@
 //   [Driver]  i,mapDich,menu           diem i la xa phu, chon dong menu (TCVN3) de toi mapDich
 //   [Item]    ten,o1,o2,...            dung vat pham ten (TCVN3 hoac UTF-8) o map bat ky, lan luot chon dong
 //                                      menu so o1, o2... (dem tu 0) -> toi map cua file nay (vd: Thần Hành Phù,0,1,3,4)
+//   [NPC]     x,y                      toa do NPC trong thanh, 15 dong theo thu tu NPC_IN_CITY (CVLMap::NpcPoints):
+//                                      Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua,
+//                                      du phong 1-3; 0,0 = thanh khong co NPC do (thay file cu CityMaps\City<MapID>.map)
 //
 // Tu ghi (DebugPathBreathe, 200ms): chay bo -> cu PT_SPACING them 1 diem noi diem truoc,
 // di qua diem cu -> noi vao (re nhanh). Doi map: menu vua mo (< 8s) => xa phu, nguoc lai => cong.
@@ -58,6 +62,8 @@ struct PT_GRAPH
 	PT_DRIVER	drv[PT_MAX_DRIVERS];
 	int			nItems;
 	PT_ITEM		item[PT_MAX_ITEMS];
+	int			nNpcs;					// So dong [NPC] da doc (0 = khong co muc [NPC])
+	POINT		npc[npc_Nums];
 };
 
 static PT_GRAPH	s_G;					// Do thi cua map dang dung (s_G.nMapID)
@@ -103,6 +109,13 @@ static int		s_nRunTarget = -1;
 static int		s_nRoute[PT_MAX_POINTS];
 static int		s_nRouteLen = 0, s_nRouteIdx = 0;
 static DWORD	s_dwRunTick = 0;
+static BOOL		s_bRunXY = FALSE;		// Chay thu toi toa do: het route thi di thang toi s_ptRunXY
+static POINT	s_ptRunXY = { 0, 0 };
+static int		s_nRunBest = 0;			// Khoang cach gan nhat toi s_ptRunXY (con tien gan thi chua ket)
+
+// Ve o vat can (m_ObstacleInfo)
+static BOOL		s_bShowObs = FALSE;
+static BOOL		s_bShowStar = FALSE;	// Luoi sao + tuyen Auto (nut ne vat can)
 
 //------------------------------------------------------------------ tien ich
 
@@ -167,7 +180,7 @@ static void PathFileName(int nMapID, WCHAR *wszFile)
 }
 
 // Ten file de in ra DEBUG (TCVN3, UI tu doi sang Unicode)
-static const char* PathFileShow(int nMapID)
+const char* PathFileShow(int nMapID)
 {
 	static char szShow[MAX_PATH];
 	const char *szName = MapName(nMapID);
@@ -401,7 +414,7 @@ static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
 		if (*p == '[')
 		{
 			nSec = !_strnicmp(p, "[Points]", 8) ? 1 : !_strnicmp(p, "[Sides]", 7) ? 2 :
-				!_strnicmp(p, "[Doors]", 7) ? 3 : !_strnicmp(p, "[Driver]", 8) ? 4 : !_strnicmp(p, "[Item]", 6) ? 5 : 0;
+				!_strnicmp(p, "[Doors]", 7) ? 3 : !_strnicmp(p, "[Driver]", 8) ? 4 : !_strnicmp(p, "[Item]", 6) ? 5 : !_strnicmp(p, "[NPC]", 5) ? 6 : 0;
 			continue;
 		}
 		int a, b, c, d, n;
@@ -448,14 +461,23 @@ static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
 			if (g->nItems < PT_MAX_ITEMS && ParseItem(p, &g->item[g->nItems]))
 				g->nItems++;
 			break;
+		case 6:
+			if (sscanf(p, "%d,%d", &a, &b) == 2 && g->nNpcs < npc_Nums)
+			{
+				g->npc[g->nNpcs].x = a; g->npc[g->nNpcs].y = b; g->nNpcs++;
+			}
+			break;
 		}
 	}
 	fclose(pFile);
 	return TRUE;
 }
 
+static int s_nInMap;	// DrawPath: map da doc diem vao (0 = doc lai)
+
 static BOOL SaveGraph(PT_GRAPH *g)
 {
+	s_nInMap = 0;	// file vua doi: diem vao co the doi
 	char szFile[MAX_PATH];
 	sprintf(szFile, "%s\\Maps\\Path", theMain.m_szCurFolder);
 	CreateDirectoryA(szFile, NULL);
@@ -466,7 +488,8 @@ static BOOL SaveGraph(PT_GRAPH *g)
 	if (!pFile) return FALSE;
 	fprintf(pFile, "; VLAuto MapPath - Map %d %s\n", g->nMapID, MapName(g->nMapID));
 	fprintf(pFile, "; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu"
-		"  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)\n");
+		"  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)"
+		"  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)\n");
 	fprintf(pFile, "[Points]\n");
 	for (int i = 0; i < g->nPoints; i++)
 		fprintf(pFile, "%d,%d,%d\n", i, g->pt[i].x, g->pt[i].y);
@@ -496,6 +519,12 @@ static BOOL SaveGraph(PT_GRAPH *g)
 			fprintf(pFile, "\n");
 		}
 	}
+	if (g->nNpcs)
+	{
+		fprintf(pFile, "[NPC]\n");
+		for (int i = 0; i < npc_Nums; i++)
+			fprintf(pFile, "%d,%d\n", g->npc[i].x, g->npc[i].y);
+	}
 	fclose(pFile);
 	if (bOld) DeleteFileW(wszOld);	// file cu (<MapID>.txt hoac ten map cu) da chuyen sang ten moi
 	g->bDirty = FALSE;
@@ -512,6 +541,37 @@ static void EnsureGraph()
 	LoadGraph(&s_G, nMap);
 	s_nLast = -1;
 	s_nRunTarget = -1;
+}
+
+// Toa do NPC trong thanh (muc [NPC], thu tu NPC_IN_CITY) cho CVLMap::NpcPoints.
+// Tra ve so NPC co toa do, -1 = map chua co file MapPath
+static PT_GRAPH	s_GTmp;
+int PathLoadNpcs(int nMapID, POINT *pNpc)
+{
+	memset(pNpc, 0, sizeof(POINT) * npc_Nums);
+	PT_GRAPH *pG = &s_GTmp;
+	if (s_G.nMapID == nMapID) pG = &s_G;	// Dang sua o tab MapPath (co the chua ghi)
+	else if (!LoadGraph(&s_GTmp, nMapID)) return -1;
+	int n = 0;
+	for (int i = 0; i < npc_Nums; i++)
+	{
+		pNpc[i] = pG->npc[i];
+		if (pNpc[i].x || pNpc[i].y) n++;
+	}
+	return n;
+}
+
+// Ghi toa do 1 NPC vao muc [NPC] (CVLMap::SaveNewRepository). Map chua co file MapPath thi tao moi
+BOOL PathSaveNpc(int nMapID, int nIdx, int x, int y)
+{
+	if (nIdx < 0 || nIdx >= npc_Nums) return FALSE;
+	PT_GRAPH *pG = &s_GTmp;
+	if (s_G.nMapID == nMapID) pG = &s_G;
+	else LoadGraph(&s_GTmp, nMapID);
+	pG->npc[nIdx].x = x;
+	pG->npc[nIdx].y = y;
+	pG->nNpcs = npc_Nums;
+	return SaveGraph(pG);
 }
 
 //------------------------------------------------------------------ menu NPC
@@ -734,6 +794,228 @@ static void DrawTraps(void *pRep, PFN_DRAWPRIM pfnDraw, int px, int py)
 		pfnDraw(pRep, n, s_TrapLines, 1, 0);
 }
 
+//------------------------------------------------------------------ vat can ban do
+// KScenePlaceRegionC::m_ObstacleInfo[16][32] (cung luoi o trap, nap tu file region - LoadObstacle):
+// bit 0-3 = Obstacle_Kind (0 khong, 1 thuong, 2 bay qua, 3 nhay qua, 4 nhay+bay), bit 4-7 = Obstacle_Type (hinh o)
+enum { obs_empty = 0, obs_full, obs_lt, obs_rt, obs_lb, obs_rb };	// Obstacle_Type: LT = nua tren-trai la vat can...
+
+#define CLR_OBSTACLE	0xFFFF2020	// do - vat can thuong
+#define CLR_OBS_PASS	0xFF4080FF	// xanh - vat can bay/nhay qua duoc
+#define CLR_OBS_PATH	0xFF00FF80	// xanh la - duong ne vat can
+#define CLR_OBS_WAY		0xFFFFFF00	// vang - diem trung gian dang chay toi
+#define PT_OBS_DRAW		900			// Ve o vat can quanh nhan vat
+
+static KRULine	s_ObsLines[1500 * 5];
+
+static const char* ObstacleKindName(int nKind)
+{
+	static const char *s_sz[] = { "di duoc", "VAT CAN", "vat can (bay qua duoc)", "vat can (nhay qua duoc)", "vat can (nhay/bay qua duoc)" };
+	return nKind < 0 ? "chua nap region" : nKind < 5 ? s_sz[nKind] : "vat can (loai la)";
+}
+
+static void DrawObstacles()
+{
+	if (!s_bShowObs || !IsPlayerOk()) return;
+	void *pRep = *(void**)RPS_BASE_ADD;
+	if (!pRep) return;
+	PFN_DRAWPRIM pfnDraw = (PFN_DRAWPRIM)(*(DWORD**)pRep)[RPS_VT_DRAWPRIM / 4];
+	int px, py;
+	GetPos(&px, &py);
+	int n = 0, nMax = sizeof(s_ObsLines) / sizeof(s_ObsLines[0]) - 5;
+	ObsForEachCell([&](int x, int y, long lInfo)
+	{
+		if (n > nMax || abs(x - px) > PT_OBS_DRAW || abs(y - py) > PT_OBS_DRAW * 2) return;
+		DWORD dwColor = (lInfo & 0xF) == 1 ? CLR_OBSTACLE : CLR_OBS_PASS;
+		// Dinh o: 0 trai-tren, 1 phai-tren, 2 phai-duoi, 3 trai-duoi. O vuong: 4 canh + 1 duong cheo; tam giac: 3 canh
+		int xs[4] = { x, x + 32, x + 32, x }, ys[4] = { y, y, y + 32, y + 32 };
+		static const int s_Edges[6][5][2] = {
+			{ { 0, 0 } },
+			{ { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 2 } },	// Full
+			{ { 0, 1 }, { 1, 3 }, { 3, 0 } },						// LT
+			{ { 0, 1 }, { 1, 2 }, { 2, 0 } },						// RT
+			{ { 0, 2 }, { 2, 3 }, { 3, 0 } },						// LB
+			{ { 1, 2 }, { 2, 3 }, { 3, 1 } },						// RB
+		};
+		int nType = (lInfo >> 4) & 0xF;
+		if (nType < obs_full || nType > obs_rb) nType = obs_full;
+		int nEdges = nType == obs_full ? 5 : 3;
+		for (int k = 0; k < nEdges; k++)
+		{
+			KRULine &l = s_ObsLines[n++];
+			l.p1.x = xs[s_Edges[nType][k][0]]; l.p1.y = ys[s_Edges[nType][k][0]]; l.p1.z = 0;
+			l.p2.x = xs[s_Edges[nType][k][1]]; l.p2.y = ys[s_Edges[nType][k][1]]; l.p2.z = 0;
+			l.dwColor = dwColor;
+		}
+	});
+	if (n > 0)
+		pfnDraw(pRep, n, s_ObsLines, 1, 0);
+
+	// Duong ne vat can vua tim (KPlayer::MoveTo -> ObsSteer): xanh la, dau X vang = diem dang chay toi
+	static POINT s_Pts[256];
+	POINT ptWay;
+	int nPts = ObsLastPath(s_Pts, 256, &ptWay);
+	n = 0;
+	for (int i = 0; i + 1 < nPts && n < 254; i++)
+	{
+		KRULine &l = s_ObsLines[n++];
+		l.p1.x = s_Pts[i].x; l.p1.y = s_Pts[i].y; l.p1.z = 0;
+		l.p2.x = s_Pts[i + 1].x; l.p2.y = s_Pts[i + 1].y; l.p2.z = 0;
+		l.dwColor = CLR_OBS_PATH;
+	}
+	if (nPts)
+	{
+		KRULine l[2] = { { { ptWay.x - 24, ptWay.y - 48, 0 }, { ptWay.x + 24, ptWay.y + 48, 0 }, CLR_OBS_WAY },
+						 { { ptWay.x + 24, ptWay.y - 48, 0 }, { ptWay.x - 24, ptWay.y + 48, 0 }, CLR_OBS_WAY } };
+		s_ObsLines[n++] = l[0];
+		s_ObsLines[n++] = l[1];
+	}
+	if (n > 0)
+		pfnDraw(pRep, n, s_ObsLines, 1, 0);
+}
+
+// Nut "Bat / tat ne vat can": luoi dau sao moi o 32x32 (do = khong di duoc, vang = di duoc), xanh la = tuyen Auto dang chay.
+// O tam giac: 1 sao do o nua vat can + 1 sao vang o nua di duoc
+#define CLR_STAR_BLOCK	0xFFFF2020	// do
+#define CLR_STAR_FREE	0xFFFFE000	// vang
+#define CLR_STAR_PATH	0xFF00FF40	// xanh la
+#define CLR_STAR_WAY	0xFFFFFFFF	// trang - diem trung gian dang chay toi
+#define PT_STAR_DRAW	600			// Pham vi ve (x; y gap doi)
+#define PT_STAR_PATH	20			// Khoang cach giua 2 sao tren tuyen
+
+static KRULine	s_StarLines[14000];
+
+// Dau sao 3 net (*) tai (x,y); y man hinh = y/2 nen net doc dai gap doi
+static int AddStar(int n, int x, int y, int r, DWORD dwColor)
+{
+	if (n + 3 > (int)(sizeof(s_StarLines) / sizeof(s_StarLines[0]))) return n;
+	int d[3][4] = { { -r, 0, r, 0 }, { -r * 2 / 3, -r * 4 / 3, r * 2 / 3, r * 4 / 3 }, { r * 2 / 3, -r * 4 / 3, -r * 2 / 3, r * 4 / 3 } };
+	for (int k = 0; k < 3; k++)
+	{
+		KRULine &l = s_StarLines[n++];
+		l.p1.x = x + d[k][0]; l.p1.y = y + d[k][1]; l.p1.z = 0;
+		l.p2.x = x + d[k][2]; l.p2.y = y + d[k][3]; l.p2.z = 0;
+		l.dwColor = dwColor;
+	}
+	return n;
+}
+
+static void DrawStars()
+{
+	if (!s_bShowStar || !IsPlayerOk()) return;
+	void *pRep = *(void**)RPS_BASE_ADD;
+	if (!pRep) return;
+	PFN_DRAWPRIM pfnDraw = (PFN_DRAWPRIM)(*(DWORD**)pRep)[RPS_VT_DRAWPRIM / 4];
+	int px, py;
+	GetPos(&px, &py);
+	// Tam nua vat can / nua di duoc cua o tam giac (trong tam), theo Obstacle_Type LT, RT, LB, RB
+	static const int s_Half[4][2][2] = {
+		{ { 11, 11 }, { 21, 21 } }, { { 21, 11 }, { 11, 21 } }, { { 11, 21 }, { 21, 11 } }, { { 21, 21 }, { 11, 11 } } };
+	int n = 0, nGridMax = sizeof(s_StarLines) / sizeof(s_StarLines[0]) - 2500;	// Chua cho tuyen xanh la
+	ObsForEachRegion([&](int nLeft, int nTop, const long *pObs)
+	{
+		for (int i = 0; i < 16; i++)
+			for (int j = 0; j < 32; j++)
+			{
+				int x = nLeft + i * 32, y = nTop + j * 32;
+				if (n > nGridMax || abs(x + 16 - px) > PT_STAR_DRAW || abs(y + 16 - py) > PT_STAR_DRAW * 2) continue;
+				long lInfo = pObs[i * 32 + j];
+				int nType = (lInfo >> 4) & 0xF;
+				if (!(lInfo & 0xF))
+					n = AddStar(n, x + 16, y + 16, 4, CLR_STAR_FREE);
+				else if (nType >= obs_lt && nType <= obs_rb)
+				{
+					const int (*h)[2] = s_Half[nType - obs_lt];
+					n = AddStar(n, x + h[0][0], y + h[0][1], 4, CLR_STAR_BLOCK);
+					n = AddStar(n, x + h[1][0], y + h[1][1], 4, CLR_STAR_FREE);
+				}
+				else
+					n = AddStar(n, x + 16, y + 16, 4, CLR_STAR_BLOCK);
+			}
+	});
+
+	// Tuyen Auto dang chay (KPlayer::MoveTo -> ObsSteer): duong + sao xanh la moi PT_STAR_PATH, X trang = diem dang chay toi
+	static POINT s_Pts[256];
+	POINT ptWay;
+	int nPts = ObsLastPath(s_Pts, 256, &ptWay);
+	for (int i = 0; i + 1 < nPts; i++)
+	{
+		int x1 = s_Pts[i].x, y1 = s_Pts[i].y, x2 = s_Pts[i + 1].x, y2 = s_Pts[i + 1].y;
+		if (n < (int)(sizeof(s_StarLines) / sizeof(s_StarLines[0])))
+		{
+			KRULine &l = s_StarLines[n++];
+			l.p1.x = x1; l.p1.y = y1; l.p1.z = 0;
+			l.p2.x = x2; l.p2.y = y2; l.p2.z = 0;
+			l.dwColor = CLR_STAR_PATH;
+		}
+		int nLen = __distance(x1, y1, x2, y2);
+		for (int d = 0; d < nLen; d += PT_STAR_PATH)
+			n = AddStar(n, x1 + (x2 - x1) * d / nLen, y1 + (y2 - y1) * d / nLen, 6, CLR_STAR_PATH);
+	}
+	if (nPts)
+	{
+		n = AddStar(n, s_Pts[nPts - 1].x, s_Pts[nPts - 1].y, 6, CLR_STAR_PATH);
+		KRULine l[2] = { { { ptWay.x - 16, ptWay.y - 32, 0 }, { ptWay.x + 16, ptWay.y + 32, 0 }, CLR_STAR_WAY },
+						 { { ptWay.x + 16, ptWay.y - 32, 0 }, { ptWay.x - 16, ptWay.y + 32, 0 }, CLR_STAR_WAY } };
+		for (int k = 0; k < 2 && n < (int)(sizeof(s_StarLines) / sizeof(s_StarLines[0])); k++)
+			s_StarLines[n++] = l[k];
+	}
+	if (n > 0)
+		pfnDraw(pRep, n, s_StarLines, 1, 0);
+}
+
+// In so o vat can cac region dang nap + o duoi chan nhan vat
+static void OutObstacles()
+{
+	int x, y, nCells = 0, nPass = 0, nRegions = 0;
+	GetPos(&x, &y);
+	ObsForEachRegion([&](int, int, const long*) { nRegions++; });
+	ObsForEachCell([&](int, int, long lInfo) { nCells++; if ((lInfo & 0xF) != 1) nPass++; });
+	DbgOut("%d region dang nap: %d o vat can (%d o bay/nhay qua duoc) / %d o\n", nRegions, nCells, nPass, nRegions * 16 * 32);
+	DbgOut("Nhan vat (%d, %d) [%d/%d]: %s\n", x, y, x >> 8, y >> 9, ObstacleKindName(ObsGet(x, y)));
+	DbgOut("Ne vat can khi di chuyen (KPlayer::MoveTo): %s\n", g_bObsAvoid ? "BAT" : "TAT");
+}
+
+// Diem VAO map hien tai = (xVao,yVao) cua cac cong o map khac co mapDich la map nay. Doc lai khi doi map / vua ghi file
+#define CLR_DOOR_IN		0xFF2080FF	// xanh duong dam - diem vao (tu map khac sang)
+#define PT_MAX_ENTRIES	64
+struct PT_ENTRY { POINT pt; int nFrom; };
+static PT_ENTRY	s_In[PT_MAX_ENTRIES];
+static int		s_nIn = 0;	// s_nInMap khai bao truoc SaveGraph
+
+static void LoadEntries(int nMap)
+{
+	static PT_GRAPH g;
+	s_nIn = 0;
+	s_nInMap = nMap;
+	char szFind[MAX_PATH];
+	sprintf(szFind, "%s\\Maps\\Path\\*.txt", theMain.m_szCurFolder);
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA(szFind, &fd);
+	if (hFind == INVALID_HANDLE_VALUE) return;
+	do
+	{
+		int nFrom = atoi(fd.cFileName);
+		if (nFrom <= 0 || nFrom == nMap || !LoadGraph(&g, nFrom)) continue;
+		for (int k = 0; k < g.nDoors && s_nIn < PT_MAX_ENTRIES; k++)
+		{
+			const PT_DOOR &d = g.door[k];
+			if (d.nDestMap != nMap || (!d.xIn && !d.yIn)) continue;
+			s_In[s_nIn].pt.x = d.xIn; s_In[s_nIn].pt.y = d.yIn;
+			s_In[s_nIn].nFrom = nFrom;
+			s_nIn++;
+		}
+	} while (FindNextFileA(hFind, &fd));
+	FindClose(hFind);
+}
+
+// Cong RA cua diem i (-1 = khong phai cong)
+static int DoorOfPoint(int i)
+{
+	for (int k = 0; k < s_G.nDoors; k++)
+		if (s_G.door[k].nPoint == i) return k;
+	return -1;
+}
+
 static void DrawPath()
 {
 	if (!s_bShow && !s_bRec && s_nRunTarget < 0 && !s_bDoorTest) return;
@@ -751,10 +1033,12 @@ static void DrawPath()
 
 	if (s_bShow)
 		DrawTraps(pRep, pfnDraw, px, py);
-	if (s_bDoorTest)
-	{	// Dau X do tai toa do dang thu
-		KRULine l[2] = { { { s_ptDoor.x - 32, s_ptDoor.y - 64, 0 }, { s_ptDoor.x + 32, s_ptDoor.y + 64, 0 }, CLR_DOOR },
-						 { { s_ptDoor.x + 32, s_ptDoor.y - 64, 0 }, { s_ptDoor.x - 32, s_ptDoor.y + 64, 0 }, CLR_DOOR } };
+	if (s_bDoorTest || (s_nRunTarget >= 0 && s_bRunXY))
+	{	// Dau X tai toa do dang thu (do) / dang chay toi (xanh)
+		POINT p = s_bDoorTest ? s_ptDoor : s_ptRunXY;
+		DWORD c = s_bDoorTest ? CLR_DOOR : CLR_ROUTE;
+		KRULine l[2] = { { { p.x - 32, p.y - 64, 0 }, { p.x + 32, p.y + 64, 0 }, c },
+						 { { p.x + 32, p.y - 64, 0 }, { p.x - 32, p.y + 64, 0 }, c } };
 		pfnDraw(pRep, 2, l, 1, 0);
 	}
 
@@ -780,13 +1064,51 @@ static void DrawPath()
 	if (n > 0)
 		pfnDraw(pRep, n, s_Lines, 1, 0);	// RU_T_LINE, toa do the gioi
 
-	char szText[16];
+	// Diem vao: hinh vuong xanh duong (khac hinh thoi do cua cong ra)
+	if (s_nInMap != s_G.nMapID) LoadEntries(s_G.nMapID);
+	KRULine InLines[PT_MAX_ENTRIES * 4];
+	int nIn = 0;
+	for (int e = 0; e < s_nIn; e++)
+	{
+		POINT pt = s_In[e].pt;
+		if (!IsNearPlayer(pt, px, py)) continue;
+		int xs[5] = { pt.x - 28, pt.x + 28, pt.x + 28, pt.x - 28, pt.x - 28 };
+		int ys[5] = { pt.y - 56, pt.y - 56, pt.y + 56, pt.y + 56, pt.y - 56 };
+		for (int k = 0; k < 4; k++)
+		{
+			KRULine &l = InLines[nIn++];
+			l.p1.x = xs[k]; l.p1.y = ys[k]; l.p1.z = 0;
+			l.p2.x = xs[k + 1]; l.p2.y = ys[k + 1]; l.p2.z = 0;
+			l.dwColor = CLR_DOOR_IN;
+		}
+	}
+	if (nIn > 0)
+		pfnDraw(pRep, nIn, InLines, 1, 0);
+
+	char szText[96];
 	for (int i = 0; i < s_G.nPoints; i++)
 	{
 		POINT pt = s_G.pt[i];
 		if (!IsNearPlayer(pt, px, py)) continue;
-		sprintf(szText, "%d", i);
+		int k = DoorOfPoint(i);
+		BOOL bAlsoIn = FALSE;	// cong RA trung diem VAO tu chinh map dich: thuong la cong chieu ve tu ghi (ban cu) - nen xoa
+		for (int e = 0; k >= 0 && e < s_nIn && !bAlsoIn; e++)
+			bAlsoIn = s_In[e].nFrom == s_G.door[k].nDestMap && __distance(s_In[e].pt.x, s_In[e].pt.y, pt.x, pt.y) < 64;
+		if (k >= 0)
+			_snprintf(szText, sizeof(szText) - 1, bAlsoIn ? "%d RA -> %s (TRUNG DIEM VAO - kiem tra)" : "%d RA -> %s", i,
+				s_G.door[k].nDestMap ? MapName(s_G.door[k].nDestMap) : "?");
+		else
+			sprintf(szText, "%d", i);
+		szText[sizeof(szText) - 1] = 0;
 		pfnText(pRep, 12, szText, -1, pt.x + 24, pt.y - 16, (i == nNear) ? CLR_NEAR : PointColor(i), 0, 0, 0xFF000000);
+	}
+	for (int e = 0; e < s_nIn; e++)
+	{
+		POINT pt = s_In[e].pt;
+		if (!IsNearPlayer(pt, px, py)) continue;
+		_snprintf(szText, sizeof(szText) - 1, "VAO <- %s", MapName(s_In[e].nFrom));
+		szText[sizeof(szText) - 1] = 0;
+		pfnText(pRep, 12, szText, -1, pt.x + 24, pt.y + 24, CLR_DOOR_IN, 0, 0, 0xFF000000);
 	}
 }
 
@@ -795,6 +1117,8 @@ static void __fastcall HookDrawGameSpace(void *pCoreShell)
 	((PFN_DRAWGAMESPACE)DGS_FUNC_ADD)(pCoreShell);
 	__try
 	{
+		DrawObstacles();
+		DrawStars();
 		DrawPath();
 		DrawWalk();
 	}
@@ -802,6 +1126,8 @@ static void __fastcall HookDrawGameSpace(void *pCoreShell)
 	{
 		s_bShow = FALSE;	// Sai dia chi/offset - tat ve
 		s_bShowWalk = FALSE;
+		s_bShowObs = FALSE;
+		s_bShowStar = FALSE;
 	}
 }
 
@@ -835,9 +1161,12 @@ void DebugPathUnhook()
 {
 	s_bShow = FALSE;
 	s_bShowWalk = FALSE;
+	s_bShowObs = FALSE;
+	s_bShowStar = FALSE;
 	s_bRec = FALSE;
 	s_nRunTarget = -1;
 	PatchDraw(FALSE);
+	ObsFree();
 }
 
 //------------------------------------------------------------------ phim tat (khi bat ve node)
@@ -927,7 +1256,7 @@ static void OnMapChanged(int nOldMap, POINT ptOld, int nNewMap, int x, int y)
 		d.nDestMap = nNewMap; d.xIn = x; d.yIn = y;
 		s_G.bDirty = TRUE;
 		sprintf(szMsg, "<color=yellow>MapPath: cong %s (diem %d) -> %s (%d)", DoorKindName(d.nKind), d.nPoint, MapName(nNewMap), nNewMap);
-		bDriver = d.nKind == door_npc;	// NPC: khong ghi cong chieu ve
+		bDriver = FALSE;	// da ghi la cong (Huy se xoa cong, khong xoa xa phu)
 	}
 	else if (bDriver)
 	{
@@ -948,14 +1277,10 @@ static void OnMapChanged(int nOldMap, POINT ptOld, int nNewMap, int x, int y)
 	SaveGraph(&s_G);
 	SystemMessage(szMsg);
 
-	// Map moi: diem vao (+ cong chieu ve neu di bo)
+	// Map moi: chi ghi diem VAO (da nam trong cong cua map cu: xVao,yVao). Khong tu ghi cong chieu ve:
+	// cho hien ra khong phai la cong RA; cong ve se ghi khi that su di nguoc lai
 	LoadGraph(&s_G, nNewMap);
 	s_nLast = PointAt(x, y, s_nSpacing / 2, -1);
-	if (!bDriver && s_nLast >= 0)
-	{
-		AddDoor(s_nLast, nOldMap, ptOld.x, ptOld.y);
-		SystemMessage("<color=yellow>MapPath: ghi cong chieu ve (huy neu sai: nut Huy cong/xa phu vua ghi)");
-	}
 	s_LastTrans.nOldMap = nOldMap;
 	s_LastTrans.nNewMap = nNewMap;
 	s_LastTrans.bDriver = bDriver;
@@ -963,7 +1288,7 @@ static void OnMapChanged(int nOldMap, POINT ptOld, int nNewMap, int x, int y)
 
 static void RunBreathe(int x, int y)
 {
-	if (s_nRouteIdx >= s_nRouteLen)
+	if (s_nRouteIdx >= s_nRouteLen && !s_bRunXY)
 	{
 		SystemMessage("<color=green>MapPath: da toi diem dich");
 		s_nRunTarget = -1;
@@ -973,6 +1298,21 @@ static void RunBreathe(int x, int y)
 	{
 		SystemMessage("<color=red>MapPath: ket - 20s khong toi duoc diem tiep theo, dung chay thu");
 		s_nRunTarget = -1;
+		return;
+	}
+	if (s_nRouteIdx >= s_nRouteLen)
+	{	// Chay toi toa do: het route -> di thang, MoveTo moi lan toi da ~400
+		int d = __distance(s_ptRunXY.x, s_ptRunXY.y, x, y);
+		if (d < s_nRunBest - 64) { s_nRunBest = d; s_dwRunTick = GetTickCount(); }	// Con tien gan => chua ket
+		if (d <= PT_REACH)
+		{
+			char szMsg[96];
+			sprintf(szMsg, "<color=green>MapPath: da toi toa do %d/%d", s_ptRunXY.x >> 8, s_ptRunXY.y >> 9);
+			SystemMessage(szMsg);
+			s_nRunTarget = -1;
+			return;
+		}
+		g_pCurPlayer->MoveTo(s_ptRunXY.x, s_ptRunXY.y);	// KPlayer::MoveTo tu ne vat can + gioi han 400
 		return;
 	}
 	POINT pt = s_G.pt[s_nRoute[s_nRouteIdx]];
@@ -1037,8 +1377,7 @@ static void OnDoorTestDone(int nOldMap, int nNewMap, int x, int y)
 	SystemMessage(szMsg);
 
 	LoadGraph(&s_G, nNewMap);
-	s_nLast = PointAt(x, y, s_nSpacing / 2, -1);
-	if (s_nLast >= 0) AddDoor(s_nLast, nOldMap, s_ptDoor.x, s_ptDoor.y);
+	s_nLast = PointAt(x, y, s_nSpacing / 2, -1);	// diem VAO, khong ghi cong chieu ve
 	SaveGraph(&s_G);
 	s_LastTrans.nOldMap = nOldMap;
 	s_LastTrans.nNewMap = nNewMap;
@@ -1065,13 +1404,7 @@ static void DoorTestBreathe(int x, int y)
 		s_bDoorTest = FALSE;
 		return;
 	}
-	int tx = s_ptDoor.x, ty = s_ptDoor.y;
-	if (d > 400)
-	{	// MoveTo moi lan toi da ~400
-		tx = x + (s_ptDoor.x - x) * 400 / d;
-		ty = y + (s_ptDoor.y - y) * 400 / d;
-	}
-	g_pCurPlayer->MoveTo(tx, ty);
+	g_pCurPlayer->MoveTo(s_ptDoor.x, s_ptDoor.y);	// KPlayer::MoveTo tu ne vat can + gioi han 400
 }
 
 void DebugPathBreathe()
@@ -1124,7 +1457,7 @@ void DebugPathBreathe()
 
 //------------------------------------------------------------------ nhap file cu
 
-// Doc cap "x,y" toi khi gap dong khong phai cap (vd "0") - nhu CVLMove/CVLMap::LoadMap
+// Doc cap "x,y" toi khi gap dong khong phai cap (vd "0") - nhu CVLMove
 static int ReadPairs(FILE *pFile, POINT *pPts, int nMax)
 {
 	int n = 0, a, b;
@@ -1136,10 +1469,9 @@ static int ReadPairs(FILE *pFile, POINT *pPts, int nMax)
 	return min(n, nMax);
 }
 
-static int ImportPointsSides(FILE *pFile, BOOL bCity)
+static int ImportPointsSides(FILE *pFile)
 {
 	static POINT Pts[PT_MAX_POINTS];
-	if (bCity) ReadPairs(pFile, Pts, PT_MAX_POINTS);	// NpcPoints - bo qua
 	int nBase = s_G.nPoints;
 	int nPts = ReadPairs(pFile, Pts, PT_MAX_POINTS);
 	for (int i = 0; i < nPts; i++)
@@ -1164,7 +1496,7 @@ static void ImportOld()
 		sprintf(szFile, "%s\\Maps\\%s", theMain.m_szCurFolder, szName);
 		if ((pFile = fopen(szFile, "r")) != NULL)
 		{
-			int n = ImportPointsSides(pFile, FALSE);
+			int n = ImportPointsSides(pFile);
 			fclose(pFile);
 			DbgOut("Nhap %s: %d diem\n", szName, n);
 			nTotal += n;
@@ -1172,14 +1504,6 @@ static void ImportOld()
 		else DbgOut("Khong mo duoc %s\n", szFile);
 	}
 
-	sprintf(szFile, "%s\\Maps\\CityMaps\\City%d.map", theMain.m_szCurFolder, *g_pMapID);
-	if ((pFile = fopen(szFile, "r")) != NULL)
-	{
-		int n = ImportPointsSides(pFile, TRUE);
-		fclose(pFile);
-		DbgOut("Nhap CityMaps\\City%d.map: %d diem (bo qua toa do NPC)\n", *g_pMapID, n);
-		nTotal += n;
-	}
 
 	sprintf(szIni, "%s\\Maps\\PathList.ini", theMain.m_szCurFolder);
 	GetPrivateProfileStringA("Path_File", szMapID, "", szName, sizeof(szName), szIni);
@@ -1200,7 +1524,7 @@ static void ImportOld()
 		}
 	}
 	if (!nTotal)
-		DbgOut("Map %d khong co file cu (MapMenu.ini / CityMaps / PathList.ini)\n", *g_pMapID);
+		DbgOut("Map %d khong co file cu (MapMenu.ini / PathList.ini)\n", *g_pMapID);
 }
 
 //------------------------------------------------------------------ BFS giua cac map
@@ -1277,6 +1601,48 @@ static int LinkCost(const PT_LINK &l)
 	return l.bItem ? PT_COST_ITEM : l.bDriver ? PT_COST_DRIVER : PT_COST_DOOR;
 }
 
+// Lien ket vua that bai (ket duong / cong sai / xa phu khong dua toi): bo qua 5 phut de MapBFS chon duong khac
+#define PT_MAX_BAD		16
+#define PT_BAD_TIME		300000
+struct PT_BAD { PT_LINK l; DWORD dwTick; };
+static PT_BAD	s_Bad[PT_MAX_BAD];
+
+static BOOL SameLink(const PT_LINK &a, const PT_LINK &b)
+{
+	if (a.bItem || b.bItem)	// vat pham: map dung bat ky
+		return a.bItem && b.bItem && a.nTo == b.nTo && !strcmp(a.szMenu, b.szMenu);
+	return a.nFrom == b.nFrom && a.nTo == b.nTo && a.nPoint == b.nPoint && a.bDriver == b.bDriver && !strcmp(a.szMenu, b.szMenu);
+}
+
+static BOOL LinkBad(const PT_LINK &l)
+{
+	DWORD dwNow = GetTickCount();
+	for (int i = 0; i < PT_MAX_BAD; i++)
+		if (s_Bad[i].dwTick && dwNow - s_Bad[i].dwTick < PT_BAD_TIME && SameLink(s_Bad[i].l, l)) return TRUE;
+	return FALSE;
+}
+
+static int BadLinkCount()
+{
+	int n = 0;
+	DWORD dwNow = GetTickCount();
+	for (int i = 0; i < PT_MAX_BAD; i++)
+		if (s_Bad[i].dwTick && dwNow - s_Bad[i].dwTick < PT_BAD_TIME) n++;
+	return n;
+}
+
+static void MarkLinkBad(const PT_LINK &l)
+{
+	int nSlot = 0;
+	for (int i = 0; i < PT_MAX_BAD; i++)
+	{
+		if (s_Bad[i].dwTick && SameLink(s_Bad[i].l, l)) { nSlot = i; break; }
+		if (s_Bad[i].dwTick < s_Bad[nSlot].dwTick) nSlot = i;	// o trong (0) hoac cu nhat
+	}
+	s_Bad[nSlot].l = l;
+	s_Bad[nSlot].dwTick = GetTickCount();
+}
+
 // Tim lo trinh chi phi nho nhat (Dijkstra, LinkCost) tren pExtra (xet truoc) + s_Links. pSteps nhan cac buoc theo thu tu di.
 // Tra ve so buoc (0 = dang o nTarget), -1 = khong co duong
 static int MapBFS(int nStart, int nTarget, PT_LINK *pSteps, const PT_LINK *pExtra = NULL, int nExtra = 0)
@@ -1299,6 +1665,7 @@ static int MapBFS(int nStart, int nTarget, PT_LINK *pSteps, const PT_LINK *pExtr
 		{
 			const PT_LINK &l = (k < nExtra) ? pExtra[k] : s_Links[k - nExtra];
 			if ((l.nFrom != Maps[mi] && l.nFrom != 0) || !l.nTo || l.nTo == Maps[mi]) continue;	// nFrom 0 = vat pham, map nao cung dung duoc
+			if (LinkBad(l)) continue;
 			int j;
 			for (j = 0; j < nMaps && Maps[j] != l.nTo; j++);
 			if (j == nMaps)
@@ -1483,8 +1850,12 @@ static void OutStatus()
 	DbgOut("Do thi: %d diem, %d canh, %d cong, %d xa phu, %d vat pham  %s\n", s_G.nPoints, s_G.nSides, s_G.nDoors, s_G.nDrivers,
 		s_G.nItems, s_G.bDirty ? "(CHUA GHI FILE)" : "");
 	DbgOut("Vi tri (%d, %d) [%d/%d]  diem gan nhat %d (cach %d)\n", x, y, x >> 8, y >> 9, nNear, nNear >= 0 ? d : 0);
-	if (s_nRunTarget >= 0)
+	if (s_nRunTarget >= 0 && s_bRunXY)
+		DbgOut("Chay thu toi toa do (%d, %d) [%d/%d]: buoc %d/%d (het buoc = di thang)\n", s_ptRunXY.x, s_ptRunXY.y,
+			s_ptRunXY.x >> 8, s_ptRunXY.y >> 9, s_nRouteIdx, s_nRouteLen);
+	else if (s_nRunTarget >= 0)
 		DbgOut("Chay thu toi diem %d: buoc %d/%d\n", s_nRunTarget, s_nRouteIdx, s_nRouteLen);
+	DbgOut("Ve vat can: %s  o duoi chan: %s\n", s_bShowObs ? "BAT" : "tat", ObstacleKindName(ObsGet(x, y)));
 	if (s_LastTrans.nOldMap)
 		DbgOut("Doi map vua ghi: %d -> %d (%s)\n", s_LastTrans.nOldMap, s_LastTrans.nNewMap, s_LastTrans.bDriver ? "xa phu" : "cong");
 	g_DbgReply.nResult[0] = x;
@@ -1538,6 +1909,26 @@ static BOOL CheckPointIdx(int n)
 	return TRUE;
 }
 
+// O X/Y cua lenh -> toa do that: trong = co cam tren ban do nho, < 4096 = toa do game (x/y hien tren man hinh)
+static BOOL CmdXY(const int *P, int *pX, int *pY)
+{
+	int tx = P[0], ty = P[1];
+	if (!tx && !ty)
+	{	// Trong X/Y: lay co cam tren ban do nho
+		int nFlagX = *((int*)FLAG_X_OFFST), nFlagY = *((int*)FLAG_Y_OFFST);
+		if (nFlagX <= 0 || nFlagY <= 0) { DbgOut("LOI: nhap X/Y (toa do tuyet doi) hoac cam co tren ban do nho\n"); return FALSE; }
+		tx = nFlagX << 4; ty = nFlagY << 5;
+		DbgOut("Lay toa do co cam\n");
+	}
+	else if (tx < 4096 && ty < 4096)
+	{	// Toa do game (x/y hien tren man hinh) -> toa do that, giua o
+		tx = (tx << 8) + 128; ty = (ty << 9) + 256;
+		DbgOut("Toa do game %d/%d -> that (%d, %d)\n", P[0], P[1], tx, ty);
+	}
+	*pX = tx; *pY = ty;
+	return TRUE;
+}
+
 static void UndoTransition()
 {
 	if (!s_LastTrans.nOldMap)
@@ -1546,16 +1937,7 @@ static void UndoTransition()
 		return;
 	}
 	int nOld = s_LastTrans.nOldMap, nNew = s_LastTrans.nNewMap;
-	// Map moi: cong chieu ve
-	if (s_G.nMapID == nNew)
-		for (int k = s_G.nDoors - 1; k >= 0; k--)
-			if (s_G.door[k].nDestMap == nOld)
-			{
-				s_G.door[k] = s_G.door[--s_G.nDoors];
-				s_G.bDirty = TRUE;
-				DbgOut("Xoa cong chieu ve (map %d -> %d)\n", nNew, nOld);
-				break;
-			}
+	// Khong con tu ghi cong chieu ve o map moi => chi xoa o map cu (cong that map moi -> cu giu nguyen)
 	// Map cu: cong / xa phu
 	static PT_GRAPH g;
 	if (LoadGraph(&g, nOld))
@@ -1747,6 +2129,7 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 			DbgOut("%d%s", s_nRoute[i], i < nLen - 1 ? " > " : "\n");
 		if (pParam->nCmd == dbg_pt_run)
 		{
+			s_bRunXY = FALSE;
 			s_nRouteLen = nLen;
 			s_nRouteIdx = 0;
 			s_nRunTarget = P[2];
@@ -1825,19 +2208,8 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 			break;
 		}
 		{
-			int tx = P[0], ty = P[1];
-			if (!tx && !ty)
-			{	// Trong X/Y: lay co cam tren ban do nho
-				int nFlagX = *((int*)FLAG_X_OFFST), nFlagY = *((int*)FLAG_Y_OFFST);
-				if (nFlagX <= 0 || nFlagY <= 0) { DbgOut("LOI: nhap X/Y (toa do tuyet doi) hoac cam co tren ban do nho\n"); break; }
-				tx = nFlagX << 4; ty = nFlagY << 5;
-				DbgOut("Lay toa do co cam\n");
-			}
-			else if (tx < 4096 && ty < 4096)
-			{	// Toa do game (x/y hien tren man hinh) -> toa do that, giua o
-				tx = (tx << 8) + 128; ty = (ty << 9) + 256;
-				DbgOut("Toa do game %d/%d -> that (%d, %d)\n", P[0], P[1], tx, ty);
-			}
+			int tx, ty;
+			if (!CmdXY(P, &tx, &ty)) break;
 			d = __distance(tx, ty, x, y);
 			s_ptDoor.x = tx; s_ptDoor.y = ty;
 			s_nDoorLink = s_nLast;
@@ -1860,6 +2232,99 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 		}
 		break;
 
+	case dbg_pt_runxy:
+	{
+		if (s_nRunTarget >= 0 && s_bRunXY)
+		{
+			s_nRunTarget = -1;
+			DbgOut("Dung chay thu toi toa do\n");
+			g_DbgReply.bOK = TRUE;
+			break;
+		}
+		int tx, ty;
+		if (!CmdXY(P, &tx, &ty)) break;
+		d = __distance(tx, ty, x, y);
+		DbgOut("Chay toi (%d, %d) [%d/%d], cach %d. O dich: %s\n", tx, ty, tx >> 8, ty >> 9, d, ObstacleKindName(ObsGet(tx, ty)));
+		if (ObsGet(tx, ty) > 0) DbgOut("CANH BAO: toa do dich nam trong o vat can - se ket truoc khi toi noi\n");
+		// Theo do thi: diem gan nhan vat -> diem gan dich, chi khi diem gan dich gan hon chinh nhan vat
+		s_nRouteLen = 0;
+		int dS, dE, nS = NearestToPlayer(&dS), nE = Nearest(tx, ty, &dE), nDist = 0;
+		if (nS >= 0 && nE >= 0 && dE < d && dS < d)
+		{
+			s_nRouteLen = FindRoute(nS, nE, s_nRoute, &nDist);
+			if (s_nRouteLen)
+			{
+				DbgOut("Theo do thi: diem %d (cach nhan vat %d) -> %d (cach dich %d): %d diem, dai %d\n  ", nS, dS, nE, dE, s_nRouteLen, nDist);
+				for (int i = 0; i < s_nRouteLen; i++)
+					DbgOut("%d%s", s_nRoute[i], i < s_nRouteLen - 1 ? " > " : "\n");
+			}
+			else
+				DbgOut("Khong co duong tren do thi tu diem %d toi diem %d - di thang\n", nS, nE);
+		}
+		else
+			DbgOut("Di thang (khong co diem MapPath nao giup rut ngan)\n");
+		s_ptRunXY.x = tx; s_ptRunXY.y = ty;
+		s_nRunBest = MAX_INTNUM;
+		s_bRunXY = TRUE;
+		s_nRouteIdx = 0;
+		s_nRunTarget = s_nRouteLen ? nE : 0;
+		s_dwRunTick = GetTickCount();
+		s_nCurMap = *g_pMapID;
+		DbgOut("Bat dau chay (bam lai nut / nut Dung de dung). Nen tat Auto danh/di chuyen khi thu.\n");
+		g_DbgReply.bOK = TRUE;
+		break;
+	}
+
+	case dbg_pt_doorxy:
+	{
+		int tx, ty;
+		if (!CmdXY(P, &tx, &ty)) break;
+		if (ObsGet(tx, ty) > 0) DbgOut("CANH BAO: (%d, %d) nam trong o vat can\n", tx, ty);
+		MarkDoor(tx, ty, P[2], door_walk, "");
+		break;
+	}
+
+	case dbg_pt_obstacle:
+		s_bShowObs = !s_bShowObs;
+		if (s_bShowObs)
+		{
+			DbgOut("BAT ve o vat can (KScenePlaceRegionC::m_ObstacleInfo, o 32x32, pham vi %d quanh nhan vat):\n", PT_OBS_DRAW);
+			DbgOut("  do = vat can thuong, xanh = bay/nhay qua duoc; o vuong co duong cheo = ca o, tam giac = nua o\n");
+			SystemMessage("<color=yellow>MapPath: BAT ve vung khong di duoc");
+		}
+		else
+		{
+			DbgOut("TAT ve o vat can\n");
+			SystemMessage("<color=yellow>MapPath: TAT ve vung khong di duoc");
+		}
+		OutObstacles();
+		g_DbgReply.bOK = TRUE;
+		break;
+
+	case dbg_pt_obsavoid:
+		if (P[0] || P[1] || P[2])
+		{	// Thu tim duong toi X/Y (khong di)
+			int tx, ty;
+			if (!CmdXY(P, &tx, &ty)) break;
+			int wx = tx, wy = ty, nWalk = ObsWalkDist(x, y, tx, ty);
+			BOOL bSteer = ObsSteer(x, y, &wx, &wy);
+			DbgOut("Toi (%d, %d) [%d/%d]: thang %d, di bo %s%d. Duong thang %s\n", tx, ty, tx >> 8, ty >> 9, __distance(x, y, tx, ty),
+				nWalk < 0 ? "KHONG TOI DUOC " : "", nWalk, ObsLineClear(x, y, tx, ty) ? "thong" : "BI CHAN");
+			if (bSteer) DbgOut("MoveTo se chay toi diem trung gian (%d, %d) [%d/%d], cach %d (bat ve vat can de xem duong)\n",
+				wx, wy, wx >> 8, wy >> 9, __distance(x, y, wx, wy));
+			g_DbgReply.bOK = TRUE;
+			break;
+		}
+		// Ne vat can mac dinh BAT nhung chua ve: bam lan dau = BAT ne + ve luoi sao, bam lai = TAT ca hai
+		s_bShowStar = !s_bShowStar;
+		g_bObsAvoid = s_bShowStar;
+		DbgOut("Ne vat can khi di chuyen: %s\n", g_bObsAvoid ? "BAT - MoveTo tim duong vong khi duong thang bi chan" : "TAT - chay thang nhu cu");
+		if (s_bShowStar)
+			DbgOut("  Ve: sao DO = khong di duoc, sao VANG = di duoc (o 32x32, pham vi %d), sao XANH LA = tuyen Auto dang chay, X TRANG = diem dang chay toi\n", PT_STAR_DRAW);
+		SystemMessage(g_bObsAvoid ? "<color=yellow>Ne vat can: BAT (ve luoi sao + tuyen xanh la)" : "<color=yellow>Ne vat can: TAT");
+		g_DbgReply.bOK = TRUE;
+		break;
+
 	case dbg_pt_show:
 		s_bShow = !s_bShow;
 		if (s_bShow)
@@ -1868,7 +2333,7 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 			DbgOut("  Space  = them diem tai vi tri hien tai, noi diem truoc (gan diem cu < %d thi noi vao diem cu)\n", PT_JOIN_RANGE);
 			DbgOut("  Delete = xoa diem gan nhat (<= %d) - diem do ve mau TRANG\n", PT_KEY_RANGE);
 			DbgOut("  End    = chon diem gan nhat lam diem truoc (re nhanh)\n");
-			DbgOut("Mau: vang = canh, xanh la = diem, xanh duong = diem truoc, do = cong, tim = xa phu, o CAM = trap ban do\n");
+			DbgOut("Mau: vang = canh, xanh la = diem, xanh duong = diem truoc, do = cong RA (hinh thoi), vuong xanh duong dam = diem VAO tu map khac, tim = xa phu, o CAM = trap ban do\n");
 			DbgOut("LUU Y: khi bat, Space/Delete/End bi chiem (ke ca khi go chat). Bam lai nut nay de tat.\n");
 			SystemMessage("<color=yellow>MapPath: BAT ve node - Space them, Delete xoa, End re nhanh");
 		}
@@ -1881,7 +2346,7 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 		g_DbgReply.bOK = TRUE;
 		break;
 	}
-	if ((s_bShow || s_bRec || s_nRunTarget >= 0 || s_bDoorTest) && !PatchDraw(TRUE))
+	if ((s_bShow || s_bRec || s_nRunTarget >= 0 || s_bDoorTest || s_bShowObs || s_bShowStar) && !PatchDraw(TRUE))
 		DbgOut("\nLOI: khong chen duoc ham ve (0x%08X khong phai jmp/call 0x%08X) - sai ban game?\n", DGS_JMP_ADD, DGS_FUNC_ADD);
 	return TRUE;
 }
@@ -1963,7 +2428,7 @@ static BOOL MenuLineFor(const char *szLine, const PT_LINK &l)
 	return strlen(szName) > 3 && TcvnStrStrI(szLine, szName) != NULL;
 }
 
-// Toa do xa phu cho buoc khong co diem ghi: xa phu gan nhat trong file CityMaps (CVLMap)
+// Toa do xa phu cho buoc khong co diem ghi: xa phu gan nhat trong muc [NPC] (CVLMap::NpcPoints)
 static BOOL DriverPos(POINT *pt)
 {
 	int x, y, dMin = MAX_INTNUM;
@@ -1979,6 +2444,27 @@ static BOOL DriverPos(POINT *pt)
 }
 
 // Lap ke hoach tren map hien tai. FALSE = khong co duong (da dung)
+// Map co xa phu trong Maps\Path (thanh/thon) - nho theo map, chi doc file khi doi map
+BOOL PathMapHasDriver(int nMap)
+{
+	static int s_nDrvMap = -1;
+	static BOOL s_bDrvHas = FALSE;
+	if (nMap != s_nDrvMap)
+	{
+		static PT_GRAPH g;
+		s_nDrvMap = nMap;
+		if (nMap == s_G.nMapID) s_bDrvHas = s_G.nDrivers > 0;
+		else s_bDrvHas = LoadGraph(&g, nMap) && g.nDrivers > 0;
+	}
+	return s_bDrvHas;
+}
+
+// "Len map = Xa phu hoac THP": tu map co xa phu chi di bang xa phu/vat pham, khong di bo qua cong sang map khac
+static BOOL DriverOnlyBlocked(const PT_LINK &l, int nMap)
+{
+	return theMap.m_bDriverOnly && !l.bDriver && !l.bItem && PathMapHasDriver(nMap);
+}
+
 static BOOL TvPlan()
 {
 	static PT_LINK Steps[PT_MAX_STEPS];
@@ -1991,6 +2477,13 @@ static BOOL TvPlan()
 	{
 		char szWhy[160];
 		sprintf(szWhy, "khong co lo trinh %s -> %s", MapName(nMap), MapName(s_nTvTarget));
+		PathTravelStop(szWhy);
+		return FALSE;
+	}
+	if (DriverOnlyBlocked(Steps[0], nMap))
+	{
+		char szWhy[160];
+		sprintf(szWhy, "Len map = Xa phu hoac THP - khong di bo tu %s sang %s", MapName(nMap), MapName(Steps[0].nTo));
 		PathTravelStop(szWhy);
 		return FALSE;
 	}
@@ -2013,6 +2506,18 @@ static BOOL TvPlan()
 	int x, y;
 	GetPos(&x, &y);
 	s_ptTvFrom.x = x; s_ptTvFrom.y = y;
+	if (s_TvLink.nPoint >= 0 && s_TvLink.nPoint < s_T.nPoints)
+	{	// Nhieu cong/xa phu cung sang map do (cung chi phi): lay cai gan nhan vat nhat, khong lay theo thu tu trong file
+		int dBest = __distance(s_T.pt[s_TvLink.nPoint].x, s_T.pt[s_TvLink.nPoint].y, x, y);
+		for (int k = 0; k < s_nLinks; k++)
+		{
+			const PT_LINK &l = s_Links[k];
+			if (l.nFrom != nMap || l.nTo != s_TvLink.nTo || l.bItem || LinkCost(l) != LinkCost(s_TvLink)) continue;
+			if (l.nPoint < 0 || l.nPoint >= s_T.nPoints || LinkBad(l)) continue;
+			int d = __distance(s_T.pt[l.nPoint].x, s_T.pt[l.nPoint].y, x, y);
+			if (d < dBest) { dBest = d; s_TvLink = l; }
+		}
+	}
 	if (s_TvLink.nPoint >= 0 && s_TvLink.nPoint < s_T.nPoints)
 	{
 		s_ptTvGoal = s_T.pt[s_TvLink.nPoint];
@@ -2050,11 +2555,22 @@ static BOOL TvPlan()
 	return TRUE;
 }
 
+// Buoc hien tai hong han: bo qua lien ket nay 5 phut, lap ke hoach lai tu map dang dung (TvPlan dung neu het duong)
+static void TvLinkFailed(const char *szWhy)
+{
+	MarkLinkBad(s_TvLink);
+	TvMsg(TV(L"<color=yellow>MapPath: %s - bỏ chặng %s -> %s, tìm đường khác"), szWhy,
+		MapName(s_TvLink.nFrom ? s_TvLink.nFrom : *g_pMapID), MapName(s_TvLink.nTo));
+	CloseMenu();
+	s_nTvFails = 0;
+	s_nTvMap = 0;
+}
+
 static void TvFail(const char *szWhy)
 {
 	if (++s_nTvFails >= TV_MAX_FAILS)
 	{
-		PathTravelStop(szWhy);
+		TvLinkFailed(szWhy);
 		return;
 	}
 	TvMsg("<color=yellow>MapPath: %s - thu lai (%d/%d)", szWhy, s_nTvFails, TV_MAX_FAILS);
@@ -2062,14 +2578,9 @@ static void TvFail(const char *szWhy)
 	s_nTvMap = 0;	// lap ke hoach lai
 }
 
+// Khong cat ngan duong o day: KPlayer::MoveTo can dich that de tim duong vong vat can (roi tu gioi han 400)
 static void TvMoveTo(int x, int y, int tx, int ty)
 {
-	int d = __distance(tx, ty, x, y);
-	if (d > 600)
-	{	// MoveTo moi lan toi da ~600
-		tx = x + (tx - x) * 600 / d;
-		ty = y + (ty - y) * 600 / d;
-	}
 	PathNoteMove(tx, ty, "Qua map");
 	g_pCurPlayer->MoveTo(tx, ty);
 }
@@ -2146,7 +2657,7 @@ static void TvItemAct()
 			char szWhy[160];
 			_snprintf(szWhy, sizeof(szWhy) - 1, TV(L"không có \"%s\" trong hành trang"), s_TvLink.szMenu);
 			szWhy[sizeof(szWhy) - 1] = 0;
-			PathTravelStop(szWhy);
+			TvLinkFailed(szWhy);
 			return;
 		}
 		s_nTvItemStep = 0;
@@ -2168,6 +2679,31 @@ static void TvItemAct()
 	theMain.ClickMenuIdx(nIdx);
 	s_nTvItemStep++;
 	s_dwTvAct = s_dwTvTick = dwNow;
+}
+
+// Tien xa phu: tren nguoi < TV_DRIVER_MONEY thi rut tu ruong (moi 3s thu lai, toi da 3 lan / lien ket). TRUE = dang rut, cho
+#define TV_DRIVER_MONEY		500
+static BOOL TvDriverMoney(DWORD dwNow)
+{
+	static DWORD s_dwMoneyTick = 0;
+	static DWORD s_dwMoneyLink = 0;		// s_dwTvTick cua lien ket dang rut (lien ket moi => dem lai)
+	static int s_nMoneyTry = 0;
+	if (EQUIP_MONEY >= TV_DRIVER_MONEY || ROOM_MONEY <= 0) return FALSE;
+	if (s_dwMoneyLink != s_dwTvTick) { s_dwMoneyLink = s_dwTvTick; s_nMoneyTry = 0; s_dwMoneyTick = 0; }
+	if (s_nMoneyTry >= 3) return FALSE;	// khong rut duoc (ruong khoa / mat khau sai): van noi xa phu
+	if (s_dwMoneyTick && dwNow - s_dwMoneyTick < 3000) return TRUE;	// cho tien ve
+	s_dwMoneyTick = dwNow;
+	s_nMoneyTry++;
+	if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+	{	// Ruong khoa: da gui lenh mo (mat khau o tab Ban do)
+		theMap.m_bRoomLocked = TRUE;
+		return TRUE;
+	}
+	int nTake = TV_DRIVER_MONEY - EQUIP_MONEY;
+	if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
+	TvMsg("<color=yellow>MapPath: rut %d luong tien xa phu (tren nguoi %d, ruong %d)", nTake, EQUIP_MONEY, ROOM_MONEY);
+	g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
+	return TRUE;
 }
 
 static void TvAct(int x, int y)
@@ -2195,6 +2731,7 @@ static void TvAct(int x, int y)
 			return;
 		}
 		if (s_dwTvAct && dwNow - s_dwTvAct < 3000) return;	// cho menu hien
+		if (s_TvLink.bDriver && TvDriverMoney(dwNow)) return;
 		int nNpc = TvFindNpc();
 		if (!nNpc) { TvMoveTo(x, y, s_ptTvGoal.x, s_ptTvGoal.y); return; }
 		int nx, ny;
@@ -2321,12 +2858,7 @@ BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
 	static PT_LINK Steps[PT_MAX_STEPS];
 	int nMap = *g_pMapID;
 	if (!nTarget || nMap == nTarget || !IsPlayerOk()) return FALSE;
-	if (nTarget == s_nTvFailTarget && GetTickCount() - s_dwTvFailTick < 300000)
-	{
-		TvMsg("<color=red>MapPath: vua tu di toi %s that bai, cho %ds roi thu lai", MapName(nTarget),
-			(300000 - (GetTickCount() - s_dwTvFailTick)) / 1000);
-		return FALSE;
-	}
+	// Lan that bai truoc chi bo qua dung lien ket hong (LinkBad), con duong khac thi van di
 
 	// Dong menu dang mo (vd "Nhung noi da di qua") = lien ket xa phu tu map hien tai
 	s_nTvExtra = 0;
@@ -2359,6 +2891,15 @@ BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
 		}
 		TvMsg("<color=red>MapPath: khong co lo trinh %s (%d) -> %s (%d)", MapName(nMap), nMap, MapName(nTarget), nTarget);
 		TvMsg("<color=red>MapPath: %d lien ket trong Maps\\Path, xa phu co: %s", s_nLinks, szLines[0] ? szLines : "(khong doc duoc)");
+		if (int nBad = BadLinkCount())
+			TvMsg(TV(L"<color=red>MapPath: đang bỏ qua %d chặng vừa đi hỏng (5 phút)"), nBad);
+		s_nTvExtra = 0;
+		return FALSE;
+	}
+
+	if (DriverOnlyBlocked(Steps[0], nMap))
+	{
+		TvMsg("<color=yellow>MapPath: Len map = Xa phu hoac THP - khong di bo tu %s sang %s", MapName(nMap), MapName(Steps[0].nTo));
 		s_nTvExtra = 0;
 		return FALSE;
 	}
@@ -2379,6 +2920,16 @@ BOOL PathTravelStart(int nTarget, BOOL bUseMenu)
 	CloseMenu();
 	s_nTvMap = 0;	// Lap ke hoach o PathTravelBreathe
 	return TRUE;
+}
+
+// Mo lai sau khi tam ngung Auto: lap ke hoach lai tu cho dang dung (bo moc gio cua buoc dang do)
+void PathTravelResume()
+{
+	if (!s_nTvTarget) return;
+	CloseMenu();
+	s_nTvFails = 0;
+	s_nTvMapWait = 0;
+	s_nTvMap = 0;
 }
 
 // CVLMap::ChangeMap: co vat pham ([Item]) dua toi nTarget (lo trinh tot nhat bat dau bang vat pham) thi tu di bang MapPath.
@@ -2483,15 +3034,23 @@ int PathWalkTo(int tx, int ty)
 		const BOOL *pBlock = NULL;
 		if (s_bWNoDoor && DoorBlock(&s_W, s_bWBlock) < s_W.nPoints) pBlock = s_bWBlock;	// Khong di vao cong
 		int nStart = -1, nEnd = -1, dS = MAX_INTNUM, dE = MAX_INTNUM;
+		ObsFlood(x, y);	// Diem dau = diem gan nhat THAT SU chay toi duoc (khong cach tuong)
 		for (int i = 0; i < s_W.nPoints; i++)
 		{
 			if (!s_W.pt[i].x && !s_W.pt[i].y) continue;
 			if (pBlock && pBlock[i]) continue;
-			int d = __distance(s_W.pt[i].x, s_W.pt[i].y, x, y);
+			int d = ObsReachDist(s_W.pt[i].x, s_W.pt[i].y);
 			if (d < dS) { dS = d; nStart = i; }
 			d = __distance(s_W.pt[i].x, s_W.pt[i].y, tx, ty);
 			if (d < dE) { dE = d; nEnd = i; }
 		}
+		if (nStart < 0)	// Khong diem nao toi duoc (bi vay?) - lay diem gan nhat theo duong thang
+			for (int i = 0; i < s_W.nPoints; i++)
+			{
+				if ((!s_W.pt[i].x && !s_W.pt[i].y) || (pBlock && pBlock[i])) continue;
+				int d = __distance(s_W.pt[i].x, s_W.pt[i].y, x, y);
+				if (d < dS) { dS = d; nStart = i; }
+			}
 		if (nStart < 0 || nEnd < 0) return -1;
 		s_nWLen = FindRoute(nStart, nEnd, s_nWRoute, NULL, &s_W, pBlock);
 		if (s_nWLen <= 0)
@@ -2528,11 +3087,8 @@ int PathWalkTo(int tx, int ty)
 		return 1;
 	}
 	POINT pt = s_W.pt[s_nWRoute[s_nWIdx]];
-	int d = __distance(pt.x, pt.y, x, y);
-	int mx = pt.x, my = pt.y;
-	if (d > 600) { mx = x + (pt.x - x) * 600 / d; my = y + (pt.y - y) * 600 / d; }
-	PathNoteMove(mx, my, "MapPath");
-	g_pCurPlayer->MoveTo(mx, my);
+	PathNoteMove(pt.x, pt.y, "MapPath");
+	g_pCurPlayer->MoveTo(pt.x, pt.y);	// KPlayer::MoveTo tu ne vat can + gioi han 400
 	return 1;
 }
 
@@ -2559,7 +3115,7 @@ int PathMapPoints(int nMapID, POINT *pPts, int nMax, BOOL bNoDoor, int *pDoorSki
 
 //------------------------------------------------------------------ ve duong Auto dang di (tab Ban do: nut Ve duong di)
 // Xam = canh MapPath; xanh duong = duong PathWalkTo con lai, xanh than = da di; trang = toi diem dang nham;
-// do (dau X) = lenh MoveTo gan nhat; vang = duong trong thanh City.map (RunningToPos); tim = tu di qua map (PathTravel);
+// do (dau X) = lenh MoveTo gan nhat; vang = NPC CVLMap dang chay toi (RunningToPos); tim = tu di qua map (PathTravel);
 // xanh la = danh sach Theo toa do (TD1 = diem dau); cam = danh sach di den noi luyen cong (DD1 = diem dau).
 
 #define CLR_W_SIDE		0xFF707070
@@ -2640,13 +3196,9 @@ static void DrawWalk()
 		}
 	}
 
-	// Duong trong thanh (CVLMap::RunningToPos)
-	if (theMap.m_nPoints > 0 && theMap.m_nCurPoint >= 0 && theMap.m_nCurPoint < MAX_POINTS && !P_PLAYER->m_FightMode)
-	{
-		POINT a = theMap.MapPoints[theMap.m_nCurPoint];
-		WLine(n, px, py, a.x, a.y, CLR_W_CITY);
-		WDiamond(n, a.x, a.y, 24, CLR_W_CITY);
-	}
+	// NPC trong thanh dang chay toi (CVLMap::RunningToPos - duong di la MapPath o tren)
+	if (theMap.m_nCurPoint >= 0 && (theMap.m_ptRunNpc.x || theMap.m_ptRunNpc.y) && !P_PLAYER->m_FightMode)
+		WDiamond(n, theMap.m_ptRunNpc.x, theMap.m_ptRunNpc.y, 24, CLR_W_CITY);
 
 	// Tu di qua map
 	if (s_nTvTarget && s_nTvMap == nMap)

@@ -172,12 +172,28 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 		{ CRASH_STAGE("theUtil.Breath"); theUtil.Breath(); }
 	if (g_RunningTimer % 4 == 3) // Chu ky 200ms - MapPath + Giam cau hinh (DEBUG), chay ca khi tam dung
 	{
-		{ CRASH_STAGE("DebugPathBreathe"); DebugPathBreathe(); }
+		{ CRASH_STAGE("DebugPathBreathe"); CPauseMoveAllow pa; DebugPathBreathe(); }
 		{ CRASH_STAGE("DebugLowCfgBreathe"); DebugLowCfgBreathe(); }
 		{ CRASH_STAGE("DebugFileBreathe"); DebugFileBreathe(); }
-		{ CRASH_STAGE("DebugQuestBreathe"); CQuestMoveAllow qa; DebugQuestBreathe(); }
+		{ CRASH_STAGE("DebugQuestBreathe"); CQuestMoveAllow qa; CPauseMoveAllow pa; DebugQuestBreathe(); }
 		{ CRASH_STAGE("theBasic.TrimRamBreathe"); theBasic.TrimRamBreathe(); }
 		{ CRASH_STAGE("theMain.TongMoneyBreathe"); theMain.TongMoneyBreathe(); }
+	}
+
+	// Vua tam ngung: dung lenh di dang do (GoTo cua game tu tim duong tiep ke ca khi Auto khong goi nua)
+	static BOOL s_bWasPause = FALSE;
+	if (g_SysPause != s_bWasPause)
+	{
+		s_bWasPause = g_SysPause;
+		if (g_SysPause && P_PLAYER->m_Doing != do_stand)
+		{
+			CRASH_STAGE("StopMove");
+			CPauseMoveAllow pa;
+			int x, y;
+			P_PLAYER->GetMapPos(&x, &y);
+			g_pCurPlayer->GoTo(x, y);
+			P_PLAYER->MoveTo(x, y);
+		}
 	}
 
 	if (g_SysPause) return;

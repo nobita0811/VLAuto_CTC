@@ -900,6 +900,10 @@ enum DEBUG_CMD
 	dbg_pt_doorobj,			// Ghi cong = Obj gan nhat (click) -> map Idx
 	dbg_pt_doornpc,			// Ghi cong = NPC doi thoai gan nhat -> map Idx
 	dbg_pt_trydoor,			// Thu chay vao toa do X/Y (trong = co): qua map => ghi cong
+	dbg_pt_runxy,			// Chay thu toi toa do X/Y (theo do thi roi di thang)
+	dbg_pt_doorxy,			// Ghi cong tai toa do X/Y -> map Idx
+	dbg_pt_obstacle,		// Bat/tat ve o vat can (m_ObstacleInfo)
+	dbg_pt_obsavoid,		// Bat/tat ne vat can trong KPlayer::MoveTo (Idx/X/Y: thu tim duong)
 	dbg_pt_last,
 
 	// Tab Chien dau (VLAttack.cpp)
@@ -1000,7 +1004,7 @@ struct DEBUG_REPLY
 
 // Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
 // Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
-#define QUEST_TRACE 1
+#define QUEST_TRACE 0
 #if QUEST_TRACE
 void QTraceSite(char* szLast, const char* szFormat, ...);
 #define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)

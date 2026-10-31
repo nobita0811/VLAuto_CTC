@@ -144,6 +144,7 @@ extern DWORD_PTR g_dwNullUiPtr;
 #define SCP_NUM_REGIONS	9			// 15-10: 9 region (10-10: 15)
 #define SPR_STATUS_OFF	0x04		// KScenePlaceRegionC::m_Status (3 = REGION_S_STANDBY - Load 0x6FA6B0)
 #define SPR_LEFTTOP_OFF	0x08		// m_LeftTopCornerScenePos: x = RegionX << 9, y = RegionY << 10
+#define SPR_OBSTACLE_OFF	0x48	// m_ObstacleInfo[16][32] (o 32x32 Mps): bit 0-3 loai (Obstacle_Kind), bit 4-7 hinh (Obstacle_Type) - LoadObstacle 0x6F8090: add eax,0x48; 0x800 byte
 #define SPR_TRAP_OFF	0x848		// m_TrapInfo[16][32] (o 32x32 Mps) - LoadTrap 0x6F80D0, GetTrap(mpsX, mpsY) 0x6F86B0
 
 // Giam cau hinh (DEBUG tab Giam cau hinh) (15-10)

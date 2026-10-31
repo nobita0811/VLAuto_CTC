@@ -1,0 +1,7 @@
+; VLAuto MapPath - Map 7 TÇn L¨ng
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
+[Points]
+0,71520,91104
+[Sides]
+[Doors]
+[Driver]

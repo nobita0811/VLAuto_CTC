@@ -29,7 +29,7 @@ static BOOL CheckNpcPointIdx(int nIdx)
 	DbgOut("NpcPoints[%d] (%s) = (%d, %d)\n", nIdx, s_szNpcPointNames[nIdx], pt.x, pt.y);
 	if (!pt.x || !pt.y)
 	{
-		DbgOut("LOI: diem nay = 0 - file City%d.map khong co toa do NPC nay (hoac chua nap)\n", *g_pMapID);
+		DbgOut("LOI: diem nay = 0 - muc [NPC] cua %s khong co toa do NPC nay (hoac chua nap)\n", PathFileShow(*g_pMapID));
 		return FALSE;
 	}
 	return TRUE;
@@ -178,7 +178,7 @@ static void MapStatus()
 	else if (theMain.m_bPause) szStep = "DUNG: theMain.m_bPause";
 	else if (PathTravelActive()) szStep = "DUNG: dang tu di theo MapPath (xem dong MapPath ben duoi)";
 	else if (theMove.IsFlagMoving()) szStep = "DUNG: dang chay theo cam co (FLAG_X/Y > 0)";
-	else if (theMap.m_nPoints <= 0) szStep = "DUNG: m_nPoints = 0 - khong co/khong doc duoc Maps\\CityMaps\\City<MapID>.map";
+	else if (theMap.m_nPoints <= 0) szStep = "DUNG: m_nPoints = 0 - khong co muc [NPC] trong Maps\\Path\\<MapID>_<Ten>.txt";
 	else if (theUtil.m_bDoingUtil) szStep = "DUNG: theUtil.m_bDoingUtil (dang chay tien ich)";
 	else if (theMap.m_bNeedMoney) szStep = "WithdrawMoney (rut tien)";
 	else if (theQuest.m_bAutoDoQuest && !theQuest.m_bNeedGoTrain) szStep = "theQuest.Breath (dang lam nhiem vu)";
@@ -212,17 +212,10 @@ static void MapStatus()
 static void CityMap()
 {
 	if (!DbgCheckPlayer()) return;
-	char szMapFile[MAX_PATH];
-	sprintf(szMapFile, "%s\\Maps\\CityMaps\\City%d.map", theMain.m_szCurFolder, *g_pMapID);
 	BOOL bLoaded = theMap.LoadMap(*g_pMapID);
-	DbgOut("theMap.LoadMap(%d): %s = %s\n", *g_pMapID, szMapFile, bLoaded ? "OK" : "KHONG MO DUOC FILE");
+	DbgOut("theMap.LoadMap(%d): muc [NPC] cua %s = %s, %d NPC co toa do\n", *g_pMapID, PathFileShow(*g_pMapID),
+		bLoaded ? "OK" : "KHONG CO (chua co file / muc [NPC] trong)", theMap.m_nPoints);
 	if (!bLoaded) return;
-
-	int nSides = 0;
-	for (int i = 0; i < theMap.m_nPoints; i++)
-		for (int j = i + 1; j < theMap.m_nPoints; j++)
-			if (theMap.MapSides[i][j] < MAX_INTNUM) nSides++;
-	DbgOut("m_nPoints = %d  so canh = %d\n", theMap.m_nPoints, nSides);
 
 	int nPlayerX, nPlayerY;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
@@ -280,7 +273,7 @@ static void NpcAtPoint(int nIdx)
 			__distance(nPlayerX, nPlayerY, nNpcX, nNpcY), bMatch ? "  <== ClickToNpc chon" : "");
 	}
 	if (!nFound)
-		DbgOut("=> Khong co NPC dialoger trong 40 quanh diem: ClickToNpc se khong lam gi (sai toa do trong City%d.map, hoac NPC chua hien)\n", *g_pMapID);
+		DbgOut("=> Khong co NPC dialoger trong 40 quanh diem: ClickToNpc se khong lam gi (sai toa do trong muc [NPC] cua %s, hoac NPC chua hien)\n", PathFileShow(*g_pMapID));
 	g_DbgReply.nResult[0] = nFound;
 	g_DbgReply.bOK = TRUE;
 }
@@ -299,27 +292,10 @@ static void ClickNpc(int nIdx)
 static void RunToPos(int nIdx)
 {
 	if (!DbgCheckPlayer() || !CheckNpcPointIdx(nIdx)) return;
-	if (theMap.m_nPoints <= 0)
-	{
-		DbgOut("LOI: m_nPoints = 0 - chua nap City%d.map (bam 'LoadMap + NpcPoints')\n", *g_pMapID);
-		return;
-	}
 	DbgOut("m_nCurPoint truoc = %d\n", theMap.m_nCurPoint);
 	BOOL bRet = theMap.RunningToPos(theMap.NpcPoints[nIdx]);
-	DbgOut("theMap.RunningToPos = %d (%s)  m_nCurPoint = %d\n", bRet, bRet ? "dang chay" : "da toi noi / khong tim duoc duong", theMap.m_nCurPoint);
-	if (theMap.m_nCurPoint >= 0)
-	{
-		DbgOut("Duong di: ");
-		int nPoint = theMap.m_nCurPoint;
-		for (int n = 0; n < 32 && nPoint >= 0 && nPoint < theMap.m_nPoints; n++)
-		{
-			DbgOut("%d(%d,%d) ", nPoint, theMap.MapPoints[nPoint].x, theMap.MapPoints[nPoint].y);
-			int nNext = theMap.TraceRoute[nPoint];
-			if (nNext == nPoint) break;
-			nPoint = nNext;
-		}
-		DbgOut("\n(bam tiep de chay tung buoc)\n");
-	}
+	DbgOut("theMap.RunningToPos = %d (%s)  m_nCurPoint = %d\n", bRet, bRet ? "dang chay theo MapPath / chay thang" : "da toi gan NPC", theMap.m_nCurPoint);
+	if (bRet) DbgOut("(bam tiep de chay tung buoc; bat 'Ve duong di' de xem duong)\n");
 	DbgOutPlayerPos("Player");
 	g_DbgReply.bOK = TRUE;
 }
@@ -414,7 +390,7 @@ static void StoreBoxInfo()
 			__distance(nPlayerX, nPlayerY, nX, nY), g_pNpcArray[i]->m_Kind);
 	}
 	POINT pt = theMap.NpcPoints[npc_Repository];
-	DbgOut("NpcPoints[Ruong] = (%d, %d) trong City%d.map\n", pt.x, pt.y, *g_pMapID);
+	DbgOut("NpcPoints[Ruong] = (%d, %d) trong muc [NPC] cua %s\n", pt.x, pt.y, PathFileShow(*g_pMapID));
 	g_DbgReply.bOK = TRUE;
 }
 
@@ -714,7 +690,7 @@ BOOL DebugMapCmd(const DEBUG_PARAM *pParam)
 		if (nOn)
 			DbgOut("Xam = canh MapPath, xanh duong = duong MapPath con lai (so = diem), xanh than = da di,\n"
 				"trang = toi diem dang nham, do (dau X) = lenh MoveTo gan nhat + nguon,\n"
-				"vang = duong trong thanh City.map, tim = tu di qua map, xanh la = danh sach Theo toa do (TD1 = diem dau)\n");
+				"thoi vang = NPC trong thanh dang chay toi, tim = tu di qua map, xanh la = danh sach Theo toa do (TD1 = diem dau)\n");
 		g_DbgReply.nResult[0] = nOn;
 		g_DbgReply.bOK = TRUE;
 		break;

@@ -36,6 +36,7 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DRIVER_CHECK, g_pCurGameWin->m_prMap.m_bGetDriver);
 	DDX_Check(pDX, IDC_GETMONEY_CHECK, g_pCurGameWin->m_prMap.m_bWithDraw);
 	DDX_Check(pDX, IDC_GIVEKCL_CHECK, g_pCurGameWin->m_prMap.m_bGiveKCL);
+	DDX_Check(pDX, IDC_DRIVER_CHECK2, g_pCurGameWin->m_prMap.m_bDriverOnly);
 
 	//Textboxes
 	DDX_Text(pDX, IDC_SAVEMONEY_EDIT, g_pCurGameWin->m_prMap.m_nMoneyAmount);

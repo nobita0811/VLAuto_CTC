@@ -142,8 +142,7 @@ BOOL CVLBasic::ExpLimitCheck()
 	return TRUE;
 }
 
-// Chay toi (x, y): theo MapPath cua map (Maps\Path), khong co thi duong trong thanh (City<MapID>.map),
-// het duong thi chay thang doan con lai. FALSE = da toi
+// Chay toi (x, y): theo MapPath cua map (Maps\Path), het duong / khong co MapPath thi chay thang doan con lai. FALSE = da toi
 static BOOL RunTo(int x, int y)
 {
 	int nPlayerX, nPlayerY;
@@ -155,8 +154,6 @@ static BOOL RunTo(int x, int y)
 	{
 		int nWalk = PathWalkTo(x, y);
 		if (nWalk > 0) return TRUE;
-		POINT ptDest = { x, y };
-		if (nWalk < 0 && theMap.RunningToPos(ptDest)) return TRUE;
 		s_bDirect = TRUE;
 		theMap.m_nLagCount = 0;
 		theMap.m_nLastdZ = MAX_INTNUM;
@@ -210,7 +207,7 @@ static BOOL GoToMap(int nMapID)
 	{
 		if (!s_dwActionTick || GetTickCount() - s_dwActionTick > 10000)
 		{
-			SystemMessage(0, "<color=yellow>Gioi han Exp: thieu file Maps\\CityMaps\\City%d.map, khong tim duoc xa phu", *g_pMapID);
+			SystemMessage(0, "<color=yellow>Gioi han Exp: thieu muc [NPC] trong Maps\\Path (map %d), khong tim duoc xa phu", *g_pMapID);
 			s_dwActionTick = GetTickCount();
 		}
 		return TRUE;
@@ -232,7 +229,7 @@ void CVLBasic::ExpLimitBreathe()
 	}
 
 	if (*g_pMapID != s_nLastMapID)
-	{	// Doi map: nap duong trong thanh, tim xa phu gan nhat
+	{	// Doi map: nap toa do NPC trong thanh, tim xa phu gan nhat
 		s_nLastMapID = *g_pMapID;
 		theMap.m_nPoints = 0;
 		theMap.LoadMap(*g_pMapID);
@@ -276,7 +273,7 @@ void CVLBasic::ExpLimitBreathe()
 			int nPlayerX, nPlayerY;
 			P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 			if (!ptRepo.x || !ptRepo.y || theMap.m_nPoints <= 0)
-			{	// Khong co file thanh: tim ruong quanh day
+			{	// Khong co toa do ruong: tim ruong quanh day
 				ptRepo.x = nPlayerX;
 				ptRepo.y = nPlayerY;
 			}

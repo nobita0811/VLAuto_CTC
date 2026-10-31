@@ -66,6 +66,7 @@ CVLMap::CVLMap(void)
 	m_nSaveMapID = 0;
 	m_nPoints = 0;
 	m_nCurPoint = -1;
+	m_ptRunNpc.x = m_ptRunNpc.y = 0;
 	m_bRoomLocked = 0;
 	m_bNoDriverRecent = 0;
 	m_bFirstSaveRepos = TRUE;
@@ -304,7 +305,7 @@ void CVLMap::Breathe()
 	{
 		// Go to main city
 		int nOwnMapID = theMain.GetOwnerCity(*g_pMapID);
-		if (ChangeMap(nOwnMapID)) return;
+		//if (ChangeMap(nOwnMapID)) return;
 
 		if (m_bFirstSaveRepos)
 		{
@@ -418,150 +419,63 @@ void CVLMap::CheckAutoReturn()
 	SystemMessage(szMsg, 1);
 }
 
+// Toa do NPC trong thanh: muc [NPC] cua Maps\Path\<MapID>_<Ten>.txt (thay CityMaps\City<MapID>.map).
+// m_nPoints = so NPC co toa do (0 = map khong co / chua ghi [NPC])
 BOOL CVLMap::LoadMap(int nMapID)
 {
-	char szMapFile[MAX_PATH];
-	sprintf(szMapFile, "%s\\Maps\\CityMaps\\City%d.map", theMain.m_szCurFolder, nMapID);
-	FILE* pFile = fopen(szMapFile, "r");
-	if (pFile == NULL) return 0;
-	int nRet;
-	//Read NPC Points
-	int i = 0;
-	while (TRUE)
-	{
-		nRet = fscanf(pFile, "%d,%d\n", &NpcPoints[i].x, &NpcPoints[i].y);
-		if (nRet < 2) break;
-		i++;
-	}
-	//Read Points
-	i = 0;
-	while (TRUE)
-	{
-		nRet = fscanf(pFile, "%d,%d\n", &MapPoints[i].x, &MapPoints[i].y);
-		if (nRet < 2) break;
-		i++;
-	}
-	m_nPoints = i;
-	for (int i = 0; i < m_nPoints; i++)
-		for (int j = 0; j < m_nPoints; j++)
-			if (i == j) MapSides[i][j] = 0;
-			else MapSides[i][j] = MAX_INTNUM;
-	//Read Sides
-	while (TRUE)
-	{
-		int si, sj;
-		nRet = fscanf(pFile, "%d,%d\n", &si, &sj);
-		if (nRet < 2) break;
-		MapSides[si][sj] = MapSides[sj][si] = __distance(MapPoints[si], MapPoints[sj]);
-	}
-	fclose(pFile);
-	return TRUE;
+	int n = PathLoadNpcs(nMapID, NpcPoints);
+	m_nPoints = max(n, 0);
+	return n > 0;
 }
 
-BOOL CVLMap::Dijkstra(int nStart, int nEnd)
-{
-	int Dist[MAX_POINTS];
-	BOOL Free[MAX_POINTS];
-	BOOL bStop = 0;
-	int i, u, v, min;
-	if (nEnd < 0 || nStart < 0) return 0;
-	for (i = 0; i < m_nPoints; i++)
-	{
-		Dist[i] = MapSides[nStart][i];
-		TraceRoute[i] = nStart;
-	}
-	memset(Free, TRUE, sizeof(Free));
-	do {
-		u = -1; min = MAX_INTNUM;
-		for (i = 0; i < m_nPoints; i++)
-			if (Free[i] && Dist[i] < min)
-			{
-				min = Dist[i];
-				u = i;
-			}
-		if (u == -1 || u == nEnd) bStop = TRUE;
-		if (!bStop)
-		{
-			Free[u] = FALSE;
-			for (v = 0; v < m_nPoints; v++)
-				if (Free[v] && Dist[v] > (Dist[u] + MapSides[u][v]))
-				{
-					Dist[v] = Dist[u] + MapSides[u][v];
-					TraceRoute[v] = u;
-				}
-		}
-
-	} while (!bStop);
-
-	return (Dist[nEnd] < MAX_INTNUM);
-}
-
+// Chay toi gan NPC (ptDest): theo MapPath cua map (PathWalkTo), het duong / map khong co MapPath thi chay thang
+// (KPlayer::MoveTo tu ne vat can). Tra ve TRUE = dang chay, 0 = da toi gan (goi tiep ClickToNpc)
+#define CITY_NPC_NEAR		200		// Toi gan NPC hon muc nay thi xong (ClickToNpc tu chay not toi NPC)
+#define CITY_NPC_SEEN		500		// Doan chay thang khong tien them 3s ma da cach NPC < muc nay: coi nhu toi
 BOOL CVLMap::RunningToPos(POINT ptDest)
 {
+	static POINT s_ptDest = { 0, 0 };
+	static int s_nBest = MAX_INTNUM;
+	static DWORD s_dwBest = 0, s_dwHorse = 0;
+	if (!ptDest.x && !ptDest.y) return 0;	// Thanh khong co NPC nay ([NPC] = 0,0)
+
 	int nPlayerX, nPlayerY;
-	int dZ, dMin;
-	static int nStart = -1;
-	static int nEnd = -1;
-
-	if (m_nPoints <= 0) return 0;
-
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
-	POINT ptPlayer = { nPlayerX, nPlayerY };
-
-	if (m_nCurPoint < 0)
-	{
-		//Finding Start Point (near Destination)
-		dMin = MAX_INTNUM;
-		for (int i = 0; i < m_nPoints; i++)
-		{
-			dZ = __distance(MapPoints[i], ptDest);
-			if (dZ < dMin)
-			{
-				dMin = dZ;
-				nStart = i;
-			}
-		}
-		//Finding End Point (near Player)
-		dMin = MAX_INTNUM;
-		for (int j = 0; j < m_nPoints; j++)
-		{
-			dZ = __distance(MapPoints[j], ptPlayer);
-			if (dZ < dMin)
-			{
-				dMin = dZ;
-				nEnd = j;
-			}
-		}
-		if (!Dijkstra(nStart, nEnd)) return 0;
-		m_nCurPoint = nEnd;
+	int dZ = __distance(nPlayerX, nPlayerY, ptDest.x, ptDest.y);
+	DWORD dwNow = GetTickCount();
+	if (m_nCurPoint < 0 || ptDest.x != s_ptDest.x || ptDest.y != s_ptDest.y)
+	{	// Dich moi
+		s_ptDest = ptDest;
+		s_nBest = MAX_INTNUM;
+		s_dwBest = dwNow;
+		m_nLagCount = 0;
+		m_nLastdZ = MAX_INTNUM;
 	}
-
-	//Tracing the Path
-	if (m_nCurPoint >= 0)
+	m_ptRunNpc = ptDest;
+	if (dZ <= CITY_NPC_NEAR)
 	{
-		dZ = __distance(MapPoints[m_nCurPoint], ptPlayer);
-		if (dZ <= 100)
-		{
-			m_nLagCount = 0;
-			if (m_nCurPoint != nStart)
-			{
-				m_nCurPoint = TraceRoute[m_nCurPoint];
-				if (!P_PLAYER->m_bRideHorse && HAVE_HORSE)
-					ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
-			}
-			else
-			{
-				m_nCurPoint = -1;
-				return 0;
-			}
-		}
-		if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
-		PathNoteMove(MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y, "City.map");
-		g_pCurPlayer->MoveTo(MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y);
-		return TRUE;
+		m_nCurPoint = -1;
+		return 0;
 	}
+	m_nCurPoint = 0;
+	if (!P_PLAYER->m_bRideHorse && HAVE_HORSE && dwNow - s_dwHorse > 3000)
+	{
+		s_dwHorse = dwNow;
+		ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
+	}
+	if (PathWalkTo(ptDest.x, ptDest.y) > 0) return TRUE;
 
-	return 0;
+	// Doan cuoi: chay thang toi NPC
+	if (dZ < s_nBest - 32) { s_nBest = dZ; s_dwBest = dwNow; }
+	if (dZ <= CITY_NPC_SEEN && dwNow - s_dwBest > 3000)
+	{	// Khong tien them (NPC dung tren o vat can...) - de ClickToNpc chay toi NPC that
+		m_nCurPoint = -1;
+		return 0;
+	}
+	if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	PathNoteMove(ptDest.x, ptDest.y, "NPC");
+	g_pCurPlayer->MoveTo(ptDest.x, ptDest.y);
+	return TRUE;
 }
 
 BOOL CVLMap::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
@@ -785,11 +699,6 @@ void CVLMap::SaveNewRepository()
 		SystemMessage(TV(L"<color=yellow>Không lưu Rương trên Vi Sơn Đảo!!!"));
 		return;
 	}
-	if (m_nPoints <= 0)
-	{
-		SystemMessage(TV(L"<color=yellow>Lỗi đọc file MAP thành thị!!!"));
-		return;
-	}
 	int nPlayerX, nPlayerY, nObjX, nObjY, dZ;
 	int nRepX = 0, nRepY = 0;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
@@ -809,33 +718,17 @@ void CVLMap::SaveNewRepository()
 	}
 	if (nRepX && nRepY)
 	{
-		char szMapFile[MAX_PATH];
-		sprintf(szMapFile, "%s\\Maps\\CityMaps\\City%d.map", theMain.m_szCurFolder, (*g_pMapID));
-		FILE* pFile = fopen(szMapFile, "w");
-		if (pFile == NULL)
+		// Muc [NPC] cua Maps\Path\<MapID>_<Ten>.txt
+		if (!PathSaveNpc(*g_pMapID, npc_Repository, nRepX, nRepY))
 		{
-			SystemMessage(TV(L"<color=yellow>Lỗi ghi file MAP, xin kiểm tra lại!!!"));
+			SystemMessage(TV(L"<color=yellow>Lỗi ghi file MapPath, xin kiểm tra lại!!!"));
 			return;
 		}
-		//Write NPC Points
 		NpcPoints[npc_Repository].x = nRepX;
 		NpcPoints[npc_Repository].y = nRepY;
-		for (int i = 0; i < npc_Nums; i++)
-			fprintf(pFile, "%d,%d\n", NpcPoints[i].x, NpcPoints[i].y);
-		fprintf(pFile, "0\n");
-		//Write Points
-		for (int i = 0; i < m_nPoints; i++)
-			fprintf(pFile, "%d,%d\n", MapPoints[i].x, MapPoints[i].y);
-		fprintf(pFile, "0\n");
-		//Write Sides
-		for (int i = 0; i < m_nPoints; i++)
-			for (int j = i + 1; j < m_nPoints; j++)
-				if (MapSides[i][j] < MAX_INTNUM)
-					fprintf(pFile, "%d,%d\n", i, j);
 		SystemMessage(TV(L"<color=yellow>Đã lưu thành công tọa độ Rương đồ mới!"));
 		m_nCurPoint = -1;
 		m_bDoShoping = 0;
-		fclose(pFile);
 		return;
 	}
 	SystemMessage(TV(L"<color=yellow>Không tìm thấy Rương đồ!!!"));
@@ -1169,7 +1062,7 @@ static BOOL SameMapNodes()
 }
 
 // Danh sach toa do o ngay map dang dung: chay toi diem DAU TIEN cua danh sach (khong can xa phu). FALSE = khong co diem
-// Theo MapPath cua map (khong co thi duong trong thanh City<MapID>.map) toi diem gan nhat, roi chay thang doan con lai
+// Theo MapPath cua map toi diem gan nhat, roi chay thang doan con lai
 static BOOL RunToNearestNode()
 {
 	if (!theMove.m_bRouteMove || theMove.m_nNodesMapID != *g_pMapID) return FALSE;
@@ -1183,7 +1076,6 @@ static BOOL RunToNearestNode()
 		// Uu tien MapPath cua map (Maps\Path): node gan nhat -> theo canh -> node gan diem dau danh sach
 		int nWalk = PathWalkTo(theMove.m_Nodes[0].x, theMove.m_Nodes[0].y);
 		if (nWalk > 0) return TRUE;
-		if (nWalk < 0 && theMap.RunningToPos(theMove.m_Nodes[nBest])) return TRUE;	// khong co MapPath: duong trong thanh
 		s_bNodeDirect = TRUE;
 		theMap.m_nLagCount = 0;
 		theMap.m_nLastdZ = MAX_INTNUM;

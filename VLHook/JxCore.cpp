@@ -2,7 +2,11 @@
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
+#include "VLObstacle.h"
 #include <intrin.h>
+
+extern BOOL g_SysPause;
+int g_nPauseMoveAllow = 0;	// > 0: duoc ra lenh di khi Auto tam ngung (cong cu MapPath, tab Nhiem vu) - CPauseMoveAllow
 
 BOOL DebugQuestMoveOK(void *pCaller);	// VLDebugQuest.cpp
 
@@ -349,10 +353,14 @@ void KPlayer::MoveTo(int nX, int nY)
 	int nDestY = nY;
 	int nPlayerX, nPlayerY, dZ;
 
+	if (g_SysPause && g_nPauseMoveAllow <= 0) return;	// Auto tam ngung (Ctrl+DblClick phai): khong tim duong / di
 	if (!DebugQuestMoveOK(_ReturnAddress())) return;	// DEBUG > Nhiem vu: Buoc 4 / giu dung tai map
 	if (m_nSendMoveFrames > MAX_PLAYER_MOVE_FRAME)
 	{
 		P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+		// Duong thang bi vat can chan: di toi diem trung gian tren duong vong (VLObstacle.cpp)
+		__try { ObsSteer(nPlayerX, nPlayerY, &nDestX, &nDestY); }
+		__except (EXCEPTION_EXECUTE_HANDLER) { g_bObsAvoid = FALSE; nDestX = nX; nDestY = nY; }
 		dZ = __distance(nDestX, nDestY, nPlayerX, nPlayerY);
 		if (dZ > MAX_MOVE_DISTANCE)
 		{
@@ -365,6 +373,7 @@ void KPlayer::MoveTo(int nX, int nY)
 }
 void KPlayer::GoTo(int nX, int nY)
 {
+	if (g_SysPause && g_nPauseMoveAllow <= 0) return;
 	if (!DebugQuestMoveOK(_ReturnAddress())) return;
 	int x = nX / 32;
 	int y = nY / 32;

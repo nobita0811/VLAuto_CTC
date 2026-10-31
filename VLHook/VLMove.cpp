@@ -6,6 +6,9 @@
 #include "S3Client.h"
 #include "VLClasses.h"
 #include "VLDebug.h"
+#include "VLObstacle.h"
+
+static int WalkDist(int px, int py, int tx, int ty, int dZ);
 
 //================================Class CVLMove================================
 CVLMove::CVLMove(void)
@@ -99,6 +102,12 @@ void CVLMove::Breathe()
 		if (nGoMap && *g_pMapID != nGoMap && !theMain.HaveTownPortal())
 		{
 			SystemMessage("<color=yellow>Khong co Tho Dia Phu - khong tu di toi map luyen cong");
+			GoTrainStop();
+			m_bFindingWay = 0;
+		}
+		else if (nGoMap && *g_pMapID != nGoMap && theMap.m_bDriverOnly && PathMapHasDriver(*g_pMapID))
+		{	// Len map = Xa phu hoac THP: dang o thanh/thon (vd ra khoi cong thanh) - khong di bo sang map khac
+			SystemMessage("<color=yellow>Len map = Xa phu hoac THP - khong di bo tu thanh toi map luyen cong");
 			GoTrainStop();
 			m_bFindingWay = 0;
 		}
@@ -209,7 +218,7 @@ void CVLMove::Breathe()
 		nTimeCount++;
 		if (nTimeCount % 3 == 1)
 		{
-			if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return;
+			if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return;
 		}
 		g_pCurPlayer->MoveTo(nDestX, nDestY);
 	}
@@ -242,37 +251,43 @@ BOOL CVLMove::DoFollow()
 	return 0;
 }
 
+// Khoang cach de do ket (IsLagMoving): dang di vong vat can thi tinh theo duong vong - duong thang co the tang
+// khi vong qua tuong lam bao ket sai. Dich khong toi duoc / khong co du lieu => khoang cach thang
+static int WalkDist(int px, int py, int tx, int ty, int dZ)
+{
+	int d = ObsWalkDist(px, py, tx, ty);
+	return d < 0 ? dZ : d;
+}
+
 void CVLMove::GetCurNode()
 {
 	int nPlayerX, nPlayerY;
-	int dZ, dMin = MAX_INTNUM;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	m_nCurNode = -1;
-	if (m_bMoveByMapYS)
+	if (m_bAroundPointPK && !m_bMoveByMapYS)
 	{
-		for (int i = 0; i < m_nMapPoints; i++)
+		m_nCurNode = 0;
+		return;
+	}
+	const POINT *pPts = m_bMoveByMapYS ? MapPoints : m_Nodes;
+	int nCount = 0;
+	if (m_bMoveByMapYS) nCount = m_nMapPoints;
+	else while (nCount < MAX_NODES && m_Nodes[nCount].x && m_Nodes[nCount].y) nCount++;
+
+	// Gan nhat theo duong di bo vong vat can: diem sat ben kia tuong khong con la "gan nhat" (truoc day chay thang vao tuong).
+	// Khong diem nao toi duoc (bi vay / thieu du lieu) thi lay gan nhat theo duong thang nhu cu
+	ObsFlood(nPlayerX, nPlayerY);
+	for (int nPass = 0; nPass < 2 && m_nCurNode < 0; nPass++)
+	{
+		int dMin = MAX_INTNUM;
+		for (int i = 0; i < nCount; i++)
 		{
-			dZ = __distance(nPlayerX, nPlayerY, MapPoints[i].x, MapPoints[i].y);
+			int dZ = nPass == 0 ? ObsReachDist(pPts[i].x, pPts[i].y) : __distance(nPlayerX, nPlayerY, pPts[i].x, pPts[i].y);
 			if (dZ < dMin)
 			{
 				dMin = dZ;
 				m_nCurNode = i;
 			}
-		}
-		return;
-	}
-	if (m_bAroundPointPK)
-	{
-		m_nCurNode = 0;
-		return;
-	}
-	for (int i = 0; m_Nodes[i].x && m_Nodes[i].y; i++)
-	{
-		dZ = __distance(nPlayerX, nPlayerY, m_Nodes[i].x, m_Nodes[i].y);
-		if (dZ < dMin)
-		{
-			dMin = dZ;
-			m_nCurNode = i;
 		}
 	}
 }
@@ -898,13 +913,13 @@ BOOL CVLMove::GoNodesBreathe()
 			m_nLastdZ = MAX_INTNUM;
 			return TRUE;
 		}
-		if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+		if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return TRUE;
 		g_pCurPlayer->GoTo(nDestX, nDestY);
 		return TRUE;
 	}
 	// Cac diem sau: chay thang theo danh sach
 	static int nTimeCount = 0;
-	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return TRUE;
 	g_pCurPlayer->MoveTo(nDestX, nDestY);
 	return TRUE;
 }

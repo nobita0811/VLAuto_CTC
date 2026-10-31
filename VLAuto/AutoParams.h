@@ -217,6 +217,7 @@ struct PARAM_MAP : public AutoParams
 	int		m_nTrainMapID;
 	BOOL	m_bGiveKCL;
 	int		m_nMinKCL;
+	BOOL	m_bDriverOnly;	// Len map = Xa phu hoac THP: khong di bo tu thanh (map co xa phu) sang map khac
 
 public:
 	void	InitValue();

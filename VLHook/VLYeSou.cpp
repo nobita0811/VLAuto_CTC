@@ -432,8 +432,9 @@ void CVLQuest::ChoosePrize()
 		for (int i = 0; i < 3; i++)
 		{
 			szItemIcon = pPrzSel->PrzItem[i].m_szIcon;
-			szItemText = pPrzSel->PrzItem[i].m_szText + 9;	// strlen("NhËn ®­îc");
-			strcpy(szPrize[i], szItemText);
+			szItemText = pPrzSel->PrzItem[i].m_szText;	// 15-10: chi con ten ("Kinh nghiem", "Ngan luong"), khong co so luong
+			strncpy(szPrize[i], szItemText, sizeof(szPrize[i]) - 1);
+			szPrize[i][sizeof(szPrize[i]) - 1] = 0;
 			if (strstr(szItemIcon, "quxiao_icon")) // Huy NV
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_cohoihuy] * 10000;
 			else if (strstr(szItemIcon, "wenhao_icon")) // Dau hoi
@@ -441,12 +442,10 @@ void CVLQuest::ChoosePrize()
 				strcpy(szPrize[i], TV(L"Dấu hỏi (?)"));
 				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_dauhoi] * 10000;
 			}
-			else if (strstr(szItemIcon, "jinqian_icon")) // Kim tien
-				nValues[i] = atol(szItemText);
-			else if (strstr(szItemIcon, "jingyan_icon")) // Kinh nghiem
-				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
-			else if (strstr(szItemText, TV(L"điểm tích l")))
-				nValues[i] = (int)(atof(szItemText) / 100 * m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem]);
+			else if (strstr(szItemIcon, "jinqian_icon")) // Kim tien: khong co thiet lap => thap nhat
+				nValues[i] = 0;
+			else if (strstr(szItemIcon, "jingyan_icon") || strstr(szItemText, TV(L"điểm tích l"))) // Kinh nghiem
+				nValues[i] = m_PrizeSelOpt.m_PrizeVal[prize_kinhnghiem] * 10000;
 			else
 			{
 				if (strstr(szItemText, TV(L"Nhu Tình Cân Quốc")))
@@ -822,21 +821,31 @@ void CVLQuest::GetNewQuest()
 			  Lua chon[2] [TCVN3]:  KÕt thóc ®èi tho¹i!
 			*/
 			// 15-10: click NPC hien menu chinh truoc, chon dong "Nhan nhiem vu"
-			size_t nKeyLen = strlen(TV(L"Biết rồi, ta đi làm ngay"));
+			size_t nKeyLen = strlen(TV(L"Nhận nhiệm vụ"));
+			size_t nKeyLen2 = strlen(TV(L"Biết rồi, ta đi làm ngay"));
 			for (int i = 0; i < pMsgSel2->m_nNumMessage; i++)
 			{				
-				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Biết rồi, ta đi làm ngay"), nKeyLen))
+				if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Nhận nhiệm vụ"), nKeyLen))
 				{
 					m_nQuestStatus = 1;
 					m_nYSDoing = ys_none;
-					//Lua chon[0]: Nhận nhiệm vụ
 					QTRACE(TV(L"GetNewQuest: chon dong [%d] Nhận nhiệm vụ"), i);
 					pMsgSel2->OnClickMsg(i);
+					CloseAllWindows(0);
+					break;
+				}
+				else if (!strncmp(pMsgSel2->m_pMessages[i]->Msg, TV(L"Biết rồi, ta đi làm ngay"), nKeyLen2))
+				{
+					m_nQuestStatus = 1;
+					m_nYSDoing = ys_none;					
+					QTRACE(TV(L"GetNewQuest: chon dong [%d] Biết rồi, ta đi làm ngay"), i);
+					pMsgSel2->OnClickMsg(i);
+					CloseAllWindows(0);
 					break;
 				}
 			}
 		}
-		else if (pMsgSel2->m_nNumMessage == 4)
+		else if (pMsgSel2->m_nNumMessage == 4) // 
 		{
 			/*
 			* Lua chon[0]: Hoàn thành nhiệm vụ thứ 0
@@ -859,7 +868,7 @@ void CVLQuest::GetNewQuest()
 					QTRACE(TV(L"GetNewQuest: chon dong [%d] Xem tình hình chuỗi nhiệm vụ"), i);
 					pMsgSel2->OnClickMsg(i);
 					break;
-					break;
+					
 				}
 			}
 		}

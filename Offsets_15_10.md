@@ -240,6 +240,7 @@ Engine UI mới: widget gốc nhỏ hơn 0x200 byte. `m_Style` vẫn ở +4 (bit
 |---|---|---|---|
 | SCP_REGIONS_OFF / SCP_NUM_REGIONS | 0x31E4C / 9 | 0x31E64 / 15 | ScenePaint 0x63C2E0: `lea edi,[esi+0x31E4C]; mov ebx,9` |
 | SPR_STATUS/LEFTTOP/TRAP_OFF | 0x04 / 0x08 / 0x848 | như cũ | LoadTrap 0x6F80D0 / GetTrap 0x6F86B0 giống hệt |
+| SPR_OBSTACLE_OFF | 0x48 (`m_ObstacleInfo[16][32]`, ngay trước TrapInfo) | – | LoadObstacle 0x6F8090: `cmp [esp+8],0x800; add eax,0x48` |
 | RPS_VT_OUTTEXT / DRAWPRIM | 0x10 / 0x48 | 0x14 / 0x4C | 45 lời gọi [vt+0x48]; OutputText `push 0xFF000000; push 5; push 3; push -1` |
 | LCF_PAINT_FPS_ADD | 0x7AD7B0 (FPS, mặc định 30) | 0x815838 (ms) | config `PaintFps`; GameLoop 0x5A9160 `imul eax,[0x7AD7B0]` |
 | LCF_INACTIVE_ADD | 0x8483B0 = KMyApp(0x848360)+0x50 | 0x9BC508 | GameLoop `sub eax,[ecx+0x50]; cmp eax,0x2710` |

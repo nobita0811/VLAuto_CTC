@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // Dung chung cho cac file VLDebug*.cpp (moi tab cua cua so DEBUG mot file)
 
@@ -30,6 +30,15 @@ BOOL		DebugQuestHoldMove();						// Buoc 3 / 4 (dang chay hoac vua xong o map na
 BOOL		DebugQuestMoveOK(void *pCaller);			// KPlayer::MoveTo / GoTo: Buoc 4 / giu dung thi chan lenh di cua phan khac (tru Chien dau, Nhat do)
 void		DebugQuestMoveAllow(BOOL bAllow);			// Bao quanh Chien dau / Nhat do / Nhiem vu: cho phep MoveTo
 struct CQuestMoveAllow { CQuestMoveAllow() { DebugQuestMoveAllow(TRUE); } ~CQuestMoveAllow() { DebugQuestMoveAllow(FALSE); } };
+BOOL		DebugQuestActive();							// Tab Nhiem vu dang chay buoc nao do (chay ca khi tam dung)
+// g_SysPause: KPlayer::MoveTo / GoTo bi chan, tru khi bao boi CPauseMoveAllow (JxCore.cpp)
+extern int	g_nPauseMoveAllow;
+struct CPauseMoveAllow
+{
+	BOOL m_bOn;
+	CPauseMoveAllow(BOOL bOn = TRUE) : m_bOn(bOn) { if (m_bOn) g_nPauseMoveAllow++; }
+	~CPauseMoveAllow() { if (m_bOn) g_nPauseMoveAllow--; }
+};
 void		DebugQuestChannelMsg(DWORD nChannelID, const char *szSend, const char *szMsg, int nLen);	// Goi tu hook ChannelMessageArrival
 BOOL		DebugFileCoreDataHook(BOOL bOn);			// Tab Nhiem vu: hook CoreDataChanged (dung chung voi Ghi file/lua)
 
@@ -51,13 +60,18 @@ BOOL		PathTravelStart(int nTarget, BOOL bUseMenu);	// TRUE = co lo trinh, bat da
 void		PathTravelBreathe();						// 200ms
 BOOL		PathTravelItemStart(int nTarget);				// TRUE = co vat pham ([Item]) toi nTarget, bat dau di (CVLMap::ChangeMap)
 BOOL		PathTravelActive();
+BOOL		PathMapHasDriver(int nMap);						// Map co xa phu trong Maps\Path (thanh/thon)
 void		PathTravelStop(const char *szReason = NULL);
+void		PathTravelResume();								// Mo lai sau tam ngung Auto: lap ke hoach lai
 void		PathTravelInfo(char *szInfo, int nMax);
 void		PathNoteMove(int x, int y, const char *szSrc);	// Ghi lenh MoveTo de ve (nut Ve duong di)
 int			PathShowWalk(int nOn);						// Bat/tat ve duong di (-1 dao)
 void		PathWalkReset();							// Lan sau PathWalkTo lap lai duong
 int			PathMapPoints(int nMapID, POINT *pPts, int nMax, BOOL bNoDoor = FALSE, int *pDoorSkip = NULL);	// Cac diem MapPath cua map (0 = chua co MapPath). bNoDoor: bo diem gan cong
 void		PathWalkNoDoor(BOOL bOn);					// PathWalkTo khong di qua / toi diem gan cong (tab Nhiem vu, Buoc 4)
+const char*	PathFileShow(int nMapID);					// "Maps\Path\<MapID>_<Ten>.txt" (TCVN3) de in ra DEBUG
+int			PathLoadNpcs(int nMapID, POINT *pNpc);		// Muc [NPC] cua file MapPath -> pNpc[npc_Nums]: so NPC co toa do, -1 khong co file
+BOOL		PathSaveNpc(int nMapID, int nIdx, int x, int y);	// Ghi 1 toa do NPC vao muc [NPC]
 int			PathWalkTo(int tx, int ty);					// Di trong map theo MapPath: 1 dang di, 0 toi cuoi duong, -1 khong co MapPath
 
 // Game tu tim duong (KPlayer::GoTo) - VLMove.cpp

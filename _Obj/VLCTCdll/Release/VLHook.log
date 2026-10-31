@@ -23,6 +23,7 @@
   CrashHandler.cpp
   VLExpLimit.cpp
   VLDebugPath.cpp
+  VLObstacle.cpp
   MagicAttrib.cpp
   TcvnText.cpp
   VLParty.cpp

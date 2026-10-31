@@ -31,12 +31,13 @@ i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlqtong.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlparty.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\tcvntext.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\magicattrib.obj
+i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlobstacle.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vldebugpath.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlexplimit.obj
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\crashhandler.obj
-i:\ctc\vlauto_ctc\_bin\vlctcdll.dll
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.lib
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.exp
+i:\ctc\vlauto_ctc\_bin\vlctcdll.dll
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlhook.vcxproj.filelistabsolute.txt
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.tlog\cl.command.1.tlog
 i:\ctc\vlauto_ctc\_obj\vlctcdll\release\vlctcdll.tlog\cl.items.tlog

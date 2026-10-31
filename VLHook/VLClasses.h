@@ -591,15 +591,13 @@ public:
 	int		m_nTrainMapID;
 	BOOL	m_bGiveKCL;
 	int		m_nMinKCL;
+	BOOL	m_bDriverOnly;	// Len map = Xa phu hoac THP: khong di bo tu thanh (map co xa phu) sang map khac
 //	Private
 	int		m_nTimeWait;
 	BOOL	m_bFinished;
 	BOOL	m_nDriverStep;
 	//Ver 2.42
-	int		m_nPoints;
-	POINT	MapPoints[MAX_POINTS];
-	int		MapSides[MAX_POINTS][MAX_POINTS];
-	int		TraceRoute[MAX_POINTS];
+	int		m_nPoints;				// So NPC co toa do trong muc [NPC] (Maps\Path\<MapID>_<Ten>.txt) - 0 = khong co
 	int		m_nDriverIndex;
 	BOOL	m_bNeedMoney;
 	BOOL	m_bNeedSellItems;
@@ -614,7 +612,8 @@ public:
 	BOOL	m_bIsReady;
 	BOOL	m_bNeedDriver;
 	BOOL	m_bIsMoving;
-	int		m_nCurPoint;
+	int		m_nCurPoint;				// >= 0: RunningToPos dang chay toi m_ptRunNpc
+	POINT	m_ptRunNpc;
 	//Ver 5.2
 	int		m_nLastdZ;
 	int		m_nLagCount;
@@ -640,7 +639,6 @@ public:
 	void InitValues();
 	void CheckAutoReturn();
 	BOOL LoadMap(int nMapID);
-	BOOL Dijkstra(int nStart, int nEnd);
 	BOOL RunningToPos(POINT ptDest);
 	BOOL IsLagMoving(int nPlayerX, int nPlayerY, int dZ);
 	void NearestDriver();

@@ -775,9 +775,13 @@ static int		s_nStage = 0;
 #define QS_SHOP_MONEY	2			// Buoc 2, giai doan rut tien
 #define QS_SHOP_SELL	3			// Buoc 2, giai doan ban do
 #define QS_SHOP_PLAN	4			// Buoc 2, giai doan xem can mua gi
+#define QS_SHOP_SAVE	5			// Buoc 2, giai doan cat tien sau khi mua ("Gui tien" tab Ban do)
 static int		s_nShopSold = 0;		// Buoc 2: so lan ban do
 #define QS_MONEY_DEF	50000		// Tien can tren nguoi khi tab Ban do chua dat "Rut tien" (van)
+#define QS_DRIVER_MONEY	500			// Tien xa phu: cat tien van giu lai, thieu thi rut truoc khi di
 static int		s_nShopMoney = -1;		// Tien tren nguoi luc gui lenh rut (-1 = chua rut)
+static int		s_nShopSave = -1;		// Tien tren nguoi luc gui lenh cat (-1 = chua cat)
+static char		s_szShopDone[64] = "";	// Loi bao xong Buoc 2 (bao sau khi cat tien)
 static DWORD	s_dwStepStart = 0;
 static DWORD	s_dwStageTick = 0;
 static int		s_nTick = 0;
@@ -789,7 +793,7 @@ static BOOL		s_bUsedTDP = FALSE;
 static DWORD	s_dwWaitMapTick = 0;
 static int		s_nWaitMap = 0;
 static BOOL		s_bTravelStarted = FALSE;
-static int		s_nCityMap = 0;		// map da nap theMap.LoadMap (CityMaps)
+static int		s_nCityMap = 0;		// map da nap theMap.LoadMap (muc [NPC] cua MapPath)
 static DWORD	s_dwReportTick = 0;
 static DWORD	s_dwNoMonsterTick = 0;
 static BOOL		s_bNoMonsterSaid = FALSE;
@@ -872,7 +876,7 @@ static void StepEnd(BOOL bOK, const char *szFormat, ...)
 	else StepNext(nDone);
 }
 
-// Nap Maps\CityMaps\City<MapID>.map vao theMap (NpcPoints + duong di trong thanh) neu chua nap
+// Nap toa do NPC (muc [NPC] cua Maps\Path\<MapID>_<Ten>.txt) vao theMap.NpcPoints neu chua nap
 static BOOL EnsureCityMap()
 {
 	if (s_nCityMap != *g_pMapID || theMap.m_nPoints <= 0)
@@ -964,16 +968,16 @@ static void GoYeSou()
 	{
 		if (!EnsureCityMap())
 		{
-			StepEnd(FALSE, "khong thay NPC Da Tau va khong doc duoc Maps\\CityMaps\\City78.map");
+			StepEnd(FALSE, "khong thay NPC Da Tau va khong co muc [NPC] trong %s", PathFileShow(*g_pMapID));
 			return;
 		}
 		POINT pt = theMap.NpcPoints[npc_YeSou];
 		if (!pt.x || !pt.y)
 		{
-			StepEnd(FALSE, "NpcPoints[Da Tau] = 0 trong City78.map");
+			StepEnd(FALSE, "NpcPoints[Da Tau] = 0 trong muc [NPC] cua %s", PathFileShow(*g_pMapID));
 			return;
 		}
-		if (theMap.RunningToPos(pt)) return;	// Chay theo duong trong thanh toi gan Da Tau
+		if (theMap.RunningToPos(pt)) return;	// Chay theo MapPath trong thanh toi gan Da Tau
 		nX = pt.x;
 		nY = pt.y;
 	}
@@ -1067,7 +1071,7 @@ static void StepShop()
 		}
 		if (!EnsureCityMap())
 		{
-			StepEnd(FALSE, "khong doc duoc Maps\\CityMaps\\City%d.map", *g_pMapID);
+			StepEnd(FALSE, "khong co muc [NPC] trong %s", PathFileShow(*g_pMapID));
 			return;
 		}
 		s_nShopSold = 0;
@@ -1099,7 +1103,9 @@ static void StepShop()
 		theMap.m_bNeedGroceries = theMap.m_bBuyTDP && nTDP < nNeedTDP && theMap.NpcPoints[npc_Groceries].x;
 		if (!theMap.m_bNeedGroceries && !theMap.m_bNeedPharmacy)
 		{
-			StepEnd(TRUE, "khong can mua (TDP %d)", nTDP);
+			sprintf(s_szShopDone, "khong can mua (TDP %d)", nTDP);
+			s_nShopSave = -1;
+			SetStage(QS_SHOP_SAVE);
 			return;
 		}
 		StepMsg("can mua:%s%s", theMap.m_bNeedGroceries ? " Tho dia phu" : "", theMap.m_bNeedPharmacy ? " mau/mana" : "");
@@ -1150,6 +1156,37 @@ static void StepShop()
 		SetStage(1);
 		return;
 	}
+	if (s_nStage == QS_SHOP_SAVE)
+	{	// Cat tien vao ruong, giu lai "Gui tien" tab Ban do (giong CVLMap::CheckReady)
+		int nKeep = theMap.m_nMoneyAmount > QS_DRIVER_MONEY ? theMap.m_nMoneyAmount : QS_DRIVER_MONEY;	// giu tien xa phu
+		if (!theMap.m_bPutMoney || EQUIP_MONEY <= nKeep)
+		{
+			StepEnd(TRUE, "%s", s_szShopDone);
+			return;
+		}
+		if (s_nShopSave < 0)
+		{
+			if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+			{	// Ruong khoa: da gui lenh mo (mat khau o tab Ban do)
+				theMap.m_bRoomLocked = TRUE;
+				if (StageSec() > 15)
+					StepEnd(TRUE, "%s - mo khoa ruong 15s khong duoc, khong cat tien (tren nguoi %d)", s_szShopDone, EQUIP_MONEY);
+				return;
+			}
+			int nSave = EQUIP_MONEY - nKeep;
+			s_nShopSave = EQUIP_MONEY;
+			StepMsg("cat %d luong vao ruong (tren nguoi %d, giu %d)", nSave, EQUIP_MONEY, nKeep);
+			g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, TRUE, nSave);
+			SetStage(QS_SHOP_SAVE);
+			return;
+		}
+		if (EQUIP_MONEY == s_nShopSave && StageSec() < 5) return;	// Cho tien vao ruong
+		if (EQUIP_MONEY == s_nShopSave)
+			StepEnd(TRUE, "%s - cat tien 5s chua thay tien giam (tren nguoi %d)", s_szShopDone, EQUIP_MONEY);
+		else
+			StepEnd(TRUE, "%s, da cat tien (tren nguoi %d)", s_szShopDone, EQUIP_MONEY);
+		return;
+	}
 	if (theMap.m_bNeedGroceries)
 	{
 		if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_Groceries])) return;
@@ -1164,7 +1201,93 @@ static void StepShop()
 		theMap.GetPharmacy();
 		return;
 	}
-	StepEnd(TRUE, "da mua xong, Tho dia phu %d", g_pCurPlayer->GetItemsCount(AMULET_PAPER));
+	sprintf(s_szShopDone, "da mua xong, Tho dia phu %d", g_pCurPlayer->GetItemsCount(AMULET_PAPER));
+	s_nShopSave = -1;
+	SetStage(QS_SHOP_SAVE);
+}
+
+// Mau / mana can co truoc khi ra khoi thanh: tren nguong tab Phuc hoi (an thuoc, ve thanh) va >= QS_REFILL_PCT % toi da
+#define QS_REFILL_PCT	90
+#define QS_REFILL_MAX	60		// giay, qua thi van di
+static BOOL NeedRefill(int nCur, int nMax, BOOL bAuto, int nAuto, BOOL bAM, int nAM)
+{
+	if (nMax <= 0) return FALSE;
+	if (bAuto && nCur < nAuto && nAuto < nMax) return TRUE;
+	if (bAM && nCur < nAM) return TRUE;
+	return nCur * 100 < nMax * QS_REFILL_PCT;
+}
+
+// Hoi mau / mana trong thanh (an thuoc, het thuoc thi cho tu hoi). TRUE = du, di duoc
+static BOOL Refill()
+{
+	static DWORD s_dwEatTick = 0;
+	int nHP = P_PLAYER->m_CurrentLife, nMaxHP = P_PLAYER->GetLifeMax();
+	int nMP = P_PLAYER->m_CurrentMana, nMaxMP = P_PLAYER->GetManaMax();
+	BOOL bHP = NeedRefill(nHP, nMaxHP, theRecover.m_bAutoHP, theRecover.m_nAutoHPAmount, theRecover.m_bAMByHP, theRecover.m_nAMByHPAmount);
+	BOOL bMP = NeedRefill(nMP, nMaxMP, theRecover.m_bAutoMP, theRecover.m_nAutoMPAmount, theRecover.m_bAMByMP, theRecover.m_nAMByMPAmount);
+	if (!bHP && !bMP) return TRUE;
+	if (StageSec() >= QS_REFILL_MAX)
+	{
+		StepMsg("hoi mau/mana %ds chua du (mau %d/%d, mana %d/%d) - van di", QS_REFILL_MAX, nHP, nMaxHP, nMP, nMaxMP);
+		return TRUE;
+	}
+	if (GetTickCount() - s_dwEatTick < 1500) return FALSE;	// Cho thuoc ngam
+	s_dwEatTick = GetTickCount();
+	BOOL bAte = FALSE;
+	if (bHP) bAte |= g_pCurPlayer->EatMedicine(medicine_blood);
+	if (bMP) bAte |= g_pCurPlayer->EatMedicine(medicine_mana);
+	if (s_nTick % 15 == 0)	// ~9s bao 1 lan
+		StepMsg("hoi %s%s truoc khi di (mau %d/%d, mana %d/%d)%s", bHP ? "mau" : "", bHP && bMP ? " + " : bMP ? "mana" : "",
+			bHP && bMP ? "mana" : "", nHP, nMaxHP, nMP, nMaxMP, bAte ? "" : " - het thuoc, cho tu hoi");
+	return FALSE;
+}
+
+// Tien xa phu: tren nguoi < QS_DRIVER_MONEY thi rut tu ruong. TRUE = du (hoac khong rut duoc), di duoc
+static BOOL DriverMoney()
+{
+	static int s_nMoneyBefore = -1;	// Tien tren nguoi luc gui lenh rut (-1 = chua rut)
+	static DWORD s_dwMoneyTick = 0;	// Luc bat dau mo ruong / gui lenh rut
+	if (EQUIP_MONEY >= QS_DRIVER_MONEY)
+	{
+		s_nMoneyBefore = -1;
+		s_dwMoneyTick = 0;
+		return TRUE;
+	}
+	if (!s_dwMoneyTick) s_dwMoneyTick = GetTickCount();
+	int nSec = (int)((GetTickCount() - s_dwMoneyTick) / 1000);
+	if (s_nMoneyBefore < 0)
+	{
+		if (ROOM_MONEY <= 0)
+		{
+			StepMsg("tren nguoi %d luong, ruong het tien - khong co tien xa phu", EQUIP_MONEY);
+			s_dwMoneyTick = 0;
+			return TRUE;
+		}
+		if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+		{	// Ruong khoa: da gui lenh mo (mat khau o tab Ban do)
+			theMap.m_bRoomLocked = TRUE;
+			if (nSec > 15)
+			{
+				StepMsg("mo khoa ruong 15s khong duoc - khong rut duoc tien xa phu (tren nguoi %d)", EQUIP_MONEY);
+				s_dwMoneyTick = 0;
+				return TRUE;
+			}
+			return FALSE;
+		}
+		int nTake = QS_DRIVER_MONEY - EQUIP_MONEY;
+		if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
+		s_nMoneyBefore = EQUIP_MONEY;
+		StepMsg("rut %d luong tien xa phu (tren nguoi %d, ruong %d)", nTake, EQUIP_MONEY, ROOM_MONEY);
+		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
+		s_dwMoneyTick = GetTickCount();	// dem 5s cho tien ve
+		return FALSE;
+	}
+	if (EQUIP_MONEY == s_nMoneyBefore && nSec < 5) return FALSE;	// Cho tien ve tren nguoi
+	if (EQUIP_MONEY == s_nMoneyBefore)
+		StepMsg("rut tien xa phu 5s chua thay tien ve (tren nguoi %d) - van di", EQUIP_MONEY);
+	s_nMoneyBefore = -1;
+	s_dwMoneyTick = 0;
+	return TRUE;
 }
 
 // Buoc 3: MapPath tu di toi map nhiem vu
@@ -1180,10 +1303,13 @@ static void StepGoMap()
 		return;
 	}
 	if (s_nStage == 0)
-	{
+	{	// Trong thanh Phuc hoi khong chay (chi chay khi chien dau): hoi mau / mana truoc,
+		// khong thi vua len map (bat chien dau) la duoi nguong "Ve thanh khi mau/mana" => dung TDP ngay
+		if (IsTown() && !Refill()) return;
+		if (IsTown() && !DriverMoney()) return;
 		if (!PathTravelStart(s_nTarget, TRUE))
 		{
-			StepEnd(FALSE, "MapPath khong co lo trinh %d -> %d (xem kenh chat)", *g_pMapID, s_nTarget);
+			StepEnd(FALSE, "MapPath khong tu di duoc %d -> %d (xem ly do o kenh chat)", *g_pMapID, s_nTarget);
 			return;
 		}
 		StepMsg("MapPath tu di %d -> %d (%s)", *g_pMapID, s_nTarget, s_Quest.szMap);
@@ -1514,12 +1640,34 @@ static void StepReturn()
 // Goi tu TimerProc (200ms, ca khi tam dung Auto)
 void DebugQuestBreathe()
 {
-	if (!s_nStep) return;
+	static DWORD s_dwPauseTick = 0;	// Luc bat dau tam dung (0 = dang chay)
+	if (!s_nStep) { s_dwPauseTick = 0; return; }
 	if (g_NetworkOffline || !g_pCurPlayer || !P_PLAYER || !P_PLAYER->m_dwID) return;
-	// Auto tam dung: TimerProc khong goi PathTravelBreathe -> goi thay
-	if (g_SysPause && PathTravelActive()) PathTravelBreathe();
-	// Danh quai khi Auto tam dung: TimerProc khong goi theAttack.Breathe -> goi thay (Phuc hoi / Nhat do van chay)
-	if (g_SysPause && s_nStep == qs_kill) theAttack.Breathe();
+	// Auto goi ma tat "Tu lam nhiem vu" (tab Da Tau): thoi, bat lai thi CVLQuest goi QuestKillStart lam tiep
+	if (s_bAutoQuest && !theQuest.m_bAutoDoQuest)
+	{
+		QuestKillStop();
+		return;
+	}
+	// Auto tam ngung (Ctrl+DblClick phai): dung han - khong di, khong danh, khong dem gio qua han
+	if (g_SysPause)
+	{
+		if (!s_dwPauseTick)
+		{
+			s_dwPauseTick = GetTickCount() | 1;
+			StepMsg("Auto tam ngung - %s tam dung", s_szStepName[s_nStep]);
+		}
+		return;
+	}
+	if (s_dwPauseTick)
+	{	// Mo lai: lui moc gio buoc / giai doan bang thoi gian tam dung, MapPath lap ke hoach lai tu cho dang dung
+		DWORD dwPaused = GetTickCount() - s_dwPauseTick;
+		s_dwPauseTick = 0;
+		s_dwStepStart += dwPaused;
+		s_dwStageTick += dwPaused;
+		if (PathTravelActive()) PathTravelResume();
+		StepMsg("Auto mo lai sau %ds - lam tiep %s", dwPaused / 1000, s_szStepName[s_nStep]);
+	}
 	if (++s_nTick % 3) return;	// 600ms
 
 	if (GetTickCount() - s_dwStepStart > (DWORD)s_nStepTimeout[s_nStep] * 1000)
@@ -1542,6 +1690,11 @@ BOOL DebugQuestHoldMove()
 {
 	if (s_nStep == qs_gomap || s_nStep == qs_kill) return TRUE;
 	return s_nHoldMap && s_nHoldMap == *g_pMapID;
+}
+
+BOOL DebugQuestActive()
+{
+	return s_nStep != qs_none;
 }
 
 void DebugQuestMoveAllow(BOOL bAllow)
@@ -1628,7 +1781,7 @@ static void StepCheck(int nStep)
 			DbgOut("NpcPoints: Tap hoa (%d, %d)  Hieu thuoc (%d, %d)\n", theMap.NpcPoints[npc_Groceries].x, theMap.NpcPoints[npc_Groceries].y,
 				theMap.NpcPoints[npc_Pharmacy].x, theMap.NpcPoints[npc_Pharmacy].y);
 		else
-			DbgOut("Khong doc duoc Maps\\CityMaps\\City%d.map\n", nMap);
+			DbgOut("Khong co muc [NPC] trong %s\n", PathFileShow(nMap));
 		break;
 	}
 	case qs_gomap:

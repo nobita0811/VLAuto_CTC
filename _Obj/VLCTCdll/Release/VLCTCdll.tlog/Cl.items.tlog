@@ -21,6 +21,7 @@ I:\CTC\VLAuto_CTC\VLHook\VLDebugLowCfg.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Relea
 I:\CTC\VLAuto_CTC\CrashHandler.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\CrashHandler.obj
 I:\CTC\VLAuto_CTC\VLHook\VLExpLimit.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLExpLimit.obj
 I:\CTC\VLAuto_CTC\VLHook\VLDebugPath.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLDebugPath.obj
+I:\CTC\VLAuto_CTC\VLHook\VLObstacle.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLObstacle.obj
 I:\CTC\VLAuto_CTC\VLHook\MagicAttrib.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\MagicAttrib.obj
 I:\CTC\VLAuto_CTC\VLHook\TcvnText.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\TcvnText.obj
 I:\CTC\VLAuto_CTC\VLHook\VLParty.cpp;I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLParty.obj
