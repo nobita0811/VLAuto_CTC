@@ -4,8 +4,9 @@
 #define CLIENT_VERSION		"0.1"
 #define HASH_CODE			0x4683
 
-#define VLADlgTitle "VLCTCPro 0.78"
-#define VLVERSION	"0.78"	
+#define VLADlgTitle "VLCTCPro 0.80"
+#define VLVERSION	"0.80"	
+#define ADMIN_MODE	1	
 #define VLAWinClass "VLCTCAutoClass"
 #define LgnDlgTitle "VLCTCAuto - Login"
 #define VLADefIcon "res\\VLAuto.ico"

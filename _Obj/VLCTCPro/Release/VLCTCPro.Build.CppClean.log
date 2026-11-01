@@ -1,7 +1,6 @@
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vlctcpro.pch
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vc143.pdb
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\stdafx.obj
-i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgparty.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgmovepoints.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgmove.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgmap.obj
@@ -16,12 +15,12 @@ i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgautologin.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgabout.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\kdtrfix.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\crashhandler.obj
+i:\ctc\vlauto_ctc\_obj\vlctcpro\release\licensegate.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vlautodlg.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vlauto.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\loginsck.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\gamewindow.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\autoparams.obj
-i:\ctc\vlauto_ctc\_obj\vlctcpro\release\ystuzhi.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\ystongq.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\ystongpk.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\ysprizesel.obj
@@ -41,6 +40,8 @@ i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dwinprocess.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\diskid32.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgyesou.obj
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgrecover.obj
+i:\ctc\vlauto_ctc\_obj\vlctcpro\release\dlgparty.obj
+i:\ctc\vlauto_ctc\_obj\vlctcpro\release\ystuzhi.obj
 i:\ctc\vlauto_ctc\_bin\vlctcpro.exe
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vlauto.res
 i:\ctc\vlauto_ctc\_obj\vlctcpro\release\vlauto.vcxproj.filelistabsolute.txt

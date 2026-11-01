@@ -35,9 +35,11 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\lprotect-sdk\lprotect.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\lprotect-sdk\lprotect.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -118,6 +120,7 @@
     </ClCompile>
     <ClCompile Include="VLAuto.cpp" />
     <ClCompile Include="VLAutoDlg.cpp" />
+    <ClCompile Include="LicenseGate.cpp" />
     <ClCompile Include="..\CrashHandler.cpp" />
     <ClCompile Include="KDtrFix.cpp" />
     <ClCompile Include="DlgAbout.cpp" />
@@ -164,6 +167,7 @@
     <ClInclude Include="Version.h" />
     <ClInclude Include="VLAuto.h" />
     <ClInclude Include="VLAutoDlg.h" />
+    <ClInclude Include="LicenseGate.h" />
     <ClInclude Include="DlgAbout.h" />
     <ClInclude Include="DlgAutoLogin.h" />
     <ClInclude Include="GameLogin.h" />

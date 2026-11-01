@@ -4,6 +4,7 @@
   LoginSck.cpp
   VLAuto.cpp
   VLAutoDlg.cpp
+  LicenseGate.cpp
   CrashHandler.cpp
   KDtrFix.cpp
   DlgAbout.cpp
@@ -18,9 +19,9 @@
   DlgMap.cpp
   DlgMove.cpp
   DlgMovePoints.cpp
-  DlgParty.cpp
   Generating Code...
   Compiling...
+  DlgParty.cpp
   DlgRecover.cpp
   DlgYeSou.cpp
   DiskID32.cpp
@@ -40,6 +41,8 @@
   YSPrizeSel.cpp
   YSTongPK.cpp
   YSTongQ.cpp
+  Generating Code...
+  Compiling...
   YSTuZhi.cpp
   Generating Code...
   VLAuto.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\VLCTCPro.exe

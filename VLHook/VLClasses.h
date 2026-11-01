@@ -444,6 +444,7 @@ public:
 	void	GoTrainStart(int nMapID);
 	void	GoTrainStop();
 	BOOL	GoTrainBreathe();
+	void	AutoGoTrainCheck();
 	BOOL	GoNodesBreathe();
 	BOOL	HaveGoNodes();
 	BOOL	NearTrainArea(int nPlayerX, int nPlayerY);

@@ -97,6 +97,7 @@ void CVLMove::Breathe()
 
 	m_bMoveByMapYS = bCurMoveByMap;
 	if (theQuest.m_nYeSouMapID) m_bMoveByMapYS = TRUE;
+	AutoGoTrainCheck();
 	if (m_bGoTrain || m_bFindingWay)
 	{	// Khong co TDP: khong tu tim duong sang map train (chi danh tai map dang dung)
 		// Ngoai le: vua di xa phu (m_bGoTrain) ma bi tha o map ke ben (vd xa phu "Duoc Vuong tang 3" tha o tang 4)
@@ -872,6 +873,27 @@ void CVLMove::GoTrainStop()
 	m_dwGoTrainTick = 0;
 	m_nGoNode = -1;
 	m_nGoDone = -1;
+}
+
+// Vua bat auto (Tu danh) khi dang dung san ngoai thanh, chua qua xa phu: map khac map train -> MapPath qua cong
+// toi map train; dung map train ma xa bai train va co danh sach di den noi luyen cong -> di theo danh sach
+void CVLMove::AutoGoTrainCheck()
+{
+	static BOOL s_bPrevAuto = FALSE;
+	BOOL bAuto = theAttack.m_bAutoHit;
+	BOOL bRise = bAuto && !s_bPrevAuto;
+	s_bPrevAuto = bAuto;
+	if (!bRise || m_bGoTrain || m_bFollow || PathTravelActive()) return;
+	int nTarget = theMap.m_nTrainMapID;
+	if (!nTarget || theQuest.m_nYeSouMapID || (theQuest.m_bAutoDoQuest && theQuest.m_bGoTrainGetPK)) return;
+	if (*g_pMapID == nTarget)
+	{
+		int x, y;
+		P_PLAYER->GetMapPos(&x, &y);
+		if (!HaveGoNodes() || NearTrainArea(x, y)) return;
+	}
+	SystemMessage("<color=green>Bat auto ngoai bai train - tu di toi noi luyen cong");
+	GoTrainStart(nTarget);
 }
 
 // Co danh sach toa do di den noi luyen cong o map dang dung

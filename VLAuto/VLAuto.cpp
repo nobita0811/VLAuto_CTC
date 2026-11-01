@@ -10,6 +10,7 @@
 #include "DlgLogin.h"
 #include "VLAutoDlg.h"
 #include "../CrashHandler.h"
+#include "LicenseGate.h"
 
 // CVLAutoApp
 
@@ -103,10 +104,17 @@ BOOL CVLAutoApp::InitInstance()
 		}
 	}*/
 
+	// Cong kiem tra license online + single-session (chi 1 ban client chay).
+	// Phai dat sau khi g_szIniFile da duoc thiet lap (de nho email/key).
+	if (!LicenseGateStartup())
+		return FALSE;
+
 	CVLAutoDlg *pMainDlg = new CVLAutoDlg();
 	m_pMainDlg = pMainDlg;
 	pMainDlg->DoModal();
 	delete pMainDlg;
+
+	LicenseGateShutdown();	// Tra lease tren server khi thoat sach
 
 	return FALSE;
 }
