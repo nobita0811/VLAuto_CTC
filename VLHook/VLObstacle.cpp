@@ -37,7 +37,10 @@ static OB_HEAP	*s_pHeap = NULL;
 static int		s_nHeap = 0;
 
 static int		s_nX0 = 0, s_nY0 = 0, s_nW = 0, s_nH = 0;	// Goc trai-tren luoi (Mps), so nut
-static DWORD	s_dwGridKey = 0;		// Tong kiem cac region dang nap (khong doi thi khong dung lai luoi)
+static DWORD	s_dwGridKey = 0;		// Tong kiem cac region dang nap + map (khong doi thi khong dung lai luoi)
+static int		s_nGridMap = 0;			// Map cua luoi / duong vua tim
+static DWORD	s_dwMapTick = 0;		// Lan doi map gan nhat
+#define OB_MAP_SETTLE	3000		// Sau khi doi map: region co the dang nap lai cung toa do/bo nho -> dung lai luoi moi lan
 
 // Loang (ObsFlood)
 static BOOL		s_bFlood = FALSE;
@@ -108,10 +111,23 @@ void ObsFree()
 	s_bFlood = FALSE;
 }
 
+// Doi map: bo luoi, loang va duong cu (region map moi co the trung toa do + bo nho voi map cu => tong kiem khong doi)
+static void CheckMap()
+{
+	int nMap = g_pMapID ? *g_pMapID : 0;
+	if (nMap == s_nGridMap) return;
+	s_nGridMap = nMap;
+	s_dwMapTick = GetTickCount();
+	s_dwGridKey = 0;
+	s_bFlood = FALSE;
+	s_nPath = 0;
+}
+
 static BOOL BuildGrid()
 {
+	CheckMap();
 	int nL = MAX_INTNUM, nT = MAX_INTNUM, nR = -MAX_INTNUM, nB = -MAX_INTNUM, nRegions = 0;
-	DWORD dwKey = 0x9E3779B9;
+	DWORD dwKey = 0x9E3779B9 ^ (DWORD)s_nGridMap;
 	ObsForEachRegion([&](int nLeft, int nTop, const long *pObs)
 	{
 		nRegions++;
@@ -120,7 +136,7 @@ static BOOL BuildGrid()
 		dwKey = (dwKey ^ (DWORD)nLeft) * 16777619 ^ (DWORD)nTop ^ (DWORD)(UINT_PTR)pObs;
 	});
 	if (!nRegions) return FALSE;
-	if (dwKey == s_dwGridKey && s_pGrid) return TRUE;
+	if (dwKey == s_dwGridKey && s_pGrid && GetTickCount() - s_dwMapTick > OB_MAP_SETTLE) return TRUE;
 	Alloc();
 
 	s_nX0 = nL; s_nY0 = nT;
@@ -449,6 +465,7 @@ int ObsReachDist(int x, int y)
 
 int ObsLastPath(POINT *pPts, int nMax, POINT *pWaypoint)
 {
+	CheckMap();
 	if (!s_nPath || GetTickCount() - s_dwPathTick > 3000) return 0;
 	int n = min(nMax, s_nPath);
 	memcpy(pPts, s_ptPath, n * sizeof(POINT));

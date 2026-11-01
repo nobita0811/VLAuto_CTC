@@ -408,10 +408,10 @@ void CVLMap::CheckAutoReturn()
 {
 	char szMsg[80];
 	if (m_bAutoReturn)
-		sprintf(szMsg, TV(L"<color=yellow>Về thành tự quay lại (Ctrl+T): <color=green>Bật"));
+		sprintf(szMsg, TV(L"<color=yellow>Về thành tự quay lại (Ctrl+Y): <color=green>Bật"));
 	else
 	{
-		sprintf(szMsg, TV(L"<color=yellow>Về thành tự quay lại (Ctrl+T): <color>Tắt"));
+		sprintf(szMsg, TV(L"<color=yellow>Về thành tự quay lại (Ctrl+Y): <color>Tắt"));
 		m_nCurPoint = -1;
 		m_bDoShoping = 0;
 		PathTravelStop("tat Ve thanh tu quay lai"); // Tắt về thành quay lại
@@ -437,15 +437,18 @@ BOOL CVLMap::RunningToPos(POINT ptDest)
 	static POINT s_ptDest = { 0, 0 };
 	static int s_nBest = MAX_INTNUM;
 	static DWORD s_dwBest = 0, s_dwHorse = 0;
+	static int s_nDestMap = 0;
 	if (!ptDest.x && !ptDest.y) return 0;	// Thanh khong co NPC nay ([NPC] = 0,0)
 
 	int nPlayerX, nPlayerY;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	int dZ = __distance(nPlayerX, nPlayerY, ptDest.x, ptDest.y);
 	DWORD dwNow = GetTickCount();
-	if (m_nCurPoint < 0 || ptDest.x != s_ptDest.x || ptDest.y != s_ptDest.y)
-	{	// Dich moi
+	if (m_nCurPoint < 0 || ptDest.x != s_ptDest.x || ptDest.y != s_ptDest.y || *g_pMapID != s_nDestMap)
+	{	// Dich moi / doi map: tinh lai tu dau
 		s_ptDest = ptDest;
+		s_nDestMap = *g_pMapID;
+		PathWalkReset();
 		s_nBest = MAX_INTNUM;
 		s_dwBest = dwNow;
 		m_nLagCount = 0;
@@ -1045,11 +1048,13 @@ BOOL CVLMap::GetReputation(int nRepType)
 	return TRUE;
 }
 
-// Map can toi bang xa phu: map train (Di theo MAP), neu "Ban do bat ky" thi lay map cua danh sach Theo toa do
+// Map can toi bang xa phu: map train (Di theo MAP), neu "Ban do bat ky" thi lay map cua danh sach Theo toa do,
+// khong co thi lay map cua danh sach toa do di den noi luyen cong
 static int DriverTargetMap()
 {
 	if (theMap.m_nTrainMapID) return theMap.m_nTrainMapID;
 	if (theMove.m_bRouteMove && theMove.m_nNodesMapID && theMove.m_Nodes[0].x) return theMove.m_nNodesMapID;
+	if (theMove.m_nGoNodesMapID && theMove.m_GoNodes[0].x && theMove.m_GoNodes[0].y) return theMove.m_nGoNodesMapID;
 	return 0;
 }
 
@@ -1071,6 +1076,13 @@ static BOOL RunToNearestNode()
 	int x, y;
 	P_PLAYER->GetMapPos(&x, &y);
 	int dMin = __distance(x, y, theMove.m_Nodes[0].x, theMove.m_Nodes[0].y);
+	static int s_nNodeMap = 0;
+	if (*g_pMapID != s_nNodeMap)
+	{	// Doi map: MapPath map moi, tinh lai duong
+		s_nNodeMap = *g_pMapID;
+		s_bNodeDirect = FALSE;
+		PathWalkReset();
+	}
 	if (!s_bNodeDirect)
 	{
 		// Uu tien MapPath cua map (Maps\Path): node gan nhat -> theo canh -> node gan diem dau danh sach

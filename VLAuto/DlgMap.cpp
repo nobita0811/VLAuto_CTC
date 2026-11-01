@@ -6,6 +6,7 @@
 #include "GameWindow.h"
 #include "DlgCollect.h"
 #include "DlgMap.h"
+#include "DlgMovePoints.h"
 #include "DlgBuySetting.h"
 
 // CDlgMap dialog
@@ -65,7 +66,6 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CDlgMap, CDialog)
 	ON_CONTROL_RANGE(BN_CLICKED, 1000, 2000, &CDlgMap::OnButtonsClicked)
 	ON_CBN_SELCHANGE(IDC_DRIVER_COMBO, &CDlgMap::OnCbnSelchangeDriverCombo)
-	ON_CBN_SELCHANGE(IDC_TRAINMAP_COMBO, &CDlgMap::OnCbnSelchangeTrainmapCombo)
 	ON_CBN_SELCHANGE(IDC_SAVEITEM_COMBO, &CDlgMap::OnCbnSelchangeSaveitemCombo)
 END_MESSAGE_MAP()
 
@@ -90,47 +90,6 @@ BOOL CDlgMap::OnInitDialog()
 	pComboBox->AddString(_T("Cất R1-2"));
 	pComboBox->AddString(_T("Cất R1-2-3"));
 
-	TCHAR szMapIniFile[MAX_PATH];
-	_stprintf(szMapIniFile, _T("%s\\Maps\\MapMenu.ini"), g_szAppFolder);
-	TCHAR szMapNameFile[MAX_PATH];
-	_stprintf(szMapNameFile, _T("%s\\Maps\\MapNames.ini"), g_szAppFolder);
-
-	FILE *pFile = _tfopen(szMapIniFile, _T("r"));
-	if (pFile == NULL) return FALSE;
-	pComboBox = (CComboBox*)GetDlgItem(IDC_TRAINMAP_COMBO);
-	int nIndex = pComboBox->AddString(_T("_Bản đồ khác_"));
-	pComboBox->SetItemData(nIndex, 0);
-	do
-	{
-		char szLine[64];
-		TCHAR szULine[64];
-		memset(szLine, 0, 64);
-		int i = 0; int c; BOOL bstop = FALSE;
-		while (i < 64)
-		{	//ReadLine
-			c = fgetc(pFile);
-			if (c == EOF) { bstop = TRUE; break; }
-			if (c == '\n') break;
-			szLine[i++] = c;
-		}
-		if (!szLine[0]) break;
-		char *cPos = strchr(szLine, '=');
-		if (szLine[0]!= '[' && cPos)
-		{
-			cPos[0]='\0';
-			int nMapID = atoi(szLine);
-			_stprintf(szULine, _T("%d"), nMapID);
-			GetPrivateProfileString(_T("Map_Name"), szULine, _T("<Unknown_Map>"), szULine, 64, szMapNameFile);
-			WideCharToMultiByte(CP_ACP, 0, szULine, -1, szLine, 64, 0, 0);
-			TCVN3ToUnicode(szLine, szULine, 63);
-			nIndex = pComboBox->AddString(szULine);
-			pComboBox->SetItemData(nIndex, nMapID);
-		}
-		if (bstop) break;
-	}
-	while (TRUE);
-	fclose(pFile);
-
 	if (m_ToolTip.Create(this))
 	{
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTORETURN_CHECK), _T("Hồi thành tự quay lại nơi Luyện công (phím tắt Ctrl + T)"));
@@ -145,7 +104,6 @@ BOOL CDlgMap::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_SAVEMONEY_EDIT), _T("Số tiền mang theo đi Luyện công (lượng)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_SAVEITEM_COMBO), _T("Cất đồ vào Rương 1-2-3"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_DRIVER_COMBO), _T("Chế độ đi Xa phu"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_TRAINMAP_COMBO), _T("Bản đồ luyện công"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GIVEKCL_CHECK), _T("Tự nộp KCL mỗi khi về thành"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GIVEKCL_EDIT), _T("Số lượng KCL tối thiểu để về giao nộp"));
 	}
@@ -159,25 +117,11 @@ BOOL CDlgMap::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
+// Da bo "Noi luyen cong": map train lay tu map ID cua danh sach toa do (Tab Di chuyen)
 void CDlgMap::UpdateTrainMap(BOOL bSave)
 {
 	if (g_pCurGameWin == NULL) return;
-	CComboBox *pTrainMapCmb = (CComboBox *)GetDlgItem(IDC_TRAINMAP_COMBO);
-	if (bSave)
-		g_pCurGameWin->m_prMap.m_nTrainMapID = (int)pTrainMapCmb->GetItemData(pTrainMapCmb->GetCurSel());
-	else
-	{
-		int nCount = pTrainMapCmb->GetCount();
-		pTrainMapCmb->SetCurSel(0);
-		for (int i = 0; i < nCount; i++)
-		{
-			if (pTrainMapCmb->GetItemData(i) == g_pCurGameWin->m_prMap.m_nTrainMapID)
-			{
-				pTrainMapCmb->SetCurSel(i);
-				break;
-			}
-		}
-	}
+	g_pCurGameWin->m_prMap.m_nTrainMapID = CDlgMovePoints::GetTrainMapID();
 }
 
 void CDlgMap::OnButtonsClicked(UINT nID)
@@ -241,12 +185,6 @@ void CDlgMap::OnCbnSelchangeDriverCombo()
 		szMesage += _T("Xin hãy dùng các chế độ quay lại [Nơi đã đi qua 1-2-3] để thay thế!");
 		MessageBox(szMesage, _T("VLAuto"), MB_ICONEXCLAMATION);
 	}
-}
-
-void CDlgMap::OnCbnSelchangeTrainmapCombo()
-{
-	UpdateData();
-	g_pCurGameWin->SetGameParams(tab_map);
 }
 
 void CDlgMap::OnCbnSelchangeSaveitemCombo()

@@ -23,7 +23,6 @@ protected:
 
 	afx_msg void	OnButtonsClicked(UINT nID);
 	afx_msg void	OnCbnSelchangeDriverCombo();
-	afx_msg void	OnCbnSelchangeTrainmapCombo();
 	afx_msg void	OnCbnSelchangeSaveitemCombo();
 
 	DECLARE_MESSAGE_MAP()

@@ -9,7 +9,7 @@
 #include "DlgMovePoints.h"
 
 // Ten ban do theo MapNames.ini (giong tab Co ban)
-static CString GetMapName(int nMapID)
+CString CDlgMovePoints::GetMapName(int nMapID)
 {
 	TCHAR szMapID[12], szInfo[64];
 	TCHAR szMapNameFile[MAX_PATH];
@@ -24,6 +24,17 @@ static CString GetMapName(int nMapID)
 	return szName;
 }
 
+// Bo "Noi luyen cong" (Tab Ban do): map train = map cua danh sach toa do luyen cong,
+// khong co thi lay map cua danh sach toa do di den noi luyen cong (hook cung tinh y nhu vay)
+int CDlgMovePoints::GetTrainMapID()
+{
+	if (g_pCurGameWin == NULL) return 0;
+	PARAM_MOVE &pm = g_pCurGameWin->m_prMove;
+	if (pm.m_nNodesMapID && pm.m_Nodes[0].x && pm.m_Nodes[0].y) return pm.m_nNodesMapID;
+	if (pm.m_nGoNodesMapID && pm.m_GoNodes[0].x && pm.m_GoNodes[0].y) return pm.m_nGoNodesMapID;
+	return 0;
+}
+
 // ID cac control theo tung danh sach: 0 = Hanh trinh luyen cong, 1 = Di den noi luyen cong
 static const UINT s_uListID[MOVEPOINTS_LISTS]		= { IDC_MOVEPOINT_LIST, IDC_MOVEPOINT_LIST2 };
 static const UINT s_uAddID[MOVEPOINTS_LISTS]		= { IDC_ADD_BUTTON, IDC_ADD_BUTTON2 };
@@ -33,6 +44,9 @@ static const UINT s_uDownID[MOVEPOINTS_LISTS]		= { IDC_DOWN_BUTTON, IDC_DOWN_BUT
 static const UINT s_uDelAllID[MOVEPOINTS_LISTS]		= { IDC_DELALL_BUTTON, IDC_DELALL_BUTTON2 };
 static const UINT s_uSaveID[MOVEPOINTS_LISTS]		= { IDC_SAVE_BUTTON, IDC_SAVE_BUTTON2 };
 static const UINT s_uLoadID[MOVEPOINTS_LISTS]		= { IDC_LOAD_BUTTON, IDC_LOAD_BUTTON2 };
+static const UINT s_uEditID[MOVEPOINTS_LISTS]		= { IDC_EDITNODE_BUTTON, IDC_EDITNODE_BUTTON2 };
+static const UINT s_uNodeXID[MOVEPOINTS_LISTS]		= { IDC_NODEX_EDIT, IDC_NODEX_EDIT2 };
+static const UINT s_uNodeYID[MOVEPOINTS_LISTS]		= { IDC_NODEY_EDIT, IDC_NODEY_EDIT2 };
 static const TCHAR* s_szListName[MOVEPOINTS_LISTS]	= { _T("Danh sách tọa độ luyện công"), _T("Danh sách tọa độ đi đến nơi luyện công") };
 
 // CDlgMovePoints dialog
@@ -75,6 +89,7 @@ void CDlgMovePoints::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CDlgMovePoints, CDialog)
 	ON_CONTROL_RANGE(BN_CLICKED, 1000, 2000, &CDlgMovePoints::OnButtonsClicked)
+	ON_CONTROL_RANGE(LBN_SELCHANGE, IDC_MOVEPOINT_LIST, IDC_MOVEPOINT_LIST2, &CDlgMovePoints::OnListSelChange)
 END_MESSAGE_MAP()
 
 // CDlgMovePoints message handlers
@@ -97,8 +112,13 @@ BOOL CDlgMovePoints::OnInitDialog()
 			m_ToolTip.AddTool(GetDlgItem(s_uDelAllID[i]), _T("Xóa hết danh sách"));
 			m_ToolTip.AddTool(GetDlgItem(s_uSaveID[i]), _T("Ghi danh sách ra file .mvp"));
 			m_ToolTip.AddTool(GetDlgItem(s_uLoadID[i]), _T("Đọc danh sách từ file .mvp"));
+			m_ToolTip.AddTool(GetDlgItem(s_uNodeXID[i]), _T("Tọa độ X tuyệt đối của dòng đang chọn"));
+			m_ToolTip.AddTool(GetDlgItem(s_uNodeYID[i]), _T("Tọa độ Y tuyệt đối của dòng đang chọn"));
+			m_ToolTip.AddTool(GetDlgItem(s_uEditID[i]), _T("Sửa dòng đang chọn theo X, Y đã nhập"));
 		}
 	}
+	for (int i = 0; i < MOVEPOINTS_LISTS; i++)
+		ShowSelNode(i);
 
 	return TRUE;
 }
@@ -120,20 +140,82 @@ void CDlgMovePoints::OnButtonsClicked(UINT nID)
 		else if (nID == s_uDownID[i])	OnBnClickedDownButton(i);
 		else if (nID == s_uDelAllID[i])	OnBnClickedDelAllButton(i);
 		else if (nID == s_uSaveID[i])	{ OnBnClickedSaveButton(i); return; }
-		else if (nID == s_uLoadID[i])	{ OnBnClickedLoadButton(i); return; }
+		else if (nID == s_uLoadID[i])	{ OnBnClickedLoadButton(i); ShowSelNode(i); return; }
+		else if (nID == s_uEditID[i])	{ if (!OnBnClickedEditButton(i)) return; }
 		else continue;
 		UpdateData();
 		UpdateMapName();
+		ShowSelNode(i);
 		g_pCurGameWin->SetGameParams(tab_move);
 		return;
 	}
 }
 
-void CDlgMovePoints::UpdatePointsList(int nList, BOOL bSave)
+void CDlgMovePoints::OnListSelChange(UINT nID)
+{
+	for (int i = 0; i < MOVEPOINTS_LISTS; i++)
+		if (nID == s_uListID[i]) ShowSelNode(i);
+}
+
+// Moi dong cua danh sach giu chi so toa do tuyet doi trong m_Pts (ItemData), hien thi "[x, y] - X, Y"
+// (x, y = toa do tren ban do game; X, Y = toa do tuyet doi nhan vat di toi)
+void CDlgMovePoints::InsertPoint(int nList, int nIndex, POINT pt)
 {
 	CString szLine;
-	DWORD dwItemData;
-	int nIndex, nX, nY;
+	szLine.Format(_T("[%d, %d] - %d, %d"), pt.x>>8, pt.y>>9, pt.x, pt.y);
+	CListBox& lstPoints = m_PoinList[nList];
+	nIndex = lstPoints.InsertString(nIndex, szLine);
+	lstPoints.SetItemData(nIndex, (DWORD_PTR)m_Pts[nList].Add(pt));
+	lstPoints.SetCurSel(nIndex);
+}
+
+POINT CDlgMovePoints::GetPoint(int nList, int nIndex)
+{
+	return m_Pts[nList][(INT_PTR)m_PoinList[nList].GetItemData(nIndex)];
+}
+
+// Dua toa do tuyet doi cua dong dang chon len 2 o X, Y (khong chon dong nao thi de trong)
+void CDlgMovePoints::ShowSelNode(int nList)
+{
+	CListBox& lstPoints = m_PoinList[nList];
+	int nIndex = lstPoints.GetCurSel();
+	if (nIndex < 0)
+	{
+		SetDlgItemText(s_uNodeXID[nList], _T(""));
+		SetDlgItemText(s_uNodeYID[nList], _T(""));
+		return;
+	}
+	POINT pt = GetPoint(nList, nIndex);
+	SetDlgItemInt(s_uNodeXID[nList], pt.x, FALSE);
+	SetDlgItemInt(s_uNodeYID[nList], pt.y, FALSE);
+}
+
+// Sua dong dang chon theo X, Y nhap tay (toa do tuyet doi). TRUE = da sua
+BOOL CDlgMovePoints::OnBnClickedEditButton(int nList)
+{
+	CListBox& lstPoints = m_PoinList[nList];
+	int nIndex = lstPoints.GetCurSel();
+	if (nIndex < 0)
+	{
+		MessageBox(_T("Chọn 1 dòng trong danh sách để sửa!"), _T("VLAuto"), MB_ICONEXCLAMATION);
+		return FALSE;
+	}
+	BOOL bOkX, bOkY;
+	POINT pt;
+	pt.x = (int)GetDlgItemInt(s_uNodeXID[nList], &bOkX, FALSE);
+	pt.y = (int)GetDlgItemInt(s_uNodeYID[nList], &bOkY, FALSE);
+	if (!bOkX || !bOkY || pt.x <= 0 || pt.y <= 0)	// Hook coi x hoac y = 0 la het danh sach
+	{
+		MessageBox(_T("Tọa độ X, Y không hợp lệ!"), _T("VLAuto"), MB_ICONEXCLAMATION);
+		return FALSE;
+	}
+	lstPoints.DeleteString(nIndex);
+	InsertPoint(nList, nIndex, pt);
+	return TRUE;
+}
+
+void CDlgMovePoints::UpdatePointsList(int nList, BOOL bSave)
+{
 	CListBox& lstPoints = m_PoinList[nList];
 	POINT* pNodes = GetNodes(nList);
 	if (bSave)
@@ -141,39 +223,22 @@ void CDlgMovePoints::UpdatePointsList(int nList, BOOL bSave)
 		memset(pNodes, 0, sizeof(POINT) * MAX_NODES);
 		int nCount = lstPoints.GetCount();
 		for (int i = 0; i < nCount && i < MAX_NODES; i++)
-		{
-			dwItemData = (DWORD)lstPoints.GetItemData(i);
-			nX = LOWORD(dwItemData) << 5;
-			nY = HIWORD(dwItemData) << 5;
-			pNodes[i].x = nX;
-			pNodes[i].y = nY;
-		}
+			pNodes[i] = GetPoint(nList, i);
 	}
 	else
 	{
 		int nSel = lstPoints.GetCurSel();
 		lstPoints.ResetContent();
+		m_Pts[nList].RemoveAll();
 		for (int i = 0; i < MAX_NODES; i++)
-		{
-			nX = pNodes[i].x;
-			nY = pNodes[i].y;
-			if (nX && nY)
-			{
-				szLine.Format(_T("(%d, %d)"), nX>>8, nY>>9);
-				nIndex = lstPoints.AddString(szLine);
-				dwItemData = MAKELONG(nX>>5, nY>>5);
-				lstPoints.SetItemData(nIndex, dwItemData);
-			}
-		}
+			if (pNodes[i].x && pNodes[i].y)
+				InsertPoint(nList, -1, pNodes[i]);
 		lstPoints.SetCurSel(nSel);
 	}
 }
 
 void CDlgMovePoints::OnBnClickedAddButton(int nList)
 {
-	CString szLine;
-	DWORD dwItemData;
-	int nIndex, nX, nY;
 	if (g_pCurGameWin == NULL) return;
 	CListBox& lstPoints = m_PoinList[nList];
 	int nCount = lstPoints.GetCount();
@@ -192,14 +257,8 @@ void CDlgMovePoints::OnBnClickedAddButton(int nList)
 	nNodesMapID = nCurMapID; // Danh sach chua co ban do -> gan ban do hien tai
 	if (nCount < MAX_NODES)
 	{
-		nX = g_pCurGameWin->m_nOffX;
-		nY = g_pCurGameWin->m_nOffY;
-
-		szLine.Format(_T("(%d, %d)"), nX>>8, nY>>9);
-		nIndex = lstPoints.AddString(szLine);
-		dwItemData = MAKELONG(nX>>5, nY>>5);
-		lstPoints.SetItemData(nIndex, dwItemData);
-		lstPoints.SetCurSel(nIndex);
+		POINT pt = { g_pCurGameWin->m_nOffX, g_pCurGameWin->m_nOffY };
+		InsertPoint(nList, -1, pt);
 	}
 }
 

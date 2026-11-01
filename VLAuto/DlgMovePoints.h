@@ -22,6 +22,12 @@ public:
 	void			OnBnClickedDelAllButton(int nList);
 	void			OnBnClickedSaveButton(int nList);
 	void			OnBnClickedLoadButton(int nList);
+	BOOL			OnBnClickedEditButton(int nList);
+	void			ShowSelNode(int nList);
+	void			InsertPoint(int nList, int nIndex, POINT pt);
+	POINT			GetPoint(int nList, int nIndex);
+	static CString	GetMapName(int nMapID);
+	static int		GetTrainMapID();
 
 // Dialog Data
 	enum { IDD = IDD_MOVEPOINTS_DIALOG };
@@ -32,11 +38,13 @@ protected:
 	virtual void	DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void	OnOK() {}
 	afx_msg void	OnButtonsClicked(UINT nID);
+	afx_msg void	OnListSelChange(UINT nID);
 	POINT*			GetNodes(int nList);
 	int&			GetNodesMapID(int nList);
 
 	DECLARE_MESSAGE_MAP()
 public:
 	CListBox		m_PoinList[MOVEPOINTS_LISTS];
+	CArray<POINT, POINT> m_Pts[MOVEPOINTS_LISTS];	// Toa do tuyet doi; ItemData cua moi dong = chi so trong mang
 	CToolTipCtrl	m_ToolTip;
 };

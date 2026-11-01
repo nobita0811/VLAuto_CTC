@@ -21,6 +21,7 @@ CVLMove::CVLMove(void)
 	memset(m_GoNodes, 0, sizeof(m_GoNodes));
 	m_nGoNodesMapID = 0;
 	m_nGoNode = -1;
+	m_nGoDone = -1;
 	m_bFindingWay = TRUE;
 	m_bGoTrain = 0;
 	m_nGoTrainMap = 0;
@@ -98,8 +99,11 @@ void CVLMove::Breathe()
 	if (theQuest.m_nYeSouMapID) m_bMoveByMapYS = TRUE;
 	if (m_bGoTrain || m_bFindingWay)
 	{	// Khong co TDP: khong tu tim duong sang map train (chi danh tai map dang dung)
+		// Ngoai le: vua di xa phu (m_bGoTrain) ma bi tha o map ke ben (vd xa phu "Duoc Vuong tang 3" tha o tang 4)
+		// -> van di bo qua cong sang map train, khong can TDP
 		int nGoMap = m_bGoTrain ? m_nGoTrainMap : theMap.m_nTrainMapID;
-		if (nGoMap && *g_pMapID != nGoMap && !theMain.HaveTownPortal())
+		BOOL bNeedTDP = !m_bGoTrain || PathMapHasDriver(*g_pMapID);
+		if (nGoMap && *g_pMapID != nGoMap && bNeedTDP && !theMain.HaveTownPortal())
 		{
 			SystemMessage("<color=yellow>Khong co Tho Dia Phu - khong tu di toi map luyen cong");
 			GoTrainStop();
@@ -401,13 +405,47 @@ int CVLMove::GetLeaderChar(const char* szLeader)
 	return m_nLeaderIdx;
 }
 
+DWORD g_dwEnterMapTick = 0;
+
+// Doi map: bo duong MapPath / trang thai di cu, cho map moi nap xong (nhan vat san sang + region quanh nhan vat
+// da nap, toi da 8s) roi moi bat dau tinh g_dwEnterMapTick - cac buoc sau lap duong moi tu vi tri that tren map moi
+void EnterMapUpdate()
+{
+	static int s_nEnterMap = 0;
+	static BOOL s_bLoading = FALSE;
+	static DWORD s_dwChange = 0;
+	DWORD dwNow = GetTickCount();
+	if (*g_pMapID != s_nEnterMap)
+	{
+		s_nEnterMap = *g_pMapID;
+		s_bLoading = TRUE;
+		s_dwChange = dwNow;
+		PathWalkReset();
+		theMove.OnMapChanged();
+	}
+	if (!s_bLoading) return;
+	g_dwEnterMapTick = dwNow;
+	BOOL bOk = g_pCurPlayer && g_pNpcArray[0] && g_pCurPlayer->m_nIndex > 0 && g_pCurPlayer->m_nIndex < MAX_NPC && !g_NetworkOffline;
+	int x = 0, y = 0;
+	if (bOk) P_PLAYER->GetMapPos(&x, &y);
+	if ((bOk && (x || y) && ObsGet(x, y) >= 0) || dwNow - s_dwChange > 8000)
+		s_bLoading = FALSE;
+}
+
+void CVLMove::OnMapChanged()
+{
+	m_nLagCount = 0;
+	m_nTotalLagCount = 0;
+	m_nLastdZ = MAX_INTNUM;
+	m_nGoNode = -1;	// Danh sach di den noi luyen cong: chon lai diem bat dau tren map moi
+	m_nGoDone = -1;
+}
+
 BOOL CVLMove::LoadingMapPath()
 {
-	static int nWaitTime = 0;
 	if ((*g_pMapID) != nLastMapID)
-	{
-		if (nWaitTime++ < 6) return TRUE;
-		nWaitTime = 0;
+	{	// Cho nap map 1.2s tinh tu luc vao map (vd MapPath da cho san khi qua cong thi khong cho them)
+		if (MapEnterElapsed() < 1200) return TRUE;
 		nLastMapID = (*g_pMapID);
 
 		m_nCurPoint = -1;
@@ -824,6 +862,7 @@ void CVLMove::GoTrainStart(int nMapID)
 	m_nGoTrainMap = nMapID;
 	m_dwGoTrainTick = 0;
 	m_nGoNode = -1;
+	m_nGoDone = -1;
 }
 
 void CVLMove::GoTrainStop()
@@ -832,6 +871,7 @@ void CVLMove::GoTrainStop()
 	m_nGoTrainMap = 0;
 	m_dwGoTrainTick = 0;
 	m_nGoNode = -1;
+	m_nGoDone = -1;
 }
 
 // Co danh sach toa do di den noi luyen cong o map dang dung
@@ -859,8 +899,26 @@ BOOL CVLMove::NearTrainArea(int nPlayerX, int nPlayerY)
 	return FALSE;
 }
 
+// Diem chua di qua (sau m_nGoDone) gan nhat THAT SU di toi duoc (loang vong vat can tu nhan vat), trong vung
+// map da nap (~1500). -1 = khong co. *pReach = quang duong di bo toi diem do
+int CVLMove::GoNodesNearest(int nPlayerX, int nPlayerY, int nCount, int *pReach)
+{
+	int nBest = -1, dBest = MAX_INTNUM;
+	ObsFlood(nPlayerX, nPlayerY);
+	for (int i = m_nGoDone + 1; i < nCount; i++)
+	{
+		if (__distance(nPlayerX, nPlayerY, m_GoNodes[i].x, m_GoNodes[i].y) > 1500) continue;
+		int d = ObsReachDist(m_GoNodes[i].x, m_GoNodes[i].y);
+		if (d < dBest) { dBest = d; nBest = i; }
+	}
+	*pReach = dBest;
+	return nBest;
+}
+
 // O map train, co danh sach di den noi luyen cong: MapPath (khong co thi game tu tim duong) toi diem dau tien,
-// sau do chay thang lan luot qua cac diem con lai. TRUE = dang di; FALSE + m_bGoTrain tat = da toi diem cuoi;
+// sau do chay thang lan luot qua cac diem con lai. Tu khi da toi 1 diem cua danh sach: moi 1s (va ngay khi bi dich
+// chuyen, vd qua diem nhay) chon lai muc tieu = diem chua di qua gan nhat co duong toi (khong quay lai diem nhay).
+// Chua toi diem nao (vua vao cong) thi luon theo MapPath toi diem dau tien, khong chon lai. TRUE = dang di; FALSE + m_bGoTrain tat = da toi diem cuoi;
 // FALSE + m_bGoTrain con = khong co danh sach -> GoTrainBreathe di toi diem dau tien cua bai train nhu cu
 BOOL CVLMove::GoNodesBreathe()
 {
@@ -870,17 +928,42 @@ BOOL CVLMove::GoNodesBreathe()
 
 	int nPlayerX, nPlayerY;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	static DWORD s_dwPickTick = 0;
+	static POINT s_ptLast = { 0, 0 };
+	BOOL bPick = FALSE;
 	if (m_nGoNode < 0)
-	{	// Chon diem bat dau: da o bai train -> bo qua; dang dung sat 1 diem cua danh sach -> di tiep tu diem do
+	{	// Bat dau: da o bai train -> bo qua; dang dung sat 1 diem cua danh sach -> di tiep tu diem do;
+		// con lai -> MapPath toi diem dau tien
 		m_nGoNode = 0;
+		m_nGoDone = -1;
 		if (NearTrainArea(nPlayerX, nPlayerY))
 			m_nGoNode = nCount;
 		else
 			for (int i = nCount - 1; i > 0; i--)
-				if (__distance(nPlayerX, nPlayerY, m_GoNodes[i].x, m_GoNodes[i].y) <= 300) { m_nGoNode = i; break; }
+				if (__distance(nPlayerX, nPlayerY, m_GoNodes[i].x, m_GoNodes[i].y) <= 300) { m_nGoNode = i; m_nGoDone = i - 1; break; }
 		m_nLagCount = 0;
 		m_nLastdZ = MAX_INTNUM;
 		m_dwGoTrainTick = GetTickCount();
+		s_dwPickTick = GetTickCount();
+	}
+	else if (__distance(nPlayerX, nPlayerY, s_ptLast.x, s_ptLast.y) > 600) bPick = TRUE;	// Bi dich chuyen (diem nhay)
+	s_ptLast.x = nPlayerX; s_ptLast.y = nPlayerY;
+	if (GetTickCount() - s_dwPickTick > 1000) bPick = TRUE;
+	if (bPick && m_nGoDone >= 0 && m_nGoNode < nCount)
+	{	// Diem gan nhat co duong toi gan hon muc tieu dang di -> doi muc tieu
+		s_dwPickTick = GetTickCount();
+		int nReach, nNear = GoNodesNearest(nPlayerX, nPlayerY, nCount, &nReach);
+		int nCurReach = (__distance(nPlayerX, nPlayerY, m_GoNodes[m_nGoNode].x, m_GoNodes[m_nGoNode].y) > 1500) ? MAX_INTNUM :
+			ObsReachDist(m_GoNodes[m_nGoNode].x, m_GoNodes[m_nGoNode].y);
+		if (nNear >= 0 && nNear != m_nGoNode && nReach < nCurReach)
+		{
+			SystemMessage(0, "<color=white>Di den noi luyen cong: chuyen sang diem %d (%d/%d) - gan nhat co duong toi",
+				nNear + 1, m_GoNodes[nNear].x >> 8, m_GoNodes[nNear].y >> 9);
+			m_nGoNode = nNear;
+			m_nLagCount = 0;
+			m_nLastdZ = MAX_INTNUM;
+			m_dwGoTrainTick = GetTickCount();
+		}
 	}
 
 	if (m_nGoNode >= nCount || GetTickCount() - m_dwGoTrainTick > 180000)
@@ -899,14 +982,15 @@ BOOL CVLMove::GoNodesBreathe()
 	int dZ = __distance(nPlayerX, nPlayerY, nDestX, nDestY);
 	if (dZ <= 64)
 	{	// Toi diem -> diem tiep theo (moi doan duoc 3 phut)
+		m_nGoDone = m_nGoNode;
 		m_nGoNode++;
 		m_nLagCount = 0;
 		m_nLastdZ = MAX_INTNUM;
 		m_dwGoTrainTick = GetTickCount();
 		return TRUE;
 	}
-	if (m_nGoNode == 0)
-	{	// Diem dau tien: theo MapPath cua map tu cong vao
+	if (m_nGoDone < 0)
+	{	// Chua toi diem nao (vua vao map): theo MapPath cua map tu cong vao
 		if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
 		{
 			m_nLagCount = 0;

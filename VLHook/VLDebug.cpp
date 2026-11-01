@@ -117,6 +117,8 @@ static void MoveStatus()
 	DbgOut("         nLastMapID = %d  m_nMapPoints = %d  m_nPathPoints = %d  m_nCurPoint = %d  LagCount = %d/%d\n",
 		theMove.nLastMapID, theMove.m_nMapPoints, theMove.m_nPathPoints, theMove.m_nCurPoint, theMove.m_nLagCount, theMove.m_nTotalLagCount);
 	DbgOut("theMap.m_nTrainMapID = %d  theQuest.m_nYeSouMapID = %d\n", theMap.m_nTrainMapID, theQuest.m_nYeSouMapID);
+	DbgOut("GoTrain: m_bGoTrain = %d  m_nGoTrainMap = %d  m_nGoNode = %d  m_nGoNodesMapID = %d  PathTravelActive = %d\n",
+		theMove.m_bGoTrain, theMove.m_nGoTrainMap, theMove.m_nGoNode, theMove.m_nGoNodesMapID, PathTravelActive() ? 1 : 0);
 
 	// Cung thu tu return voi CVLMove::Breathe
 	const char *szStop = NULL;
@@ -125,7 +127,8 @@ static void MoveStatus()
 	else if (theMain.m_bPause) szStop = "theMain.m_bPause (dang click chuot)";
 	else if (theAttack.m_nEnemyIdx) szStop = "theAttack.m_nEnemyIdx != 0 (dang PK)";
 	else if (!pPlayer->m_FightMode) szStop = "m_FightMode = 0 (dang trong thanh)";
-	else if (!theMove.m_bMoveByMap && !theMove.m_bAroundPoint && !theMove.m_bRouteMove && !theMove.m_bFollow && !theMap.m_nTrainMapID)
+	else if (!theMove.m_bMoveByMap && !theMove.m_bAroundPoint && !theMove.m_bRouteMove && !theMove.m_bFollow && !theMap.m_nTrainMapID
+		&& !theMove.m_bGoTrain)
 		szStop = "Khong bat che do di chuyen nao";
 	else if (!theAttack.m_bAutoHit && !theMove.m_bFollow) szStop = "theAttack.m_bAutoHit = 0 (chua bat Tu danh - Ctrl+A)";
 	if (szStop)

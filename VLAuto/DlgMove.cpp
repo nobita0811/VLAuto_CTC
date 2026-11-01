@@ -64,24 +64,10 @@ void CDlgMove::DoDataExchange(CDataExchange* pDX)
 
 	if (!pDX->m_bSaveAndValidate)
 	{
-		CTabCtrlEx* pMainTab = (CTabCtrlEx*)GetParent();
-		CDlgMap* dlgMap = (CDlgMap*)pMainTab->GetTabDlg(tab_map);
-		int nTrainMapID = g_pCurGameWin->m_prMap.m_nTrainMapID;
-		CString strMapName = _T("Bản đồ bất kỳ");
-		if (nTrainMapID)
-		{
-			CComboBox* pTrainMapCmb = (CComboBox*)dlgMap->GetDlgItem(IDC_TRAINMAP_COMBO);
-			int nCount = pTrainMapCmb->GetCount();
-			for (int i = 0; i < nCount; i++)
-			{
-				if (nTrainMapID == pTrainMapCmb->GetItemData(i))
-				{
-					pTrainMapCmb->GetLBText(i, strMapName);
-					break;
-				}
-			}
-		}
-		SetDlgItemText(IDC_TRAINMAP_EDIT, strMapName);
+		// Map train = map cua danh sach toa do (da bo "Noi luyen cong" o Tab Ban do)
+		int nTrainMapID = CDlgMovePoints::GetTrainMapID();
+		g_pCurGameWin->m_prMap.m_nTrainMapID = nTrainMapID;
+		SetDlgItemText(IDC_TRAINMAP_EDIT, nTrainMapID ? CDlgMovePoints::GetMapName(nTrainMapID) : CString(_T("Bản đồ bất kỳ")));
 	}
 }
 

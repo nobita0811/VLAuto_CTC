@@ -74,6 +74,12 @@ int			PathLoadNpcs(int nMapID, POINT *pNpc);		// Muc [NPC] cua file MapPath -> p
 BOOL		PathSaveNpc(int nMapID, int nIdx, int x, int y);	// Ghi 1 toa do NPC vao muc [NPC]
 int			PathWalkTo(int tx, int ty);					// Di trong map theo MapPath: 1 dang di, 0 toi cuoi duong, -1 khong co MapPath
 
+// Thoi diem map hien tai nap xong (TimerProc cap nhat; doi map thi xoa duong MapPath cu) - cac buoc cho nap map
+// tinh tu day, khong cong don
+extern DWORD	g_dwEnterMapTick;
+void		EnterMapUpdate();
+#define MapEnterElapsed()	(GetTickCount() - g_dwEnterMapTick)
+
 // Game tu tim duong (KPlayer::GoTo) - VLMove.cpp
 #define AUTO_GOTO_NEAR	150								// Gan hon muc nay thi MoveTo not doan cuoi
 int			AutoGoTo(int tx, int ty);					// 1 dang di bang GoTo, 0 da gan toi (<= AUTO_GOTO_NEAR), -1 GoTo ket (dung MoveTo)

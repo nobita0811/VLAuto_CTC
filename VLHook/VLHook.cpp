@@ -153,6 +153,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 
 	KSubWorld *pSubWorld = (KSubWorld*)GetPtrAddress(WLD_BASE_ADD);
 	if (!pSubWorld) return;
+	EnterMapUpdate();
 
 	if (P_PLAYER->m_dwID == 0 || P_PLAYER->m_SyncSignal == 0)
 		g_NetworkOffline = -1;
@@ -226,6 +227,16 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 		{ CRASH_STAGE("theQuest.CheckStatus"); theQuest.CheckStatus(); }
 }
 
+// Bo "Noi luyen cong" (Tab Ban do): map train = map cua danh sach toa do luyen cong,
+// khong co thi lay map cua danh sach toa do di den noi luyen cong
+static void SyncTrainMap()
+{
+	int nMap = 0;
+	if (theMove.m_nNodesMapID && theMove.m_Nodes[0].x && theMove.m_Nodes[0].y) nMap = theMove.m_nNodesMapID;
+	else if (theMove.m_nGoNodesMapID && theMove.m_GoNodes[0].x && theMove.m_GoNodes[0].y) nMap = theMove.m_nGoNodesMapID;
+	theMap.m_nTrainMapID = nMap;
+}
+
 LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg >= WM_HOOK_MAIN && uMsg <= WM_HOOK_DEBUG)
@@ -265,12 +276,14 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_HOOK_MOVE:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theMove, lParam, NULL);
 			theMove.GetCurNode();
+			SyncTrainMap();
 			break;
 		case WM_HOOK_PARTY:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theParty, lParam, NULL);
 			break;
 		case WM_HOOK_MAP:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theMap, lParam, NULL);
+			SyncTrainMap();
 			theMap.CheckAutoReturn();
 			break;
 		case WM_HOOK_YESOU:
@@ -315,7 +328,7 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theMain.PostFeedBack(cmd_autohit);
 			else if (wParam == 'B')
 				theMain.PostFeedBack(cmd_autoarng);
-			else if (wParam == 'T')
+			else if (wParam == 'Y')
 				theMain.PostFeedBack(cmd_setmap);
 			else if (wParam == 'D')
 				theMain.PostFeedBack(cmd_setyesou);

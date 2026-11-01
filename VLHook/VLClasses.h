@@ -438,6 +438,9 @@ public:
 	int		m_nGoTrainMap;
 	DWORD	m_dwGoTrainTick;
 	int		m_nGoNode;		// Diem dang toi trong m_GoNodes (-1 = chua chon diem bat dau)
+	int		m_nGoDone;		// Diem cuoi cung da toi trong m_GoNodes (-1 = chua toi diem nao)
+	int		GoNodesNearest(int nPlayerX, int nPlayerY, int nCount, int *pReach);
+	void	OnMapChanged();
 	void	GoTrainStart(int nMapID);
 	void	GoTrainStop();
 	BOOL	GoTrainBreathe();

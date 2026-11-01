@@ -2556,6 +2556,19 @@ static BOOL TvPlan()
 		s_nTvLen = FindRoute(nStart, s_TvLink.nPoint, s_nTvRoute, NULL, &s_T);
 		if (s_nTvLen >= 2)
 			s_ptTvFrom = s_T.pt[s_nTvRoute[s_nTvLen - 2]];
+		if (__distance(s_ptTvFrom.x, s_ptTvFrom.y, s_ptTvGoal.x, s_ptTvGoal.y) < 96)
+		{	// Dang dung ngay o cong (vd xa phu tha canh cong): chua biet huong di vao trap -> lay diem noi voi cong
+			// xa nhat (>= 96) lam diem truoc cong, de buoc ra roi di vao lai
+			int dBest = 0;
+			for (int k = 0; k < s_T.nSides; k++)
+			{
+				int a = s_T.side[k][0], b = s_T.side[k][1];
+				int o = (a == s_TvLink.nPoint) ? b : (b == s_TvLink.nPoint) ? a : -1;
+				if (o < 0 || o >= s_T.nPoints) continue;
+				int dd = __distance(s_T.pt[o].x, s_T.pt[o].y, s_ptTvGoal.x, s_ptTvGoal.y);
+				if (dd >= 96 && dd > dBest) { dBest = dd; s_ptTvFrom = s_T.pt[o]; }
+			}
+		}
 	}
 	else if (s_TvLink.bDriver)
 	{	// Dong menu xa phu (chua ghi diem): toi xa phu gan nhat
@@ -2785,16 +2798,19 @@ static void TvAct(int x, int y)
 		s_dwTvAct = dwNow;
 		return;
 	}
-	// Trap: dung o diem cong; sau 2s chua qua map thi buoc them ve phia truoc (theo huong di toi cong)
+	// Trap: dung o diem cong; sau 2s chua qua map thi buoc them ve phia truoc (theo huong di toi cong);
+	// 4-5.5s van chua qua: lui ve diem truoc cong (trap chi bat khi di vao), roi di vao lai xa hon
 	int d = __distance(s_ptTvGoal.x, s_ptTvGoal.y, x, y);
 	if (!s_dwTvAct) s_dwTvAct = dwNow;
 	DWORD dwStay = dwNow - s_dwTvAct;
 	int tx = s_ptTvGoal.x, ty = s_ptTvGoal.y;
-	if (dwStay > 2000)
+	int dl = __distance(s_ptTvGoal.x, s_ptTvGoal.y, s_ptTvFrom.x, s_ptTvFrom.y);
+	if (dwStay > 4000 && dwStay <= 5500 && dl >= 96)
+		{ tx = s_ptTvFrom.x; ty = s_ptTvFrom.y; }
+	else if (dwStay > 2000)
 	{
 		int dx = s_ptTvGoal.x - s_ptTvFrom.x, dy = s_ptTvGoal.y - s_ptTvFrom.y;
-		int dl = __distance(s_ptTvGoal.x, s_ptTvGoal.y, s_ptTvFrom.x, s_ptTvFrom.y);
-		int nPush = dwStay > 6000 ? 256 : 128;
+		int nPush = dwStay > 5500 ? 256 : 128;
 		if (dl > 0) { tx += dx * nPush / dl; ty += dy * nPush / dl; }
 	}
 	if (d > 16 || dwStay > 2000) g_pCurPlayer->MoveTo(tx, ty);
@@ -2828,7 +2844,7 @@ static void TvBreathe()
 	int nMap = *g_pMapID;
 	if (nMap != s_nTvMap)
 	{
-		if (s_nTvMap && s_nTvMapWait++ < 5) { s_szTvHold = "cho nap map"; return; }	// Cho nap map (1s)
+		if (s_nTvMap && MapEnterElapsed() < 1000) { s_szTvHold = "cho nap map"; return; }	// Cho nap map (1s tu luc vao map)
 		s_nTvMapWait = 0;
 		if (nMap == s_nTvTarget)
 		{
@@ -3054,6 +3070,14 @@ int PathWalkTo(int tx, int ty)
 {
 	if (!IsPlayerOk()) return 1;
 	int nMap = *g_pMapID;
+	static int s_nWLastMap = 0;
+	if (nMap != s_nWLastMap)
+	{	// Doi map: lap lai duong tren MapPath map moi
+		s_nWLastMap = nMap;
+		s_nWMap = 0;
+	}
+	// Cho 1s tu luc map moi nap xong (EnterMapUpdate); da cho o buoc truoc thi khong cho them
+	if (MapEnterElapsed() < 1000) return 1;
 	if (nMap != s_nWMap || tx != s_ptWTarget.x || ty != s_ptWTarget.y)
 	{
 		s_nWMap = nMap;
