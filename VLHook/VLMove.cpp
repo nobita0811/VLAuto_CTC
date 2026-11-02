@@ -897,15 +897,30 @@ void CVLMove::GoTrainStop()
 	m_nGoDone = -1;
 }
 
+// Nguoi can theo (o Theo sau hoac doi truong) dang co trong tam nhin, khong ke xa gan
+static BOOL LeaderInSight(const char* szLeader)
+{
+	const char* szNames[2] = { szLeader, g_pTeam->m_szMemName[0] };
+	for (int n = 0; n < 2; n++)
+	{
+		if (!szNames[n][0] || !strcmp(szNames[n], P_PLAYER->Name)) continue;
+		for (int i = 1; i < MAX_NPC; i++)
+			if (g_pNpcArray[i]->IsExist() && !strcmp(g_pNpcArray[i]->Name, szNames[n])) return TRUE;
+	}
+	return FALSE;
+}
+
 // Vua bat auto (Tu danh) khi dang dung san ngoai thanh, chua qua xa phu: map khac map train -> MapPath qua cong
-// toi map train; dung map train ma xa bai train va co danh sach di den noi luyen cong -> di theo danh sach
+// toi map train; dung map train ma xa bai train va co danh sach di den noi luyen cong -> di theo danh sach.
+// Bat Theo sau: chi bo qua khi thay nguoi can theo (khong thay ai thi van tu di toi bai train)
 void CVLMove::AutoGoTrainCheck()
 {
 	static BOOL s_bPrevAuto = FALSE;
 	BOOL bAuto = theAttack.m_bAutoHit;
 	BOOL bRise = bAuto && !s_bPrevAuto;
 	s_bPrevAuto = bAuto;
-	if (!bRise || m_bGoTrain || m_bFollow || PathTravelActive()) return;
+	if (!bRise || m_bGoTrain || PathTravelActive()) return;
+	if (m_bFollow && LeaderInSight(m_szLeader)) return;
 	int nTarget = theMap.m_nTrainMapID;
 	if (!nTarget || theQuest.m_nYeSouMapID || (theQuest.m_bAutoDoQuest && theQuest.m_bGoTrainGetPK)) return;
 	if (*g_pMapID == nTarget)

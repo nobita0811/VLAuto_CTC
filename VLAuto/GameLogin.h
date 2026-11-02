@@ -160,6 +160,68 @@ inline BOOL WriteGameMemory(HANDLE hGame, LPVOID pAddr, LPCVOID pData, SIZE_T nS
 	return pfnWrite && pfnWrite(hGame, pAddr, (PVOID)pData, nSize, &nWritten) >= 0 && nWritten == nSize;
 }
 
+// TEST: thay serial ổ đĩa gửi lên Game Server bằng số ngẫu nhiên (mỗi lần mở Game 1 số).
+// KNetConnectAgent::ConnectToGameSvr 0x5AA0C0 gửi c2s_logiclogin (0x42) 0x4D byte: +0x01 GUID, +0x11 chuỗi
+// 0x848328, +0x31 MAC (GetAdaptersInfo), +0x49 serial ổ đĩa = GetVolumeInformationA(.., &[ebp-0xF], ..).
+// Chỉ đổi +0x49: call [GetVolumeInformationA] => call mã chèn ở vùng đệm CC ngay sau hàm, mã này chỉ ghi
+// serial vào tham số thứ 4 rồi ret 0x20 (kết quả GetVolumeInformationA không được dùng).
+#define LG_FAKE_VOLSN		1			// 0 = tắt
+#define LG_VOLSN_CALL		0x005AA208	// FF 15 C8 C0 74 00: call [0x74C0C8] GetVolumeInformationA (8 tham số)
+#define LG_VOLSN_CAVE		0x005AA2A2	// 14 byte CC đệm sau ConnectToGameSvr (hàm kế 0x5AA2B0)
+
+// Gắn mã đổi serial vào Game (đã gắn thì giữ nguyên số cũ). Thành công => TRUE + *pdwSerial = serial đang dùng.
+// bPatched = TRUE khi lần này mới gắn. Sai bản Game (byte gốc khác) => FALSE, không ghi gì.
+inline BOOL PatchVolumeSerial(HANDLE hGame, DWORD *pdwSerial, BOOL& bPatched)
+{
+	static const BYTE OrgCall[6] = { 0xFF, 0x15, 0xC8, 0xC0, 0x74, 0x00 };
+	bPatched = FALSE;
+	BYTE call[6] = { 0 }, cave[13] = { 0 };
+	if (!ReadProcessMemory(hGame, (LPCVOID)LG_VOLSN_CALL, call, sizeof(call), NULL) ||
+		!ReadProcessMemory(hGame, (LPCVOID)LG_VOLSN_CAVE, cave, sizeof(cave), NULL))
+		return FALSE;
+
+	BYTE newCall[6] = { 0xE8, 0, 0, 0, 0, 0x90 };	// call cave; nop
+	*(int*)(newCall + 1) = (int)(LG_VOLSN_CAVE - (LG_VOLSN_CALL + 5));
+	if (memcmp(call, newCall, sizeof(call)) == 0)
+	{
+		*pdwSerial = *(DWORD*)(cave + 6);	// Đã gắn (lần đăng nhập trước của Game này)
+		return TRUE;
+	}
+	if (memcmp(call, OrgCall, sizeof(call)) != 0)
+		return FALSE;
+
+	BYTE stub[13] = {
+		0x8B, 0x44, 0x24, 0x10,				// mov eax, [esp + 0x10]	; lpVolumeSerialNumber
+		0xC7, 0x00, 0, 0, 0, 0,				// mov dword ptr [eax], uSerial
+		0xC2, 0x20, 0x00 };					// ret 0x20
+	unsigned int uSerial = 0;
+	if (memcmp(cave, stub, 6) == 0 && memcmp(cave + 10, stub + 10, 3) == 0)
+		uSerial = *(DWORD*)(cave + 6);		// Lần trước ghi được mã chèn nhưng chưa sửa được lệnh call
+	else
+	{
+		for (int i = 0; i < (int)sizeof(cave); i++)
+			if (cave[i] != 0xCC)
+				return FALSE;
+		while (uSerial == 0 || uSerial == 0xFFFFFFFF)
+			rand_s(&uSerial);
+	}
+	*(DWORD*)(stub + 6) = uSerial;
+
+	DWORD dwOld;
+	if (!VirtualProtectEx(hGame, (LPVOID)LG_VOLSN_CALL, LG_VOLSN_CAVE + sizeof(stub) - LG_VOLSN_CALL, PAGE_EXECUTE_READWRITE, &dwOld))
+		return FALSE;
+	// Mã chèn trước, lệnh call sau: Game không bao giờ nhảy vào vùng đệm chưa ghi xong
+	BOOL bOK = WriteGameMemory(hGame, (LPVOID)LG_VOLSN_CAVE, stub, sizeof(stub)) &&
+		WriteGameMemory(hGame, (LPVOID)LG_VOLSN_CALL, newCall, sizeof(newCall));
+	VirtualProtectEx(hGame, (LPVOID)LG_VOLSN_CALL, LG_VOLSN_CAVE + sizeof(stub) - LG_VOLSN_CALL, dwOld, &dwOld);
+	FlushInstructionCache(hGame, (LPCVOID)LG_VOLSN_CALL, LG_VOLSN_CAVE + sizeof(stub) - LG_VOLSN_CALL);
+	if (!bOK)
+		return FALSE;
+	*pdwSerial = uSerial;
+	bPatched = TRUE;
+	return TRUE;
+}
+
 // Ghi mã (CRemoteCode tạo với base = pRemote) vào Game, chạy bằng CreateRemoteThread, chờ xong
 // thì xóa vùng nhớ (có thể chứa mật khẩu) rồi giải phóng. Thread chưa xong sau dwTimeout thì
 // không giải phóng (Game còn đang chạy đoạn mã) và trả về FALSE; phPending != NULL thì nhận handle

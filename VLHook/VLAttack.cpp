@@ -169,6 +169,35 @@ CVLAttack::CVLAttack(void)
 	m_nEnemyIdx = 0;
 }
 
+// Co nguoi choi thu dich trong tam tu ve khong (cung dieu kien loc ke thu voi AutoDefence)
+static BOOL EnemyInDefenceRange(int nRange)
+{
+	if (!P_PLAYER->m_FightMode || P_PLAYER->m_CurrentCamp == camp_begin) return FALSE;
+	if (theQuest.m_bAutoDoQuest && theQuest.m_bGoTrainGetPK && theQuest.m_TongPKOpt.m_bKillOther) return FALSE;	// Che do 5 (giet PK nhiem vu)
+
+	int nPlayerX, nPlayerY, nNpcX, nNpcY;
+	int nSelfIdx = g_pCurPlayer->m_nIndex;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	for (int i = 1; i < MAX_NPC; i++)
+	{
+		if (i == nSelfIdx) continue;
+		if (!g_pNpcArray[i]->IsExist()) continue;
+		if (g_pNpcArray[i]->m_CurrentLife <= 0 || g_pNpcArray[i]->m_Kind != kind_player) continue;
+		if (g_pNpcArray[i]->IsGhost()) continue;
+		if (g_pNpcArray[i]->m_CurrentCamp == camp_begin) continue;
+		int nRelation = g_pCoreShell->GetNPCRelation(i);
+		if (nRelation == relation_ally) continue;
+		if (nRelation == relation_none)
+		{
+			if (P_PLAYER->m_CurrentCamp == g_pNpcArray[i]->m_CurrentCamp && P_PLAYER->m_CurrentCamp < camp_free) continue;
+			if (g_pNpcArray[i]->m_nPKFlag != 2) continue;
+		}
+		g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
+		if (__distance(nPlayerX, nPlayerY, nNpcX, nNpcY) < nRange) return TRUE;
+	}
+	return FALSE;
+}
+
 void CVLAttack::Breathe()
 {
 	int nX, nY, nRange;
@@ -194,6 +223,17 @@ void CVLAttack::Breathe()
 			SetPeopleIdx(0);
 			m_LastNpcID = 0;
 		}
+	}
+	// Tu ve "Thoat game" (AutoDefence ben duoi bi bo qua luc dang di toi bai train / ra skill / buff):
+	// dang chay tu cong vao toa do train dau tien => dung TDP; da o bai train => thoat game
+	if (m_nAutoDefence == 3 && EnemyInDefenceRange(m_nDefenceRange))
+	{
+		if (bFindingTrain)
+		{
+			theRecover.OnUseAM();
+			return;
+		}
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	if (m_bDoingSkill || m_bDoingSkillEx || theRecover.m_bDoingBuff || theMain.m_bPause) return;
 	if (bFindingTrain) return;

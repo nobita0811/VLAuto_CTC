@@ -1,4 +1,5 @@
-﻿  DlgAbout.cpp
+﻿  AutoParams.cpp
+  DlgAbout.cpp
   DlgAttack.cpp
   DlgAutoLogin.cpp
   DlgBasic.cpp
@@ -17,13 +18,17 @@
   DlgParty.cpp
   DlgRecover.cpp
   DlgSettingSkill.cpp
-  DlgUtility.cpp
   Generating Code...
   Compiling...
+  DlgUtility.cpp
   DlgYeSou.cpp
   GameWindow.cpp
+  Harden.cpp
+  KDtrFix.cpp
+  LicenseGate.cpp
   LoginSck.cpp
   MyListCtrl.cpp
+  SealGate.cpp
   VLAuto.cpp
   VLAutoDlg.cpp
   YSAddPoint.cpp

@@ -2164,6 +2164,19 @@ BOOL CDlgAutoLogin::DoSelectRole(int nIndex, HANDLE hGame, DWORD dwRoleWnd, CStr
 		return FALSE;
 	}
 
+#if LG_FAKE_VOLSN
+	// TEST: serial ổ đĩa ngẫu nhiên trong gói c2s_logiclogin (+0x49), gắn trước OnEnterGame => ConnectToGameSvr
+	DWORD dwSerial = 0;
+	BOOL bPatched = FALSE;
+	if (PatchVolumeSerial(hGame, &dwSerial, bPatched))
+	{
+		if (bPatched)
+			LoginLog(_T("  Serial ổ đĩa gửi server: %04X-%04X (ngẫu nhiên)"), HIWORD(dwSerial), LOWORD(dwSerial));
+	}
+	else
+		LoginLog(_T("  LỖI: không gắn được serial ổ đĩa ngẫu nhiên (0x%08X khác bản 15_10?) - vẫn vào game"), LG_VOLSN_CALL);
+#endif
+
 	LPVOID pRemote = VirtualAllocEx(hGame, NULL, CRemoteCode::TOTAL_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (!pRemote)
 	{

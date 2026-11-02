@@ -4,6 +4,15 @@
 #define QUANGCAOAUTO	0
 #define QUEST_TRACE 0
 #define CLIENT_SERIAL		683251
+// Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
+// Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
+
+#if QUEST_TRACE && ADMIN_MODE
+void QTraceSite(char* szLast, const char* szFormat, ...);
+#define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)
+#else
+#define QTRACE(...) ((void)0)
+#endif
 
 enum OBJ_ATTRIBYTE_TYPE
 {
@@ -1005,12 +1014,4 @@ struct DEBUG_REPLY
 	char	szText[DEBUG_TEXT_SIZE];
 };
 
-// Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
-// Moi cho goi QTRACE chi bao lai khi noi dung khac lan truoc (khong spam theo chu ky Breath).
 
-#if QUEST_TRACE && ADMIN_MODE
-void QTraceSite(char* szLast, const char* szFormat, ...);
-#define QTRACE(...) do { static char _szQTLast[256] = ""; QTraceSite(_szQTLast, __VA_ARGS__); } while (0)
-#else
-#define QTRACE(...) ((void)0)
-#endif
