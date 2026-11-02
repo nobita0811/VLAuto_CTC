@@ -93,7 +93,14 @@ void CVLMove::Breathe()
 	if (LoadingMapPath()) return;
 
 	if (m_bFollow)
-		if (DoFollow()) { m_bFindingWay = 0; m_nPreNode = -1; m_nCurNode = -1; return; }
+		if (DoFollow())
+		{	// Da thay nguoi can theo: bo tu di toi bai train (GoTrainBreathe khong con chay => m_bGoTrain ket lai,
+			// theAttack.Breathe coi la "dang tim bai train" => khong danh quai, khong xuong ngua cho toi khi vao lai game)
+			if (m_bGoTrain) GoTrainStop();
+			if (PathTravelActive() && !theQuest.m_bAutoDoQuest && !theMain.m_nWcbStep) PathTravelStop();
+			m_bFindingWay = 0; m_nPreNode = -1; m_nCurNode = -1;
+			return;
+		}
 
 	m_bMoveByMapYS = bCurMoveByMap;
 	if (theQuest.m_nYeSouMapID) m_bMoveByMapYS = TRUE;
