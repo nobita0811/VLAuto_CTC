@@ -323,6 +323,17 @@ static void MapInfo()
 
 static void ExecDebugCmd(const DEBUG_PARAM *pParam)
 {
+#if !ADMIN_MODE
+	// Ban nguoi dung: khong co cua so DEBUG, chi nhan lenh cua cua so Cai dat nhat do (DlgCollectSetting)
+	switch (pParam->nCmd)
+	{
+	case dbg_cl_blacklist:
+	case dbg_cl_nosavelist:
+	case dbg_cl_invnames:
+		DebugCollectCmd(pParam);
+		break;
+	}
+#else
 	const int *P = pParam->nParam;
 	switch (pParam->nCmd)
 	{
@@ -478,6 +489,7 @@ static void ExecDebugCmd(const DEBUG_PARAM *pParam)
 		DbgOut("Lenh khong ho tro: %d\n", pParam->nCmd);
 		break;
 	}
+#endif
 }
 
 static int RunDebugCmd(const DEBUG_PARAM *pParam)

@@ -92,6 +92,31 @@ ActResult activation_login(const char* email, const char* password,
 // Forget the cached session (sign out). Does not touch the activation token.
 void activation_logout(const char* app_id = "LProtectApp");
 
+// ---- Sealed-blob key ("K") ----
+// Fetch the 32-byte seal key delivered inside the most recently verified
+// activation token (v3+). The app uses it to decrypt a runtime blob that it was
+// built with (see tools/sealblob). Returns true and fills `out[32]` only after a
+// signature-valid token for THIS machine has been seen this run (i.e. after a
+// successful activation_check / activation_session_begin). Returns false when no
+// valid token has been verified yet, so a client that never reached the server
+// (e.g. a patched-out license gate) gets NO key and cannot unlock the blob.
+// The key lives in memory only; this module never writes it to disk.
+//
+// 1.4: K is released only after a FRESH online session this run (a successful
+// activation_session_begin whose live server nonce handshake passed), not merely
+// after any authentic token was seen on a cache/offline path. So patching the
+// internal "token valid" flag alone does not yield K; the live handshake must
+// succeed. activation_session_end() revokes K again.
+bool activation_seal_key(uint8_t out[32]);
+
+// Challenge of the fresh session: the echoed 16-byte nonce and the signed
+// server_time from the token that activation_session_begin verified this run.
+// Returns false until such a session succeeds (and again after session_end).
+// Fold it into runtime state (e.g. address masking) so the per-session value
+// reaches the running code and a replayed snapshot cannot reproduce it. Either
+// pointer may be null.
+bool activation_session_challenge(uint8_t nonce[16], uint64_t* server_time);
+
 // Human-readable machine fingerprint for THIS computer: "<PC name>-<hash>",
 // where <PC name> is plain text and <hash> is 16 hex chars of
 // SHA-256(CPU brand | system-volume serial | first MAC). Shown to the user and

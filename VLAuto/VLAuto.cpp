@@ -66,6 +66,10 @@ BOOL CVLAutoApp::InitInstance()
 	CWinApp::InitInstance();
 	AfxEnableControlContainer();
 
+#if LP_HARDEN
+	IntegrityGuardStart();	// Phase 2.1: baseline .text + verify dinh ky (degrade tre)
+#endif
+
 	if (!AfxSocketInit())
 	{
 		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
@@ -106,15 +110,22 @@ BOOL CVLAutoApp::InitInstance()
 
 	// Cong kiem tra license online + single-session (chi 1 ban client chay).
 	// Phai dat sau khi g_szIniFile da duoc thiet lap (de nho email/key).
+#if LICENSE_REQUIRED	// Ban tester offline (ADMIN_MODE 1, ADMIN_TESTER 0): khong can license
 	if (!LicenseGateStartup())
 		return FALSE;
+#endif
 
 	CVLAutoDlg *pMainDlg = new CVLAutoDlg();
 	m_pMainDlg = pMainDlg;
+#if LP_HARDEN
+	HardenScrub();	// Phase 4.1: xoa Rich + section table trong RAM (chong dump), truoc khi chay
+#endif
 	pMainDlg->DoModal();
 	delete pMainDlg;
 
+#if LICENSE_REQUIRED
 	LicenseGateShutdown();	// Tra lease tren server khi thoat sach
+#endif
 
 	return FALSE;
 }

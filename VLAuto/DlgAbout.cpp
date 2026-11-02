@@ -66,7 +66,9 @@ BEGIN_MESSAGE_MAP(CDlgAbout, CDialog)
 	ON_BN_CLICKED(IDC_LOAD_BUTTON, &CDlgAbout::OnBnClickedLoadButton)
 	ON_BN_CLICKED(IDC_HCOPY_BUTTON, &CDlgAbout::OnBnClickedHcopyButton)
 	ON_BN_CLICKED(IDC_CCOPY_BUTTON, &CDlgAbout::OnBnClickedCcopyButton)
+#if ADMIN_MODE
 	ON_BN_CLICKED(IDC_DEBUG_BUTTON, &CDlgAbout::OnBnClickedDebugButton)
+#endif
 	ON_BN_CLICKED(IDC_MOVE_MAP37_BUTTON, &CDlgAbout::OnBnClickedMoveMap37Button)
 END_MESSAGE_MAP()
 
@@ -89,6 +91,10 @@ BOOL CDlgAbout::OnInitDialog()
 	SetDlgItemText(IDC_HDDCODE_EDIT, HardDriveIDW);
 
 	m_UtilMenu.LoadMenu(IDR_UTIL_MENU);
+
+#if !ADMIN_MODE
+	if (GetDlgItem(IDC_DEBUG_BUTTON)) GetDlgItem(IDC_DEBUG_BUTTON)->ShowWindow(SW_HIDE);	// Ban nguoi dung: khong co cua so DEBUG
+#endif
 
 	if (m_ToolTip.Create(this))
 	{
@@ -217,6 +223,7 @@ void CDlgAbout::OnBnClickedCcopyButton()
 	}
 }
 
+#if ADMIN_MODE
 void CDlgAbout::OnBnClickedDebugButton()
 {
 	if (!m_DlgDebug.GetSafeHwnd())
@@ -230,6 +237,7 @@ void CDlgAbout::OnBnClickedDebugButton()
 	}
 	m_DlgDebug.ShowDebug();
 }
+#endif
 
 // Nhan vat dang chon: chay bo (MapPath) ve Bien Kinh roi mo ruong de luu ruong tai Bien Kinh (VLHook: CVLMain::StartWalkCityBox).
 // Bam lai khi dang chay = huy.

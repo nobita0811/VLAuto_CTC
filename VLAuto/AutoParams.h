@@ -78,6 +78,7 @@ struct PARAM_RECOVER : public AutoParams
 	int		m_nNgaMiBuffPercent;
 	BOOL	m_bPartyBuff;
 	BOOL	m_bAutoRepair;
+	BOOL	m_bLagUseTDP;		// Dung TDP khi di chuyen bi lag (ket han)
 
 public:
 	void	InitValue();

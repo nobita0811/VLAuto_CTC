@@ -1,48 +1,36 @@
-﻿  stdafx.cpp
-  AutoParams.cpp
-  GameWindow.cpp
-  LoginSck.cpp
-  VLAuto.cpp
-  VLAutoDlg.cpp
-  LicenseGate.cpp
-  CrashHandler.cpp
-  KDtrFix.cpp
-  DlgAbout.cpp
-  DlgAutoLogin.cpp
-  DlgDebug.cpp
+﻿  DlgAbout.cpp
   DlgAttack.cpp
-  DlgSettingSkill.cpp
+  DlgAutoLogin.cpp
   DlgBasic.cpp
+  DlgBuySetting.cpp
   DlgCollect.cpp
   DlgCollectSetting.cpp
-  DlgBuySetting.cpp
-  DlgMap.cpp
-  DlgMove.cpp
-  DlgMovePoints.cpp
-  Generating Code...
-  Compiling...
-  DlgParty.cpp
-  DlgRecover.cpp
-  DlgYeSou.cpp
-  DiskID32.cpp
-  DWinProcess.cpp
-  MiniBrowser.cpp
-  MyListCtrl.cpp
-  UiControls.cpp
-  VNUnicode.cpp
+  DlgDebug.cpp
   DlgExit.cpp
   DlgFindItem.cpp
   DlgLogin.cpp
+  DlgMap.cpp
+  DlgMove.cpp
+  DlgMovePoints.cpp
   DlgOption.cpp
   DlgPKQFilter.cpp
+  DlgParty.cpp
+  DlgRecover.cpp
+  DlgSettingSkill.cpp
   DlgUtility.cpp
+  Generating Code...
+  Compiling...
+  DlgYeSou.cpp
+  GameWindow.cpp
+  LoginSck.cpp
+  MyListCtrl.cpp
+  VLAuto.cpp
+  VLAutoDlg.cpp
   YSAddPoint.cpp
   YSBuyItem.cpp
   YSPrizeSel.cpp
   YSTongPK.cpp
   YSTongQ.cpp
-  Generating Code...
-  Compiling...
   YSTuZhi.cpp
   Generating Code...
   VLAuto.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\VLCTCPro.exe

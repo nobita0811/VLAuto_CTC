@@ -29,6 +29,8 @@
 #define MSGFLT_ALLOW						1
 #endif
 
+#if ADMIN_MODE	// Ban nguoi dung (ADMIN_MODE 0) khong co cua so DEBUG
+
 // Control tạo động
 #define IDC_DBG_TARGET		2901
 #define IDC_DBG_X_EDIT		2902
@@ -451,7 +453,9 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 };
 
 static const int s_nButtonCount = sizeof(s_Buttons) / sizeof(s_Buttons[0]);
+#endif // ADMIN_MODE
 
+// Dung ca o ban nguoi dung (CVLAutoDlg: WM_FEEDBACK)
 void AllowMessageFromGame(HWND hWnd, UINT uMsg)
 {
 	// ChangeWindowMessageFilterEx: Windows 7+ (WINVER cua project la XP nen lay dong)
@@ -460,6 +464,8 @@ void AllowMessageFromGame(HWND hWnd, UINT uMsg)
 	if (pfnFilterEx && hWnd)
 		pfnFilterEx(hWnd, uMsg, MSGFLT_ALLOW, NULL);
 }
+
+#if ADMIN_MODE
 
 static LPCTSTR GetIntegrityName(HANDLE hProcess)
 {
@@ -1665,3 +1671,5 @@ void CDlgDebug::OnTimer(UINT_PTR nIDEvent)
 
 	CDialog::OnTimer(nIDEvent);
 }
+
+#endif // ADMIN_MODE

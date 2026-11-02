@@ -154,6 +154,95 @@ static BOOL NeedBuyMedicine()
 	return FALSE;
 }
 
+//------------------------------------------------------------------ tien mua do trong thanh
+// Rut tien ngay o cua hang khi con phai mua ma tien tren nguoi it hon muc can (CheckReady da cat tien truoc do,
+// hoac quay lai mua bu tu xa phu), cat lai o CheckReady sau khi mua xong
+static int s_nTownMoneyBase = -1;		// Tien tren nguoi truoc lan rut dau tien o thanh nay (-1 = chua rut) - CheckReady cat ve muc nay
+static int s_nShopMoneyBefore = -1;		// Dang cho tien rut ve: tien tren nguoi luc rut (-1 = khong cho)
+static DWORD s_dwShopMoneyTick = 0;		// Luc rut tien / bat dau mo khoa ruong
+static BOOL s_bShopWithdrew = FALSE;	// Lan ghe cua hang nay da rut (hoac bo qua) - reset o ResetShoping
+static BOOL s_bShopNoMoney = FALSE;		// Mua khong duoc vi het tien: xa phu khong quay lai mua bu (reset o InitValues)
+static int s_nBuyMoney = -1;			// Tien tren nguoi lan BuyItem gan nhat (doi = mua duoc)
+static DWORD s_dwBuyTick = 0;
+static int s_nShopEat = 0;				// So lan uong mau/mana o tiem thuoc truoc khi roi di
+static DWORD s_dwShopEatTick = 0;
+
+#define SHOP_MONEY_DEF		100000	// Chua dat "Rut tien": can 10 van tren nguoi de mua
+#define SHOP_BUY_STALL		8000	// Goi BuyItem 8s ma tien khong doi => khong mua duoc (het tien)
+
+static void ShopMoneyReset()
+{
+	s_nShopMoneyBefore = -1;
+	s_dwShopMoneyTick = 0;
+	s_bShopWithdrew = FALSE;
+	s_nBuyMoney = -1;
+	s_dwBuyTick = 0;
+	s_nShopEat = 0;
+	s_dwShopEatTick = 0;
+}
+
+// Cua hang dang mo va con phai mua: tien tren nguoi < muc can thi rut tu ruong. TRUE = dang mo khoa / cho tien ve
+static BOOL ShopWithdraw()
+{
+	DWORD dwNow = GetTickCount();
+	if (s_nShopMoneyBefore >= 0)
+	{
+		if (EQUIP_MONEY <= s_nShopMoneyBefore && dwNow - s_dwShopMoneyTick < 5000) return TRUE;	// Cho tien ve tren nguoi
+		s_nShopMoneyBefore = -1;
+		return FALSE;
+	}
+	if (s_bShopWithdrew) return FALSE;
+	int nWant = theMap.m_nGetMoneyAmount > 0 ? theMap.m_nGetMoneyAmount * 10000 : SHOP_MONEY_DEF;
+	if (EQUIP_MONEY >= nWant || ROOM_MONEY <= 0) { s_bShopWithdrew = TRUE; return FALSE; }
+	if (!s_dwShopMoneyTick) s_dwShopMoneyTick = dwNow;
+	if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+	{
+		theMap.m_bRoomLocked = TRUE;
+		if (dwNow - s_dwShopMoneyTick < 15000) return TRUE;
+		SystemMessage(1, TV(L"<color=red>Mở khóa rương 15s không được - mua bằng tiền đang có (%d)"), EQUIP_MONEY);
+		s_bShopWithdrew = TRUE;
+		return FALSE;
+	}
+	int nTake = nWant - EQUIP_MONEY;
+	if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
+	if (s_nTownMoneyBase < 0) s_nTownMoneyBase = EQUIP_MONEY;
+	SystemMessage(1, TV(L"<color=yellow>Rút %d lượng để mua (trên người %d, rương %d)"), nTake, EQUIP_MONEY, ROOM_MONEY);
+	g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
+	s_nShopMoneyBefore = EQUIP_MONEY;
+	s_dwShopMoneyTick = dwNow;
+	s_bShopWithdrew = TRUE;
+	return TRUE;
+}
+
+// Goi truoc moi lan BuyItem: tien khong doi qua SHOP_BUY_STALL => khong mua duoc (het tien), TRUE = dung mua
+static BOOL ShopBuyStalled(const char *szWhat)
+{
+	DWORD dwNow = GetTickCount();
+	if (EQUIP_MONEY != s_nBuyMoney || !s_dwBuyTick) { s_nBuyMoney = EQUIP_MONEY; s_dwBuyTick = dwNow; return FALSE; }
+	if (dwNow - s_dwBuyTick < SHOP_BUY_STALL) return FALSE;
+	SystemMessage(1, TV(L"<color=red>Không mua được %s (trên người %d lượng, rương %d) - bỏ qua, không quay lại mua"), szWhat, EQUIP_MONEY, ROOM_MONEY);
+	s_bShopNoMoney = TRUE;
+	return TRUE;
+}
+
+// Tiem thuoc, da mua du: mau/mana duoi muc tu uong thi uong luon o day roi mua bu (tranh CheckReady uong
+// xong lai thieu binh, ra xa phu moi biet phai quay lai). TRUE = vua uong / cho so binh cap nhat
+static BOOL ShopTopUpMedicine()
+{
+	DWORD dwNow = GetTickCount();
+	if (s_dwShopEatTick && dwNow - s_dwShopEatTick < 1500) return TRUE;	// Cho so binh trong hanh trang giam (lag)
+	if (s_nShopEat >= 3) return FALSE;
+	BOOL bEat = FALSE;
+	if (theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && g_pCurPlayer->EatMedicine(medicine_blood))
+		bEat = TRUE;
+	if (theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && g_pCurPlayer->EatMedicine(medicine_mana))
+		bEat = TRUE;
+	if (!bEat) return FALSE;
+	s_nShopEat++;
+	s_dwShopEatTick = dwNow;
+	return TRUE;
+}
+
 void CVLMap::InitValues()
 {
 	s_bNodeDirect = FALSE;
@@ -166,6 +255,9 @@ void CVLMap::InitValues()
 	m_nDriverStep = 0;
 	s_dwReturnTick = 0;
 	s_nRebuyCount = 0;
+	s_nTownMoneyBase = -1;
+	s_bShopNoMoney = FALSE;
+	ShopMoneyReset();
 	theMove.GoTrainStop();
 	m_nCurPoint = -1;
 	m_bDoShoping = 0;
@@ -870,6 +962,8 @@ void CVLMap::GetGroceries()
 		//Buy TDP
 		if (NeedBuyAmulet())
 		{
+			if (ShopWithdraw()) return;	// Rut tien truoc khi mua
+			if (ShopBuyStalled(TV(L"Thổ Địa Phù"))) { m_bFinished = TRUE; return; }
 			g_pCurPlayer->BuyItem(1);
 			return;
 		}
@@ -960,6 +1054,12 @@ void CVLMap::GetPharmacy()
 			m_bFinished = TRUE;
 			return;
 		}
+		//Rut tien truoc khi mua; tien khong giam qua 8s (het tien) thi thoi mua
+		if (nNeedCells > 0)
+		{
+			if (ShopWithdraw()) return;
+			if (ShopBuyStalled(TV(L"thuốc"))) { m_bFinished = TRUE; return; }
+		}
 		//Buy Anti-poison
 		if (theRecover.m_bUsePoison && P_PLAYER->m_PoisonState.nTime)
 		{
@@ -993,6 +1093,8 @@ void CVLMap::GetPharmacy()
 			g_pCurPlayer->BuyItem(m_ShopItem[nItemPos].nShopIdx);
 			return;
 		}
+		//Kiem tra lai truoc khi roi tiem: mau/mana thap thi uong o day, lan sau mua bu luon
+		if (!s_bShopNoMoney && ShopTopUpMedicine()) return;
 		m_bFinished = TRUE;
 		return;
 	}
@@ -1286,7 +1388,7 @@ void CVLMap::GetDriver()
 	}
 
 	// Kiem tra lai truoc khi bam xa phu: server lag -> tuong da mua TDP/mau/mana nhung chua mua that.	
-	if (g_pCurPlayer->CheckRoom() != MAX_ROOM_SPACE)
+	if (g_pCurPlayer->CheckRoom() != MAX_ROOM_SPACE && !s_bShopNoMoney)	// Het tien mua: khong quay lai
 	{
 		BOOL bGroceries = NeedBuyAmulet();
 		BOOL bPharmacy = NeedBuyMedicine();
@@ -1512,9 +1614,11 @@ BOOL CVLMap::CheckReady()
 	KUiPlayerBar* pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
 	if (!pUiPlayerBar) return TRUE;
 	static BOOL bNeedBuffHP = TRUE;
-	if (m_bPutMoney && EQUIP_MONEY > m_nMoneyAmount)
+	// Cat tien sau khi mua: giu m_nMoneyAmount (Cat tien), khong bat Cat tien thi cat phan vua rut de mua (ShopWithdraw)
+	int nKeepMoney = m_bPutMoney ? m_nMoneyAmount : s_nTownMoneyBase;
+	if (nKeepMoney >= 0 && EQUIP_MONEY > nKeepMoney)
 	{
-		int nSaveAmount = EQUIP_MONEY - m_nMoneyAmount;
+		int nSaveAmount = EQUIP_MONEY - nKeepMoney;
 		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, TRUE, nSaveAmount);
 		return 0;
 	}
@@ -1664,6 +1768,7 @@ BOOL CVLMap::IsInSellList(const char* szItemName)
 
 void CVLMap::ResetShoping(BOOL bResetAll)
 {
+	ShopMoneyReset();
 	CloseAllWindows(0);
 	NearestDriver();
 	m_nTimeWait = 2;

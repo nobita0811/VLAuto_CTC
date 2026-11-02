@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UiControls.h"
+#include "Version.h"
 #include "DlgDebug.h"
 
 // CDlgAbout dialog
@@ -30,7 +31,9 @@ protected:
 	afx_msg void	OnBnClickedLoadButton();
 	afx_msg void	OnBnClickedHcopyButton();
 	afx_msg void	OnBnClickedCcopyButton();
+#if ADMIN_MODE
 	afx_msg void	OnBnClickedDebugButton();
+#endif
 	afx_msg void	OnBnClickedMoveMap37Button();
 
 	DECLARE_MESSAGE_MAP()
@@ -40,7 +43,9 @@ public:
 	CHyperLink		m_WebLink;
 	CToolTipCtrl	m_ToolTip;
 	CMenu			m_UtilMenu;
+#if ADMIN_MODE
 	CDlgDebug		m_DlgDebug;
+#endif
 	BOOL			CopyToCliboard(char* szData);
 	void			SaveRegData();
 };

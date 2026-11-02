@@ -294,6 +294,25 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theUtil, lParam, NULL);
 			break;
 		case WM_HOOK_EXDATA:
+#if !ADMIN_MODE
+			{
+				// Ban User: keo bang 5 dia chi loi (da giai seal) tu bo nho VLAuto.
+				// wParam = (&theGameData cua VLAuto) ^ CLIENT_SERIAL.
+				ReadProcessMemory(hProcess_Auto, (LPCVOID)(wParam ^ CLIENT_SERIAL),
+				                  (LPVOID)&theGameData, lParam, NULL);
+				// Thu tu nap + fail-safe: chi khoi dong auto khi 5 dia chi (DA UNMASK)
+				// nam trong vung module game. Chua kich hoat => theGameData ~ 0 =>
+				// im lang khong InitGameData, khong dat g_RunningTimer (khong crash, khong bao loi).
+				const DWORD mask = (DWORD)theGameData.ExeFileSize ^ CLIENT_SERIAL;
+				const DWORD lo = 0x00400000, hi = 0x02000000;
+				DWORD c[5] = { (DWORD)theGameData.PlrBaseAdd ^ mask, (DWORD)theGameData.NpcBaseAdd ^ mask,
+				               (DWORD)theGameData.KCoreShell ^ mask, (DWORD)theGameData.MapAddress ^ mask,
+				               (DWORD)theGameData.AccountID ^ mask };
+				bool ok = true;
+				for (int i = 0; i < 5; i++) if (c[i] < lo || c[i] >= hi) ok = false;
+				if (!ok) break;   // bang chua san sang -> degrade im lang (handle dong o cuoi)
+			}
+#endif
 			theMain.InitGameData();
 			theQuest.PrepareLog();
 			g_RunningTimer = 1;
@@ -320,7 +339,9 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_KEYDOWN:
-		if (DebugPathKey(wParam, lParam)) return 0;
+#if ADMIN_MODE
+		if (DebugPathKey(wParam, lParam)) return 0;	// Phim sua MapPath (cua so DEBUG)
+#endif
 		if (_GetKeyState(VK_CONTROL) & SHIFTED)
 		{
 			BOOL bCaught = TRUE;
@@ -356,10 +377,12 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theUtil.StartOpenGift();
 			else if (wParam == '0')
 				theUtil.StopAllUtils();
+#if ADMIN_MODE
 			else if (wParam == '1')
 				theUtil.TestFunction(1);
 			else if (wParam == '2')
 				theUtil.TestFunction(2);
+#endif
 			else if (wParam == '3')
 				theRecover.OnUseAM();
 			else

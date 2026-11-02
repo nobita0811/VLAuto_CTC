@@ -34,3 +34,7 @@ ipch/
 # Keep root build folders in git
 !/_Bin/**
 !/_Obj/**
+
+# BuildRelease.ps1 (3 ban phat hanh)
+_Bin/Publish/
+_Obj/Publish/

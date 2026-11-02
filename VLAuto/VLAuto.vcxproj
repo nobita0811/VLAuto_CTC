@@ -121,6 +121,8 @@
     <ClCompile Include="VLAuto.cpp" />
     <ClCompile Include="VLAutoDlg.cpp" />
     <ClCompile Include="LicenseGate.cpp" />
+    <ClCompile Include="SealGate.cpp" />
+    <ClCompile Include="Harden.cpp" />
     <ClCompile Include="..\CrashHandler.cpp" />
     <ClCompile Include="KDtrFix.cpp" />
     <ClCompile Include="DlgAbout.cpp" />
@@ -168,6 +170,8 @@
     <ClInclude Include="VLAuto.h" />
     <ClInclude Include="VLAutoDlg.h" />
     <ClInclude Include="LicenseGate.h" />
+    <ClInclude Include="SealGate.h" />
+    <ClInclude Include="Harden.h" />
     <ClInclude Include="DlgAbout.h" />
     <ClInclude Include="DlgAutoLogin.h" />
     <ClInclude Include="GameLogin.h" />

@@ -31,6 +31,7 @@
 #include "lprotect/lp_ed25519.h"
 #include "lprotect/lp_license.h"
 #include "lprotect/lp_activation.h"
+#include "lprotect/lp_seal.h"
 #include "lprotect/lp_vm.h"
 
 #endif // LPROTECT_LPROTECT_H

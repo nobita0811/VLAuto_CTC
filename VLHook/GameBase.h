@@ -28,22 +28,30 @@
 // Do bang cach doi chieu ma may voi ban 10_10 (gamecl_dump_SCY_10_10.exe).
 // ==========================================================================
 
-//Game Data
-#define _AUTOXP
-#ifdef _AUTOXP
+// Game Data - 5 dia chi loi (Account/MapID/Npc/Plr/Core).
+//   ADMIN_MODE != 0 (Tester / TesterOffline, test local): hang so bien dich - tien test.
+//   ADMIN_MODE == 0 (ban User phat hanh): KHONG nhung trong binary. Server gui 5 dia chi
+//   nay trong token (seal); VLAuto giai (SealGate) va day sang VLHook qua WM_HOOK_EXDATA;
+//   InitGameData() nap tu theGameData vao cac bien toan cuc duoi. Khong kich hoat = cac
+//   bien = 0 = tool vo dung. (Giong g_dwNullUiPtr: khai bao extern o day, dinh o VLMain.cpp.)
+#if ADMIN_MODE
 	#define ACNT_ID_ADD			0x008491E8	// AccountID (15-10): g_LoginLogic(0x848A68)+0x780, dao bit
 	#define MAP_ID_ADD			0x0175D6E8	// Game Map ID (15-10)
-	#define MAP_NAME_ADD		0x0175D6C8	// Game Map Name (15-10)
 	#define CORE_BASE_ADD		0x00848314	// KCoreShell (pointer) (15-10)
 	#define NPC_BASE_ADD		0x017220F0	// KNpc (pointer) (15-10)
 	#define PLR_BASE_ADD		0x00EE403C	// KPlayer (pointer) (15-10)
 #else
-	#define ACNT_ID_ADD			theGameData.AccountID
-	#define MAP_ID_ADD			theGameData.MapAddress
-	#define NPC_BASE_ADD		theGameData.NpcBaseAdd
-	#define PLR_BASE_ADD		theGameData.PlrBaseAdd
-	#define CORE_BASE_ADD		theGameData.KCoreShell
+	// 1.3: khong luu dia chi dang plaintext. g_*Add giu gia tri DA MASK; moi diem dung
+	// con tro XOR lai voi g_GMask (mask lay tu K, moi phien khac nhau). NOP/doc 1 cho
+	// khong du: thieu g_GMask dung => moi con tro deu sai.
+	extern DWORD g_AcntIdAdd, g_MapIdAdd, g_NpcBaseAdd, g_PlrBaseAdd, g_CoreBaseAdd, g_GMask;
+	#define ACNT_ID_ADD			(g_AcntIdAdd ^ g_GMask)
+	#define MAP_ID_ADD			(g_MapIdAdd ^ g_GMask)
+	#define NPC_BASE_ADD		(g_NpcBaseAdd ^ g_GMask)
+	#define PLR_BASE_ADD		(g_PlrBaseAdd ^ g_GMask)
+	#define CORE_BASE_ADD		(g_CoreBaseAdd ^ g_GMask)
 #endif
+#define MAP_NAME_ADD		0x0175D6C8	// Game Map Name (15-10) - khong seal (chi ten map)
 
 #define	MAX_PLAYER_ITEM	678	// 15-10: memset 0x34F8 (10-10: 483)
 #define MAX_EQUIP_SLOT	16	// 15-10: KItemList::m_EquipItem {nIdx, nData}[16] (10-10: int[17])

@@ -394,10 +394,30 @@ int CVLMove::GetLeaderChar(const char* szLeader)
 		{
 			m_nStatus = status_idle;
 			m_nLeaderIdx = i;
-			if (theAttack.m_bAutoHit && dZ > m_nFollowDistance)
-				theAttack.SetPeopleIdx(i);
-			if ((!theAttack.m_bAutoHit || !theAttack.GetCurTargetIdx()) && dZ > MAX_FOLLOW_DISTANCE)
-				theAttack.SetPeopleIdx(i);
+			// Gan va duong thang thong: gan PEOPLE_IDX = nguoi can theo (game tu chay theo nhu cu).
+			// Xa / bi vat can chan: game (KNpcAI) chay thang se dam vao vat can => bo PEOPLE_IDX,
+			// tu chay bang MoveTo (ne vat can theo luoi vat can - ObsSteer) toi gan nguoi can theo
+			BOOL bClear = dZ <= MAX_MOVE_DISTANCE && ObsLineClear(nPlayerX, nPlayerY, nNpcX, nNpcY);
+			if (theAttack.GetCurTargetIdx() == i && !bClear) theAttack.SetPeopleIdx(0);
+			BOOL bGo = (theAttack.m_bAutoHit && dZ > m_nFollowDistance) ||
+				((!theAttack.m_bAutoHit || (!theAttack.GetCurTargetIdx() && !theAttack.IsApproaching())) && dZ > MAX_FOLLOW_DISTANCE);
+			if (bGo)
+			{
+				int nPeople = theAttack.GetCurTargetIdx();	// Xa qua: bo quai dang danh de chay lai (nhu truoc day)
+				if (nPeople > 0 && nPeople < MAX_NPC && g_pNpcArray[nPeople]->m_Kind == kind_normal)
+					theAttack.SetPeopleIdx(0);
+				theAttack.StopApproach();
+				if (bClear)
+					theAttack.SetPeopleIdx(i);
+				else
+				{
+					int nNear = min(m_nFollowDistance, MAX_FOLLOW_DISTANCE * 2) / 2;	// Dung cach nguoi can theo 1 chut
+					int nDestX = nNpcX - (nNpcX - nPlayerX) * nNear / dZ;
+					int nDestY = nNpcY - (nNpcY - nPlayerY) * nNear / dZ;
+					PathNoteMove(nDestX, nDestY, "Theo sau");
+					g_pCurPlayer->MoveTo(nDestX, nDestY);
+				}
+			}
 			if (dZ > 300 && m_bRideHorseFollow && !P_PLAYER->m_bRideHorse && HAVE_HORSE)
 				ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
 		}
@@ -841,7 +861,9 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
 		if ((*g_pMapID) != city_visondao)
 		{
 			m_nTotalLagCount++;
-			if (m_nTotalLagCount > 5)
+			if (m_nTotalLagCount > 5 && !theRecover.m_bLagUseTDP)
+				m_nTotalLagCount = 0;	// Tat "dung TDP khi lag": chi doi huong chay tiep
+			else if (m_nTotalLagCount > 5)
 			{
 				m_nTotalLagCount = 0;
 				theMap.m_bNoDriverRecent = TRUE;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stddef.h>
+#include "../GameDef.h"   // ADMIN_MODE (ban build) + CLIENT_SERIAL (unmask)
+#include "Harden.h"       // LP_POISON (degrade tre khi integrity/anti-tamper trip)
 
 #define VLTK_WINCLASS _T("Sword3 Class")
 #define VLTK_ERROR "<GAME "
@@ -10,23 +12,28 @@
 #define MAX_NPC				256	// 15-10: new KNpc[0x100] (10-10: 800)
 #define MAX_ITEM			1024	// 15-10: new KItem[0x400] (10-10: 512)
 
-//Game Data
-#define _AUTOXP
-#ifdef _AUTOXP
+// Game Data - cung co che voi VLHook/GameBase.h.
+//   ADMIN_MODE != 0 (Tester/TesterOffline): hang so bien dich (test local).
+//   ADMIN_MODE == 0 (ban User): dung theGameData (SealGate dien, DA MASK tu K), unmask khi dung.
+//   Khong kich hoat => theGameData = 0 => dia chi sai => VLAuto doc game that bai (degrade).
+#if ADMIN_MODE
 	#define ACNT_ID_ADD			0x008491E8	// AccountID (15-10): g_LoginLogic(0x848A68)+0x780, dao bit
 	#define MAP_ID_ADD			0x0175D6E8	// Game Map ID (15-10)
-	#define MAP_NAME_ADD		0x0175D6C8	// Game Map Name (15-10)
 	#define CORE_BASE_ADD		0x00848314	// KCoreShell (pointer) (15-10)
 	#define NPC_BASE_ADD		0x017220F0	// KNpc (pointer) (15-10)
 	#define PLR_BASE_ADD		0x00EE403C	// KPlayer (pointer) (15-10)
-	#define WLD_BASE_ADD		0x017286B0	// KSubWorld (pointer) (15-10)
 #else
-	#define ACNT_ID_ADD			theGameData.AccountID
-	#define MAP_ID_ADD			theGameData.MapAddress
-	#define NPC_BASE_ADD		theGameData.NpcBaseAdd
-	#define PLR_BASE_ADD		theGameData.PlrBaseAdd
-	#define CORE_BASE_ADD		theGameData.KCoreShell
+	// LP_POISON() = 0 khi sach; != 0 sau khi anti-tamper trip -> mask sai -> moi
+	// dia chi VLAuto doc game deu lech -> tool vo dung (degrade, Phase 0/2.1).
+	#define GMASK_V				((DWORD)theGameData.ExeFileSize ^ (DWORD)CLIENT_SERIAL ^ (DWORD)LP_POISON())
+	#define ACNT_ID_ADD			((DWORD)theGameData.AccountID  ^ GMASK_V)
+	#define MAP_ID_ADD			((DWORD)theGameData.MapAddress ^ GMASK_V)
+	#define NPC_BASE_ADD		((DWORD)theGameData.NpcBaseAdd ^ GMASK_V)
+	#define PLR_BASE_ADD		((DWORD)theGameData.PlrBaseAdd ^ GMASK_V)
+	#define CORE_BASE_ADD		((DWORD)theGameData.KCoreShell ^ GMASK_V)
 #endif
+#define MAP_NAME_ADD		0x0175D6C8	// Game Map Name (15-10) - khong seal
+#define WLD_BASE_ADD		0x017286B0	// KSubWorld (pointer) (15-10) - chua seal (ngoai nhom 5 loi)
 
 #define WLD_TIME_OFFSET	0x0050		// KSubWorld::m_dwCurrentTime (frame, 18 frame / giay)
 #define PLAYER_OFFSET	0xA878		// 15-10 (khong doi)

@@ -5,6 +5,7 @@
 #include "S3Client.h"
 #include "VLClasses.h"
 #include "VLDebug.h"
+#include "VLObstacle.h"
 
 SHORT __stdcall _VLGetKeyState(int nVirKey)
 {
@@ -92,6 +93,72 @@ static int HitCloseRange(CVLAttack *p)
 	return (nRange < 75) ? 75 : nRange;
 }
 
+// Tiep can quai: PEOPLE_IDX = quai thi game (KNpcAI::FollowAttack) chay thang toi quai, dam vao vat can.
+// Duong thang bi chan va quai ngoai tam danh: tam bo PEOPLE_IDX, tu chay bang MoveTo (ne vat can - ObsSteer),
+// thay quai (duong thang thong) / vao tam danh thi gan lai PEOPLE_IDX cho game danh. Qua APPROACH_TIMEOUT thi bo quai
+#define APPROACH_TIMEOUT	10000
+static int		s_nApproachIdx = 0;
+static DWORD	s_dwApproachID = 0;
+static DWORD	s_dwApproachTick = 0;
+
+static void ApproachReset()
+{
+	s_nApproachIdx = 0;
+	s_dwApproachID = 0;
+}
+
+// TRUE = dang tu chay toi quai (Breathe dung lai, chua xet lag / tim quai khac)
+static BOOL ApproachTarget(CVLAttack *p)
+{
+	int nPeople = PEOPLE_IDX;
+	if (!s_nApproachIdx)
+	{	// Muc tieu moi do game chay toi: kiem tra duong thang
+		if (nPeople <= 0 || nPeople >= MAX_NPC) return FALSE;
+		KNpc *pNpc = g_pNpcArray[nPeople];
+		if (!pNpc->IsExist() || pNpc->m_Kind != kind_normal || pNpc->m_CurrentLife <= 0) return FALSE;
+		int x, y, nx, ny;
+		P_PLAYER->GetMapPos(&x, &y);
+		pNpc->GetMapPos(&nx, &ny);
+		if (__distance(x, y, nx, ny) <= P_PLAYER->m_CurrentAttackRadius + 32 || ObsLineClear(x, y, nx, ny)) return FALSE;
+		s_nApproachIdx = nPeople;
+		s_dwApproachID = pNpc->m_dwID;
+		s_dwApproachTick = GetTickCount();
+		p->SetPeopleIdx(0);
+	}
+	else if (nPeople && nPeople != s_nApproachIdx)
+	{	// Cho khac da gan muc tieu (tu ve, theo sau...): thoi tiep can
+		ApproachReset();
+		return FALSE;
+	}
+	KNpc *pNpc = g_pNpcArray[s_nApproachIdx];
+	if (!pNpc->IsExist() || pNpc->m_dwID != s_dwApproachID || pNpc->m_CurrentLife <= 0 ||
+		pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive)
+	{
+		p->SetPeopleIdx(0);
+		ApproachReset();
+		return FALSE;
+	}
+	if (GetTickCount() - s_dwApproachTick > APPROACH_TIMEOUT)
+	{	// Khong toi duoc (bi vay ben kia tuong...): bo quai nay mot luc
+		p->AddBadNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
+		p->SetPeopleIdx(0);
+		ApproachReset();
+		return FALSE;
+	}
+	int x, y, nx, ny;
+	P_PLAYER->GetMapPos(&x, &y);
+	pNpc->GetMapPos(&nx, &ny);
+	if (__distance(x, y, nx, ny) <= P_PLAYER->m_CurrentAttackRadius || ObsLineClear(x, y, nx, ny))
+	{	// Da thay quai: tra cho game danh
+		p->SetPeopleIdx(s_nApproachIdx);
+		ApproachReset();
+		return FALSE;
+	}
+	PathNoteMove(nx, ny, "Toi quai");
+	g_pCurPlayer->MoveTo(nx, ny);
+	return TRUE;
+}
+
 CVLAttack::CVLAttack(void)
 {
 	m_LastNpcID = 0;
@@ -115,6 +182,7 @@ void CVLAttack::Breathe()
 	// Bo quai dang nham (neu khong PathTravelBreathe cho "danh quai doc duong" ma khong ai danh -> dung im)
 	BOOL bFindingTrain = (theMove.m_bGoTrain || PathTravelActive()) && P_PLAYER->m_FightMode;
 	if (bFindingTrain && m_nEnemyIdx) { SetPeopleIdx(0); m_nEnemyIdx = 0; }
+	if (bFindingTrain || theMove.m_bFindingWay || !P_PLAYER->m_FightMode || !m_bAutoHit) ApproachReset();
 	// Dang tim duong toi bai train (GoTrain / MapPath / RouteFinding cach cu): bo ca quai muc tieu con sot tu truoc
 	// (PEOPLE_IDX van tro quai => game KNpcAI::FollowAttack tu chay theo danh quai doc duong, bo lo trinh).
 	// Chi bo quai (kind_normal) - xa phu / NPC hoi thoai (kind_dialoger) MapPath can PEOPLE_IDX de mo menu
@@ -185,6 +253,8 @@ void CVLAttack::Breathe()
 		m_bBossAttacking = 0;
 		m_nBossWait = MAX_BOSS_WAIT;
 	}
+
+	if (ApproachTarget(this)) return;	// Duong thang toi quai bi chan: tu chay vong vat can
 
 	//Check if Target is LAG
 	int nTargetIdx = GetCurTargetIdx();
@@ -264,6 +334,16 @@ void CVLAttack::Breathe()
 void CVLAttack::SetPeopleIdx(int nIndex)
 {
 	PEOPLE_IDX = nIndex;
+}
+
+BOOL CVLAttack::IsApproaching()
+{
+	return s_nApproachIdx != 0;
+}
+
+void CVLAttack::StopApproach()
+{
+	ApproachReset();
 }
 
 void CVLAttack::SetAutoHit()

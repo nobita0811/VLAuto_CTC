@@ -26,6 +26,10 @@ const unsigned AllowServers[] =
 
 //Global Variables
 GameData theGameData;
+#if !ADMIN_MODE
+// Ban User: 5 dia chi loi (DA MASK) + mask, nap tu theGameData o dau InitGameData().
+DWORD g_AcntIdAdd = 0, g_MapIdAdd = 0, g_NpcBaseAdd = 0, g_PlrBaseAdd = 0, g_CoreBaseAdd = 0, g_GMask = 0;
+#endif
 int g_nAccrueSeries[series_num];
 int	g_nConquerSeries[series_num];
 
@@ -457,6 +461,22 @@ void CVLMain::InitParams(HWND hWndGame, HWND hWndServer)
 
 void CVLMain::InitGameData()
 {
+#if !ADMIN_MODE
+	// Ban User: nap mask + 5 dia chi (DA MASK) tu theGameData (VLHook da RPM tu VLAuto o
+	// WM_HOOK_EXDATA). Macro ACNT/MAP/NPC/PLR/CORE se XOR lai g_GMask khi dung.
+	g_GMask       = (DWORD)theGameData.ExeFileSize ^ CLIENT_SERIAL;
+	g_AcntIdAdd   = (DWORD)theGameData.AccountID;
+	g_MapIdAdd    = (DWORD)theGameData.MapAddress;
+	g_NpcBaseAdd  = (DWORD)theGameData.NpcBaseAdd;
+	g_PlrBaseAdd  = (DWORD)theGameData.PlrBaseAdd;
+	g_CoreBaseAdd = (DWORD)theGameData.KCoreShell;
+	// Fail-safe lop 2: kiem gia tri DA UNMASK (qua macro) -> chua kich hoat => bo qua, tranh deref NULL.
+	{
+		const DWORD lo = 0x00400000, hi = 0x02000000;
+		DWORD c[5] = { PLR_BASE_ADD, NPC_BASE_ADD, CORE_BASE_ADD, MAP_ID_ADD, ACNT_ID_ADD };
+		for (int i = 0; i < 5; i++) if (c[i] < lo || c[i] >= hi) return;
+	}
+#endif
 	g_pCurPlayer = (KPlayer*)(GetPtrAddress(PLR_BASE_ADD) + PLAYER_OFFSET);
 	DWORD dwNpcBaseAdd = GetPtrAddress(NPC_BASE_ADD);
 	for (int i = 0; i < MAX_NPC; i++)

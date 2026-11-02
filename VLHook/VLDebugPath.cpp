@@ -2827,7 +2827,7 @@ void PathTravelBreathe()
 	s_szTvHold = NULL;
 	TvBreathe();
 	DWORD dwNow = GetTickCount();
-	if (!s_nTvTarget || !s_szTvHold) { s_dwTvHoldTick = 0; return; }
+	if (!s_nTvTarget || !s_szTvHold || !ADMIN_MODE) { s_dwTvHoldTick = 0; return; }	// Ban nguoi dung: khong bao ly do dung cho (ten bien noi bo)
 	if (!s_dwTvHoldTick) s_dwTvHoldTick = dwNow;
 	if (dwNow - s_dwTvHoldTick > 5000 && dwNow - s_dwTvHoldMsg > 5000)
 	{

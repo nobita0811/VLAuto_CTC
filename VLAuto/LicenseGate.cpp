@@ -4,6 +4,10 @@
 // (plan/quota/expiry) lives on the account; there is no license key to type.
 #include "stdafx.h"
 #include "LicenseGate.h"
+#include "SealGate.h"
+#include "Version.h"
+#include "Harden.h"
+#if LICENSE_REQUIRED	// Ban tester offline (ADMIN_MODE 1, ADMIN_TESTER 0) khong dung license
 #include "lprotect/lprotect.h"
 
 #include <string>
@@ -333,6 +337,8 @@ static int TryActivate(const std::string& user, const std::string& pass)
         g_started = true;
         lp::activation_start_session_guard(g_userUtf8.c_str(), kAppId,
                                            &OnSessionLost, NULL, 60);
+        // Mo blob offset bang K trong token (chi co sau activation that).
+        UnsealGameAddr();
         return 1;
 
     case lp::ActResult::SessionInUse:
@@ -430,3 +436,263 @@ void LicenseGateShutdown()
     g_started = false;
     lp::activation_session_end(g_userUtf8.c_str(), kAppId);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2.1 - self-integrity .text (chi khi LP_HARDEN; LP_HARDEN => LICENSE_REQUIRED)
+// ---------------------------------------------------------------------------
+#if LP_HARDEN
+namespace {
+
+// Tim section .text cua module -> [addr, len) trong bo nho da load (sau reloc).
+bool FindTextSection(HMODULE mod, const unsigned char** outAddr, size_t* outLen)
+{
+    const unsigned char* base = reinterpret_cast<const unsigned char*>(mod);
+    const IMAGE_DOS_HEADER* dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(base);
+    if (dos->e_magic != IMAGE_DOS_SIGNATURE) return false;
+    const IMAGE_NT_HEADERS* nt =
+        reinterpret_cast<const IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+    if (nt->Signature != IMAGE_NT_SIGNATURE) return false;
+    const IMAGE_SECTION_HEADER* sec = IMAGE_FIRST_SECTION(nt);
+    for (unsigned i = 0; i < nt->FileHeader.NumberOfSections; ++i) {
+        if (memcmp(sec[i].Name, ".text", 6) == 0) {   // 6: ".text\0"
+            size_t vs = sec[i].Misc.VirtualSize;
+            *outAddr = base + sec[i].VirtualAddress;
+            *outLen  = vs ? vs : sec[i].SizeOfRawData;
+            return true;
+        }
+    }
+    return false;
+}
+
+// Phase 2.3: CRC file tren dia so voi baseline NHUNG trong binary. Mot post-build
+// tool (tools/filechk/patch_filechk.js) quet magic duoi day, zero 4 byte CRC roi
+// ghi CRC32 cua toan file (voi 4 byte do = 0) vao. Runtime doc lai file cua chinh
+// module, zero dung 4 byte do, CRC32, so voi gia tri nhung. Lech => file bi patch
+// tren dia. FAIL-OPEN: neu CRC con sentinel (patcher chua chay) hoac khong doc
+// duoc file => BO QUA, khong bao gio false-positive. Bypass duoc neu attacker tinh
+// lai CRC, nhung van con lop .text runtime (2.1/2.2) -> tang chi phi.
+#pragma pack(push, 1)
+struct LpFileChk { unsigned char magic[16]; volatile unsigned int crc; };
+#pragma pack(pop)
+// 16 byte magic (co dinh, hiem dung): "LPFCHK" + bytes ngau nhien.
+volatile LpFileChk g_fileChk = {
+    { 0x4C,0x50,0x46,0x43,0x48,0x4B,0x9E,0x37,0xC1,0x5A,0x80,0x2D,0x6B,0xF4,0x11,0xA9 },
+    0xFFFFFFFFu   // sentinel = chua patch -> fail-open
+};
+
+static void FileIntegrityCheck()
+{
+    unsigned int stored = g_fileChk.crc;
+    if (stored == 0xFFFFFFFFu) return;                 // fail-open: chua patch
+
+    wchar_t path[MAX_PATH];
+    if (!GetModuleFileNameW(GetModuleHandleW(nullptr), path, MAX_PATH)) return;
+    HANDLE hf = CreateFileW(path, GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (hf == INVALID_HANDLE_VALUE) return;            // fail-open
+
+    DWORD sz = GetFileSize(hf, nullptr);
+    bool tampered = false;
+    if (sz != INVALID_FILE_SIZE && sz > sizeof(LpFileChk)) {
+        BYTE* buf = static_cast<BYTE*>(malloc(sz));
+        DWORD rd = 0;
+        if (buf && ReadFile(hf, buf, sz, &rd, nullptr) && rd == sz) {
+            // Tim magic de biet offset cua truong CRC.
+            const unsigned char* mg = (const unsigned char*)g_fileChk.magic;
+            DWORD pos = 0; bool found = false;
+            for (DWORD i = 0; i + 16 <= sz; ++i)
+                if (memcmp(buf + i, mg, 16) == 0) { pos = i; found = true; break; }
+            if (found && pos + 16 + 4 <= sz) {
+                memset(buf + pos + 16, 0, 4);          // zero CRC field (nhu patcher)
+                unsigned int calc = lp::crc32(buf, sz);
+                if (calc != stored) tampered = true;
+            }
+            // khong tim thay magic -> fail-open (khong flag)
+        }
+        if (buf) free(buf);
+    }
+    CloseHandle(hf);
+    if (tampered) LP_TAMPER("file");
+}
+
+// Phase 2.2: hai checker kiem tra LAN NHAU. Moi thread (a) verify .text (vung
+// nay chua ca code cua CA HAI thread), (b) tang nhip cua minh, (c) kiem nhip cua
+// thread kia con chay khong. NOP/kill mot thread -> thread con lai thay nhip kia
+// dong bang -> LP_TAMPER. Patch byte checker nao -> integrity_verify bat duoc.
+volatile LONG g_beatA = 0;
+volatile LONG g_beatB = 0;
+
+// Vong lap chung cho ca 2 checker. self = nhip cua minh, other = nhip can theo doi.
+static void IntegrityLoop(volatile LONG* self, volatile LONG* other, DWORD baseMs)
+{
+    LONG lastOther = InterlockedCompareExchange(other, 0, 0);
+    int  stale = 0;
+    for (;;) {
+        Sleep(baseMs + (GetTickCount() & 0x7FF));   // jitter ~0.0-2.0s
+        if (!lp::integrity_verify())
+            LP_TAMPER("text");
+        InterlockedIncrement(self);
+        LONG now = InterlockedCompareExchange(other, 0, 0);
+        if (now == lastOther) {                      // nhip kia khong tang
+            if (++stale >= 2) LP_TAMPER("beat");     // ~2 chu ky moi flag (chong jitter)
+        } else {
+            stale = 0; lastOther = now;
+        }
+    }
+}
+
+DWORD WINAPI ThreadA(LPVOID) { FileIntegrityCheck(); IntegrityLoop(&g_beatA, &g_beatB, 2000); return 0; }
+DWORD WINAPI ThreadB(LPVOID) { IntegrityLoop(&g_beatB, &g_beatA, 2600); return 0; }
+
+// ---- Phase 3.1-3.3/3.5: anti-debug watchdog (detection o lp_antidebug) ----
+// Callback chi duoc goi khi debugger_present() fire. Debounce 2 chu ky de tranh
+// false-positive hiem (da bo AD_TIMING). Phan ung = LP_TAMPER (degrade tre).
+void OnDbg(uint32_t fired)
+{
+    (void)fired;
+    static volatile LONG hits = 0;
+    if (InterlockedIncrement(&hits) >= 2)
+        LP_TAMPER("dbg");
+}
+
+#if !LP_HARDEN_SAFE
+// ---- Phase 3.4: anti-attach. CHI ban that (KHONG o Tester/SAFE, de tester con
+// attach debugger duoc). Day la PHONG NGUA (khong phai degrade). ----
+typedef LONG (NTAPI* PFN_NtSetInfoThread)(HANDLE, ULONG, PVOID, ULONG);
+void HideCurrentThread()
+{
+    static PFN_NtSetInfoThread p = reinterpret_cast<PFN_NtSetInfoThread>(
+        GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtSetInformationThread"));
+    if (p) p(GetCurrentThread(), 0x11 /*ThreadHideFromDebugger*/, nullptr, 0);
+}
+void BlockRemoteAttach()
+{
+    // Vo hieu DbgUiRemoteBreakin trong ntdll cua TIEN TRINH NAY: debugger attach
+    // (CreateRemoteThread) khong vao breakpoint duoc. Chi anh huong viec attach.
+    FARPROC f = GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "DbgUiRemoteBreakin");
+    if (!f) return;
+    DWORD old = 0;
+    if (VirtualProtect((void*)f, 1, PAGE_EXECUTE_READWRITE, &old)) {
+        *reinterpret_cast<volatile BYTE*>(f) = 0xC3;   // ret
+        DWORD tmp = 0; VirtualProtect((void*)f, 1, old, &tmp);
+    }
+}
+#endif // !LP_HARDEN_SAFE
+
+} // namespace
+
+void IntegrityGuardStart()
+{
+    const unsigned char* addr = nullptr; size_t len = 0;
+    if (!FindTextSection(GetModuleHandle(NULL), &addr, &len)) return;
+    if (lp::integrity_add(addr, len) < 0) return;
+    lp::integrity_snapshot();                       // baseline NGAY sau khi load
+    HANDLE h;
+    h = CreateThread(nullptr, 0, ThreadA, nullptr, 0, nullptr); if (h) CloseHandle(h);
+    h = CreateThread(nullptr, 0, ThreadB, nullptr, 0, nullptr); if (h) CloseHandle(h);
+
+    // Watchdog anti-debug: API + PEB + NtQuery + HWBP (bo TIMING -> it false-positive).
+    lp::ad_install_guard(&OnDbg, 1500,
+                         lp::AD_API | lp::AD_PEB | lp::AD_NTQUERY | lp::AD_HWBP);
+#if !LP_HARDEN_SAFE
+    HideCurrentThread();
+    BlockRemoteAttach();
+#endif
+}
+
+// ---- Phase 4.1: anti-dump scrub PE header (goi MUON, truoc DoModal) ----
+// Mac dinh ADUMP_DEFAULT = Rich + section table: an toan tren x86 (resource/export
+// di qua data-directory RVA, SEH la FS:[0], khong can section headers). Bo aggressive
+// (xoa MZ/PE/SizeOfImage) ra sau macro opt-in vi co the hong parse header.
+#ifdef LP_ANTIDUMP_IAT
+// ---- Phase 4.2 (OPT-IN, mac dinh TAT): nhoe IAT cho mot whitelist API nhay cam.
+// Ghi de thunk IAT cua chung bang decoy -> dumper dung lai IAT se tro sai. CHI an
+// toan voi API ma app KHONG goi qua IAT tinh (ta goi dynamic). Co the hong neu
+// MFC/CRT lo dung chung -> vi vay mac dinh TAT, phai test ky. Bypass: attacker
+// dung lai IAT thu cong (do la muc dich lam kho, Scylla phai lam tay). ----
+void ScrambleSensitiveIAT()
+{
+    static const char* kWhitelist[] = { "NtQueryInformationProcess",
+                                        "NtSetInformationThread", "DbgUiRemoteBreakin" };
+    BYTE* base = reinterpret_cast<BYTE*>(GetModuleHandleW(nullptr));
+    auto dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
+    auto nt  = reinterpret_cast<IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+    DWORD impRva = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    if (!impRva) return;
+    auto imp = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(base + impRva);
+    for (; imp->Name; ++imp) {
+        if (!imp->OriginalFirstThunk) continue;
+        auto oft = reinterpret_cast<IMAGE_THUNK_DATA*>(base + imp->OriginalFirstThunk);
+        auto ft  = reinterpret_cast<IMAGE_THUNK_DATA*>(base + imp->FirstThunk);
+        for (; oft->u1.AddressOfData; ++oft, ++ft) {
+            if (oft->u1.Ordinal & IMAGE_ORDINAL_FLAG) continue;
+            auto ibn = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(base + oft->u1.AddressOfData);
+            for (const char* w : kWhitelist) {
+                if (lstrcmpA((const char*)ibn->Name, w) == 0) {
+                    DWORD old = 0;
+                    if (VirtualProtect(&ft->u1.Function, sizeof(void*), PAGE_READWRITE, &old)) {
+                        ft->u1.Function ^= 0xA5A5A5A5u;   // decoy
+                        DWORD tmp = 0; VirtualProtect(&ft->u1.Function, sizeof(void*), old, &tmp);
+                    }
+                }
+            }
+        }
+    }
+}
+#endif // LP_ANTIDUMP_IAT
+
+#ifdef LP_ANTIDUMP_PAGEGUARD
+// ---- Phase 4.3 (OPT-IN, mac dinh TAT, THUC NGHIEM): PAGE_GUARD tripwire tren 1
+// trang code nhay cam. Truy cap dau tien -> guard fault -> VEH. LUU Y: PAGE_GUARD
+// tu dong bi xoa sau lan fault dau, nen day chi la tripwire 1 lan (CHUA re-arm,
+// chua decrypt-on-demand). Lam day du thuoc Phase 5 (protector thuong mai). ----
+LONG CALLBACK GuardVeh(EXCEPTION_POINTERS* ep)
+{
+    if (ep->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION) {
+        LP_TAMPER("guard");
+        return EXCEPTION_CONTINUE_EXECUTION;   // guard da bi OS xoa -> chay tiep
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+void ArmPageGuard()
+{
+    AddVectoredExceptionHandler(1, GuardVeh);
+    void* page = reinterpret_cast<void*>(&HardenScrub);
+    DWORD old = 0;
+    VirtualProtect(page, 1, PAGE_EXECUTE_READ | PAGE_GUARD, &old);
+}
+#endif // LP_ANTIDUMP_PAGEGUARD
+
+void HardenScrub()
+{
+    uint32_t flags = lp::ADUMP_DEFAULT;
+#ifdef LP_ANTIDUMP_AGGRESSIVE
+    flags = lp::ADUMP_AGGRESSIVE;          // (!) opt-in, test cuc ky ky truoc khi dung
+#endif
+    lp::antidump_scrub(flags);
+#ifdef LP_ANTIDUMP_IAT
+    ScrambleSensitiveIAT();                // (!) opt-in Phase 4.2
+#endif
+#ifdef LP_ANTIDUMP_PAGEGUARD
+    ArmPageGuard();                        // (!) opt-in Phase 4.3 (thuc nghiem)
+#endif
+}
+
+#if !LP_HARDEN_SAFE
+// ---- Phase 3.4: TLS callback - chay RAT SOM (truoc main). An luong chinh + neu
+// dang bi debug thi dat co ngay. Chi ban that. ----
+extern "C" void NTAPI LpTlsCallback(PVOID, DWORD reason, PVOID)
+{
+    if (reason != DLL_PROCESS_ATTACH) return;
+    HideCurrentThread();
+    if (lp::debugger_present(lp::AD_PEB | lp::AD_NTQUERY))
+        LP_TAMPER("tls");
+}
+#pragma comment(linker, "/INCLUDE:__tls_used")
+#pragma section(".CRT$XLB", long, read)
+extern "C" __declspec(allocate(".CRT$XLB")) PIMAGE_TLS_CALLBACK p_lp_tls = LpTlsCallback;
+#endif // !LP_HARDEN_SAFE
+#endif // LP_HARDEN
+
+#endif // LICENSE_REQUIRED

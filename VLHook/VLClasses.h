@@ -171,6 +171,7 @@ public:
 	int		m_nNgaMiBuffPercent;
 	BOOL	m_bPartyBuff;
 	BOOL	m_bAutoRepair;
+	BOOL	m_bLagUseTDP;
 //	Private
 	BOOL	m_bDoingBuff;
 	BOOL	m_bEmptyMana;
@@ -294,6 +295,8 @@ public:
 	CVLAttack(void);
 	void	Breathe();
 	void	SetPeopleIdx(int nIndex);
+	BOOL	IsApproaching();	// Dang tu chay vong vat can toi quai (PEOPLE_IDX tam = 0)
+	void	StopApproach();
 	void	SetAutoHit();
 	void	SetDefSkills(int nLeftID, int nRightID);
 	void	SetActiveSkill(int nSkillId);
