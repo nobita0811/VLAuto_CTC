@@ -40,7 +40,9 @@
 16,59,45481,110994,2,Ng­ d©n,0,0
 [Driver]
 [Item]
-T©n Thñ thiÕp,1,1,0
+T©n Thñ thiÕp,1,2,0
+ThÎ Cao Thñ Giang Hå,1,2,0
+ThÎ Vâ Häc Kú Tµi,1,2,0
 [NPC]
 51593,101357
 50507,103567

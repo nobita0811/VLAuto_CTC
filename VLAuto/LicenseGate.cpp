@@ -1,4 +1,4 @@
-// LicenseGate.cpp : online single-session license gate for VLAuto (LPROTECT).
+﻿// LicenseGate.cpp : online single-session license gate for VLAuto (LPROTECT).
 // Account model: login = username + password, the machine is identified by a
 // machine id (HWID) computed by the SDK and sent automatically. The license
 // (plan/quota/expiry) lives on the account; there is no license key to type.
@@ -7,8 +7,10 @@
 #include "SealGate.h"
 #include "Version.h"
 #include "Harden.h"
+#include "License.h"
 #if LICENSE_REQUIRED	// Ban tester offline (ADMIN_MODE 1, ADMIN_TESTER 0) khong dung license
 #include "lprotect/lprotect.h"
+#include "Resource.h"    // IDD_LOGIN_DIALOG + IDC_LICENSE_* (dialog tai nguyen)
 
 #include <string>
 #include <vector>
@@ -35,9 +37,10 @@ static std::string g_userUtf8;     // tai khoan dang giu lease (UTF-8), lam "key
 // (gan voi tai khoan Windows hien tai) truoc khi ghi ini - khong luu plaintext.
 static CString  g_lastUser;
 static CStringW g_lastPass;
+static bool     g_remember  = true;    // "Ghi nho tai khoan" (mac dinh bat)
+static bool     g_autoLogin = false;   // "Tu dong dang nhap" (bo qua dialog lan sau)
 
-// Control id cho dialog dung trong bo nho.
-enum { IDC_USER = 1001, IDC_PASS = 1002, IDC_HWID = 1003, IDC_STATUS = 1004 };
+// (Dialog dang nhap dung tai nguyen IDD_LOGIN_DIALOG; id control o Resource.h.)
 
 // ---------------------------------------------------------------------------
 // Tien ich
@@ -123,48 +126,58 @@ static void LoadRemembered()
     g_lastUser = buf;
     ::GetPrivateProfileStringW(L"License", L"PassEnc", L"", buf, 2048, g_szIniFile);
     g_lastPass = UnprotectPass(CString(buf));
+    // Co tai khoan nho san -> mac dinh "ghi nho" bat; doc co that tu ini neu co.
+    g_remember  = ::GetPrivateProfileIntW(L"License", L"Remember",
+                      g_lastUser.IsEmpty() ? 0 : 1, g_szIniFile) != 0;
+    g_autoLogin = ::GetPrivateProfileIntW(L"License", L"AutoLogin", 0, g_szIniFile) != 0;
 }
 
-// Luu tai khoan + mat khau (DPAPI). Chi luu khi dang nhap thanh cong.
-static void SaveRemembered(const CString& user, const CStringW& pass)
+// Luu tai khoan + mat khau (DPAPI) + co ghi nho / tu dang nhap. Chi goi khi thanh cong.
+static void SaveRemembered(const CString& user, const CStringW& pass,
+                           bool remember, bool autoLogin)
 {
     ::WritePrivateProfileStringW(L"License", L"User", user, g_szIniFile);
     CString enc = ProtectPass(pass);
     ::WritePrivateProfileStringW(L"License", L"PassEnc",
                                  enc.IsEmpty() ? NULL : (LPCWSTR)enc, g_szIniFile);
+    ::WritePrivateProfileStringW(L"License", L"Remember",  remember  ? L"1" : L"0", g_szIniFile);
+    ::WritePrivateProfileStringW(L"License", L"AutoLogin", autoLogin ? L"1" : L"0", g_szIniFile);
+}
+
+// Xoa thong tin nho (khi bo chon "ghi nho") - tranh de lo tai khoan o may chung.
+static void ClearRemembered()
+{
+    ::WritePrivateProfileStringW(L"License", L"User",      NULL, g_szIniFile);
+    ::WritePrivateProfileStringW(L"License", L"PassEnc",   NULL, g_szIniFile);
+    ::WritePrivateProfileStringW(L"License", L"Remember",  L"0", g_szIniFile);
+    ::WritePrivateProfileStringW(L"License", L"AutoLogin", L"0", g_szIniFile);
 }
 
 // ---------------------------------------------------------------------------
-// Dung DLGTEMPLATE trong bo nho (khong can sua VLAuto.rc / Resource.h)
+// Dialog dang nhap: dung tai nguyen co san IDD_LOGIN_DIALOG (VLAuto.rc).
 // ---------------------------------------------------------------------------
 namespace {
 
-struct TBuf {
-    std::vector<BYTE> b;
-    void align4()          { while (b.size() & 3) b.push_back(0); }
-    void w16(WORD v)       { b.push_back((BYTE)(v & 0xFF)); b.push_back((BYTE)((v >> 8) & 0xFF)); }
-    void w32(DWORD v)      { w16((WORD)(v & 0xFFFF)); w16((WORD)((v >> 16) & 0xFFFF)); }
-    void wstr(const wchar_t* s) { if (s) { for (; *s; ++s) w16((WORD)*s); } w16(0); }
-};
-
-// atom lop control chuan
-const WORD ATOM_BUTTON = 0x0080, ATOM_EDIT = 0x0081, ATOM_STATIC = 0x0082;
-
-void AddItem(TBuf& t, DWORD style, short x, short y, short cx, short cy,
-             WORD id, WORD atom, const wchar_t* text)
+// Chep chuoi vao clipboard (cho nut "Coppy" ma may).
+static void CopyToClipboard(HWND h, const CStringW& text)
 {
-    t.align4();
-    t.w32(style);
-    t.w32(0);                 // exStyle
-    t.w16((WORD)x); t.w16((WORD)y); t.w16((WORD)cx); t.w16((WORD)cy);
-    t.w16(id);
-    t.w16(0xFFFF); t.w16(atom);   // class = ordinal
-    t.wstr(text);                 // title
-    t.w16(0);                     // no creation data
+    if (!::OpenClipboard(h)) return;
+    ::EmptyClipboard();
+    size_t bytes = (text.GetLength() + 1) * sizeof(wchar_t);
+    HGLOBAL hg = ::GlobalAlloc(GMEM_MOVEABLE, bytes);
+    if (hg) {
+        void* p = ::GlobalLock(hg);
+        if (p) { memcpy(p, (LPCWSTR)text, bytes); ::GlobalUnlock(hg);
+                 ::SetClipboardData(CF_UNICODETEXT, hg); }
+        else   { ::GlobalFree(hg); }
+    }
+    ::CloseClipboard();
 }
 
 struct LoginResult {
     CStringW user, pass, mid;
+    bool remember;      // "Ghi nho tai khoan"
+    bool autologin;     // "Tu dong dang nhap"
     bool ok;
 };
 
@@ -176,46 +189,59 @@ INT_PTR CALLBACK LoginProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
     {
         ::SetWindowLongPtr(h, DWLP_USER, (LONG_PTR)lp);
         LoginResult* r = (LoginResult*)lp;
-        ::SetDlgItemTextW(h, IDC_USER, r->user);
-        ::SetDlgItemTextW(h, IDC_PASS, r->pass);
-        ::SetDlgItemTextW(h, IDC_HWID, r->mid);
-        ::SetDlgItemTextW(h, IDC_STATUS,
-            L"Dang nhap de chay. Chi mot ban client duoc chay cung luc.");
-        ::SendDlgItemMessageW(h, IDC_USER, EM_SETLIMITTEXT, 63, 0);
-        ::SendDlgItemMessageW(h, IDC_PASS, EM_SETLIMITTEXT, 254, 0);
+        ::SetDlgItemTextW(h, IDC_LICENSE_ACCOUNT_EDIT,  r->user);
+        ::SetDlgItemTextW(h, IDC_LICENSE_PASSWORD_EDIT, r->pass);
+        ::SetDlgItemTextW(h, IDC_LICENSE_HWID_EDIT,     r->mid);
+        ::SetDlgItemTextW(h, IDC_STATUS_STATIC,
+            L"Đăng nhập để sử dụng Auto");
+        ::SendDlgItemMessageW(h, IDC_LICENSE_ACCOUNT_EDIT,  EM_SETLIMITTEXT, 63, 0);
+        ::SendDlgItemMessageW(h, IDC_LICENSE_PASSWORD_EDIT, EM_SETLIMITTEXT, 254, 0);
+        ::CheckDlgButton(h, IDC_SAVELOGIN_CHECK, r->remember  ? BST_CHECKED : BST_UNCHECKED);
+        ::CheckDlgButton(h, IDC_AUTOLOGIN_CHECK, r->autologin ? BST_CHECKED : BST_UNCHECKED);
         ::SetForegroundWindow(h);
         // Focus o truong trong dau tien; neu da dien du thi focus nut Dang nhap.
-        int focusId = r->user.IsEmpty() ? IDC_USER
-                    : r->pass.IsEmpty() ? IDC_PASS : IDOK;
+        int focusId = r->user.IsEmpty() ? IDC_LICENSE_ACCOUNT_EDIT
+                    : r->pass.IsEmpty() ? IDC_LICENSE_PASSWORD_EDIT : IDC_LOGIN_BUTTON;
         ::SetFocus(::GetDlgItem(h, focusId));
         return FALSE; // da tu dat focus
     }
     case WM_COMMAND:
         switch (LOWORD(wp))
         {
+        case IDC_LOGIN_BUTTON:   // nut mac dinh (Enter cung vao day)
         case IDOK:
         {
             LoginResult* r = (LoginResult*)::GetWindowLongPtr(h, DWLP_USER);
             wchar_t buf[256];
-            ::GetDlgItemTextW(h, IDC_USER, buf, 256);
+            ::GetDlgItemTextW(h, IDC_LICENSE_ACCOUNT_EDIT, buf, 256);
             CStringW user(buf); user.Trim();
             if (user.IsEmpty())
             {
-                ::SetDlgItemTextW(h, IDC_STATUS, L"Vui long nhap ten tai khoan.");
-                ::SetFocus(::GetDlgItem(h, IDC_USER));
+                ::SetDlgItemTextW(h, IDC_STATUS_STATIC, L"Vui lòng nhập tài khoản");
+                ::SetFocus(::GetDlgItem(h, IDC_LICENSE_ACCOUNT_EDIT));
                 return TRUE;
             }
-            ::GetDlgItemTextW(h, IDC_PASS, buf, 256); CStringW pass(buf);
+            ::GetDlgItemTextW(h, IDC_LICENSE_PASSWORD_EDIT, buf, 256); CStringW pass(buf);
             if (pass.IsEmpty())
             {
-                ::SetDlgItemTextW(h, IDC_STATUS, L"Vui long nhap mat khau.");
-                ::SetFocus(::GetDlgItem(h, IDC_PASS));
+                ::SetDlgItemTextW(h, IDC_STATUS_STATIC, L"Vui lòng nhập mật khẩu");
+                ::SetFocus(::GetDlgItem(h, IDC_LICENSE_PASSWORD_EDIT));
                 return TRUE;
             }
             r->user = user;
             r->pass = pass;         // KHONG trim mat khau
+            r->remember  = (::IsDlgButtonChecked(h, IDC_SAVELOGIN_CHECK) == BST_CHECKED);
+            r->autologin = (::IsDlgButtonChecked(h, IDC_AUTOLOGIN_CHECK) == BST_CHECKED);
+            if (r->autologin) r->remember = true;   // tu dang nhap thi buoc phai nho
             r->ok = true;
             ::EndDialog(h, 1);
+            return TRUE;
+        }
+        case IDC_LOGIN_BUTTON2:  // "Coppy" -> chep ma may (HWID) vao clipboard
+        {
+            LoginResult* r = (LoginResult*)::GetWindowLongPtr(h, DWLP_USER);
+            if (r) CopyToClipboard(h, r->mid);
+            ::SetDlgItemTextW(h, IDC_STATUS_STATIC, L"Đã coppy,liên hệ Tuyền (zalo : 0974 921 182)");
             return TRUE;
         }
         case IDCANCEL:
@@ -231,44 +257,19 @@ INT_PTR CALLBACK LoginProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
     return FALSE;
 }
 
-// Hien dialog dang nhap. Tra ve true neu bam OK, false neu Cancel/loi.
+// Hien dialog dang nhap (tai nguyen IDD_LOGIN_DIALOG). Tra ve true neu Dang nhap,
+// false neu huy (ESC/dong cua so) hoac loi.
 bool ShowLoginDialog(LoginResult& out)
 {
-    TBuf t;
-    const DWORD dlgStyle = DS_MODALFRAME | DS_SETFONT | DS_CENTER |
-                           WS_POPUP | WS_CAPTION | WS_SYSMENU;
-    t.w32(dlgStyle);
-    t.w32(0);                 // exStyle
-    t.w16(9);                 // cItems (3 label + 3 edit + 1 status + 2 button)
-    t.w16(0); t.w16(0);       // x,y (DS_CENTER)
-    t.w16(224); t.w16(104);   // cx,cy (dialog units)
-    t.wstr(L"");              // menu
-    t.wstr(L"");              // class
-    t.wstr(L"VLAuto - Dang nhap");               // title
-    t.w16(8);                 // font point size (DS_SETFONT)
-    t.wstr(L"MS Shell Dlg");  // font face
+    out.user      = g_lastUser;
+    out.pass      = g_lastPass;
+    out.mid       = MachineIdW();
+    out.remember  = g_remember;
+    out.autologin = g_autoLogin;
+    out.ok        = false;
 
-    const DWORD stLabel = WS_CHILD | WS_VISIBLE | SS_LEFT;
-    const DWORD stEdit  = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL;
-    const DWORD stBtn   = WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-
-    AddItem(t, stLabel,              8,  10, 60, 10, (WORD)-1, ATOM_STATIC, L"Ten tai khoan:");
-    AddItem(t, stEdit,              74,   8, 142, 12, IDC_USER, ATOM_EDIT, L"");
-    AddItem(t, stLabel,              8,  30, 60, 10, (WORD)-1, ATOM_STATIC, L"Mat khau:");
-    AddItem(t, stEdit | ES_PASSWORD,74,  28, 142, 12, IDC_PASS, ATOM_EDIT, L"");
-    AddItem(t, stLabel,              8,  50, 60, 10, (WORD)-1, ATOM_STATIC, L"HWID:");
-    AddItem(t, stEdit | ES_READONLY,74,  48, 142, 12, IDC_HWID, ATOM_EDIT, L"");
-    AddItem(t, stLabel,              8,  66, 208, 18, IDC_STATUS, ATOM_STATIC, L"");
-    AddItem(t, stBtn | BS_DEFPUSHBUTTON, 108, 86, 50, 14, IDOK,     ATOM_BUTTON, L"Dang nhap");
-    AddItem(t, stBtn | BS_PUSHBUTTON,    166, 86, 50, 14, IDCANCEL, ATOM_BUTTON, L"Thoat");
-
-    out.user = g_lastUser;
-    out.pass = g_lastPass;
-    out.mid  = MachineIdW();
-    out.ok   = false;
-
-    INT_PTR r = ::DialogBoxIndirectParamW(
-        AfxGetInstanceHandle(), (LPCDLGTEMPLATEW)t.b.data(),
+    INT_PTR r = ::DialogBoxParamW(
+        AfxGetInstanceHandle(), MAKEINTRESOURCEW(IDD_LOGIN_DIALOG),
         NULL, LoginProc, (LPARAM)&out);
     return (r == 1) && out.ok;
 }
@@ -287,9 +288,9 @@ void OnSessionLost(lp::ActResult res, void*)
     {
         const wchar_t* msg =
             (res == lp::ActResult::Revoked)
-                ? L"Tai khoan da bi khoa. Ung dung se dong."
-                : L"License da het han. Ung dung se dong.";
-        ::MessageBoxW(NULL, msg, L"VLAuto",
+                ? L"Code:10001" //Tai khoan da bi khoa. Ung dung se dong.
+                : L"Code:10002";// License da het han.Ung dung se dong.
+        ::MessageBoxW(NULL, msg, L"VLCTCPro",
                       MB_OK | MB_ICONWARNING | MB_SYSTEMMODAL | MB_SETFOREGROUND);
     }
 
@@ -310,19 +311,19 @@ static int TryActivate(const std::string& user, const std::string& pass)
     lp::ActResult la = lp::activation_login(user.c_str(), pass.c_str(), kAppId);
     if (la == lp::ActResult::BadCredentials)
     {
-        ::MessageBoxW(NULL, L"Sai ten tai khoan hoac mat khau.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Sai ten tai khoan hoac mat khau.", L"VLCTCPro",
                       MB_OK | MB_ICONERROR);
         return 0;
     }
     if (la == lp::ActResult::NetworkError)
     {
         ::MessageBoxW(NULL, L"Khong ket noi duoc may chu. Kiem tra mang.",
-                      L"VLAuto", MB_OK | MB_ICONERROR);
+                      L"VLCTCPro", MB_OK | MB_ICONERROR);
         return 0;
     }
     if (la == lp::ActResult::NotConfigured)
     {
-        ::MessageBoxW(NULL, L"Chua cau hinh may chu kich hoat.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Chua cau hinh may chu kich hoat.", L"VLCTCPro",
                       MB_OK | MB_ICONERROR);
         return -1;
     }
@@ -332,68 +333,71 @@ static int TryActivate(const std::string& user, const std::string& pass)
     switch (r)
     {
     case lp::ActResult::Ok:
-        SaveRemembered(g_lastUser, g_lastPass);
+        if (g_remember) SaveRemembered(g_lastUser, g_lastPass, g_remember, g_autoLogin);
+        else            ClearRemembered();
         g_userUtf8 = user;
         g_started = true;
         lp::activation_start_session_guard(g_userUtf8.c_str(), kAppId,
                                            &OnSessionLost, NULL, 60);
         // Mo blob offset bang K trong token (chi co sau activation that).
         UnsealGameAddr();
+        // Doc goi license (plan/quota/expiry) tu token da ky - de gate tinh nang.
+        LicenseCapture(kAppId);
         return 1;
 
     case lp::ActResult::SessionInUse:
         ::MessageBoxW(NULL,
             L"Tai khoan dang duoc dung o may khac.\n"
             L"Hay thoat ban client dang chay roi thu lai.",
-            L"VLAuto", MB_OK | MB_ICONWARNING);
+            L"VLCTCPro", MB_OK | MB_ICONWARNING);
         return 0;
 
     case lp::ActResult::NotFound:
         ::MessageBoxW(NULL,
             L"Tai khoan chua duoc kich hoat license.\n"
             L"Lien he admin de kich hoat goi.",
-            L"VLAuto", MB_OK | MB_ICONWARNING);
+            L"VLCTCPro", MB_OK | MB_ICONWARNING);
         return 0;
 
     case lp::ActResult::AuthRequired:
-        ::MessageBoxW(NULL, L"Can dang nhap tai khoan.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Can dang nhap tai khoan.", L"VLCTCPro",
                       MB_OK | MB_ICONWARNING);
         return 0;
 
     case lp::ActResult::Revoked:
-        ::MessageBoxW(NULL, L"Tai khoan da bi khoa. Lien he admin.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Tai khoan da bi khoa. Lien he admin.", L"VLCTCPro",
                       MB_OK | MB_ICONERROR);
         return -1;
 
     case lp::ActResult::Expired:
         ::MessageBoxW(NULL, L"License da het han. Lien he admin de gia han.",
-                      L"VLAuto", MB_OK | MB_ICONERROR);
+                      L"VLCTCPro", MB_OK | MB_ICONERROR);
         return -1;
 
     case lp::ActResult::DeviceLimit:
         ::MessageBoxW(NULL,
             L"Tai khoan da gan voi mot may khac.\n"
             L"Lien he admin de doi may (reset HWID).",
-            L"VLAuto", MB_OK | MB_ICONERROR);
+            L"VLCTCPro", MB_OK | MB_ICONERROR);
         return -1;
 
     case lp::ActResult::NetworkError:
         ::MessageBoxW(NULL, L"Khong ket noi duoc may chu. Kiem tra mang.",
-                      L"VLAuto", MB_OK | MB_ICONERROR);
+                      L"VLCTCPro", MB_OK | MB_ICONERROR);
         return 0;
 
     case lp::ActResult::BadToken:
         ::MessageBoxW(NULL, L"Phan hoi may chu khong hop le (chu ky sai).",
-                      L"VLAuto", MB_OK | MB_ICONERROR);
+                      L"VLCTCPro", MB_OK | MB_ICONERROR);
         return -1;
 
     case lp::ActResult::NotConfigured:
-        ::MessageBoxW(NULL, L"Chua cau hinh may chu kich hoat.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Chua cau hinh may chu kich hoat.", L"VLCTCPro",
                       MB_OK | MB_ICONERROR);
         return -1;
 
     default:
-        ::MessageBoxW(NULL, L"Kich hoat that bai. Thu lai.", L"VLAuto",
+        ::MessageBoxW(NULL, L"Kich hoat that bai. Thu lai.", L"VLCTCPro",
                       MB_OK | MB_ICONERROR);
         return 0;
     }
@@ -404,8 +408,9 @@ bool LicenseGateStartup()
     lp::activation_set_endpoint(kEndpoint);
     LoadRemembered();
 
-    // Tu dong dang nhap neu da nho du tai khoan + mat khau (khong hien dialog).
-    if (!g_lastUser.IsEmpty() && !g_lastPass.IsEmpty())
+    // Tu dong dang nhap (bo qua dialog) CHI khi nguoi dung da bat "Tu dong dang nhap"
+    // va con du tai khoan + mat khau nho san.
+    if (g_autoLogin && !g_lastUser.IsEmpty() && !g_lastPass.IsEmpty())
     {
         int rc = TryActivate(W2U(g_lastUser), W2U(g_lastPass));
         if (rc == 1)  return true;
@@ -419,8 +424,10 @@ bool LicenseGateStartup()
         if (!ShowLoginDialog(in))
             return false;                 // nguoi dung huy
 
-        g_lastUser = in.user;
-        g_lastPass = in.pass;             // de ma hoa + luu khi thanh cong
+        g_lastUser  = in.user;
+        g_lastPass  = in.pass;            // de ma hoa + luu khi thanh cong
+        g_remember  = in.remember;
+        g_autoLogin = in.autologin;
 
         int rc = TryActivate(W2U(in.user), W2U(in.pass));
         if (rc == 1)  return true;

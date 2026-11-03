@@ -1,5 +1,5 @@
 ; VLAuto MapPath - Map 1 Ph­îng T­êng
-; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten[,dong1,dong2,... (NPC: chon dong menu dem tu 0)]]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
 [Points]
 0,52838,105006
 1,51376,103640
@@ -283,6 +283,8 @@
 13,99,VÜnh L¹c TrÊn[100 L­îng]
 [Item]
 T©n Thñ thiÕp,1,1,3,4
+ThÎ Cao Thñ Giang Hå,1,1,3,4
+ThÎ Vâ Häc Kú Tµi,1,1,3,4
 [NPC]
 50949,101457
 49890,99423

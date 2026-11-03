@@ -8,7 +8,7 @@
 #include "YSBuyItem.h"
 
 TCHAR* AllCityNames[] = { _T("Phượng Tường"), _T("Tương Dương"), _T("Biện Kinh"), _T("Thành Đô"), _T("Đại Lý"), _T("Dương Châu"), _T("Lâm An"), _T("") };
-TCHAR* AllItemKinds[] = { _T("Nhẫn"), _T("Ngọc bội / Dây chuyền"), _T("Trang bị khác"), _T("Phúc Duyên (tiểu)"), _T("Phúc Duyên (trung)"), _T("Phúc Duyên (đại)"), _T("Sát thủ giản"), _T("") };
+TCHAR* AllItemKinds[] = { _T("Nhẫn"), _T("Ngọc bội / Dây chuyền"), _T("Trang bị khác"), _T("") };	// Phuc Duyen, Sat thu gian: da bo (m_MaxPrice giu gia tri cu)
 
 // CYSBuyItem dialog
 
@@ -36,6 +36,7 @@ void CYSBuyItem::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ALLREP_CHECK, m_pBuyItemOpt->m_bGetAllRep);
 	DDX_Check(pDX, IDC_DONTBUY_CHECK, m_pBuyItemOpt->m_bDontSearchBuy);
 	DDX_Check(pDX, IDC_NOTFOUND_CHECK, m_pBuyItemOpt->m_bNotFoundCancel);
+	DDX_Check(pDX, IDC_NOTFOUND_USE_ITEM_CHECK, m_pBuyItemOpt->m_bNotFoundUseItem);
 	DDX_Check(pDX, IDC_ITEMFILTER_CHECK, m_pBuyItemOpt->m_bItemFilter);
 
 	if (pDX->m_bSaveAndValidate)

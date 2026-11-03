@@ -369,7 +369,9 @@
 36,162, §¹i Lý phñ [100 L­îng]
 37,162, §¹i Lý phñ [100 L­îng]
 [Item]
-T©n Thñ thiÕp,1,1,6
+T©n Thñ thiÕp,1,2,6
+ThÎ Cao Thñ Giang Hå,1,2,6
+ThÎ Vâ Häc Kú Tµi,1,2,6
 [NPC]
 53273,103217
 52179,101689

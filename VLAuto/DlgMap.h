@@ -10,6 +10,7 @@ public:
 	CDlgMap(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgMap();
 	void			UpdateTrainMap(BOOL bSave);
+	void			UpdateCustomBox();
 
 // Dialog Data
 	enum { IDD = IDD_MAP_DIALOG };

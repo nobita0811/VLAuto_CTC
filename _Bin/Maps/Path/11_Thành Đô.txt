@@ -473,6 +473,8 @@
 194,20,Giang T©n Th«n[100 L­îng]
 [Item]
 T©n Thñ thiÕp,1,1,1,1
+ThÎ Cao Thñ Giang Hå,1,1,1,1
+ThÎ Vâ Häc Kú Tµi,1,1,1,1
 [NPC]
 101022,162451
 96892,158668

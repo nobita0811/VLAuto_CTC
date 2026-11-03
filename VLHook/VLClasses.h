@@ -172,6 +172,7 @@ public:
 	BOOL	m_bPartyBuff;
 	BOOL	m_bAutoRepair;
 	BOOL	m_bLagUseTDP;
+	BOOL	m_bLagUseSkill;
 //	Private
 	BOOL	m_bDoingBuff;
 	BOOL	m_bEmptyMana;
@@ -274,7 +275,7 @@ public:
 	//Reservations
 	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
 	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
-	int		m_Revserved2;
+	BOOL	m_bTongEnemy;		// Tu ve: coi nguoi cung bang hoi la doi thu (FALSE = bo qua) - cho cu m_Revserved2
 
 	//Private
 	DWORD	m_LastNpcID;
@@ -496,7 +497,7 @@ private:
 	void	GetPathInfo();
 	void	LoadPath(const char *szPathFile);
 
-	BOOL	IsLagMoving(int nPlayerX, int nPlayerY, int dZ);
+	BOOL	IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX = 0, int nDestY = 0);
 	BOOL	RunningToDoor();
 	BOOL	RunningToPos();
 	BOOL	Dijkstra(int nStart, int nEnd);
@@ -605,6 +606,10 @@ public:
 	BOOL	m_bGiveKCL;
 	int		m_nMinKCL;
 	BOOL	m_bDriverOnly;	// Len map = Xa phu hoac THP: khong di bo tu thanh (map co xa phu) sang map khac
+	BOOL	m_bCustomBox;	// = PARAM_MAP: cat do o ruong tuy chon
+	int		m_nBoxMapID;
+	int		m_nBoxX;
+	int		m_nBoxY;
 //	Private
 	int		m_nTimeWait;
 	BOOL	m_bFinished;
@@ -661,6 +666,7 @@ public:
 	int OpenStoreBox(); // 0 = Opening, 1 = Opened, -1 = NotFound
 	void SaveNewRepository();
 	void FirstRepository();
+	BOOL RunningToBox();	// Chay toi ruong cat do (ruong tuy chon neu bat)
 	void GetSaveItems();
 	void GetRepairItems();
 	void GetGroceries();
@@ -698,6 +704,7 @@ enum YESOU_TASK_DOING
 	ys_cancel,
 	ys_suspending,
 };
+#define YS_STEP_FINISH_ITEM	90	// m_nDoQuestStep: dang can "Hoan Thanh Da Tau" (CVLQuest::UseFinishItem)
 
 enum BANGHUI_TASK_DOING
 {
@@ -812,7 +819,8 @@ struct YSBuyItemOpt
 	BOOL m_bNotFoundCancel;
 	BOOL m_bGetAllRep;
 	BOOL m_bItemFilter;
-	int m_Reserved[2];
+	BOOL m_bNotFoundUseItem;
+	int m_Reserved[1];
 };
 
 #define MAX_9XMAP_NUM 10
@@ -901,6 +909,48 @@ struct YSTongPKOpt
 	TongPKQuest m_HardQuests[MAX_HARD_QUEST];
 };
 
+// Nhiem vu danh quai Da Tau (giong VLAuto/AutoParams.h)
+#define MAX_KQ_MAP 40
+#define MAX_KQ_POINT 32
+#define KQF_POINTS 0x01
+#define KQF_RANGE 0x02
+struct KQMapOpt
+{
+	int nMapID;
+	BOOL bDisable;
+	int nFlags;
+	int nRange;
+	int nPoints;
+	POINT Pts[MAX_KQ_POINT];
+};
+
+struct YSKillQOpt
+{
+	BOOL m_bLongCheck;
+	int m_nCheckTime;
+	BOOL m_bCancelLong;
+	int m_nCancelTime;
+	BOOL m_bCancelNoMap;
+	int m_nMaps;
+	KQMapOpt m_Maps[MAX_KQ_MAP];
+	BOOL m_bCancelUseItem;
+	BOOL m_bAddQuestItem;
+	int m_Reserved[2];
+};
+
+// Cai dat danh quai cua 1 map (MapDaTau.ini + cfg nhan vat)
+struct KQMapInfo
+{
+	int nMapID;
+	BOOL bInList;		// Co trong MapDaTau.ini
+	BOOL bDisable;
+	int nRepoMap;		// Ruong=map,x,y (0 = khong co)
+	int nRepoX, nRepoY;
+	int nRange;
+	int nPoints;
+	POINT Pts[MAX_KQ_POINT];
+};
+
 #define MAX_COLL_QUEST 120
 class CVLQuest
 {
@@ -930,6 +980,7 @@ public:
 	YSPrizeSelOpt m_PrizeSelOpt;
 	YSTongQOpt m_TongQOpt;
 	YSTongPKOpt m_TongPKOpt;
+	YSKillQOpt m_KillQOpt;
 	// Private use
 	char	m_szLogFile[MAX_PATH];
 	int		m_nGenDoing;
@@ -1014,6 +1065,11 @@ public:
 	void GetYesouQuestFromKUiMsgSel2(KUiMsgSel2* pMsgSel2); // trả về loại nhiệm vụ, số lượng, tên vật phẩm, tên NPC, tọa độ, v.v... trong m_szQuestYesouInfo
 	void DoQuestAttackNpc();
 	void DoQuestItemOption();
+	int UseFinishItem();
+	void DoAddQuestItem();	// Het luot nhan: can "Lenh Bai Da Tau" (tui, khong co thi lay tu ruong)
+	void MaxQuestStop();	// Het luot nhan hom nay => ngung (DoSuspendOpt), qua 12h dem nhan lai (CheckNewDay)
+	void CheckNewDay();
+	void NotFoundCancel();	// Can "Hoan Thanh Da Tau": 0 = khong dung duoc, 1 = dang cho, 2 = xong
 private:
 	BOOL CheckMyItem(PlayerItem *pPlayerItem, int nPlace = pos_equiproom, BOOL bNoStackItem = 0);
 	BOOL GetUseableItem(PlayerItem *pPlayerItem, const char *szItemName, int nPlace = 0);

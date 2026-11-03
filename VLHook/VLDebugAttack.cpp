@@ -184,9 +184,9 @@ static void AttackStatus()
 	DbgOut("m_cbSize = %d (VLAuto gui) - phan public = %d\n", a.m_cbSize, (int)offsetof(CVLAttack, m_LastNpcID));
 	DbgOut("m_bAutoHit %d  m_nSearchRange %d  m_nHorseMode %d  m_bHitClose %d (%d)  m_bAvoidBoss %d  m_bOnlyBlueBoss %d (nguong xanh %d)\n",
 		a.m_bAutoHit, a.m_nSearchRange, a.m_nHorseMode, a.m_bHitClose, a.m_nSkillRange, a.m_bAvoidBoss, a.m_bOnlyBlueBoss, *(int*)GOLD_BLUE_MAX_ADD);
-	DbgOut("Tu ve: m_nAutoDefence %d (%s)  m_nDefenceRange %d  m_bDefHorseMode %d  m_bDefHitClose %d (%d)  m_bAlwaysF9 %d\n",
+	DbgOut("Tu ve: m_nAutoDefence %d (%s)  m_nDefenceRange %d  m_bDefHorseMode %d  m_bDefHitClose %d (%d)  m_bAlwaysF9 %d  m_bTongEnemy %d\n",
 		a.m_nAutoDefence, (a.m_nAutoDefence >= 0 && a.m_nAutoDefence < 6) ? s_szDefence[a.m_nAutoDefence] : "?",
-		a.m_nDefenceRange, a.m_bDefHorseMode, a.m_bDefHitClose, a.m_nDefSkillRange, a.m_bAlwaysF9);
+		a.m_nDefenceRange, a.m_bDefHorseMode, a.m_bDefHitClose, a.m_nDefSkillRange, a.m_bAlwaysF9, a.m_bTongEnemy);
 	for (int i = 0; i < skill_total; i++)
 		OutSkillLine(s_szSkillSlot[i], a.m_SettingSkills[i]);
 	for (int i = 0; i < 2; i++)
@@ -433,6 +433,8 @@ static void BadNpcs(BOOL bClear)
 	g_DbgReply.bOK = TRUE;
 }
 
+BOOL IsSameTong(KNpc* pNpc);	// VLAttack.cpp
+
 static void PlayerList()
 {
 	if (!DbgCheckPlayer()) return;
@@ -441,7 +443,10 @@ static void PlayerList()
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	DbgOut("AutoDefence %d  m_nDefenceRange %d  Camp minh %d  PKFlag %d  Series %d\n",
 		a.m_nAutoDefence, a.m_nDefenceRange, P_PLAYER->m_CurrentCamp, P_PLAYER->m_nPKFlag, P_PLAYER->m_Series);
-	DbgOut("Idx | Rel    | Camp | PK | He | Khac | dZ    | Ten => AutoDefence\n");
+	char szTong[33]; memcpy(szTong, g_pCurPlayer->m_cTong.m_szTongName, 32); szTong[32] = 0;
+	DbgOut("Bang minh: Npc+0x1CCC %u  m_cTong: Flag %d  NameID %u  Ten \"%s\"  m_bTongEnemy %d\n", P_PLAYER->m_dwTongNameID,
+		g_pCurPlayer->m_cTong.m_nFlag, g_pCurPlayer->m_cTong.m_dwTongNameID, szTong, a.m_bTongEnemy);
+	DbgOut("Idx | Rel    | Camp | PK | He | Khac | dZ    | MaBang     | Ten [chu tren dau] => AutoDefence\n");
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		KNpc *pNpc = g_pNpcArray[i];
@@ -452,12 +457,15 @@ static void PlayerList()
 		const char *szVerdict = "KE THU";
 		if (pNpc->m_CurrentLife <= 0) szVerdict = "da chet";
 		else if (pNpc->m_CurrentCamp == camp_begin) szVerdict = "tan thu";
+		else if (!a.m_bTongEnemy && IsSameTong(pNpc)) szVerdict = "cung bang";
 		else if (nRelation == relation_ally) szVerdict = "dong minh";
 		else if (nRelation == relation_none && P_PLAYER->m_CurrentCamp == pNpc->m_CurrentCamp && P_PLAYER->m_CurrentCamp < camp_free) szVerdict = "cung phe";
 		else if (nRelation == relation_none && pNpc->m_nPKFlag != 2) szVerdict = "khong do sat";
 		else if (dZ >= a.m_nDefenceRange) szVerdict = "ke thu - ngoai tam";
-		DbgOut("%-3d | %-6s | %-4d | %-2d | %-2d | %-4d | %-5d | %s => %s\n", i, RelationName(nRelation), pNpc->m_CurrentCamp,
-			pNpc->m_nPKFlag, pNpc->m_Series, theMain.GetConquerVal(P_PLAYER->m_Series, pNpc->m_Series), dZ, pNpc->Name, szVerdict);
+		char szTop[65]; memcpy(szTop, pNpc->m_szTopText, 64); szTop[64] = 0;
+		DbgOut("%-3d | %-6s | %-4d | %-2d | %-2d | %-4d | %-5d | %-10u | %s [%s] => %s\n", i, RelationName(nRelation), pNpc->m_CurrentCamp,
+			pNpc->m_nPKFlag, pNpc->m_Series, theMain.GetConquerVal(P_PLAYER->m_Series, pNpc->m_Series), dZ, pNpc->m_dwTongNameID,
+			pNpc->Name, szTop, szVerdict);
 		nCount++;
 	}
 	DbgOut("Tong: %d nguoi choi. m_nEnemyIdx hien tai = %d\n", nCount, a.m_nEnemyIdx);

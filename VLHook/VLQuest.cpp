@@ -47,7 +47,9 @@ void QTraceSite(char *szLast, const char *szFormat, ...)
 	if (!strcmp(szMsg, szLast)) return;
 	strcpy(szLast, szMsg);
 
-	SystemMessage(1, "<color=cyan>[QT] %s", szMsg);
+#if ADMIN_MODE
+	SystemMessage(1, "<color=cyan>[QT] %s", szMsg);	// Ban User: tat thong bao [QT] tren kenh chat (van ghi SaveYSLog)
+#endif
 	char szLog[270];
 	_snprintf(szLog, sizeof(szLog) - 1, "[QT] %s", szMsg);
 	szLog[sizeof(szLog) - 1] = 0;
@@ -112,6 +114,7 @@ void CVLQuest::Breath()
 		return;
 	}
 	QTRACE("Breath: Gen=%s Entrust=%d", QTName_Gen(m_nGenDoing), g_pCurPlayer->m_nEntrustMode);
+	if (QuestKillHoming()) return;	// Vua bat lai Tu lam nhiem vu: dang ve Tuong Duong
 
 	if (m_nGenDoing == qt_suspending)
 	{
@@ -151,6 +154,8 @@ void CVLQuest::Breath()
 void CVLQuest::CheckStatus()
 {
 	if (g_NetworkOffline) return;
+	CheckNewDay();
+	if (QuestKillHoming()) return;	// Vua bat lai Tu lam nhiem vu: dang ve Tuong Duong
 
 	/*if (ONLINE_TIME_SEC < 6)
 	{	// A new day, restart all values...
@@ -389,8 +394,19 @@ BOOL CVLQuest::LoadTaskInfo()
 
 void CVLQuest::CheckAutoYeSou()
 {
+	static BOOL s_bWasAuto = FALSE;	// Goi moi lan doi tuy chon: chi lam lai khi Tat -> Bat
 	char szMsg[80];
 	m_bNoVipCard = 0;	// Bat lai / doi tuy chon: cho thu lai (vd. vua kich hoat the Vip)
+	BOOL bTurnOn = m_bAutoDoQuest && !s_bWasAuto;
+	s_bWasAuto = m_bAutoDoQuest;
+	if (bTurnOn)
+	{	// Bat lai: xoa het, ve Tuong Duong (vat pham -> TDP -> di bo) roi nhan lai nhiem vu
+		QuestKillRestart();
+		m_nYSDoing = ys_none;
+		m_nDoQuestStep = 0;
+		theMap.m_nCurPoint = -1;
+		theMap.m_bDoShoping = 0;
+	}
 	if (m_bAutoDoQuest)
 	{
 		sprintf(szMsg, TV(L"<color=yellow>Tự làm Nhiệm vụ (Ctrl+D): <color=green>Bật"));
@@ -428,6 +444,53 @@ void CVLQuest::StopNoVip()
 }
 
 
+extern BOOL g_bQuestGoTrainFirst;	// VLMap.cpp
+
+// Ngay (gio may) de biet qua 12h dem: nhiem vu Da Tau reset luc 12h dem
+int YsDayKey()
+{
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	return pTm ? pTm->tm_year * 400 + pTm->tm_yday : 0;
+}
+
+static int s_nYSDoneDay = -1;	// Ngay het luot nhan nhiem vu (-1 = khong ngung vi het luot)
+
+void CVLQuest::MaxQuestStop()
+{
+	m_nRemainQuest = 0;
+	m_nYSDoing = ys_suspending;
+	theMap.m_bDoShoping = 0;
+	s_nYSDoneDay = YsDayKey();
+	SaveYSLog(TV(L"Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!\n"));
+	SystemMessage(TV(L"<color=yellow>Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng làm Nhiệm vụ."), 1);
+}
+
+// Treo 24/24: da ngung vi het luot nhan, qua 12h dem thi ve Tuong Duong nhan nhiem vu tiep
+void CVLQuest::CheckNewDay()
+{
+	if (s_nYSDoneDay < 0 || !m_bAutoDoQuest) return;
+	if (YsDayKey() == s_nYSDoneDay) return;
+	s_nYSDoneDay = -1;
+	if (m_nGenDoing != qt_suspended && m_nGenDoing != qt_suspending) return;	// Da lam lai (vd bat lai Tu lam)
+	SaveYSLog(TV(L"Qua 12h đêm => Nhận nhiệm vụ Dã Tẩu ngày mới.\n"));
+	SystemMessage(TV(L"<color=yellow>Qua ngày mới => Về Tương Dương nhận nhiệm vụ Dã Tẩu."), 1);
+	m_bNeedGoTrain = 0;
+	m_bNeedGoPCK = 0;
+	m_bGoTrainGetPK = 0;
+	g_bQuestGoTrainFirst = FALSE;
+	m_nSaveMapID = 0;
+	m_nRemainQuest = -1;
+	m_nYSDoing = ys_none;
+	m_nDoQuestStep = 0;
+	m_nGenDoing = qt_none;		// Breath: khoi tao lai roi sang qt_yesou
+	theMap.InitValues();
+	theMap.m_nCurPoint = -1;
+	theMap.m_bDoShoping = 0;
+	theMap.m_bFirstSaveRepos = TRUE;
+	QuestKillRestart();			// Ngoai Tuong Duong: ve (vat pham -> TDP -> di bo)
+}
+
 void CVLQuest::DoSuspendOpt()
 {
 	switch (m_nPostAction)
@@ -440,21 +503,35 @@ void CVLQuest::DoSuspendOpt()
 		theMain.ExitGame();
 		SaveYSLog(TV(L"Ngưng làm Nhiệm vụ, thoát Game.\n"));
 		break;
-	case 2: // Bao chuong
-		theMain.PostFeedBack(cmd_amulet);
-		SaveYSLog(TV(L"Ngưng làm Nhiệm vụ, báo chuông.\n"));
-		SystemMessage(TV(L"<color=yellow>Ngưng làm Nhiệm vụ, báo chuông."));
-		break;
-	case 3: // Di luyen cong
+	case 2: // Di luyen cong (combo da bo "Bao chuong")
+	case 3: // Di luyen cong (gia tri cu)
+		if (!theMap.m_nTrainMapID)
+		{
+			SaveYSLog(TV(L"Ngưng làm Nhiệm vụ, chưa có danh sách tọa độ luyện công => đứng im.\n"));
+			SystemMessage(TV(L"<color=yellow>Ngưng làm Nhiệm vụ: chưa có danh sách tọa độ luyện công, đứng im."));
+			break;
+		}
+		// Luong ve thanh cua CVLMap::Breathe: luu ruong (thanh GetReturnCity cua map luyen cong, hoac
+		// Ruong tuy chon tab Ban do) -> cat do -> mua TDP / mau / mana -> xa phu: "Nhung noi da di qua"
+		// con map luyen cong thi chon, khong con thi tu chay bo theo MapPath (GetDriver)
 		m_bNeedGoTrain = TRUE;
 		m_bNeedGoPCK = 0;
 		m_bGoTrainGetPK = 0;
+		m_nYeSouMapID = 0;	// Khong con theo map nhiem vu (FirstRepository / GetDriver / SameMapNodes)
+		m_nSaveMapID = 0;
+		theMap.InitValues();
 		theMap.m_bFirstSaveRepos = TRUE;
-		theMap.m_bNoDriverRecent = TRUE;
+		theMap.m_bNoDriverRecent = TRUE;	// Lan dau: khong "Tro lai dia diem cu" (la map nhiem vu); xa phu tu bo co nay sau lan bam dau
+		g_bQuestGoTrainFirst = TRUE;
 		if (!theMap.m_bAutoReturn)
 			theMain.PostFeedBack(cmd_setmap);
-		SaveYSLog(TV(L"Ngưng làm Nhiệm vụ, đi luyện công.\n"));
-		SystemMessage(TV(L"<color=yellow>Ngưng làm Nhiệm vụ, đi luyện công."));
+		{
+			char szTrain[64] = "", szCity[64] = "";
+			theMain.GetMapName(theMap.m_nTrainMapID, szTrain);
+			theMain.GetMapName(theMap.m_nSaveMapID, szCity);
+			SaveYSLog(TV(L"Ngưng làm Nhiệm vụ, đi luyện công.\n"));
+			SystemMessage(0, TV(L"<color=yellow>Ngưng làm Nhiệm vụ, đi luyện công: lưu rương ở %s rồi lên %s."), szCity, szTrain);
+		}
 		break;
 	}
 
@@ -596,6 +673,21 @@ int CVLQuest::FindMapID(const char* szName, char* szFound, int nFound, BOOL bPri
 		else if (bPart && !nPart)
 			nPart = nID;
 	}
+	if (!nExact)
+	{	// Ten map server ghi sai trong nhiem vu Da Tau => map dung (ID MapNames.ini)
+		static const struct { const wchar_t *szName; int nID; } s_Alias[] =
+		{
+			{ L"Khỏa Long Động", 75 },	// = Khoả Lang động
+		};
+		for (int i = 0; i < _countof(s_Alias); i++)
+		{
+			if (!EqualFold(TV(s_Alias[i].szName), szName)) continue;
+			nExact = s_Alias[i].nID;
+			if (bPrint) DbgOut("  TRUNG   ID %d (ten server ghi sai '%s')\n", nExact, szName);
+			if (szFound) { strncpy(szFound, szName, nFound - 1); szFound[nFound - 1] = 0; }
+			break;
+		}
+	}
 	return nExact;
 }
 
@@ -606,30 +698,136 @@ int CVLQuest::FindMapID(const char* szName, char* szFound, int nFound, BOOL bPri
 #define YS_KILL_RETRY		5		// So lan lam lai toi da khi tab Nhiem vu dung giua chung
 #define YS_KILL_RETRY_WAIT	10000	// Cho truoc khi lam lai (ms)
 
+// "Hoan Thanh Da Tau": hoan thanh ngay nhiem vu hien tai. Ton theo cap so cong trong ngay (lan 1: 1 cai, lan 2: 2 cai...)
+#define YS_FINISH_ITEM		TV(L"Hoàn Thành Dã Tẩu")
+#define YS_FINISH_WAIT		5000	// Cho server tru vat pham / mo bang phan thuong (ms)
+
+int CVLQuest::UseFinishItem()
+{
+	static DWORD s_dwUseTick = 0;
+	static int s_nHaveBefore = 0;
+	static int s_nDay = -1, s_nUsedToday = 0;	// So lan da dung hom nay (mat khi khoi dong lai: server tu choi thi biet)
+	char szLog[256];
+	time_t tNow = time(NULL);
+	struct tm* pTm = localtime(&tNow);
+	int nDay = pTm ? pTm->tm_yday : 0;
+	if (nDay != s_nDay)
+	{
+		s_nDay = nDay;
+		s_nUsedToday = 0;
+	}
+	int nHave = g_pCurPlayer->GetItemsCount(YS_FINISH_ITEM);
+	if (!s_dwUseTick)
+	{
+		int nNeed = s_nUsedToday + 1;
+		if (nHave < nNeed)
+		{
+			_snprintf(szLog, sizeof(szLog) - 1, TV(L"Hoàn Thành Dã Tẩu: có %d, lần này cần %d => không dùng được."), nHave, nNeed);
+			szLog[sizeof(szLog) - 1] = 0;
+			SaveYSLog(szLog);
+			return 0;
+		}
+		CloseAllWindows(0);
+		if (!g_pCurPlayer->UseItem(YS_FINISH_ITEM)) return 0;
+		s_nHaveBefore = nHave;
+		s_dwUseTick = GetTickCount();
+		QTRACE("UseFinishItem: dung Hoan Thanh Da Tau (co %d, lan %d hom nay)", nHave, nNeed);
+		return 1;
+	}
+	KUiPrizeSel* pPrzSel = (KUiPrizeSel*)GetPtrAddress(PZS_BASE_ADD);
+	BOOL bPrize = pPrzSel && pPrzSel->IsVisible();
+	if (!bPrize && GetTickCount() - s_dwUseTick < YS_FINISH_WAIT) return 1;
+	s_dwUseTick = 0;
+	if (!bPrize && nHave >= s_nHaveBefore)
+	{	// Khong tru vat pham: server tu choi (thuong la khong du so luong cho lan nay)
+		if (s_nUsedToday < s_nHaveBefore) s_nUsedToday = s_nHaveBefore;
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Dùng Hoàn Thành Dã Tẩu không được (có %d) => bỏ qua."), s_nHaveBefore);
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		CloseAllWindows(0);
+		return 0;
+	}
+	s_nUsedToday++;
+	_snprintf(szLog, sizeof(szLog) - 1, TV(L"Đã dùng Hoàn Thành Dã Tẩu (lần %d hôm nay, còn %d)."), s_nUsedToday, nHave);
+	szLog[sizeof(szLog) - 1] = 0;
+	SaveYSLog(szLog);
+	SystemMessage(TV(L"<color=yellow>Đã dùng Hoàn Thành Dã Tẩu để hoàn thành nhiệm vụ."));
+	m_nDoQuestStep = 0;
+	theMap.ResetShoping();
+	if (bPrize)
+	{
+		m_nQuestStatus = 2;				// BreathYS -> ChoosePrize chon o theo thiet lap Phan thuong
+		theMap.m_bDoShoping = TRUE;		// Bang da mo: ChoosePrize khong chay toi Da Tau
+	}
+	else
+		m_nYSDoing = ys_none;			// GetNewQuest hoi lai Da Tau
+	return 2;
+}
+
 void CVLQuest::DoQuestAttackNpc()
 {
 	static int s_nFail = 0;
 	static DWORD s_dwFailTick = 0;
 	char szLog[256];
 
+	if (m_nDoQuestStep == YS_STEP_FINISH_ITEM)
+	{	// Diet quai qua lau: dang can "Hoan Thanh Da Tau", khong duoc thi ve Da Tau huy
+		int nUse = UseFinishItem();
+		if (nUse == 1) return;
+		if (nUse == 2) return;
+		m_nDoQuestStep = 0;
+		SystemMessage(TV(L"<color=yellow>Diệt quái quá lâu chưa được một nửa => Hủy nhiệm vụ!"));
+		m_nYSDoing = ys_cancel;
+		theMap.NearestDriver();
+		return;
+	}
+
 	if (m_nDoQuestStep == 0)
 	{
 		s_nFail = 0;
 		s_dwFailTick = 0;
+		// Danh sach nhiem vu (VLAuto): dong "Da Tau - Danh quai" luu vao m_nTuZhi
+		if (m_nTuZhi == act_cancel || m_nTuZhi == act_useitem)
+		{
+			SaveYSLog(CANCEL_BY_USER);
+			m_nYSDoing = ys_cancel;
+			theMap.NearestDriver();
+			return;
+		}
+		if (m_nTuZhi == act_ignore)
+		{
+			m_nYSDoing = ys_suspending;
+			return;
+		}
 		if (!m_nYesouMapID)
 		{
 			_snprintf(szLog, sizeof(szLog) - 1, TV(L"Không biết map '%s' (Maps\\MapNames.ini) => %s!"), m_szYesouMap,
-				m_TuZhiOpt.m_bCancelNoMap ? TV(L"Hủy nhiệm vụ") : TV(L"Tạm ngưng"));
+				m_KillQOpt.m_bCancelNoMap ? TV(L"Hủy nhiệm vụ") : TV(L"Tạm ngưng"));
 			szLog[sizeof(szLog) - 1] = 0;
 			SaveYSLog(szLog);
 			SystemMessage(TV(L"<color=yellow>Nơi cần đến chưa có MAP!"));
-			if (m_TuZhiOpt.m_bCancelNoMap)
+			if (m_KillQOpt.m_bCancelNoMap)	// Tab Danh quai (tab Do/Mat chi da an)
 			{
 				m_nYSDoing = ys_cancel;
 				theMap.NearestDriver();
 			}
 			else
 				m_nYSDoing = ys_suspending;
+			return;
+		}
+		int nMapCheck = QuestKillMapCheck(m_nYesouMapID);	// Maps\MapDaTau.ini + tab Danh quai
+		if (nMapCheck == kqm_disable || (nMapCheck == kqm_nomap && m_KillQOpt.m_bCancelNoMap))
+		{
+			_snprintf(szLog, sizeof(szLog) - 1, nMapCheck == kqm_disable ?
+				TV(L"Diệt %d %s ở %s (map %d): map bị bỏ chọn trong tab Đánh quái => Hủy nhiệm vụ!") :
+				TV(L"Diệt %d %s ở %s (map %d): map không có trong Maps\\MapDaTau.ini => Hủy nhiệm vụ!"),
+				m_nYesouCount, m_szYesouTarget, m_szYesouMap, m_nYesouMapID);
+			szLog[sizeof(szLog) - 1] = 0;
+			SaveYSLog(szLog);
+			SystemMessage(nMapCheck == kqm_disable ? TV(L"<color=yellow>Map nhiệm vụ bị bỏ chọn => Hủy nhiệm vụ!") :
+				TV(L"<color=yellow>Map nhiệm vụ không có trong MapDaTau.ini => Hủy nhiệm vụ!"));
+			m_nYSDoing = ys_cancel;
+			theMap.NearestDriver();
 			return;
 		}
 		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Diệt %d %s ở %s (map %d)"), m_nYesouCount, m_szYesouTarget, m_szYesouMap, m_nYesouMapID);
@@ -648,6 +846,25 @@ void CVLQuest::DoQuestAttackNpc()
 	int nState = QuestKillState(&nKilled, &nNeed);
 	QTRACE("DoQuestAttackNpc: State=%d Fail=%d Map=%d", nState, s_nFail, *g_pMapID);
 	if (nState == qk_running) return;	// Tab Nhiem vu dang lam
+
+	if (nState == qk_cancel)
+	{	// Kiem tra dai han (tab Danh quai): qua lau chua diet duoc 50% => ve Da Tau huy (log da ghi ben VLDebugQuest)
+		QuestKillStop();
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Diệt %d %s: tiến độ %d / %d quá chậm => Về Dã Tẩu hủy nhiệm vụ."),
+			m_nYesouCount, m_szYesouTarget, nKilled, nNeed);
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		if (m_KillQOpt.m_bCancelUseItem)
+		{	// Uu tien can "Hoan Thanh Da Tau", khong co moi huy (step YS_STEP_FINISH_ITEM o dau ham)
+			m_nDoQuestStep = YS_STEP_FINISH_ITEM;
+			return;
+		}
+		SystemMessage(TV(L"<color=yellow>Diệt quái quá lâu chưa được một nửa => Hủy nhiệm vụ!"));
+		m_nDoQuestStep = 0;
+		m_nYSDoing = ys_cancel;
+		theMap.NearestDriver();
+		return;
+	}
 
 	if (nState == qk_done)
 	{

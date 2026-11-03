@@ -60,6 +60,11 @@ static BOOL IsNeedVipText(const char* szText)
 	return szText && strstr(szText, YS_NEED_VIP) &&
 		(strstr(szText, "Vip") || strstr(szText, "VIP") || strstr(szText, "vip"));
 }
+// Het luot nhan trong ngay: "Đã hoàn thành tối đa nhiệm vụ có thể nhận"
+static BOOL IsMaxQuestText(const char* szText)
+{
+	return szText && strstr(szText, TV(L"hoàn thành tối đa nhiệm vụ"));
+}
 //IsCancelQuestText
 static BOOL IsCancelQuestText(const char* szText)
 {
@@ -743,6 +748,68 @@ BOOL CVLQuest::YSPreparing()
 	return 0;
 }
 
+// "Lenh Bai Da Tau": +5 nhiem vu, moi ngay can duoc 1 lan (khi het luot nhan lan dau). Nhiem vu reset luc 12h dem
+#define YS_ADDQUEST_ITEM	TV(L"Lệnh Bài Dã Tẩu")
+#define YS_ADDQUEST_WAIT	5000	// Cho server tru vat pham (ms)
+int YsDayKey();					// VLQuest.cpp
+static int s_nAddQuestStage = 0;		// 1 = dang can Lenh Bai (GetNewQuest goi DoAddQuestItem)
+static int s_nAddQuestDay = -1;			// Ngay da can (hoac server khong cho can) Lenh Bai
+static BOOL s_bAddFound = FALSE;
+static PlayerItem s_AddItem;
+static DWORD s_dwAddUseTick = 0;
+static int s_nAddHaveBefore = 0;
+
+void CVLQuest::DoAddQuestItem()
+{
+	char szLog[256];
+	if (s_dwAddUseTick)
+	{	// Da can: cho server tru vat pham
+		if (GetTickCount() - s_dwAddUseTick < YS_ADDQUEST_WAIT) return;
+		s_dwAddUseTick = 0;
+		s_nAddQuestStage = 0;
+		s_nAddQuestDay = YsDayKey();	// Duoc hay khong cung chi thu 1 lan trong ngay
+		CloseAllWindows(0);
+		theMap.ResetShoping();
+		int nHave = g_pCurPlayer->GetItemsCount(YS_ADDQUEST_ITEM, 0);
+		if (nHave >= s_nAddHaveBefore)
+		{
+			SaveYSLog(TV(L"Cắn Lệnh Bài Dã Tẩu không được (hôm nay đã cắn?).\n"));
+			MaxQuestStop();
+			return;
+		}
+		_snprintf(szLog, sizeof(szLog) - 1, TV(L"Đã cắn Lệnh Bài Dã Tẩu (còn %d) => Nhận tiếp nhiệm vụ.\n"), nHave);
+		szLog[sizeof(szLog) - 1] = 0;
+		SaveYSLog(szLog);
+		SystemMessage(TV(L"<color=yellow>Đã cắn Lệnh Bài Dã Tẩu, nhận tiếp nhiệm vụ."), 1);
+		m_nRemainQuest = -1;
+		m_nYSDoing = ys_none;	// GetNewQuest chay lai toi Da Tau
+		return;
+	}
+	if (s_bAddFound)
+	{
+		if (s_AddItem.nPlace == pos_equiproom)
+		{
+			CloseAllWindows(0);
+			s_nAddHaveBefore = g_pCurPlayer->GetItemsCount(YS_ADDQUEST_ITEM, 0);
+			g_pCurPlayer->UseItem(YS_ADDQUEST_ITEM);
+			s_dwAddUseTick = GetTickCount();
+			s_bAddFound = FALSE;
+			return;
+		}
+		if (!GetItemFromRepo(&s_AddItem)) return;	// Chay toi ruong, lay ra tui
+		s_bAddFound = FALSE;	// Lan sau tim lai: da nam trong tui
+		return;
+	}
+	s_bAddFound = GetUseableItem(&s_AddItem, YS_ADDQUEST_ITEM, pos_equiproom);
+	if (!s_bAddFound)
+		s_bAddFound = GetUseableItem(&s_AddItem, YS_ADDQUEST_ITEM);	// Ruong
+	if (s_bAddFound) return;
+	s_nAddQuestStage = 0;
+	SaveYSLog(TV(L"Không có Lệnh Bài Dã Tẩu trong túi / rương.\n"));
+	theMap.ResetShoping();
+	MaxQuestStop();
+}
+
 void CVLQuest::GetNewQuest()
 {
 	QTRACE("GetNewQuest: Map=%d Shoping=%d NeedMoney=%d InTownOnly=%d", *g_pMapID, theMap.m_bDoShoping,
@@ -765,6 +832,11 @@ void CVLQuest::GetNewQuest()
 	{
 		if (theMap.ChangeMap(city_tuongduong)) return;
 	}
+	if (s_nAddQuestStage)
+	{	// Dang can Lenh Bai Da Tau (het luot nhan lan dau trong ngay)
+		DoAddQuestItem();
+		return;
+	}
 	if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_YeSou])) return;
 	theMap.m_bDoShoping = TRUE;
 	QTRACE("GetNewQuest: da toi cho NPC Da Tau (%d,%d)", theMap.NpcPoints[npc_YeSou].x, theMap.NpcPoints[npc_YeSou].y);
@@ -785,6 +857,21 @@ void CVLQuest::GetNewQuest()
 		{
 			StopNoVip();
 			CloseAllWindows(0);
+			return;
+		}
+		if (IsMaxQuestText(szInfo))
+		{	// Het luot nhan nhiem vu: lan dau trong ngay thi can Lenh Bai Da Tau (+5), khong thi ngung
+			CloseAllWindows(0);
+			theMap.m_bDoShoping = 0;
+			if (m_KillQOpt.m_bAddQuestItem && s_nAddQuestDay != YsDayKey())
+			{
+				s_nAddQuestStage = 1;
+				s_bAddFound = FALSE;
+				s_dwAddUseTick = 0;
+				SaveYSLog(TV(L"Hết lượt nhận nhiệm vụ => Cắn Lệnh Bài Dã Tẩu.\n"));
+				return;
+			}
+			MaxQuestStop();
 			return;
 		}
 		else
@@ -1262,6 +1349,22 @@ static void BuyMoneyPutBack(CVLQuest *q)
 	s_nBuyMoneyStage = 0;
 }
 
+// Tim het cac thanh khong thay (sau khi khong dung duoc Hoan Thanh Da Tau): Huy / Tam ngung theo tab Mua do
+void CVLQuest::NotFoundCancel()
+{
+	if (m_BuyItemOpt.m_bNotFoundCancel)
+	{
+		m_nYSDoing = ys_cancel;
+		theMap.NearestDriver();
+		SaveYSLog(TV(L"Tìm hết các thành không thấy => Hủy nhiệm vụ!"));
+	}
+	else
+	{
+		m_nYSDoing = ys_suspending;
+		SaveYSLog(TV(L"Tìm hết các thành không thấy => Tạm ngưng!"));
+	}
+}
+
 void CVLQuest::DoQuest0203()
 {
 	static int nNextCityID = 0;
@@ -1270,6 +1373,21 @@ void CVLQuest::DoQuest0203()
 
 	QTRACE("DoQuest0%d (tim vat pham): Step=%d Map=%d NextCity=%d RunToYS=%d", m_nQuestID,
 		m_nDoQuestStep, *g_pMapID, nNextCityID, bRunToYeSou);
+
+	if (m_nDoQuestStep == YS_STEP_FINISH_ITEM)
+	{	// Tim het cac thanh khong thay: dang can "Hoan Thanh Da Tau"
+		int nUse = UseFinishItem();
+		if (nUse == 1) return;
+		if (nUse == 2)
+		{
+			nNextCityID = 0;
+			bRunToYeSou = 0;
+			return;
+		}
+		m_nDoQuestStep = 1;
+		NotFoundCancel();
+		return;
+	}
 
 	if (m_nDoQuestStep == 0)
 	{
@@ -1392,17 +1510,13 @@ void CVLQuest::DoQuest0203()
 		if (!nNextCityID)
 		{
 			BuyMoneyPutBack(this);	// Thoi tim: cat lai tien da rut
-			if (m_BuyItemOpt.m_bNotFoundCancel)
-			{
-				m_nYSDoing = ys_cancel;
-				theMap.NearestDriver();
-				SaveYSLog(TV(L"Tìm hết các thành không thấy => Hủy nhiệm vụ!"));
+			if (m_BuyItemOpt.m_bNotFoundUseItem)
+			{	// Uu tien can "Hoan Thanh Da Tau", khong duoc moi Huy / Tam ngung (NotFoundCancel)
+				SaveYSLog(TV(L"Tìm hết các thành không thấy => Dùng Hoàn Thành Dã Tẩu."));
+				m_nDoQuestStep = YS_STEP_FINISH_ITEM;
+				return;
 			}
-			else
-			{
-				m_nYSDoing = ys_suspending;
-				SaveYSLog(TV(L"Tìm hết các thành không thấy => Tạm ngưng!"));
-			}
+			NotFoundCancel();
 		}
 		else
 			bRunToYeSou = TRUE;

@@ -53,7 +53,9 @@
 22,202,57152,90336
 [Driver]
 [Item]
-T©n Thñ thiÕp,1,1,1
+T©n Thñ thiÕp,1,2,1
+ThÎ Cao Thñ Giang Hå,1,2,1
+ThÎ Vâ Häc Kú Tµi,1,2,1
 [NPC]
 113652,198912
 110678,195539

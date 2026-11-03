@@ -21,8 +21,7 @@ CYeSouOptions::CYeSouOptions(LPCTSTR pszCaption, CWnd* pParentWnd)
 	m_hGameWnd = NULL;
 	m_psh.dwFlags |= PSH_NOAPPLYNOW;
 	AddPage(&m_BuyItemPage);
-	AddPage(&m_TuZhiPage);
-	AddPage(&m_AddPointPage);
+	AddPage(&m_KillQPage);
 	AddPage(&m_PrizeSelPage);
 #ifndef VLTK_FREE_MODE
 	AddPage(&m_TongQPage);
@@ -48,6 +47,7 @@ void CYeSouOptions::SetOptionAdds()
 	m_PrizeSelPage.m_pPrizeSelOpt = &g_pCurGameWin->m_prYeSou.m_PrizeSelOpt;
 	m_TongQPage.m_pTongQOpt = &g_pCurGameWin->m_prYeSou.m_TongQOpt;
 	m_TongPKPage.m_pTongPKOpt = &g_pCurGameWin->m_prYeSou.m_TongPKOpt;
+	m_KillQPage.m_pKillQOpt = &g_pCurGameWin->m_prYeSou.m_KillQOpt;
 }
 
 // CDlgYeSou dialog
@@ -86,9 +86,12 @@ void CDlgYeSou::DoDataExchange(CDataExchange* pDX)
 	
 	DDX_Check(pDX, IDC_AUTOYESOU_CHECK, g_pCurGameWin->m_prYeSou.m_bAutoDoQuest);
 	DDX_Check(pDX, IDC_INTOWN_CHECK, g_pCurGameWin->m_prYeSou.m_bInTownOnly);
+	DDX_Check(pDX, IDC_ITEM_ADD_QUEST_CHECK, g_pCurGameWin->m_prYeSou.m_KillQOpt.m_bAddQuestItem);
 	DDX_Check(pDX, IDC_R1_CHECK, g_pCurGameWin->m_prYeSou.m_bUseR1);
 	DDX_Check(pDX, IDC_R2_CHECK, g_pCurGameWin->m_prYeSou.m_bUseR2);
 	DDX_Check(pDX, IDC_R3_CHECK, g_pCurGameWin->m_prYeSou.m_bUseR3);
+	if (!pDX->m_bSaveAndValidate && g_pCurGameWin->m_prYeSou.m_nPostAction > 2)
+		g_pCurGameWin->m_prYeSou.m_nPostAction = 2;	// Cai dat cu: 3 = Di luyen cong (da bo "Bao chuong")
 	DDX_CBIndex(pDX, IDC_SUSPEND_COMBO, g_pCurGameWin->m_prYeSou.m_nPostAction);
 	
 	BOOL bChecked = ((CButton*)GetDlgItem(IDC_AUTOYESOU_CHECK))->GetCheck();
@@ -121,44 +124,18 @@ BOOL CDlgYeSou::OnInitDialog()
 	m_QuestList.InsertComboText(szQuestType[0]);
 	m_QuestList.InsertComboText(szQuestType[1]);
 	m_QuestList.InsertComboText(szQuestType[2]);
-	m_QuestList.InsertItem(0, _T("Dã Tẩu - Trang bị"));
+	// 15-10: Da Tau chi con 2 loai (dong 1 dung lai m_nTuZhi cua "Do chi" cu)
+	m_QuestList.InsertItem(0, _T("Dã Tẩu - Tìm đồ"));
 	m_QuestList.SetItemText(0, 1, szQuestType[0]);
 	m_QuestList.SetItemData(0, 0);
-	m_QuestList.InsertItem(1, _T("Dã Tẩu - Đồ chí"));
+	m_QuestList.InsertItem(1, _T("Dã Tẩu - Đánh quái"));
 	m_QuestList.SetItemText(1, 1, szQuestType[0]);
 	m_QuestList.SetItemData(1, 0);
-	m_QuestList.InsertItem(2, _T("Dã Tẩu - Kinh nghiệm"));
-	m_QuestList.SetItemText(2, 1, szQuestType[0]);
-	m_QuestList.SetItemData(2, 0);
-	m_QuestList.InsertItem(3, _T("Dã Tẩu - Danh vọng"));
-	m_QuestList.SetItemText(3, 1, szQuestType[0]);
-	m_QuestList.SetItemData(3, 0);
-	m_QuestList.InsertItem(4, _T("Dã Tẩu - Phúc duyên"));
-	m_QuestList.SetItemText(4, 1, szQuestType[0]);
-	m_QuestList.SetItemData(4, 0);
-	m_QuestList.InsertItem(5, _T("Dã Tẩu - Trị PK"));
-	m_QuestList.SetItemText(5, 1, szQuestType[2]);
-	m_QuestList.SetItemData(5, 2);
-	m_QuestList.InsertItem(6, _T("Dã Tẩu - Tống Kim"));
-	m_QuestList.SetItemText(6, 1, szQuestType[2]);
-	m_QuestList.SetItemData(6, 2);
-#ifndef VLTK_FREE_MODE
-	m_QuestList.InsertItem(7, _T("Bang hội - Vật phẩm"));
-	m_QuestList.SetItemText(7, 1, szQuestType[0]);
-	m_QuestList.SetItemData(7, 0);
-	m_QuestList.InsertItem(8, _T("Bang hội - Diệt quái"));
-	m_QuestList.SetItemText(8, 1, szQuestType[0]);
-	m_QuestList.SetItemData(8, 0);
-	m_QuestList.InsertItem(9, _T("Bang hội - Giảm PK"));
-	m_QuestList.SetItemText(9, 1, szQuestType[2]);
-	m_QuestList.SetItemData(9, 2);
-#endif
 	CComboBox *pComboBox;
 	pComboBox = (CComboBox*)GetDlgItem(IDC_SUSPEND_COMBO);
 	pComboBox->AddString(_T("0 - Đứng im"));
 	pComboBox->AddString(_T("1 - Thoát Game"));
-	pComboBox->AddString(_T("2 - Báo chuông"));
-	pComboBox->AddString(_T("3 - Đi luyện công"));
+	pComboBox->AddString(_T("2 - Đi luyện công"));
 
 	if (m_ToolTip.Create(this))
 	{
@@ -267,18 +244,11 @@ void CDlgYeSou::OnCbnSelchangeSuspendCombo()
 
 void CDlgYeSou::UpdateQuestList(BOOL bSave)
 {
+	// Dong 0 = Tim do (m_nFindItem), dong 1 = Danh quai (m_nTuZhi); cac loai khac da bo, giu nguyen gia tri
 	if (bSave)
 	{
 		g_pCurGameWin->m_prYeSou.m_nFindItem = (int)m_QuestList.GetItemData(0);
 		g_pCurGameWin->m_prYeSou.m_nTuZhi = (int)m_QuestList.GetItemData(1);
-		g_pCurGameWin->m_prYeSou.m_nJingYan = (int)m_QuestList.GetItemData(2);
-		g_pCurGameWin->m_prYeSou.m_nMingWang = (int)m_QuestList.GetItemData(3);
-		g_pCurGameWin->m_prYeSou.m_nFuYuan = (int)m_QuestList.GetItemData(4);
-		g_pCurGameWin->m_prYeSou.m_nYesouPK = (int)m_QuestList.GetItemData(5);
-		g_pCurGameWin->m_prYeSou.m_nSongJin = (int)m_QuestList.GetItemData(6);
-		g_pCurGameWin->m_prYeSou.m_nTongItem = (int)m_QuestList.GetItemData(7);
-		g_pCurGameWin->m_prYeSou.m_nTongKill = (int)m_QuestList.GetItemData(8);
-		g_pCurGameWin->m_prYeSou.m_nTongPK = (int)m_QuestList.GetItemData(9);
 	}
 	else
 	{
@@ -286,21 +256,5 @@ void CDlgYeSou::UpdateQuestList(BOOL bSave)
 		m_QuestList.SetItemData(0, g_pCurGameWin->m_prYeSou.m_nFindItem);
 		m_QuestList.SetItemText(1, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nTuZhi]);
 		m_QuestList.SetItemData(1, g_pCurGameWin->m_prYeSou.m_nTuZhi);
-		m_QuestList.SetItemText(2, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nJingYan]);
-		m_QuestList.SetItemData(2, g_pCurGameWin->m_prYeSou.m_nJingYan);
-		m_QuestList.SetItemText(3, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nMingWang]);
-		m_QuestList.SetItemData(3, g_pCurGameWin->m_prYeSou.m_nMingWang);
-		m_QuestList.SetItemText(4, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nFuYuan]);
-		m_QuestList.SetItemData(4, g_pCurGameWin->m_prYeSou.m_nFuYuan);
-		m_QuestList.SetItemText(5, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nYesouPK]);
-		m_QuestList.SetItemData(5, g_pCurGameWin->m_prYeSou.m_nYesouPK);
-		m_QuestList.SetItemText(6, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nSongJin]);
-		m_QuestList.SetItemData(6, g_pCurGameWin->m_prYeSou.m_nSongJin);
-		m_QuestList.SetItemText(7, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nTongItem]);
-		m_QuestList.SetItemData(7, g_pCurGameWin->m_prYeSou.m_nTongItem);
-		m_QuestList.SetItemText(8, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nTongKill]);
-		m_QuestList.SetItemData(8, g_pCurGameWin->m_prYeSou.m_nTongKill);
-		m_QuestList.SetItemText(9, 1, szQuestType[g_pCurGameWin->m_prYeSou.m_nTongPK]);
-		m_QuestList.SetItemData(9, g_pCurGameWin->m_prYeSou.m_nTongPK);
 	}
 }

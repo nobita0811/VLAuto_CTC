@@ -596,6 +596,8 @@
 259,1, Ph­îng T­êng phñ [100 L­îng]
 [Item]
 T©n Thñ thiÕp,1,2,2
+ThÎ Cao Thñ Giang Hå,1,2,2
+ThÎ Vâ Häc Kú Tµi,1,2,2
 [NPC]
 52427,101957
 51448,101177

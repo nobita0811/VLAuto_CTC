@@ -169,6 +169,19 @@ CVLAttack::CVLAttack(void)
 	m_nEnemyIdx = 0;
 }
 
+// Nguoi choi cung bang hoi voi minh: so ma bang KNpc+0x1CCC (game cung so the nay trong GetRelation 0x636C6E)
+BOOL IsSameTong(KNpc* pNpc)	// VLDebugAttack dung chung
+{
+	DWORD dwTong = P_PLAYER->m_dwTongNameID;
+	return dwTong && pNpc->m_dwTongNameID == dwTong;
+}
+
+// Bo qua nguoi cung bang khi tu ve (tru khi bat "Doi thu cung bang hoi")
+static BOOL SkipSameTong(KNpc* pNpc)
+{
+	return !theAttack.m_bTongEnemy && IsSameTong(pNpc);
+}
+
 // Co nguoi choi thu dich trong tam tu ve khong (cung dieu kien loc ke thu voi AutoDefence)
 static BOOL EnemyInDefenceRange(int nRange)
 {
@@ -185,6 +198,7 @@ static BOOL EnemyInDefenceRange(int nRange)
 		if (g_pNpcArray[i]->m_CurrentLife <= 0 || g_pNpcArray[i]->m_Kind != kind_player) continue;
 		if (g_pNpcArray[i]->IsGhost()) continue;
 		if (g_pNpcArray[i]->m_CurrentCamp == camp_begin) continue;
+		if (SkipSameTong(g_pNpcArray[i])) continue;
 		int nRelation = g_pCoreShell->GetNPCRelation(i);
 		if (nRelation == relation_ally) continue;
 		if (nRelation == relation_none)
@@ -887,6 +901,7 @@ void CVLAttack::AutoDefence()
 				break;
 			}
 		}
+		if (SkipSameTong(g_pNpcArray[i])) continue;
 		nRelation = g_pCoreShell->GetNPCRelation(i);
 		if (nRelation == relation_ally) continue;
 		if (nRelation == relation_none)

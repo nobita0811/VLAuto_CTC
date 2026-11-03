@@ -7,6 +7,7 @@
 #include "YSPrizeSel.h"
 #include "YSTongQ.h"
 #include "YSTongPK.h"
+#include "YSKillQ.h"
 
 // CYeSouOptions
 class CYeSouOptions : public CPropertySheet
@@ -25,6 +26,7 @@ public:
 	CYSPrizeSel		m_PrizeSelPage;
 	CYSTongQ		m_TongQPage;
 	CYSTongPK		m_TongPKPage;
+	CYSKillQ		m_KillQPage;
 
 protected:
 	DECLARE_MESSAGE_MAP()

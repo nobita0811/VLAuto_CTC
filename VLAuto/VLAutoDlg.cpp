@@ -19,6 +19,7 @@
 #include "DlgAbout.h"
 #include "DlgExit.h"
 #include "DlgOption.h"
+#include "License.h"
 #include "VLAutoDlg.h"
 
 #define LVIS_UNCHECKED	0x1000
@@ -241,11 +242,16 @@ void CVLAutoDlg::InitTabDialogs()
 	m_MainTab.InsertTabDlg(nTab, pLogisticsDlg, _T("Bản đồ"), nTab);
 	m_MainTab.SetTabToolTip(nTab++, _T("Thiết lập Hậu cần khi về thành"));
 
-	// CDlgYeSou
-	CDlgYeSou* pQuestDlg = new CDlgYeSou();
-	pQuestDlg->Create(CDlgYeSou::IDD, &m_MainTab);
-	m_MainTab.InsertTabDlg(nTab, pQuestDlg, _T("Nhiệm vụ"), nTab);
-	m_MainTab.SetTabToolTip(nTab++, _T("Thiết lập Nhiệm vụ (Dã Tẩu, Bang hội)"));
+	// CDlgYeSou - tab Nhiem vu: chi hien voi goi co "PRO" (PRO / PRO++).
+	// Goi BASIC khong co -> bo qua, khong tao dialog, nTab khong tang
+	// (tab Tro giup se dich xuong 1 vi tri; cac handler cmd_*yesou da duoc guard).
+	if (LicenseHasQuest())
+	{
+		CDlgYeSou* pQuestDlg = new CDlgYeSou();
+		pQuestDlg->Create(CDlgYeSou::IDD, &m_MainTab);
+		m_MainTab.InsertTabDlg(nTab, pQuestDlg, _T("Nhiệm vụ"), nTab);
+		m_MainTab.SetTabToolTip(nTab++, _T("Thiết lập Nhiệm vụ (Dã Tẩu, Bang hội)"));
+	}
 
 	// CDlgAbout
 	CDlgAbout* pAboutDlg = new CDlgAbout();
@@ -534,6 +540,25 @@ void CVLAutoDlg::OnLvnItemchangedCharList(NMHDR* pNMHDR, LRESULT* pResult)
 	
 		if (pNMLV->uNewState & LVIS_CHECKED)
 		{
+			// Gioi han so account chay cung luc theo quota license (0 = khong gioi han).
+			// Vuot quota: chan im lang - bo check, khong inject, khong thong bao.
+			int nQuota = LicenseQuota();
+			if (nQuota > 0)
+			{
+				int nAttached = 0;
+				for (int k = 0; k < g_pCharList->GetItemCount(); k++)
+				{
+					GameWindow* pW = (GameWindow*)g_pCharList->GetItemData(k);
+					if (pW && pW->m_bAttached)
+						nAttached++;
+				}
+				if (nAttached >= nQuota)
+				{
+					g_pCharList->SetItemState(pNMLV->iItem, LVIS_UNCHECKED, LVIS_STATEIMAGEMASK);
+					return;
+				}
+			}
+
 			if (pGameWin->m_bLoadDone && pGameWin->m_bRegistered)
 			{
 				if (StartInject(pGameWin->m_hWnd, m_hWnd))
@@ -704,7 +729,7 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case cmd_setyesou:
-		if (pGameWin != NULL)
+		if (pGameWin != NULL && LicenseHasQuest())
 		{
 			CDlgYeSou* pTabDlg = (CDlgYeSou*)m_MainTab.GetTabDlg(tab_yesou);
 			pGameWin->m_prYeSou.m_bAutoDoQuest = !pGameWin->m_prYeSou.m_bAutoDoQuest;
@@ -749,7 +774,7 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case cmd_beginpk:
-		if (pGameWin != NULL)
+		if (pGameWin != NULL && LicenseHasQuest())
 		{
 			CDlgYeSou* pTabDlg = (CDlgYeSou*)m_MainTab.GetTabDlg(tab_yesou);
 			for (int i = 0; i < nCharCount; i++)
@@ -774,7 +799,7 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case cmd_endpk:
-		if (pGameWin != NULL)
+		if (pGameWin != NULL && LicenseHasQuest())
 		{
 			CDlgYeSou* pTabDlg = (CDlgYeSou*)m_MainTab.GetTabDlg(tab_yesou);
 			if (pGameWin->m_prYeSou.m_TongPKOpt.m_bExitVictim)

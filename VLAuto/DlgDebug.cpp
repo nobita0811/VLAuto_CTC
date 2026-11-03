@@ -297,6 +297,8 @@ static const CDlgDebug::DEBUG_BUTTON s_Buttons[] =
 		_T("Ghi Maps\\Path\\<MapID>_<Tên map>.txt (đổi map / tắt tự ghi cũng tự ghi)"), 0 },
 	{ dtab_path, dbg_pt_load,			_T("Đọc lại file (bỏ thay đổi)"),
 		_T("Đọc lại Maps\\Path\\<MapID>_<Tên map>.txt, bỏ các thay đổi chưa ghi"), 0 },
+	{ dtab_path, dbg_pt_pack,			_T("Nén Path.pak"),
+		_T("Nén tất cả Maps\\Path\\*.txt thành Maps\\Path.pak (mã hóa riêng, công cụ pak JX không giải nén được). Auto đọc Maps\\Path\\<file> trước (để test/sửa), map không có file mới lấy trong Path.pak"), 0 },
 	{ dtab_path, dbg_pt_import,			_T("Nhập file cũ (.map/.pth)"),
 		_T("Thêm điểm/cạnh từ file MAP (MapMenu.ini) và Paths (PathList.ini) vào đồ thị"), 0 },
 	{ dtab_path, dbg_pt_clear,			_T("Xóa đồ thị map hiện tại"),

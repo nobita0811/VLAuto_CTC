@@ -11,6 +11,8 @@
 #include "DlgOption.h"
 #include "VLAutoDlg.h"
 #include "DlgAbout.h"
+#include "License.h"
+#include <time.h>
 
 // CDlgAbout dialog
 
@@ -83,6 +85,34 @@ BOOL CDlgAbout::OnInitDialog()
 	strInfo += _T("Tác giả\t:\tNguyễn Lưu Ngọc\n");
 	SetDlgItemText(IDC_ABOUT_STATIC, strInfo);
 	m_WebLink.SetURL(_T("http://vlauto.net"));
+
+	// Thong tin License (lay tu token da ky):
+	//   Dong 1: Goi + so account (quota; 0 = khong gioi han)
+	//   Dong 2: Het han DD-MM-YYYY [con N ngay]
+	{
+		CString strLic;
+		int nQuota = LicenseQuota();
+		if (nQuota > 0)
+			strLic.Format(_T("Gói: %s - %d account"), (LPCTSTR)LicensePlanName(), nQuota);
+		else
+			strLic.Format(_T("Gói: %s - không giới hạn account"), (LPCTSTR)LicensePlanName());
+		unsigned long long exp = LicenseExpiry();
+		if (exp == 0)
+			strLic += _T("\nHết hạn: Vĩnh viễn");
+		else
+		{
+			time_t tExp = (time_t)exp;
+			struct tm tmExp = {};
+			localtime_s(&tmExp, &tExp);
+			long long days = ((long long)exp - (long long)time(NULL)) / 86400;
+			if (days < 0) days = 0;
+			CString strExp;
+			strExp.Format(_T("\nHết hạn: %02d-%02d-%04d [còn %lld ngày]"),
+				tmExp.tm_mday, tmExp.tm_mon + 1, tmExp.tm_year + 1900, days);
+			strLic += strExp;
+		}
+		SetDlgItemText(IDC_LICENSE_INFO_STATIC, strLic);
+	}
 
 	memset(m_HardDriveID, 0, sizeof(m_HardDriveID));
 	TCHAR HardDriveIDW[32] = _T("");

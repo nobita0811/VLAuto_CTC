@@ -8,6 +8,7 @@
 #include "GameWindow.h"
 #include "DlgAutoLogin.h"
 #include "GameLogin.h"
+#include "License.h"
 #include <shlwapi.h>
 #include <psapi.h>
 #include <wincrypt.h>
@@ -447,7 +448,12 @@ BOOL CDlgAutoLogin::OnInitDialog()
 
 	m_Tab.InsertItem(tab_setting, _T("Cài đặt"));
 	m_Tab.InsertItem(tab_stats, _T("Thống kê"));
-	m_Tab.InsertItem(tab_hengio, _T("Hẹn giờ"));
+#if ADMIN_MODE
+	m_Tab.InsertItem(tab_hengio, _T("Hẹn giờ"));		// Tester: còn tab Hẹn giờ
+#else
+	m_HenGioButton.ShowWindow(SW_HIDE);					// Bản User: ẩn nút START/STOP Hẹn giờ
+	m_bHenGio = FALSE;									// ... và không chạy hẹn giờ (không còn nút để tắt)
+#endif
 	UpdateHenGioButton();
 	LayoutDialog();
 	m_Tab.SetCurSel(tab_setting);
@@ -2165,16 +2171,21 @@ BOOL CDlgAutoLogin::DoSelectRole(int nIndex, HANDLE hGame, DWORD dwRoleWnd, CStr
 	}
 
 #if LG_FAKE_VOLSN
-	// TEST: serial ổ đĩa ngẫu nhiên trong gói c2s_logiclogin (+0x49), gắn trước OnEnterGame => ConnectToGameSvr
-	DWORD dwSerial = 0;
-	BOOL bPatched = FALSE;
-	if (PatchVolumeSerial(hGame, &dwSerial, bPatched))
+	// Login khong gioi han: serial o dia ngau nhien trong goi c2s_logiclogin (+0x49),
+	// gan truoc OnEnterGame => ConnectToGameSvr. Chi bat cho goi co hau to "++"
+	// (BASIC++/PRO++); cac goi khac gui serial that nhu binh thuong.
+	if (LicenseUnlimitedLogin())
 	{
-		if (bPatched)
-			LoginLog(_T("  Serial ổ đĩa gửi server: %04X-%04X (ngẫu nhiên)"), HIWORD(dwSerial), LOWORD(dwSerial));
+		DWORD dwSerial = 0;
+		BOOL bPatched = FALSE;
+		if (PatchVolumeSerial(hGame, &dwSerial, bPatched))
+		{
+			if (bPatched)
+				LoginLog(_T("  Serial ổ đĩa gửi server: %04X-%04X (ngẫu nhiên)"), HIWORD(dwSerial), LOWORD(dwSerial));
+		}
+		else
+			LoginLog(_T("  LỖI: không gắn được serial ổ đĩa ngẫu nhiên (0x%08X khác bản 15_10?) - vẫn vào game"), LG_VOLSN_CALL);
 	}
-	else
-		LoginLog(_T("  LỖI: không gắn được serial ổ đĩa ngẫu nhiên (0x%08X khác bản 15_10?) - vẫn vào game"), LG_VOLSN_CALL);
 #endif
 
 	LPVOID pRemote = VirtualAllocEx(hGame, NULL, CRemoteCode::TOTAL_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);

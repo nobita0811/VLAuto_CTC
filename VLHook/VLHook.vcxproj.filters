@@ -122,6 +122,9 @@
     <ClCompile Include="VLObstacle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VLPathPak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MagicAttrib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,6 +179,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VLObstacle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VLPathPak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextFunc.h">

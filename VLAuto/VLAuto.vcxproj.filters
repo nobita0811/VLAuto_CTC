@@ -147,6 +147,9 @@
     <ClCompile Include="YSTongPK.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="YSKillQ.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="YSTongQ.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
@@ -261,6 +264,9 @@
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="YSTongPK.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="YSKillQ.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="YSTongQ.h">

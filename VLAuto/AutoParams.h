@@ -79,6 +79,7 @@ struct PARAM_RECOVER : public AutoParams
 	BOOL	m_bPartyBuff;
 	BOOL	m_bAutoRepair;
 	BOOL	m_bLagUseTDP;		// Dung TDP khi di chuyen bi lag (ket han)
+	BOOL	m_bLagUseSkill;		// Ket lag: dung khinh cong (skill 210) nhay toi dich truoc, ket gap doi moi dung TDP
 
 public:
 	void	InitValue();
@@ -110,7 +111,7 @@ struct PARAM_ATTACK : public AutoParams
 	ALTER_SKILLS m_AlterSkill[2];
 	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
 	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
-	int		m_Revserved2;
+	BOOL	m_bTongEnemy;		// Tu ve: coi nguoi cung bang hoi la doi thu (FALSE = bo qua) - cho cu m_Revserved2
 
 public:
 	void	InitValue();
@@ -219,6 +220,10 @@ struct PARAM_MAP : public AutoParams
 	BOOL	m_bGiveKCL;
 	int		m_nMinKCL;
 	BOOL	m_bDriverOnly;	// Len map = Xa phu hoac THP: khong di bo tu thanh (map co xa phu) sang map khac
+	BOOL	m_bCustomBox;	// Cat do o ruong tuy chon (m_nBoxMapID, m_nBoxX, m_nBoxY - toa do tuyet doi) thay ruong mac dinh cua thanh
+	int		m_nBoxMapID;
+	int		m_nBoxX;
+	int		m_nBoxY;
 
 public:
 	void	InitValue();
@@ -233,7 +238,8 @@ struct YSBuyItemOpt
 	BOOL	m_bNotFoundCancel;
 	BOOL	m_bGetAllRep;
 	BOOL	m_bItemFilter;
-	int		m_Reserved[2];
+	BOOL	m_bNotFoundUseItem;	// Tim het cac thanh khong thay: can "Hoan Thanh Da Tau" truoc (roi moi Huy / Tam ngung)
+	int		m_Reserved[1];
 
 public:
 	void InitValue();
@@ -332,6 +338,39 @@ public:
 	void InitValue();
 };
 
+// Nhiem vu danh quai Da Tau: cai dat rieng tung map (MapDaTau.ini), chi luu map da sua
+#define MAX_KQ_MAP			40
+#define MAX_KQ_POINT		32
+#define KQF_POINTS			0x01	// Da sua danh sach toa do (khong thi lay Points= trong ini)
+#define KQF_RANGE			0x02	// Da sua tam quet quai (khong thi lay AttackRange= trong ini)
+struct KQMapOpt
+{
+	int		nMapID;
+	BOOL	bDisable;		// Bo chon trong danh sach => huy nhiem vu o map nay
+	int		nFlags;			// KQF_xxx
+	int		nRange;
+	int		nPoints;
+	POINT	Pts[MAX_KQ_POINT];	// Toa do tuyet doi
+};
+
+struct YSKillQOpt
+{
+	BOOL	m_bLongCheck;		// Kiem tra tinh hinh nhiem vu moi N phut
+	int		m_nCheckTime;
+	BOOL	m_bCancelLong;		// Sau N phut chua dat 50% => ve Da Tau huy
+	int		m_nCancelTime;
+	BOOL	m_bCancelNoMap;		// Map nhiem vu khong co trong MapDaTau.ini => huy
+	int		m_nMaps;
+	KQMapOpt m_Maps[MAX_KQ_MAP];
+	BOOL	m_bCancelUseItem;	// Huy vi qua lau: can "Hoan Thanh Da Tau" truoc, khong co moi huy
+	BOOL	m_bAddQuestItem;	// Het luot nhan lan dau trong ngay: can "Lenh Bai Da Tau" (+5 luot) - o cua so Da Tau
+	int		m_Reserved[2];
+
+public:
+	void InitValue();
+	KQMapOpt* FindMap(int nMapID, BOOL bCreate);
+};
+
 struct PARAM_YESOU : public AutoParams
 {
 	BOOL	m_bAutoDoQuest;
@@ -358,6 +397,8 @@ struct PARAM_YESOU : public AutoParams
 	YSPrizeSelOpt	m_PrizeSelOpt;
 	YSTongQOpt		m_TongQOpt;
 	YSTongPKOpt		m_TongPKOpt;
+	// 11-2026: Danh quai Da Tau
+	YSKillQOpt		m_KillQOpt;
 
 public:
 	void	InitValue();

@@ -120,6 +120,7 @@
     </ClCompile>
     <ClCompile Include="VLAuto.cpp" />
     <ClCompile Include="VLAutoDlg.cpp" />
+    <ClCompile Include="License.cpp" />
     <ClCompile Include="LicenseGate.cpp" />
     <ClCompile Include="SealGate.cpp" />
     <ClCompile Include="Harden.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="YSBuyItem.cpp" />
     <ClCompile Include="YSPrizeSel.cpp" />
     <ClCompile Include="YSTongPK.cpp" />
+    <ClCompile Include="YSKillQ.cpp" />
     <ClCompile Include="YSTongQ.cpp" />
     <ClCompile Include="YSTuZhi.cpp" />
   </ItemGroup>
@@ -169,6 +171,7 @@
     <ClInclude Include="Version.h" />
     <ClInclude Include="VLAuto.h" />
     <ClInclude Include="VLAutoDlg.h" />
+    <ClInclude Include="License.h" />
     <ClInclude Include="LicenseGate.h" />
     <ClInclude Include="SealGate.h" />
     <ClInclude Include="Harden.h" />
@@ -198,6 +201,7 @@
     <ClInclude Include="YSBuyItem.h" />
     <ClInclude Include="YSPrizeSel.h" />
     <ClInclude Include="YSTongPK.h" />
+    <ClInclude Include="YSKillQ.h" />
     <ClInclude Include="YSTongQ.h" />
     <ClInclude Include="YSTuZhi.h" />
     <ClInclude Include="AntiRE.h" />

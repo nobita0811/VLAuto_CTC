@@ -10,6 +10,78 @@
 
 static int WalkDist(int px, int py, int tx, int ty, int dZ);
 
+// ===== Ket lag: Khinh cong (Tab Phuc hoi "Dung khinh cong khi chay bi ket") =====
+// Phai xuong ngua moi dung duoc khinh cong: dang cuoi ngua thi xuong -> nhay -> len ngua lai
+#define LAG_JUMP_SKILLID	210
+#define LAG_JUMP_RANGE		300		// Tam nhay khi khong doc duoc AttackRadius cua skill
+static int s_nJumpStep = 0;			// 0 = khong nhay, 1 = cho xuong ngua, 2 = ra skill, 3 = cho tiep dat
+static int s_nJumpWait = 0;
+static int s_nJumpTry = 0;
+static BOOL s_bJumpRemount = FALSE;
+static int s_nJumpX = 0, s_nJumpY = 0;
+
+static BOOL HaveJumpSkill()
+{
+	for (int i = 0; i < MAX_NPCSKILL; i++)
+		if (P_PLAYER->m_Skills[i].SkillId == LAG_JUMP_SKILLID && P_PLAYER->m_Skills[i].SkillLevel > 0) return TRUE;
+	return FALSE;
+}
+
+// Bat dau nhay tu (nPlayerX, nPlayerY) ve phia (nDestX, nDestY), cat theo tam skill. FALSE = khong nhay duoc
+static BOOL LagJumpStart(int nPlayerX, int nPlayerY, int nDestX, int nDestY)
+{
+	if ((!nDestX && !nDestY) || !HaveJumpSkill()) return FALSE;
+	int dZ = __distance(nPlayerX, nPlayerY, nDestX, nDestY);
+	if (dZ <= 0) return FALSE;
+	KSkill* pSkill = (KSkill*)(SKL_BASE_ADD + (LAG_JUMP_SKILLID - 1) * SKL_DATA_SIZE);
+	int nRange = (pSkill->m_nSkillRange > 0) ? pSkill->m_nSkillRange * 9 / 10 : LAG_JUMP_RANGE;
+	if (dZ > nRange)
+	{
+		nDestX = nPlayerX + (nDestX - nPlayerX) * nRange / dZ;
+		nDestY = nPlayerY + (nDestY - nPlayerY) * nRange / dZ;
+	}
+	s_nJumpX = nDestX;
+	s_nJumpY = nDestY;
+	s_bJumpRemount = P_PLAYER->m_bRideHorse;
+	s_nJumpWait = 0;
+	s_nJumpTry = 0;
+	s_nJumpStep = 1;
+	return TRUE;
+}
+
+// Goi moi nhip CVLMove::Breathe. TRUE = dang nhay (dung di chuyen)
+static BOOL LagJumpBreathe()
+{
+	if (!s_nJumpStep) return FALSE;
+	if (s_nJumpWait > 0) { s_nJumpWait--; return TRUE; }
+	switch (s_nJumpStep)
+	{
+	case 1:	// Xuong ngua
+		if (P_PLAYER->m_bRideHorse)
+		{
+			if (++s_nJumpTry > 3) { s_nJumpStep = 0; return FALSE; }	// Khong xuong duoc ngua: bo
+			ExecuteScript(SCK_SHORTCUT_HORSE);
+			s_nJumpWait = 4;
+			return TRUE;
+		}
+		s_nJumpStep = 2;
+		// fall through
+	case 2:	// Nhay
+		P_PLAYER->SendCommand(do_skill, LAG_JUMP_SKILLID, s_nJumpX, s_nJumpY);
+		theAttack.SendVLCmdSkill(LAG_JUMP_SKILLID, s_nJumpX, s_nJumpY);
+		s_nJumpStep = 3;
+		s_nJumpWait = 5;
+		return TRUE;
+	default:	// Tiep dat: len ngua lai
+		if (s_bJumpRemount && !P_PLAYER->m_bRideHorse && HAVE_HORSE)
+			ExecuteScript(SCK_SHORTCUT_HORSE);
+		s_nJumpStep = 0;
+		theMove.m_nLagCount = 0;
+		theMove.m_nLastdZ = MAX_INTNUM;
+		return FALSE;
+	}
+}
+
 //================================Class CVLMove================================
 CVLMove::CVLMove(void)
 {
@@ -69,6 +141,7 @@ void CVLMove::Breathe()
 		m_nPreNode = -1;
 		m_nCurNode = -1;
 		bInFightMode = 0;
+		s_nJumpStep = 0;
 		return;
 	}
 	if (!bInFightMode)	// return from city
@@ -77,6 +150,7 @@ void CVLMove::Breathe()
 		nWaitTime = 0;
 		bInFightMode = TRUE;
 	}
+	if (LagJumpBreathe()) return;	// Dang dung khinh cong vuot cho ket
 
 	BOOL bCurMoveByMap = m_bMoveByMap;
 	m_bAroundPointPK = m_bAroundPoint;
@@ -230,7 +304,7 @@ void CVLMove::Breathe()
 		nTimeCount++;
 		if (nTimeCount % 3 == 1)
 		{
-			if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return;
+			if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY)) return;
 		}
 		g_pCurPlayer->MoveTo(nDestX, nDestY);
 	}
@@ -852,7 +926,8 @@ BOOL CVLMove::IsFlagMoving()
 	return (nFlagX > 0 && nFlagY > 0);
 }
 
-BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
+// (nDestX, nDestY): noi dang chay toi - de nhay khinh cong (0,0 = khong biet, khong nhay)
+BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX, int nDestY)
 {
 	if (dZ > m_nLastdZ - 32)
 		m_nLagCount++;
@@ -868,14 +943,21 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ)
 		if ((*g_pMapID) != city_visondao)
 		{
 			m_nTotalLagCount++;
-			if (m_nTotalLagCount > 5 && !theRecover.m_bLagUseTDP)
+			// Bat khinh cong: ket > 5 lan thi nhay khinh cong, ket gap doi (> 10) moi dung TDP
+			int nTDPCount = theRecover.m_bLagUseSkill ? 10 : 5;
+			if (m_nTotalLagCount > nTDPCount && !theRecover.m_bLagUseTDP)
 				m_nTotalLagCount = 0;	// Tat "dung TDP khi lag": chi doi huong chay tiep
-			else if (m_nTotalLagCount > 5)
+			else if (m_nTotalLagCount > nTDPCount)
 			{
 				m_nTotalLagCount = 0;
 				theMap.m_bNoDriverRecent = TRUE;
 				SystemMessage(TV(L"<color=yellow>Kẹt hẳn rồi, về thành lát quay lại."));
 				theRecover.OnUseAM();
+				return TRUE;
+			}
+			else if (m_nTotalLagCount > 5 && theRecover.m_bLagUseSkill && LagJumpStart(nPlayerX, nPlayerY, nDestX, nDestY))
+			{
+				SystemMessage(TV(L"<color=yellow>Kẹt đường rồi, dùng khinh công nhảy qua."));
 				return TRUE;
 			}
 		}
@@ -1063,13 +1145,13 @@ BOOL CVLMove::GoNodesBreathe()
 			m_nLastdZ = MAX_INTNUM;
 			return TRUE;
 		}
-		if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return TRUE;
+		if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY)) return TRUE;
 		g_pCurPlayer->GoTo(nDestX, nDestY);
 		return TRUE;
 	}
 	// Cac diem sau: chay thang theo danh sach
 	static int nTimeCount = 0;
-	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ))) return TRUE;
+	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY)) return TRUE;
 	g_pCurPlayer->MoveTo(nDestX, nDestY);
 	return TRUE;
 }
@@ -1128,7 +1210,7 @@ BOOL CVLMove::GoTrainBreathe()
 		m_nLastdZ = MAX_INTNUM;
 		return TRUE;
 	}
-	if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	if (IsLagMoving(nPlayerX, nPlayerY, dZ, nDestX, nDestY)) return TRUE;
 	g_pCurPlayer->GoTo(nDestX, nDestY);
 	return TRUE;
 }
@@ -1198,7 +1280,7 @@ BOOL CVLMove::RunningToDoor()
 			return TRUE;	// Reach the End
 		}
 	}
-	if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+	if (IsLagMoving(nPlayerX, nPlayerY, dZ, PathPoints[m_nCurPoint].x, PathPoints[m_nCurPoint].y)) return TRUE;
 	g_pCurPlayer->MoveTo(PathPoints[m_nCurPoint].x, PathPoints[m_nCurPoint].y);
 	return TRUE;
 }
@@ -1286,7 +1368,7 @@ BOOL CVLMove::RunningToPos()
 				return 0;
 			}
 		}
-		if (IsLagMoving(nPlayerX, nPlayerY, dZ)) return TRUE;
+		if (IsLagMoving(nPlayerX, nPlayerY, dZ, MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y)) return TRUE;
 		g_pCurPlayer->MoveTo(MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y);
 		return TRUE;
 	}

@@ -100,7 +100,9 @@
 29,78, T­¬ng D­¬ng phñ [100 L­îng]
 29,80, D­¬ng Ch©u phñ [100 L­îng]
 [Item]
-T©n Thñ thiÕp,1,1,4
+T©n Thñ thiÕp,1,2,4
+ThÎ Cao Thñ Giang Hå,1,2,4
+ThÎ Vâ Häc Kú Tµi,1,2,4
 [NPC]
 53860,100274
 51941,99130

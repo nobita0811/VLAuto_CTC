@@ -1,32 +1,42 @@
-﻿  JxCore.cpp
-  S3Client.cpp
+﻿  TextFunc.cpp
+  VLHook.cpp
+  PELib.cpp
+  stdafx.cpp
+  User32.cpp
+  ZZTest.cpp
   VLAttack.cpp
   VLBasic.cpp
   VLCollect.cpp
-  VLDebug.cpp
-  VLDebugAttack.cpp
-  VLDebugCollect.cpp
-  VLDebugFile.cpp
-  VLDebugLowCfg.cpp
-  VLDebugMap.cpp
-  VLDebugPath.cpp
-  VLDebugQuest.cpp
-  VLDebugRecover.cpp
-  VLExpLimit.cpp
-  VLHook.cpp
   VLMain.cpp
   VLMap.cpp
   VLMove.cpp
-  VLObstacle.cpp
+  VLDebug.cpp
+  VLDebugMap.cpp
+  VLDebugCollect.cpp
+  VLDebugAttack.cpp
+  VLDebugFile.cpp
+  VLDebugQuest.cpp
+  VLDebugRecover.cpp
+  VLDebugLowCfg.cpp
   Generating Code...
   Compiling...
+  CrashHandler.cpp
+  VLExpLimit.cpp
+  VLDebugPath.cpp
+  VLObstacle.cpp
+  VLPathPak.cpp
+  MagicAttrib.cpp
+  TcvnText.cpp
   VLParty.cpp
   VLQTong.cpp
   VLQuest.cpp
   VLRecover.cpp
   VLUtil.cpp
   VLYeSou.cpp
-  ZZTest.cpp
+  JxCore.cpp
+  S3Client.cpp
+  DiskID32.cpp
+  DTextFile.cpp
   Generating Code...
      Creating library I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLCTCdll.lib and object I:\CTC\VLAuto_CTC\_Obj\VLCTCdll\Release\VLCTCdll.exp
   VLHook.vcxproj -> I:\CTC\VLAuto_CTC\_Bin\VLCTCdll.dll

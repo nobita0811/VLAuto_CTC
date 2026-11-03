@@ -38,6 +38,7 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_GETMONEY_CHECK, g_pCurGameWin->m_prMap.m_bWithDraw);
 	DDX_Check(pDX, IDC_GIVEKCL_CHECK, g_pCurGameWin->m_prMap.m_bGiveKCL);
 	DDX_Check(pDX, IDC_DRIVER_CHECK2, g_pCurGameWin->m_prMap.m_bDriverOnly);
+	DDX_Check(pDX, IDC_SAVE_RUONG_CHECK, g_pCurGameWin->m_prMap.m_bCustomBox);
 
 	//Textboxes
 	DDX_Text(pDX, IDC_SAVEMONEY_EDIT, g_pCurGameWin->m_prMap.m_nMoneyAmount);
@@ -49,6 +50,7 @@ void CDlgMap::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_DRIVER_COMBO, g_pCurGameWin->m_prMap.m_nDriverOption);
 	DDX_CBIndex(pDX, IDC_SAVEITEM_COMBO, g_pCurGameWin->m_prMap.m_nSaveItemMode);
 	UpdateTrainMap(pDX->m_bSaveAndValidate);
+	UpdateCustomBox();
 
 	//UI Refresh
 	BOOL bChecked;
@@ -106,6 +108,8 @@ BOOL CDlgMap::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_DRIVER_COMBO), _T("Chế độ đi Xa phu"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GIVEKCL_CHECK), _T("Tự nộp KCL mỗi khi về thành"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GIVEKCL_EDIT), _T("Số lượng KCL tối thiểu để về giao nộp"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_SAVE_RUONG_CHECK), _T("Về thành cất đồ ở Rương tại vị trí đã lấy (thay Rương mặc định của thành)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_LUU_RUONG_BUTTON), _T("Lấy vị trí hiện tại của nhân vật (đứng cạnh Rương) làm nơi cất đồ"));
 	}
 
 	return FALSE;
@@ -124,6 +128,17 @@ void CDlgMap::UpdateTrainMap(BOOL bSave)
 	g_pCurGameWin->m_prMap.m_nTrainMapID = CDlgMovePoints::GetTrainMapID();
 }
 
+// Ruong tuy chon: hien "Ten map (id) - [x, y]" (toa do hien thi tren ban do game)
+void CDlgMap::UpdateCustomBox()
+{
+	if (g_pCurGameWin == NULL) return;
+	PARAM_MAP &pm = g_pCurGameWin->m_prMap;
+	CString szText;
+	if (pm.m_nBoxMapID && (pm.m_nBoxX || pm.m_nBoxY))
+		szText.Format(_T("%s - [%d, %d]"), (LPCTSTR)CDlgMovePoints::GetMapName(pm.m_nBoxMapID), pm.m_nBoxX >> 8, pm.m_nBoxY >> 9);
+	SetDlgItemText(IDC_LUU_RUONG_EDIT, szText);
+}
+
 void CDlgMap::OnButtonsClicked(UINT nID)
 {
 	if (g_pCurGameWin == NULL) return;
@@ -136,6 +151,17 @@ void CDlgMap::OnButtonsClicked(UINT nID)
 		UpdateData();
 		CDlgBuySetting dlgSetting(this);
 		dlgSetting.DoModal();
+	}
+	else if (nID == IDC_LUU_RUONG_BUTTON)
+	{
+		if (!g_pCurGameWin->m_nMapID || (!g_pCurGameWin->m_nOffX && !g_pCurGameWin->m_nOffY))
+		{
+			MessageBox(_T("Chưa đọc được vị trí nhân vật!"), _T("VLAuto"), MB_ICONEXCLAMATION);
+			return;
+		}
+		g_pCurGameWin->m_prMap.m_nBoxMapID = g_pCurGameWin->m_nMapID;
+		g_pCurGameWin->m_prMap.m_nBoxX = g_pCurGameWin->m_nOffX;
+		g_pCurGameWin->m_prMap.m_nBoxY = g_pCurGameWin->m_nOffY;
 	}
 	else if (nID == IDC_GETMONEY_CHECK)
 	{

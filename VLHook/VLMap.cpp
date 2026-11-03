@@ -164,7 +164,10 @@ static BOOL s_bShopWithdrew = FALSE;	// Lan ghe cua hang nay da rut (hoac bo qua
 static BOOL s_bShopNoMoney = FALSE;		// Mua khong duoc vi het tien: xa phu khong quay lai mua bu (reset o InitValues)
 static int s_nBuyMoney = -1;			// Tien tren nguoi lan BuyItem gan nhat (doi = mua duoc)
 static DWORD s_dwBuyTick = 0;
-static int s_nShopEat = 0;				// So lan uong mau/mana o tiem thuoc truoc khi roi di
+static int s_nShopEat = 0;				// Da uong o tiem thuoc lan ghe nay: 1 = mau, 2 = mana (moi loai 1 binh)
+BOOL g_bQuestGoTrainFirst = FALSE;		// Ngung nhiem vu -> lan dau len map luyen cong (chua ra khoi thanh lan nao)
+DWORD g_dwTownEatHP = 0;				// Luc uong binh mau / mana o tiem thuoc (tab Nhiem vu: Refill khong uong them)
+DWORD g_dwTownEatMP = 0;
 static DWORD s_dwShopEatTick = 0;
 
 #define SHOP_MONEY_DEF		100000	// Chua dat "Rut tien": can 10 van tren nguoi de mua
@@ -206,7 +209,9 @@ static BOOL ShopWithdraw()
 	int nTake = nWant - EQUIP_MONEY;
 	if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
 	if (s_nTownMoneyBase < 0) s_nTownMoneyBase = EQUIP_MONEY;
-	SystemMessage(1, TV(L"<color=yellow>Rút %d lượng để mua (trên người %d, rương %d)"), nTake, EQUIP_MONEY, ROOM_MONEY);
+#if ADMIN_MODE
+	SystemMessage(1, TV(L"<color=yellow>Rút %d lượng để mua (trên người %d, rương %d)"), nTake, EQUIP_MONEY, ROOM_MONEY);	// Ban User: tat thong bao rut luong
+#endif
 	g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
 	s_nShopMoneyBefore = EQUIP_MONEY;
 	s_dwShopMoneyTick = dwNow;
@@ -231,14 +236,20 @@ static BOOL ShopTopUpMedicine()
 {
 	DWORD dwNow = GetTickCount();
 	if (s_dwShopEatTick && dwNow - s_dwShopEatTick < 1500) return TRUE;	// Cho so binh trong hanh trang giam (lag)
-	if (s_nShopEat >= 3) return FALSE;
 	BOOL bEat = FALSE;
-	if (theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && g_pCurPlayer->EatMedicine(medicine_blood))
+	if (!(s_nShopEat & 1) && theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && g_pCurPlayer->EatMedicine(medicine_blood))
+	{
+		s_nShopEat |= 1;
+		g_dwTownEatHP = dwNow;
 		bEat = TRUE;
-	if (theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && g_pCurPlayer->EatMedicine(medicine_mana))
+	}
+	if (!(s_nShopEat & 2) && theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && g_pCurPlayer->EatMedicine(medicine_mana))
+	{
+		s_nShopEat |= 2;
+		g_dwTownEatMP = dwNow;
 		bEat = TRUE;
+	}
 	if (!bEat) return FALSE;
-	s_nShopEat++;
 	s_dwShopEatTick = dwNow;
 	return TRUE;
 }
@@ -283,8 +294,12 @@ void CVLMap::InitValues()
 	m_bIsReady = 0;
 	m_bNeedDriver = m_bGetDriver || theQuest.m_bNeedGoTrain;
 	m_nSaveMapID = theMain.GetReturnCity(m_nTrainMapID);
+	if (!m_nSaveMapID && theQuest.m_bNeedGoTrain)	// Map luyen cong khong co thanh ve: luu ruong o thanh chinh hien tai
+		m_nSaveMapID = theMain.GetOwnerCity(*g_pMapID);
 	NearestDriver();
 }
+
+static BOOL CustomBoxActive();
 
 void CVLMap::Breathe()
 {
@@ -298,6 +313,7 @@ void CVLMap::Breathe()
 		m_nLastMapID = 0;
 		if (!bInFightMode) //return from City
 		{
+			g_bQuestGoTrainFirst = FALSE;	// Da ra khoi thanh: cac lan sau dung xa phu binh thuong
 			KUiMsgSel* pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
 			if (pMsgSel && pMsgSel->IsVisible()) //Xa phu
 				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
@@ -422,7 +438,8 @@ void CVLMap::Breathe()
 #endif
 	if (m_bNeedSaveItems)
 	{
-		if (!m_bDoShoping && RunningToPos(NpcPoints[npc_Repository])) return;
+		if (CustomBoxActive() && ChangeMap(m_nBoxMapID)) return;
+		if (!m_bDoShoping && RunningToBox()) return;
 		m_bDoShoping = TRUE;
 		GetSaveItems();
 		return;
@@ -518,6 +535,25 @@ BOOL CVLMap::LoadMap(int nMapID)
 	int n = PathLoadNpcs(nMapID, NpcPoints);
 	m_nPoints = max(n, 0);
 	return n > 0;
+}
+
+// Ruong tuy chon (Tab Ban do: "Luu ruong" + "lay vi tri"): TRUE = bat va da lay vi tri
+static BOOL CustomBoxActive()
+{
+	return theMap.m_bCustomBox && theMap.m_nBoxMapID && (theMap.m_nBoxX || theMap.m_nBoxY);
+}
+
+// Chay toi ruong cat do: dang o map ruong tuy chon thi chay toi toa do da lay,
+// khong thi chay toi Ruong mac dinh cua thanh ([NPC] trong MapPath). TRUE = dang di
+// (Doi sang map ruong tuy chon: noi goi ChangeMap(m_nBoxMapID) truoc, khong phu thuoc m_bDoShoping)
+BOOL CVLMap::RunningToBox()
+{
+	if (CustomBoxActive() && *g_pMapID == m_nBoxMapID)
+	{
+		POINT ptBox = { m_nBoxX, m_nBoxY };
+		return RunningToPos(ptBox);
+	}
+	return RunningToPos(NpcPoints[npc_Repository]);
 }
 
 // Chay toi gan NPC (ptDest): theo MapPath cua map (PathWalkTo), het duong / map khong co MapPath thi chay thang
@@ -741,6 +777,8 @@ int CVLMap::OpenStoreBox()
 		return 0;
 	}
 
+	// Chon ruong gan nhat (ruong tuy chon: co the co nhieu ruong trong tam nhin)
+	int nBest = 0, dMin = MAX_INTNUM;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	if ((*g_pMapID) >= city_visondao)
 	{
@@ -750,15 +788,19 @@ int CVLMap::OpenStoreBox()
 			if (strcmp(g_pNpcArray[i]->Name, TV(L"Rương chứa đồ"))) continue;
 			g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
 			dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
-			if (dZ > MAX_MOVE_DISTANCE)
+			if (dZ < dMin) { dMin = dZ; nBest = i; }
+		}
+		if (nBest)
+		{
+			g_pNpcArray[nBest]->GetMapPos(&nNpcX, &nNpcY);
+			if (dMin > MAX_MOVE_DISTANCE)
 				g_pCurPlayer->MoveTo(nNpcX, nNpcY);
 			else
 			{
-				theAttack.SetPeopleIdx(i);
+				theAttack.SetPeopleIdx(nBest);
 				m_nTimeWait = MAX_TIME_WAIT;
 			}
 			bFound = TRUE;
-			break;
 		}
 	}
 	else
@@ -769,15 +811,19 @@ int CVLMap::OpenStoreBox()
 			if (g_pObjArray[i]->m_Kind != Obj_Kind_StoreBox) continue;
 			g_pObjArray[i]->GetMapPos(&nObjX, &nObjY);
 			dZ = __distance(nPlayerX, nPlayerY, nObjX, nObjY);
-			if (dZ > PLAYER_PICKUP_DISTANCE)
+			if (dZ < dMin) { dMin = dZ; nBest = i; }
+		}
+		if (nBest)
+		{
+			g_pObjArray[nBest]->GetMapPos(&nObjX, &nObjY);
+			if (dMin > PLAYER_PICKUP_DISTANCE)
 				g_pCurPlayer->MoveTo(nObjX, nObjY);
 			else
 			{
-				P_PLAYER->m_nObjectIdx = i;
+				P_PLAYER->m_nObjectIdx = nBest;
 				m_nTimeWait = MAX_TIME_WAIT;
 			}
 			bFound = TRUE;
-			break;
 		}
 	}
 	if (!bFound)
@@ -834,13 +880,15 @@ void CVLMap::FirstRepository()
 	int nSaveMap = m_nSaveMapID;
 	if (theQuest.m_nYeSouMapID)
 		nSaveMap = theQuest.m_nSaveMapID;
+	if (CustomBoxActive())
+		nSaveMap = m_nBoxMapID;
 	if (!nSaveMap)
 	{
 		m_bFirstSaveRepos = 0;
 		return;
 	}
 	if (ChangeMap(nSaveMap)) return;
-	if (!m_bDoShoping && RunningToPos(NpcPoints[npc_Repository])) return;
+	if (!m_bDoShoping && RunningToBox()) return;
 	m_bDoShoping = TRUE;
 
 	if (OpenStoreBox() <= 0)
@@ -1347,7 +1395,9 @@ void CVLMap::GetDriver()
 						return;
 					}
 					// Xa phu khong co ten map train: chon dong "Noi da di qua 1/2/3" theo cai dat (nDriverOpt 0-2)
-					int nVisitedIdx = nDriverOpt;
+					// Ngung nhiem vu, lan dau len map luyen cong: khong chon dong khac, chay bo len map luyen cong
+					// (cac lan sau ve thanh bang TDP thi nhu binh thuong: Tro lai dia diem cu / Noi da di qua / chay bo)
+					int nVisitedIdx = (g_bQuestGoTrainFirst && theQuest.m_bNeedGoTrain && !theQuest.m_bGoTrainGetPK) ? -1 : nDriverOpt;
 					if (nVisitedIdx == 10) nVisitedIdx = 2;	// Nhiem vu PK ko xac dinh
 					else if (nVisitedIdx > 10) nVisitedIdx -= 11;
 					if (nVisitedIdx >= 0 && nVisitedIdx <= 2 && nVisitedIdx < theMain.GetMenuCount() - 1)	// Dong cuoi la dong ket thuc
@@ -1542,6 +1592,35 @@ BOOL CVLMap::SellItems()
 	return 0;
 }
 
+// Cat do: dem so lan cam 1 mon tu tui len de cat. Server tu choi (ruong that da day / trang ruong
+// chua tai / mon khong duoc cat) thi mon bi tra ve tui => cam len bo xuong mai. Qua 3 lan thi bo qua mon do.
+#define SAVE_TRY_MAX	3
+#define SAVE_TRY_SLOT	32
+static int s_nSaveTryIdx[SAVE_TRY_SLOT];
+static int s_nSaveTryCnt[SAVE_TRY_SLOT];
+static DWORD s_dwSaveTryTick = 0;
+
+static int* SaveTryCount(int nIdx)
+{
+	DWORD dwNow = GetTickCount();
+	if (!s_dwSaveTryTick || dwNow - s_dwSaveTryTick > 120000)
+	{	// Lan cat do moi (2 phut khong cam mon nao): dem lai tu dau
+		memset(s_nSaveTryIdx, 0, sizeof(s_nSaveTryIdx));
+		memset(s_nSaveTryCnt, 0, sizeof(s_nSaveTryCnt));
+	}
+	s_dwSaveTryTick = dwNow;
+	int nFree = -1;
+	for (int i = 0; i < SAVE_TRY_SLOT; i++)
+	{
+		if (s_nSaveTryIdx[i] == nIdx) return &s_nSaveTryCnt[i];
+		if (nFree < 0 && !s_nSaveTryIdx[i]) nFree = i;
+	}
+	if (nFree < 0) nFree = nIdx % SAVE_TRY_SLOT;
+	s_nSaveTryIdx[nFree] = nIdx;
+	s_nSaveTryCnt[nFree] = 0;
+	return &s_nSaveTryCnt[nFree];
+}
+
 BOOL CVLMap::SaveItems()
 {
 	KItem* pItem;
@@ -1592,6 +1671,16 @@ BOOL CVLMap::SaveItems()
 		if (ComAttr.nObjIdx == 38) continue;	// SDT, TDP...
 		if (ComAttr.nObjIdx == 383) continue;	// Tong Kim Chieu thu
 		if (ComAttr.bStack && pItem->m_nCurDur < pItem->m_nMaxDur) continue;	// Stackable items..
+		int* pTry = SaveTryCount(PLAYER_ITEM(i).nIdx);
+		if (*pTry >= SAVE_TRY_MAX)
+		{
+			if (*pTry == SAVE_TRY_MAX)
+			{
+				(*pTry)++;
+				SystemMessage(0, TV(L"<color=yellow>Không cất được '%s' vào rương (rương đầy hoặc không cho cất) => bỏ qua."), ComAttr.szItemName);
+			}
+			continue;
+		}
 		if (Room1.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos))
 			bHaveRoom = TRUE;
 		else if (m_nSaveItemMode > 1 && Room2.FindRoom(ComAttr.nWidth, ComAttr.nHeight, &itmPos))
@@ -1600,6 +1689,7 @@ BOOL CVLMap::SaveItems()
 			bHaveRoom = TRUE;
 		if (bHaveRoom)
 		{
+			(*pTry)++;
 			g_pCurPlayer->SwitchItem(UOC_ITEM_TAKE_WITH, PLAYER_ITEM(i).nX, PLAYER_ITEM(i).nY);
 			return TRUE;
 		}

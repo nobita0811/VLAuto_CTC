@@ -6,6 +6,7 @@
 #include "VLClasses.h"
 #include "VLDebug.h"
 #include "VLObstacle.h"
+#include "VLPathPak.h"
 
 // Tab MapPath cua cua so DEBUG: ghi/sua/kiem tra du lieu duong di (Auto dung qua PathTravelStart khi xa phu khong co map train)
 //
@@ -211,6 +212,60 @@ static BOOL FindPathFile(int nMapID, WCHAR *wszFile)
 	return GetFileAttributesW(wszFile) != INVALID_FILE_ATTRIBUTES;
 }
 
+// Noi dung file duong di: Maps\Path (uu tien - de test/sua), khong co thi lay trong Maps\Path.pak.
+// free() sau khi dung. *pbPak = TRUE neu lay tu Path.pak
+static char* ReadPathText(int nMapID, BOOL *pbPak = NULL)
+{
+	if (pbPak) *pbPak = FALSE;
+	WCHAR wszFile[MAX_PATH];
+	if (FindPathFile(nMapID, wszFile))
+	{
+		FILE *pFile = _wfopen(wszFile, L"rb");
+		if (pFile)
+		{
+			fseek(pFile, 0, SEEK_END);
+			long n = ftell(pFile);
+			fseek(pFile, 0, SEEK_SET);
+			char *p = n >= 0 ? (char*)malloc(n + 1) : NULL;
+			if (p) p[fread(p, 1, n, pFile)] = 0;
+			fclose(pFile);
+			if (p) return p;
+		}
+	}
+	char *p = PakPathRead(nMapID, NULL);
+	if (p && pbPak) *pbPak = TRUE;
+	return p;
+}
+
+// Cac MapID co file duong di: Maps\Path\*.txt + Maps\Path.pak (khong trung). Tra ve so map
+static int ListPathMaps(int *pMaps, int nMax)
+{
+	int n = 0;
+	char szFind[MAX_PATH];
+	sprintf(szFind, "%s\\Maps\\Path\\*.txt", theMain.m_szCurFolder);
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA(szFind, &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			int nMap = atoi(fd.cFileName), k = 0;
+			while (k < n && pMaps[k] != nMap) k++;
+			if (nMap > 0 && k == n && n < nMax) pMaps[n++] = nMap;
+		} while (FindNextFileA(hFind, &fd));
+		FindClose(hFind);
+	}
+	static int PakMaps[1024];
+	int nPak = PakPathMaps(PakMaps, 1024);
+	for (int i = 0; i < nPak; i++)
+	{
+		int k = 0;
+		while (k < n && pMaps[k] != PakMaps[i]) k++;
+		if (PakMaps[i] > 0 && k == n && n < nMax) pMaps[n++] = PakMaps[i];
+	}
+	return n;
+}
+
 static int Nearest(int x, int y, int *pDist = NULL, int nExcept = -1)
 {
 	int nBest = -1, dMin = MAX_INTNUM;
@@ -403,13 +458,15 @@ static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
 	memset(g, 0, sizeof(PT_GRAPH));
 	g->nMapID = nMapID;
 	char szLine[256];
-	WCHAR wszFile[MAX_PATH];
-	if (!FindPathFile(nMapID, wszFile)) return FALSE;
-	FILE *pFile = _wfopen(wszFile, L"r");
-	if (!pFile) return FALSE;
+	char *pText = ReadPathText(nMapID);
+	if (!pText) return FALSE;
 	int nSec = 0;
-	while (fgets(szLine, sizeof(szLine), pFile))
+	for (char *pNext = pText; *pNext; )
 	{
+		size_t nLine = strcspn(pNext, "\n");
+		memcpy(szLine, pNext, min(nLine, sizeof(szLine) - 1));
+		szLine[min(nLine, sizeof(szLine) - 1)] = 0;
+		pNext += nLine + (pNext[nLine] ? 1 : 0);
 		char *p = szLine;
 		if (!memcmp(p, "\xEF\xBB\xBF", 3)) p += 3;	// BOM UTF-8 (file luu bang Notepad)
 		while (*p == ' ' || *p == '\t') p++;
@@ -480,7 +537,7 @@ static BOOL LoadGraph(PT_GRAPH *g, int nMapID)
 			break;
 		}
 	}
-	fclose(pFile);
+	free(pText);
 	return TRUE;
 }
 
@@ -1003,15 +1060,12 @@ static void LoadEntries(int nMap)
 	static PT_GRAPH g;
 	s_nIn = 0;
 	s_nInMap = nMap;
-	char szFind[MAX_PATH];
-	sprintf(szFind, "%s\\Maps\\Path\\*.txt", theMain.m_szCurFolder);
-	WIN32_FIND_DATAA fd;
-	HANDLE hFind = FindFirstFileA(szFind, &fd);
-	if (hFind == INVALID_HANDLE_VALUE) return;
-	do
+	static int Maps[1024];
+	int nMaps = ListPathMaps(Maps, 1024);
+	for (int m = 0; m < nMaps; m++)
 	{
-		int nFrom = atoi(fd.cFileName);
-		if (nFrom <= 0 || nFrom == nMap || !LoadGraph(&g, nFrom)) continue;
+		int nFrom = Maps[m];
+		if (nFrom == nMap || !LoadGraph(&g, nFrom)) continue;
 		for (int k = 0; k < g.nDoors && s_nIn < PT_MAX_ENTRIES; k++)
 		{
 			const PT_DOOR &d = g.door[k];
@@ -1020,8 +1074,7 @@ static void LoadEntries(int nMap)
 			s_In[s_nIn].nFrom = nFrom;
 			s_nIn++;
 		}
-	} while (FindNextFileA(hFind, &fd));
-	FindClose(hFind);
+	}
 }
 
 // Cong RA cua diem i (-1 = khong phai cong)
@@ -1561,16 +1614,11 @@ static int LoadLinks()
 	static PT_LINK ItemLinks[PT_MAX_LINKS / 8];
 	int nItemLinks = 0;
 	s_nLinks = 0;
-	char szFind[MAX_PATH];
-	sprintf(szFind, "%s\\Maps\\Path\\*.txt", theMain.m_szCurFolder);
-	WIN32_FIND_DATAA fd;
-	HANDLE hFind = FindFirstFileA(szFind, &fd);
-	int nFiles = 0;
-	if (hFind == INVALID_HANDLE_VALUE) return 0;
-	do
+	static int Maps[1024];
+	int nMaps = ListPathMaps(Maps, 1024), nFiles = 0;
+	for (int m = 0; m < nMaps; m++)
 	{
-		int nMap = atoi(fd.cFileName);
-		if (nMap <= 0) continue;
+		int nMap = Maps[m];
 		if (nMap == s_G.nMapID) memcpy(&g, &s_G, sizeof(g));	// dung ban dang sua
 		else if (!LoadGraph(&g, nMap)) continue;
 		nFiles++;
@@ -1601,8 +1649,7 @@ static int LoadLinks()
 			l.nOpts = g.item[i].nOpts;
 			memcpy(l.nOpt, g.item[i].nOpt, sizeof(l.nOpt));
 		}
-	} while (FindNextFileA(hFind, &fd));
-	FindClose(hFind);
+	}
 	for (int i = 0; i < nItemLinks && s_nLinks < PT_MAX_LINKS; i++)
 		s_Links[s_nLinks++] = ItemLinks[i];
 	return nFiles;
@@ -1732,7 +1779,7 @@ static void MapRoute(int nTarget)
 {
 	static PT_LINK Steps[PT_MAX_STEPS];
 	int nFiles = LoadLinks();
-	DbgOut("Doc %d file Maps\\Path\\*.txt, %d lien ket (cong + xa phu + vat pham co trong hanh trang)\n", nFiles, s_nLinks);
+	DbgOut("Doc %d file Maps\\Path\\*.txt + Path.pak, %d lien ket (cong + xa phu + vat pham co trong hanh trang)\n", nFiles, s_nLinks);
 	int nStart = *g_pMapID;
 	int nSteps = MapBFS(nStart, nTarget, Steps);
 	if (nSteps < 0)
@@ -1867,9 +1914,10 @@ static void OutStatus()
 	GetPos(&x, &y);
 	int nNear = Nearest(x, y, &d);
 	WCHAR wszFile[MAX_PATH];
-	BOOL bHave = FindPathFile(s_G.nMapID, wszFile);
+	BOOL bHave = FindPathFile(s_G.nMapID, wszFile), bPak = FALSE;
+	if (!bHave) free(ReadPathText(s_G.nMapID, &bPak));
 	DbgOut("Map %d (%s)  file %s%s\n", *g_pMapID, MapName(*g_pMapID), PathFileShow(s_G.nMapID),
-		bHave ? "" : "  (chua co)");
+		bHave ? "" : bPak ? "  (chua co - dang dung ban trong Maps\\Path.pak)" : "  (chua co)");
 	DbgOut("Tu ghi: %s  khoang cach %d  diem truoc s_nLast = %d  Ve node: %s (patch %d)\n", s_bRec ? "DANG GHI" : "tat",
 		s_nSpacing, s_nLast, s_bShow ? "BAT" : "tat", s_bPatched);
 	DbgOut("Do thi: %d diem, %d canh, %d cong, %d xa phu, %d vat pham  %s\n", s_G.nPoints, s_G.nSides, s_G.nDoors, s_G.nDrivers,
@@ -2350,6 +2398,23 @@ BOOL DebugPathCmd(const DEBUG_PARAM *pParam)
 		g_DbgReply.bOK = TRUE;
 		break;
 
+	case dbg_pt_pack:
+	{
+		int nRaw, nPack, nFiles = PakPathBuild(&nRaw, &nPack);
+		if (nFiles == -1) DbgOut("LOI: khong co file Maps\\Path\\<MapID>_*.txt nao de nen\n");
+		else if (nFiles == -2) DbgOut("LOI: khong ghi duoc Maps\\Path.pak (file dang bi khoa?)\n");
+		else if (nFiles < 0) DbgOut("LOI: kiem tra giai nen lai khong khop - khong ghi Path.pak\n");
+		else
+		{
+			DbgOut("Nen %d file Maps\\Path\\*.txt -> Maps\\Path.pak: %d -> %d byte (%d%%)\n", nFiles, nRaw, nPack,
+				nRaw ? (int)((__int64)nPack * 100 / nRaw) : 0);
+			DbgOut("Auto doc Maps\\Path\\<file> truoc (de test/sua), map khong co file moi lay trong Path.pak\n");
+			if (s_G.bDirty) DbgOut("Chu y: do thi map %d dang sua CHUA GHI FILE - khong co trong Path.pak (Ghi file roi nen lai)\n", s_G.nMapID);
+			g_DbgReply.bOK = TRUE;
+		}
+		break;
+	}
+
 	case dbg_pt_show:
 		s_bShow = !s_bShow;
 		if (s_bShow)
@@ -2415,7 +2480,9 @@ static void TvMsg(const char *szFormat, ...)
 	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFormat, va);
 	va_end(va);
 	szMsg[sizeof(szMsg) - 1] = 0;
-	SystemMessage(1,szMsg);
+#if ADMIN_MODE
+	SystemMessage(1,szMsg);	// Ban User: tat thong bao MapPath (tu di) tren kenh chat
+#endif
 }
 
 static void CloseMenu()

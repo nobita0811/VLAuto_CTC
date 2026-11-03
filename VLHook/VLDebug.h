@@ -43,11 +43,15 @@ void		DebugQuestChannelMsg(DWORD nChannelID, const char *szSend, const char *szM
 BOOL		DebugFileCoreDataHook(BOOL bOn);			// Tab Nhiem vu: hook CoreDataChanged (dung chung voi Ghi file/lua)
 
 // Auto lam nhiem vu Da Tau diet quai (CVLQuest::DoQuestAttackNpc) bang Buoc 2 + 3 cua tab Nhiem vu (VLDebugQuest.cpp)
-enum { qk_idle, qk_running, qk_done, qk_failed };
+enum { qk_idle, qk_running, qk_done, qk_failed, qk_cancel };
+enum { kqm_ok, kqm_nomap, kqm_disable };
 BOOL		QuestKillStart(int nCount, int nMapID, const char *szNpcName, const char *szMapName);	// TRUE = da bat dau
-int			QuestKillState(int *pKilled, int *pNeed);	// qk_...; qk_done = dang hien bang phan thuong (chua chon o)
+int			QuestKillState(int *pKilled, int *pNeed);	// qk_...; qk_done = dang hien bang phan thuong (chua chon o); qk_cancel = kiem tra dai han bao huy
 void		QuestKillStop();							// Auto thoi lam (dung buoc dang chay neu do Auto bat)
 const char*	QuestKillLastMsg();						// Dong nhat ky buoc gan nhat (ly do dung)
+int			QuestKillMapCheck(int nMapID);				// kqm_...: map co trong Maps\MapDaTau.ini / bi bo chon (tab Danh quai)
+void		QuestKillRestart();						// Bat lai "Tu lam nhiem vu": xoa tien do, ve Tuong Duong (vat pham -> TDP -> di bo)
+BOOL		QuestKillHoming();							// Dang ve Tuong Duong sau khi bat lai: CVLQuest cho
 void		DebugLowCfgBreathe();						// Giu tat hinh + tu giam RAM (200ms)
 void		DebugLowCfgUnhook();						// Tra lai FPS/hinh/nguoi choi truoc khi FreeLibrary
 BOOL		DebugPathCmd(const DEBUG_PARAM *pParam);

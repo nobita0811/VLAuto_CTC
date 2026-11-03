@@ -235,7 +235,8 @@
 7,1, Ph­îng T­êng phñ [200 L­îng]
 81,1, Ph­îng T­êng phñ [200 L­îng]
 [Item]
-T©n Thñ thiÕp,1,1,5
+T©n Thñ thiÕp,1,2,5
+ThÎ Cao Thñ Giang Hå,1,2,5
 [NPC]
 61876,144405
 61578,141661

@@ -50,7 +50,7 @@ void PostChatMessage(const char *szChatMsg)
 }
 void PostChatMessage2(const char* szChatMsg)
 {
-	if (QUANGCAOAUTO)
+	if (LICENSE_REQUIRED)
 	{
 		char szScript[MAX_PATH];
 		sprintf(szScript, "Chat('CH_NEARBY','%s')", szChatMsg);
@@ -424,6 +424,13 @@ int KPlayer::CheckRoom(int nRoom)
 	return nCount;
 }
 
+// The khong khoa "(Chua kich hoat)" (vd "The Vo Hoc Ky Tai (Chua kich hoat)"): dung se kich hoat (mat chu nay),
+// nen khi dung / dem vat pham theo ten thi bo qua - chi lay vat pham dung ten (da kich hoat)
+static BOOL IsInactiveItem(const char *szName)
+{
+	return strstr(szName, TV(L"Chưa kích")) != NULL;
+}
+
 int KPlayer::GetItemsCount(const char *szItemName, int nPlace)
 {
 	KItem *pItem;
@@ -435,7 +442,7 @@ int KPlayer::GetItemsCount(const char *szItemName, int nPlace)
 		if (nPlace > 0 && m_ItemList.m_Items[i].nPlace != nPlace)
 			continue;
 		pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
-		if (strstr(ComAttr.szItemName, szItemName))
+		if (strstr(ComAttr.szItemName, szItemName) && !IsInactiveItem(ComAttr.szItemName))
 		{
 			if (pItem->m_CommonAttrib.bStack)
 				nCount += pItem->m_nCurDur;
@@ -485,7 +492,7 @@ BOOL KPlayer::UseItem(const char *szItemName)
 			nItemIdx = pArray[j*nRoomWidth + i];
 			if (!nItemIdx) continue;
 			pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
-			if (strstr(ComAttr.szItemName, szItemName))
+			if (strstr(ComAttr.szItemName, szItemName) && !IsInactiveItem(ComAttr.szItemName))
 			{
 				KItemObject useObj;
 				useObj.uId = nItemIdx;

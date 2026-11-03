@@ -353,13 +353,18 @@ public:
 	WORD				m_RegY;					// 0x1A86 = HIWORD(m_dwRegionID)
 	int					m_sSyncPos[6];			// 0x1A88
 	int					m_nPKFlag;				// 0x1AA0
-	BYTE				NpcDataA[0x022C];		// 15-10: khong con m_dwTongNameID
+	BYTE				NpcDataA[0x0228];
+	DWORD				m_dwTongNameID;			// 0x1CCC ma bang (SyncNpc goi+0x22 0x623EFA, goi+0x1F 0x624178; GetRelation 0x636BA9: truyen vao KPlayerTong 0x636840, PK thuong cung ma => khong phai ke thu)
 	int					m_nMenuState;			// 0x1CD0 0=thuong, 1=mo ban hang/giao dich (sap), 2=mo doi (sync bit 0x40/0x80 0x624024; click player 0x6DFE60)
-	BYTE				NpcDataA2[0x0044];
+	BYTE				NpcDataA2[0x0008];
+	DWORD				m_dwRelGroup;			// 0x1CDC SyncNpc goi+0x21 (setter 0x5F4230); GetRelation 0x635540: ca hai != 0 => bang nhau ally, khac enemy (khong phai ma bang)
+	BYTE				NpcDataA3[0x0038];
 	NpcCommand			m_Command;				// 0x1D18 (SendCommand 0x5F7490)
 	BYTE				NpcDataD[0x0050];
 	BOOL				m_bRideHorse;			// 0x1D78
-	BYTE				NpcDataE[0xFC84];
+	BYTE				NpcDataE0[0x0008];
+	char				m_szTopText[64];		// 0x1D84 chu tren dau (SyncPlayer goi+0x26 -> 0x5F5A00; ve 0x5FE40D; GDI player info +0x70). Ban 15-10 dung lam ten bang (?)
+	BYTE				NpcDataE[0xFC3C];
 	int					m_CurrentLifeMax;		// 0x11A00 game dung max(LifeMax, LifeMaxEx)
 	int					m_CurrentLifeMaxEx;		// 0x11A04
 	int					m_CurrentManaMax;		// 0x11A08 game dung max(ManaMax, ManaMaxEx)
@@ -515,6 +520,7 @@ CHECK_OFF(KNpc, Name, 0x13B9);				CHECK_OFF(KNpc, m_NpcSettingIdx, 0x13E4);
 CHECK_OFF(KNpc, m_nPeopleIdx, 0x1448);		CHECK_OFF(KNpc, m_nObjectIdx, 0x1458);
 CHECK_OFF(KNpc, m_FightMode, 0x1A58);		CHECK_OFF(KNpc, m_SyncSignal, 0x1A74);		CHECK_OFF(KNpc, m_RegX, 0x1A84);
 CHECK_OFF(KNpc, m_nPKFlag, 0x1AA0);			CHECK_OFF(KNpc, m_Command, 0x1D18);			CHECK_OFF(KNpc, m_bRideHorse, 0x1D78);
+CHECK_OFF(KNpc, m_dwTongNameID, 0x1CCC);	CHECK_OFF(KNpc, m_dwRelGroup, 0x1CDC);		CHECK_OFF(KNpc, m_szTopText, 0x1D84);
 CHECK_OFF(KNpc, m_CurrentLifeMax, 0x11A00);	CHECK_OFF(KNpc, m_CurrentManaMax, 0x11A08);
 static_assert(sizeof(KNpc) == NPC_DATA_SIZE, "sizeof(KNpc) sai");
 

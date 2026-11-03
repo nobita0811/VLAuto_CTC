@@ -42,6 +42,7 @@ void CDlgRecover::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_PTBUFF_CHECK, g_pCurGameWin->m_prRecover.m_bPartyBuff);
 	DDX_Check(pDX, IDC_AUTOREPAIR_CHECK, g_pCurGameWin->m_prRecover.m_bAutoRepair);
 	DDX_Check(pDX, IDC_LAGTDP_CHECK, g_pCurGameWin->m_prRecover.m_bLagUseTDP);
+	DDX_Check(pDX, IDC_LAG_USE_SKILL_CHECK, g_pCurGameWin->m_prRecover.m_bLagUseSkill);
 
 	//Editboxes
 	DDX_Text(pDX, IDC_AUTOHP_EDIT, g_pCurGameWin->m_prRecover.m_nAutoHPAmount);
@@ -123,6 +124,7 @@ BOOL CDlgRecover::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_NGAMI_EDIT), _T("Buff khi máu còn xx %"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOREPAIR_CHECK), _T("Tự sửa đồ trên bãi luyện công (khi độ bền còn 80%)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_LAGTDP_CHECK), _T("Di chuyển bị kẹt nhiều lần thì dùng TĐP về thành rồi quay lại. Bỏ chọn: chỉ đổi hướng chạy tiếp"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_LAG_USE_SKILL_CHECK), _T("Di chuyển bị kẹt nhiều lần thì dùng Khinh công nhảy tới chỗ cần đến (tự xuống/lên ngựa). Vẫn kẹt (gấp đôi) mới dùng TĐP"));
 	}
 
 	return FALSE;

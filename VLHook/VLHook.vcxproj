@@ -110,6 +110,7 @@
     <ClCompile Include="VLExpLimit.cpp" />
     <ClCompile Include="VLDebugPath.cpp" />
     <ClCompile Include="VLObstacle.cpp" />
+    <ClCompile Include="VLPathPak.cpp" />
     <ClCompile Include="MagicAttrib.cpp" />
     <ClCompile Include="TcvnText.cpp" />
     <ClCompile Include="VLParty.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="VLClasses.h" />
     <ClInclude Include="VLDebug.h" />
     <ClInclude Include="VLObstacle.h" />
+    <ClInclude Include="VLPathPak.h" />
     <ClInclude Include="GameBase.h" />
     <ClInclude Include="JxCore.h" />
     <ClInclude Include="S3Client.h" />

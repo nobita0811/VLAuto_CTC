@@ -1,7 +1,6 @@
 ﻿//GameDef.h
 #pragma once
 #include "VLAuto/Version.h"	// ADMIN_MODE / ADMIN_TESTER (ban build)
-#define QUANGCAOAUTO	0
 #define QUEST_TRACE 0
 #define CLIENT_SERIAL		683251
 // Theo doi tung buoc lam nhiem vu: hien o kenh he thong va ghi vao Logs\<ten>.log.
@@ -916,6 +915,7 @@ enum DEBUG_CMD
 	dbg_pt_doorxy,			// Ghi cong tai toa do X/Y -> map Idx
 	dbg_pt_obstacle,		// Bat/tat ve o vat can (m_ObstacleInfo)
 	dbg_pt_obsavoid,		// Bat/tat ne vat can trong KPlayer::MoveTo (Idx/X/Y: thu tim duong)
+	dbg_pt_pack,			// Nen Maps\Path\*.txt -> Maps\Path.pak (VLPathPak.cpp)
 	dbg_pt_last,
 
 	// Tab Chien dau (VLAttack.cpp)

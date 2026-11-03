@@ -1,5 +1,5 @@
 ; VLAuto MapPath - Map 176 L©m An
-; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten[,dong1,dong2,... (NPC: chon dong menu dem tu 0)]]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
 [Points]
 0,51284,93210
 1,51032,93923
@@ -153,7 +153,9 @@
 34,80, D­¬ng Ch©u phñ [200 L­îng]
 34,174,Long TuyÒn th«n[200 L­îng]
 [Item]
-T©n Thñ thiÕp,1,1,7,1
+T©n Thñ thiÕp,1,1,7,2
+ThÎ Cao Thñ Giang Hå,1,1,7,2
+ThÎ Vâ Häc Kú Tµi,1,1,7,2
 [NPC]
 50369,93883
 43278,96463

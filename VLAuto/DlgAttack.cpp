@@ -47,6 +47,7 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_HITCLOSE_CHECK2, g_pCurGameWin->m_prAttack.m_bDefHitClose);
 	DDX_Check(pDX, IDC_ALWAYSPK_CHECK, g_pCurGameWin->m_prAttack.m_bAlwaysF9);
 	DDX_Check(pDX, IDC_USEHORSE_CHECK, g_pCurGameWin->m_prAttack.m_bDefHorseMode);
+	DDX_Check(pDX, IDC_TONG_ENEMY_CHECK, g_pCurGameWin->m_prAttack.m_bTongEnemy);
 
 	//Textboxes
 	DDX_Text(pDX, IDC_SEARCHRANGE_EDIT, g_pCurGameWin->m_prAttack.m_nSearchRange);
@@ -109,6 +110,7 @@ BOOL CDlgAttack::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_SKILLRANGE_EDIT2), _T("Phạm vi áp sát kẻ thù"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_USEHORSE_CHECK), _T("Tự lên/xuống ngựa khi đánh kẻ thù"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_ALWAYSPK_CHECK), _T("Luôn để chế độ Chiến đấu"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_TONG_ENEMY_CHECK), _T("Coi nhân vật cùng bang hội là đối thủ (bỏ chọn = bỏ qua người cùng bang)"));
 
 		m_ToolTip.AddTool(GetDlgItem(IDC_SETTING_SKILL_BTN), _T("Thiết lập chiêu thức, chuyển chiêu"));
 	}

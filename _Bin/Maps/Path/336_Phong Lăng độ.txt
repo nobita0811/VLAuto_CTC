@@ -62,3 +62,7 @@
 [Doors]
 28,121,70688,133728
 [Driver]
+[Item]
+T©n Thñ thiÕp,1,4,6
+ThÎ Cao Thñ Giang Hå,1,4,6
+ThÎ Vâ Häc Kú Tµi,1,4,6
