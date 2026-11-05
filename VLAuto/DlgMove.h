@@ -22,6 +22,7 @@ protected:
 	virtual void	OnOK() {}
 	virtual void	OnCancel() {}
 	afx_msg void	OnButtonsClicked(UINT nID);
+	afx_msg void	OnEnKillfocusLureRange();
 
 	DECLARE_MESSAGE_MAP()
 public:

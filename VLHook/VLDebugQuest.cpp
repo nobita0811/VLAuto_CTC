@@ -897,7 +897,7 @@ static void StepMsg(const char *szFormat, ...)
 	s_nLogTotal++;
 	s_bStepMsg = TRUE;
 #if ADMIN_MODE
-	SystemMessage(1, "<color=yellow>NV: %s", szMsg);	// Ban User: tat thong bao NV tren kenh chat (van luu s_StepLog noi bo)
+	if (g_bDbgText) SystemMessage(1, "<color=yellow>NV: %s", szMsg);	// Tat debug text: khong hien NV tren chat (van luu s_StepLog)
 #endif
 	s_bStepMsg = FALSE;
 }
@@ -1570,12 +1570,12 @@ static BOOL Refill()
 	if (GetTickCount() - s_dwEatTick < 1500) return FALSE;	// Cho thuoc ngam
 	s_dwEatTick = GetTickCount();
 	BOOL bAte = FALSE, bTry = FALSE;
-	if (bHP && !s_bAteHP)
+	if (bHP && !s_bAteHP && nHP * 10 < nMaxHP * 7)	// Con tren 70% thi cho tu hoi, khong uong
 	{
 		bTry = TRUE;
 		if (g_pCurPlayer->EatMedicine(medicine_blood)) bAte = s_bAteHP = TRUE;
 	}
-	if (bMP && !s_bAteMP)
+	if (bMP && !s_bAteMP && nMP * 10 < nMaxMP * 7)
 	{
 		bTry = TRUE;
 		if (g_pCurPlayer->EatMedicine(medicine_mana)) bAte = s_bAteMP = TRUE;

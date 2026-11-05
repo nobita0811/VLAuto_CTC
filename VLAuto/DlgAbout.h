@@ -35,6 +35,10 @@ protected:
 	afx_msg void	OnBnClickedDebugButton();
 #endif
 	afx_msg void	OnBnClickedMoveMap37Button();
+	afx_msg void	OnBnClickedTlsTestButton();		// chan doan TLS 1.2 (chi hien ban Tester Offline)
+#if TEST_OFFLINE_BUILD
+	afx_msg void	OnBnClickedShowtextDebugIngameCheck();	// TestOffline: bat/tat text debug trong game
+#endif
 
 	DECLARE_MESSAGE_MAP()
 

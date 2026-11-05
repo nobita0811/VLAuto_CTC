@@ -210,7 +210,7 @@ static BOOL ShopWithdraw()
 	if (nTake > ROOM_MONEY) nTake = ROOM_MONEY;
 	if (s_nTownMoneyBase < 0) s_nTownMoneyBase = EQUIP_MONEY;
 #if ADMIN_MODE
-	SystemMessage(1, TV(L"<color=yellow>Rút %d lượng để mua (trên người %d, rương %d)"), nTake, EQUIP_MONEY, ROOM_MONEY);	// Ban User: tat thong bao rut luong
+	if (g_bDbgText) SystemMessage(1, TV(L"<color=yellow>Rút %d lượng để mua (trên người %d, rương %d)"), nTake, EQUIP_MONEY, ROOM_MONEY);	// Tat debug text
 #endif
 	g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, nTake);
 	s_nShopMoneyBefore = EQUIP_MONEY;
@@ -237,13 +237,13 @@ static BOOL ShopTopUpMedicine()
 	DWORD dwNow = GetTickCount();
 	if (s_dwShopEatTick && dwNow - s_dwShopEatTick < 1500) return TRUE;	// Cho so binh trong hanh trang giam (lag)
 	BOOL bEat = FALSE;
-	if (!(s_nShopEat & 1) && theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && g_pCurPlayer->EatMedicine(medicine_blood))
+	if (!(s_nShopEat & 1) && theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && P_PLAYER->m_CurrentLife * 10 < P_PLAYER->GetLifeMax() * 7 && g_pCurPlayer->EatMedicine(medicine_blood))
 	{
 		s_nShopEat |= 1;
 		g_dwTownEatHP = dwNow;
 		bEat = TRUE;
 	}
-	if (!(s_nShopEat & 2) && theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && g_pCurPlayer->EatMedicine(medicine_mana))
+	if (!(s_nShopEat & 2) && theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && P_PLAYER->m_CurrentMana * 10 < P_PLAYER->GetManaMax() * 7 && g_pCurPlayer->EatMedicine(medicine_mana))
 	{
 		s_nShopEat |= 2;
 		g_dwTownEatMP = dwNow;
@@ -1736,9 +1736,9 @@ BOOL CVLMap::CheckReady()
 	}
 	if (bNeedBuffHP)
 	{
-		if (theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount)
+		if (theRecover.m_bAutoHP && P_PLAYER->m_CurrentLife < theRecover.m_nAutoHPAmount && P_PLAYER->m_CurrentLife * 10 < P_PLAYER->GetLifeMax() * 7)
 			g_pCurPlayer->EatMedicine(medicine_blood);
-		if (theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount)
+		if (theRecover.m_bAutoMP && P_PLAYER->m_CurrentMana < theRecover.m_nAutoMPAmount && P_PLAYER->m_CurrentMana * 10 < P_PLAYER->GetManaMax() * 7)
 			g_pCurPlayer->EatMedicine(medicine_mana);
 		bNeedBuffHP = 0;
 		return 0;

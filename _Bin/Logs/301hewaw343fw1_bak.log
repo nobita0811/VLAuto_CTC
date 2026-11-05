@@ -1,0 +1,154 @@
+====** Font TCVN3 **====
+301hewaw343fw1 - NhËt kı NhiÖm vô VLAuto
+
+Ngµy 24-10-2026
+======================================================================
+
+[24-10 16:31:28] Khëi ®éng VLAuto...
+[24-10 16:31:28] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:31:28] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:31:28] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:31:28] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:31:29] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:31:29] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:31:30] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:31:30] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+[24-10 16:31:30] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:31:31] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 137 > 128 -> chay toi
+[24-10 16:31:31] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:31:32] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:31:32] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:31:32] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:31:32] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:31:32] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:31:33] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:31:33] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:31:34] [QT] Breath: Gen=qt_suspended Entrust=0
+[24-10 16:34:21] Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...
+
+[24-10 16:34:23] Khëi ®éng VLAuto...
+[24-10 16:34:23] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:34:24] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:34:24] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:34:24] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:34:24] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:34:24] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:34:25] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:34:25] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+[24-10 16:34:26] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:34:26] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 137 > 128 -> chay toi
+[24-10 16:34:27] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:34:27] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:34:27] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:34:28] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:34:28] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:34:28] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:34:29] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:34:29] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:34:29] [QT] Breath: Gen=qt_suspended Entrust=0
+[24-10 16:37:16] Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...
+
+[24-10 16:37:19] Khëi ®éng VLAuto...
+[24-10 16:37:19] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:37:20] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:37:20] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:37:20] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:37:20] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:37:20] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:37:21] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:37:21] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+[24-10 16:37:21] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:37:22] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 147 > 128 -> chay toi
+[24-10 16:37:23] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:37:23] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:37:23] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:37:24] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:37:24] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:37:24] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:37:25] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:37:25] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:37:25] [QT] Breath: Gen=qt_suspended Entrust=0
+[24-10 16:40:12] Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...
+
+[24-10 16:40:15] Khëi ®éng VLAuto...
+[24-10 16:40:15] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:40:16] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:40:16] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:40:16] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:40:17] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:40:17] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:40:17] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:40:17] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=1
+[24-10 16:40:18] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:40:18] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 137 > 128 -> chay toi
+[24-10 16:40:19] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:40:19] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:40:19] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:40:20] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:40:20] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:40:20] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:40:21] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:40:21] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:40:22] [QT] Breath: Gen=qt_suspended Entrust=0
+[24-10 16:43:09] Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...
+
+[24-10 16:43:11] Khëi ®éng VLAuto...
+[24-10 16:43:12] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:43:12] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:43:12] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:43:12] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:43:13] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:43:13] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:43:13] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:43:13] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+[24-10 16:43:14] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:43:14] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 137 > 128 -> chay toi
+[24-10 16:43:15] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:43:16] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:43:16] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:43:16] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:43:16] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:43:16] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:43:17] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:43:17] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:43:18] [QT] Breath: Gen=qt_suspended Entrust=0
+[24-10 16:46:05] Ngõng ho¹t ®éng qu¸ 3 phót, khëi ®éng l¹i...
+
+[24-10 16:46:08] Khëi ®éng VLAuto...
+[24-10 16:46:08] [QT] Breath: Gen=qt_none Entrust=0
+[24-10 16:46:08] [QT] Breath: Gen=qt_yesou Entrust=0
+[24-10 16:46:08] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=78
+[24-10 16:46:08] [QT] GetNewQuest: Map=78 Shoping=0 NeedMoney=0 InTownOnly=0
+[24-10 16:46:09] [QT] GetNewQuest: da toi cho NPC Da Tau (50996,105234)
+[24-10 16:46:09] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[24-10 16:46:10] [QT] GetNewQuest: Map=78 Shoping=1 NeedMoney=0 InTownOnly=0
+[24-10 16:46:10] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+[24-10 16:46:10] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 237 > 128 -> chay toi
+[24-10 16:46:11] [QT] ClickToNpc: thay #7 D· tÈu, cach nguoi 136 > 128 -> chay toi
+[24-10 16:46:11] [QT] ClickToNpc: SetPeopleIdx(#7 D· tÈu) -> PEOPLE_IDX=7
+[24-10 16:46:12] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[24-10 16:46:12] [QT] GetNewQuest: chon dong [0] NhËn nhiÖm vô
+[24-10 16:46:12] [QT] BreathYS: YS=ys_none Status=1 QID=0 Step=0 Map=78
+[24-10 16:46:12] [QT] GetNewQuest: Information2: CÇn kİch ho¹t thÎ Vip míi cã thÓ nhËn vµ lµm nhiÖm
+vô.. (NeedVip = 1)
+[24-10 16:46:12] Chua kich hoat the Vip, khong nhan duoc nhiem vu Da Tau => Ngung!
+
+[24-10 16:46:14] [QT] Breath: Gen=qt_suspending Entrust=0
+[24-10 16:46:14] Ng­ng lµm NhiÖm vô, ®øng im.
+
+[24-10 16:46:14] [QT] Breath: Gen=qt_suspended Entrust=0

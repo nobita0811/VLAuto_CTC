@@ -212,6 +212,159 @@ static BOOL EnemyInDefenceRange(int nRange)
 	return FALSE;
 }
 
+// ===== Do sat / Cuu sat (cua so Cai dat Do Sat - VLAuto) =====
+// Chi doi trang thai PK / gui cuu sat; danh tra hay khong van do Tu ve quyet dinh.
+// Bat tu khi nhan vat o map m_nPKMapID va da toi diem dau tien cua danh sach toa do train
+// (hoac toa do danh quanh diem); doi map thi tat, toi lai diem dau moi bat lai.
+#define PK_ARM_NEAR			400		// Cach diem dau bao nhieu thi coi la da toi (giong NearTrainArea)
+#define PK_CHECK_DELAY		1000	// Nhip kiem tra
+#define PK_SWITCH_DELAY		3000	// Toi thieu giua 2 lan Switch('PK',x)
+#define PK_LIST_HOLD		10000	// Do sat theo DS: ke thu ra khoi tam bao lau moi chuyen ve chien dau
+#define PK_REVENGE_DELAY	10000	// Cuu sat cung 1 nguoi: gui lai sau
+
+static BOOL		s_bPKArmed = FALSE;
+static int		s_nPKArmMap = 0;
+static DWORD	s_dwPKCheckTick = 0;
+static DWORD	s_dwPKSwitchTick = 0;
+static DWORD	s_dwPKSeenTick = 0;
+static DWORD	s_dwRevengeID = 0;
+static DWORD	s_dwRevengeTick = 0;
+
+BOOL CVLAttack::IsListedEnemy(const char* szName)
+{
+	if (!szName || !szName[0]) return FALSE;
+	for (int i = 0; i < MAX_ENEMY && m_szEnemies[i][0]; i++)
+		if (!strncmp(m_szEnemies[i], szName, 31)) return TRUE;
+	return FALSE;
+}
+
+BOOL CVLAttack::PKSwitchActive()
+{
+	if (m_nPKMode < 1 || m_nPKMode > 3 || !m_nPKMapID || *g_pMapID != m_nPKMapID) return FALSE;
+	return s_bPKArmed && s_nPKArmMap == m_nPKMapID;
+}
+
+// Diem dau tien cua bai train: toa do danh quanh diem, khong co thi diem dau danh sach toa do train.
+// FALSE = khong co diem nao (vao toi map la bat)
+static BOOL GetPKArmPoint(int* pX, int* pY)
+{
+	if ((theMove.m_bAroundPoint || theMove.m_bAroundPointPK) && (theMove.m_nPointX || theMove.m_nPointY))
+	{
+		*pX = theMove.m_nPointX; *pY = theMove.m_nPointY;
+		return TRUE;
+	}
+	if (theMove.m_bRouteMove && theMove.m_Nodes[0].x && theMove.m_Nodes[0].y &&
+		(!theMove.m_nNodesMapID || theMove.m_nNodesMapID == *g_pMapID))
+	{
+		*pX = theMove.m_Nodes[0].x; *pY = theMove.m_Nodes[0].y;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static void SwitchPK(int nFlag)
+{
+	if (P_PLAYER->m_nPKFlag == nFlag) return;
+	DWORD dwNow = GetTickCount();
+	if (s_dwPKSwitchTick && dwNow - s_dwPKSwitchTick < PK_SWITCH_DELAY) return;
+	s_dwPKSwitchTick = dwNow;
+	ExecuteScript(nFlag == 2 ? "Switch('PK',2)" : (nFlag == 1 ? "Switch('PK',1)" : "Switch('PK',0)"));
+}
+
+// Tam ra skill: AttackRadius cua skill tu ve (khong dat thi skill tay trai); khong doc duoc thi tam tu ve
+static int PKSkillRange(CVLAttack* p)
+{
+	int nSkillId = p->m_SettingSkills[skill_defence] ? p->m_SettingSkills[skill_defence] : g_pCurPlayer->m_nLeftSkillID;
+	if (nSkillId > 0 && nSkillId < 3000)
+	{
+		KSkill* pSkill = (KSkill*)(SKL_BASE_ADD + (nSkillId - 1) * SKL_DATA_SIZE);
+		if (pSkill->m_dwSkillID == (DWORD)nSkillId && pSkill->m_nSkillRange > 0)
+			return pSkill->m_nSkillRange;
+	}
+	return p->m_nDefenceRange;
+}
+
+void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
+{
+	int nMap = *g_pMapID;
+	if (m_nPKMode < 1 || m_nPKMode > 3 || !m_nPKMapID || nMap != m_nPKMapID)
+	{
+		s_bPKArmed = FALSE;
+		s_nPKArmMap = 0;
+		return;
+	}
+	DWORD dwNow = GetTickCount();
+	if (dwNow - s_dwPKCheckTick < PK_CHECK_DELAY) return;
+	s_dwPKCheckTick = dwNow;
+
+	if (theMain.m_bPause || !P_PLAYER->m_FightMode || P_PLAYER->m_CurrentCamp == camp_begin) return;
+	if (P_PLAYER->m_CurrentLife <= 0) return;
+
+	int nPlayerX, nPlayerY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	if (!s_bPKArmed || s_nPKArmMap != nMap)
+	{
+		if (bFindingTrain) return;	// Dang tu di toi bai train
+		int nX, nY;
+		if (GetPKArmPoint(&nX, &nY) && __distance(nPlayerX, nPlayerY, nX, nY) > PK_ARM_NEAR) return;
+		s_bPKArmed = TRUE;
+		s_nPKArmMap = nMap;
+		s_dwPKSeenTick = 0;
+		s_dwRevengeID = 0;
+	}
+
+	if (m_nPKMode == 1)
+	{	// Do sat tat ca
+		SwitchPK(2);
+		return;
+	}
+
+	// Ke thu trong danh sach gan nhat trong tam ra skill
+	int nRange = PKSkillRange(this);
+	int nSelfIdx = g_pCurPlayer->m_nIndex;
+	int nFound = 0, dMin = MAX_INTNUM;
+	for (int i = 1; i < MAX_NPC; i++)
+	{
+		if (i == nSelfIdx) continue;
+		KNpc* pNpc = g_pNpcArray[i];
+		if (!pNpc->IsExist() || pNpc->m_Kind != kind_player) continue;
+		if (pNpc->m_CurrentLife <= 0 || pNpc->IsGhost() || pNpc->m_CurrentCamp == camp_begin) continue;
+		if (!IsListedEnemy(pNpc->Name)) continue;
+		int nX, nY;
+		pNpc->GetMapPos(&nX, &nY);
+		int dZ = __distance(nPlayerX, nPlayerY, nX, nY);
+		if (dZ <= nRange && dZ < dMin) { dMin = dZ; nFound = i; }
+	}
+
+	if (m_nPKMode == 2)
+	{	// Do sat theo danh sach
+		if (nFound)
+		{
+			s_dwPKSeenTick = dwNow;
+			SwitchPK(2);
+		}
+		else if (!s_dwPKSeenTick || dwNow - s_dwPKSeenTick >= PK_LIST_HOLD)
+			SwitchPK(1);
+		return;
+	}
+
+	// Cuu sat theo danh sach
+	if (!nFound) return;
+	KNpc* pEnemy = g_pNpcArray[nFound];
+	if (g_pCoreShell->GetNPCRelation(nFound) == relation_enemy) return;	// Dang la ke thu roi (da cuu sat / do sat)
+	if (!P_PLAYER->m_nPKFlag) { SwitchPK(1); return; }	// Luyen cong: chuyen chien dau truoc
+	if (s_dwRevengeID == pEnemy->m_dwID && dwNow - s_dwRevengeTick < PK_REVENGE_DELAY) return;
+	s_dwRevengeID = pEnemy->m_dwID;
+	s_dwRevengeTick = dwNow;
+	KUiPlayerItem thePlayer;
+	memset(&thePlayer, 0, sizeof(KUiPlayerItem));
+	strncpy(thePlayer.Name, pEnemy->Name, sizeof(thePlayer.Name) - 1);
+	thePlayer.uId = pEnemy->m_dwID;
+	thePlayer.nIndex = nFound;
+	thePlayer.nData = 1;
+	ProcessPeople(&thePlayer, ACTION_REVENGE);
+}
+
 void CVLAttack::Breathe()
 {
 	int nX, nY, nRange;
@@ -249,6 +402,7 @@ void CVLAttack::Breathe()
 		}
 		TerminateProcess(GetCurrentProcess(), 0);
 	}
+	PKSwitchBreathe(bFindingTrain);	// Do sat / Cuu sat (chi doi trang thai PK)
 	if (m_bDoingSkill || m_bDoingSkillEx || theRecover.m_bDoingBuff || theMain.m_bPause) return;
 	if (bFindingTrain) return;
 
@@ -285,6 +439,7 @@ void CVLAttack::Breathe()
 	if (theMove.m_bFindingWay) return;
 	if (theMove.m_nStatus == status_movefirst) return;
 	if (theMove.m_nStatus == status_move && !theMove.m_bAttackWhenMove) return;
+	if (theMove.LureBreathe()) return;	// Dang quay quai: chua danh
 
 	ProcessAttack();
 
@@ -841,7 +996,7 @@ void CVLAttack::AutoDefence()
 			nPKTimeCount++;
 		else
 			nPKTimeCount = 0;
-		if (nPKTimeCount > 600 && nPKTimeCount % 50 == 1 && !m_nEnemyIdx)
+		if (nPKTimeCount > 600 && nPKTimeCount % 50 == 1 && !m_nEnemyIdx && !PKSwitchActive())	// Dang Do sat / Cuu sat: khong tu tat PK
 		{	// 600 ~ 3 minutes
 			ExecuteScript("Switch('PK',0)");
 			return;

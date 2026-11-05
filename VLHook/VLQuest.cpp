@@ -48,7 +48,7 @@ void QTraceSite(char *szLast, const char *szFormat, ...)
 	strcpy(szLast, szMsg);
 
 #if ADMIN_MODE
-	SystemMessage(1, "<color=cyan>[QT] %s", szMsg);	// Ban User: tat thong bao [QT] tren kenh chat (van ghi SaveYSLog)
+	if (g_bDbgText) SystemMessage(1, "<color=cyan>[QT] %s", szMsg);	// Tat debug text: khong hien [QT] tren chat (van ghi SaveYSLog)
 #endif
 	char szLog[270];
 	_snprintf(szLog, sizeof(szLog) - 1, "[QT] %s", szMsg);

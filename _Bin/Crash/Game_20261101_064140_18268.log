@@ -1,0 +1,61 @@
+
+==================== Game - FIRST-CHANCE (co the bi __try hoac Windows nuot, chuong trinh chay tiep) ====================
+Thoi gian: 2026-11-01 06:44:07.433   PID 18268  TID 17744
+Process: F:\CTC_VNG\CTC\Cong Thanh Chien\gamethienha_y.exe
+Windows 10.0 build 19045 SP0 (64-bit, WOW64)
+Dang lam (CRASH_STAGE): -
+Ma loi: 0xC0000005  ACCESS_VIOLATION (truy cap sai dia chi)
+Tai:    007ADBCC  gamethienha_y.exe+0x3ADBCC
+        GHI dia chi 0x77302640
+EAX 77302640  EBX 005FBF2D  ECX 0EDD2C1C  EDX 00000019  ESI 0EDD2C1C  EDI 00000000
+EIP 007ADBCC  ESP 0019F854  EBP 0019F890  EFL 00010202
+
+Dia chi code tren stack (quet tho tu ESP, co the co gia tri cu):
+  ESP+0030: 00715AD6  gamethienha_y.exe+0x315AD6
+  ESP+0040: 005FF56F  gamethienha_y.exe+0x1FF56F
+  ESP+005C: 006E5555  gamethienha_y.exe+0x2E5555
+  ESP+0070: 0063095A  gamethienha_y.exe+0x23095A
+  ESP+0074: 01797E78  gamethienha_y.exe+0x1397E78
+  ESP+0080: 0064576D  gamethienha_y.exe+0x24576D
+  ESP+0084: 761208C0  USER32.dll+0x208C0
+  ESP+008C: 76124460  USER32.dll+0x24460
+  ESP+0090: 01797E78  gamethienha_y.exe+0x1397E78
+  ESP+0094: 005BF5CE  gamethienha_y.exe+0x1BF5CE
+  ESP+0098: 00848360  gamethienha_y.exe+0x448360
+  ESP+009C: 005A91C4  gamethienha_y.exe+0x1A91C4
+  ESP+00A0: 00848360  gamethienha_y.exe+0x448360
+  ESP+00B4: 005A93C4  gamethienha_y.exe+0x1A93C4
+  ESP+00B8: 00848360  gamethienha_y.exe+0x448360
+  ESP+00BC: 7613B200  USER32.dll+0x3B200
+  ESP+00C0: 10027812  engine.dll+0x27812
+  ESP+00C4: 01A92464  gamethienha_y.exe+0x1692464
+  ESP+00E0: 6D883C50  VLCTCdll.dll+0x3C50
+  ESP+00F0: 005A76C4  gamethienha_y.exe+0x1A76C4
+  ESP+00FC: 007BDB5C  gamethienha_y.exe+0x3BDB5C
+  ESP+0114: 77428F4B  ntdll.dll+0x48F4B
+  ESP+0128: 007BDB5C  gamethienha_y.exe+0x3BDB5C
+  ESP+0130: 007BDB5C  gamethienha_y.exe+0x3BDB5C
+  ESP+0134: 6CE42F20  MSVCP80.dll+0x2F20
+  ESP+0140: 77000077  SHELL32.dll+0x300077
+  ESP+0154: 007BDB68  gamethienha_y.exe+0x3BDB68
+  ESP+016C: 77428F4B  ntdll.dll+0x48F4B
+  ESP+01B4: 77420BDD  ntdll.dll+0x40BDD
+  ESP+01F8: 7742531A  ntdll.dll+0x4531A
+  ESP+02A4: 013A0039  gamethienha_y.exe+0xFA0039
+  ESP+02F8: 0101CB8C  gamethienha_y.exe+0xC1CB8C
+  ESP+0330: 73676E69  PROPSYS.dll+0x16E69
+  ESP+0338: 77411D21  ntdll.dll+0x31D21
+  ESP+0340: 7745B570  ntdll.dll+0x7B570
+  ESP+0350: 7746821D  ntdll.dll+0x8821D
+  ESP+0358: 77468244  ntdll.dll+0x88244
+  ESP+0394: 77420E1F  ntdll.dll+0x40E1F
+  ESP+03AC: 77423EF6  ntdll.dll+0x43EF6
+  ESP+03CC: 77423705  ntdll.dll+0x43705
+  ESP+03D8: 77423784  ntdll.dll+0x43784
+  ESP+03E8: 77427462  ntdll.dll+0x47462
+  ESP+03EC: 77428F4B  ntdll.dll+0x48F4B
+  ESP+043C: 666E6F43  nvgpucomp32.dll+0x3076F43
+  ESP+0484: 01000035  gamethienha_y.exe+0xC00035
+  ESP+04B8: 7745B570  ntdll.dll+0x7B570
+  ESP+0524: 012001D4  gamethienha_y.exe+0xE001D4
+  ESP+058C: 656D6100  nvgpucomp32.dll+0x2066100

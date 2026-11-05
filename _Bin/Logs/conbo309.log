@@ -1,0 +1,243 @@
+﻿====** UTF-8 **====
+conbo309 - Nhật ký Nhiệm vụ VLAuto
+
+Ngày 03-11-2026
+======================================================================
+
+[03-11 09:43:11] Khởi động VLAuto...
+[03-11 09:46:01] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 09:46:04] Khởi động VLAuto...
+[03-11 09:48:53] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 09:48:56] Khởi động VLAuto...
+[03-11 09:51:46] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 09:51:49] Khởi động VLAuto...
+[03-11 09:54:39] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 09:54:42] Khởi động VLAuto...
+[03-11 09:57:31] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 09:57:33] Khởi động VLAuto...
+[03-11 10:00:23] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:00:26] Khởi động VLAuto...
+[03-11 10:03:15] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:03:18] Khởi động VLAuto...
+[03-11 10:06:07] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:06:10] Khởi động VLAuto...
+[03-11 10:09:00] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:09:02] Khởi động VLAuto...
+[03-11 10:11:52] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:11:55] Khởi động VLAuto...
+[03-11 10:14:44] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:14:47] Khởi động VLAuto...
+[03-11 10:17:37] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:17:39] Khởi động VLAuto...
+[03-11 10:26:43] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:26:45] Khởi động VLAuto...
+[03-11 10:30:32] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 10:30:35] Khởi động VLAuto...
+
+[03-11 11:07:28] Khởi động VLAuto...
+[03-11 11:07:50] Dã Tẩu: Tiệu diệt 50 Kế Chủy ở Băng Hà Động => diet 50 'Kế Chủy' o 'Băng Hà Động' (MapID 201)
+
+[03-11 11:07:51] Diệt 50 Kế Chủy ở Băng Hà Động (map 201)
+[03-11 11:08:32] Diệt quái dừng (   6s Buoc 2 (diet quai: di toi map) DUNG: MapPath dung o map 99 (Vĩnh Lạc trấn), chua toi map 201), tiến độ -1 / -1 => làm lại lần 1
+[03-11 11:08:46] Diệt quái dừng (   0s Buoc 2 (diet quai: di toi map) DUNG: MapPath khong tu di duoc 99 -> 201 (xem ly do o kenh chat)), tiến độ -1 / -1 => làm lại lần 2
+[03-11 11:09:00] Diệt quái dừng (   0s Buoc 2 (diet quai: di toi map) DUNG: MapPath khong tu di duoc 99 -> 201 (xem ly do o kenh chat)), tiến độ -1 / -1 => làm lại lần 3
+
+[03-11 11:14:59] Khởi động VLAuto...
+[03-11 11:15:24] Dã Tẩu: Tiệu diệt 50 Kế Chủy ở Băng Hà Động => diet 50 'Kế Chủy' o 'Băng Hà Động' (MapID 201)
+
+[03-11 11:15:25] Diệt 50 Kế Chủy ở Băng Hà Động (map 201)
+
+[03-11 11:56:51] Khởi động VLAuto...
+[03-11 11:57:04] Dã Tẩu: Tiệu diệt 50 Đao Khách ở Dược Vương Động Tầng 4 => diet 50 'Đao Khách' o 'Dược Vương Động Tầng 4' (MapID 144)
+
+[03-11 11:57:04] Diệt 50 Đao Khách ở Dược Vương Động Tầng 4 (map 144)
+[03-11 12:07:13] Đã diệt đủ 50 Đao Khách, về Dã Tẩu hoàn thành nhiệm vụ.
+[03-11 12:07:14] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 12:07:25] Dã Tẩu: Tìm Trang Bị Giảm Thời Gian Làm Chậm lớn hơn 20 % => tim trang bi 'Giảm Thời Gian Làm Chậm' > 20
+
+[03-11 12:07:26] Tìm trang bị : Thời gian làm chậm (%) (106 freezetimereduce_p) >= 21
+[03-11 12:07:26] Rút 20 vạn từ rương để mua đồ (giá tối đa 30 vạn, trên người 10 vạn).
+[03-11 12:07:32] Mua được <Long Lân Khôi> giá 30 vạn lượng.
+[03-11 12:07:45] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 12:07:57] Dã Tẩu: Tiệu diệt 50 Lãnh Thương ở Phong Lăng Độ => diet 50 'Lãnh Thương' o 'Phong Lăng Độ' (MapID 336)
+
+[03-11 12:07:57] Diệt 50 Lãnh Thương ở Phong Lăng Độ (map 336)
+
+[03-11 12:09:42] Khởi động VLAuto...
+[03-11 12:09:58] Dã Tẩu: Tiệu diệt 50 Lãnh Thương ở Phong Lăng Độ => diet 50 'Lãnh Thương' o 'Phong Lăng Độ' (MapID 336)
+
+[03-11 12:09:59] Diệt 50 Lãnh Thương ở Phong Lăng Độ (map 336)
+[03-11 12:16:09] Diệt quái dừng (  78s Buoc 2 (diet quai: di toi map) DUNG: da thu vat pham / xa phu / di bo, dung o map 78 (Tương Dương), chua toi map 336), tiến độ 8 / 50 => làm lại lần 1
+
+[03-11 12:17:38] Khởi động VLAuto...
+[03-11 12:17:50] Dã Tẩu: Tiệu diệt 50 Lãnh Thương ở Phong Lăng Độ => diet 50 'Lãnh Thương' o 'Phong Lăng Độ' (MapID 336)
+
+[03-11 12:17:51] Diệt 50 Lãnh Thương ở Phong Lăng Độ (map 336)
+
+[03-11 12:19:50] Khởi động VLAuto...
+[03-11 12:20:09] Dã Tẩu: Tiệu diệt 50 Lãnh Thương ở Phong Lăng Độ => diet 50 'Lãnh Thương' o 'Phong Lăng Độ' (MapID 336)
+
+[03-11 12:20:10] Diệt 50 Lãnh Thương ở Phong Lăng Độ (map 336)
+[03-11 12:30:10] Kiểm tra định kỳ: 10 phút, Buoc 2 (diet quai: danh quai), tiến độ 44 / 50, về thành 2 lần
+
+[03-11 12:33:23] Đã diệt đủ 50 Lãnh Thương, về Dã Tẩu hoàn thành nhiệm vụ.
+[03-11 12:33:24] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 12:33:35] Dã Tẩu: Tìm Trang bị Tăng Kháng Độc lớn hơn 15 % => tim trang bi 'Kháng Độc' > 15
+
+[03-11 12:33:36] Tìm trang bị : Kháng độc (%) (101 poisonres_p) >= 16
+[03-11 12:33:53] Lấy vật phẩm/trang bị trong rương đồ.
+[03-11 12:34:06] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 12:34:17] Dã Tẩu: Tìm Trang bị Tăng Thân Pháp lớn hơn 5 điểm => tim trang bi 'Thân Pháp' > 5
+
+[03-11 12:34:18] Tìm trang bị : Thân pháp (điểm) (98 dexterity_v) >= 6
+[03-11 12:34:18] Rút 20 vạn từ rương để mua đồ (giá tối đa 30 vạn, trên người 10 vạn).
+[03-11 12:34:22] Mua được <Hồng Nhĩ giáp> giá 30 vạn lượng.
+[03-11 12:34:34] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 12:34:45] Dã Tẩu: Tìm Trang bị Tăng Thân Pháp lớn hơn 10 điểm => tim trang bi 'Thân Pháp' > 10
+
+[03-11 12:34:46] Tìm trang bị : Thân pháp (điểm) (98 dexterity_v) >= 11
+[03-11 12:34:46] Rút 20 vạn từ rương để mua đồ (giá tối đa 30 vạn, trên người 10 vạn).
+[03-11 12:34:52] Cất 200000 lượng vào rương (giữ 100000 lượng như trước khi rút).
+[03-11 12:34:52] Tìm hết các thành không thấy => Hủy nhiệm vụ!
+[03-11 12:35:18] Dã Tẩu: Tiệu diệt 50 Mạc Tặc ở Mạc Cao Quật => diet 50 'Mạc Tặc' o 'Mạc Cao Quật' (MapID 340)
+
+[03-11 12:35:18] Diệt 50 Mạc Tặc ở Mạc Cao Quật (map 340)
+
+[03-11 12:39:35] Khởi động VLAuto...
+
+[03-11 12:39:53] Khởi động VLAuto...
+[03-11 12:39:58] Dã Tẩu: Tiệu diệt 50 Mạc Tặc ở Mạc Cao Quật => diet 50 'Mạc Tặc' o 'Mạc Cao Quật' (MapID 340)
+
+[03-11 12:39:59] Diệt 50 Mạc Tặc ở Mạc Cao Quật (map 340)
+
+[03-11 12:47:38] Khởi động VLAuto...
+[03-11 12:47:54] Dã Tẩu: Tiệu diệt 50 Mạc Tặc ở Mạc Cao Quật => diet 50 'Mạc Tặc' o 'Mạc Cao Quật' (MapID 340)
+
+[03-11 12:47:55] Diệt 50 Mạc Tặc ở Mạc Cao Quật (map 340)
+[03-11 12:57:55] Kiểm tra định kỳ: 10 phút, Buoc 2 (diet quai: danh quai), tiến độ 34 / 50, về thành 1 lần
+
+[03-11 13:07:55] Đã diệt đủ 50 Mạc Tặc, về Dã Tẩu hoàn thành nhiệm vụ.
+[03-11 13:07:55] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 13:08:07] Dã Tẩu: Tiệu diệt 50 Đao Khách ở Dược Vương Động Tầng 4 => diet 50 'Đao Khách' o 'Dược Vương Động Tầng 4' (MapID 144)
+
+[03-11 13:08:07] Diệt 50 Đao Khách ở Dược Vương Động Tầng 4 (map 144)
+[03-11 13:18:07] Kiểm tra định kỳ: 10 phút, Buoc 2 (diet quai: danh quai), tiến độ 31 / 50, về thành 2 lần
+
+[03-11 13:23:53] Đã diệt đủ 50 Đao Khách, về Dã Tẩu hoàn thành nhiệm vụ.
+[03-11 13:23:54] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 13:24:05] Dã Tẩu: Tìm Trang bị tăng Nội Lực lớn hơn 50 điểm => tim trang bi 'Nội Lực' > 50
+
+[03-11 13:24:06] Tìm trang bị : Nội lực tối đa (điểm) (89 manamax_v) >= 51
+[03-11 13:24:06] Rút 20 vạn từ rương để mua đồ (giá tối đa 30 vạn, trên người 10 vạn).
+[03-11 13:24:19] Mua được <Kim Yêu Đái> giá 30 vạn lượng.
+[03-11 13:24:32] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 13:24:43] Dã Tẩu: Tiệu diệt 50 ảnh Côn ở Khỏa Long Động => diet 50 'ảnh Côn' o 'Khỏa Long Động' (MapID 0)
+
+[03-11 13:24:44] Không biết map 'Khỏa Long Động' (Maps\MapNames.ini) => Tạm ngưng!
+[03-11 13:24:45] Ngưng làm Nhiệm vụ, đứng im.
+
+
+[03-11 13:37:28] Khởi động VLAuto...
+
+[03-11 13:37:29] Khởi động VLAuto...
+[03-11 13:37:32] Dã Tẩu: Tiệu diệt 50 ảnh Côn ở Khỏa Long Động => diet 50 'ảnh Côn' o 'Khỏa Long Động' (MapID 0)
+
+[03-11 13:37:33] Không biết map 'Khỏa Long Động' (Maps\MapNames.ini) => Tạm ngưng!
+[03-11 13:37:34] Ngưng làm Nhiệm vụ, đứng im.
+
+
+[03-11 13:38:01] Khởi động VLAuto...
+[03-11 13:38:05] Dã Tẩu: Tiệu diệt 50 ảnh Côn ở Khỏa Long Động => diet 50 'ảnh Côn' o 'Khỏa Long Động' (MapID 75)
+
+[03-11 13:38:05] Diệt 50 ảnh Côn ở Khỏa Long Động (map 75)
+[03-11 13:46:04] Đã diệt đủ 50 ảnh Côn, về Dã Tẩu hoàn thành nhiệm vụ.
+[03-11 13:46:05] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[03-11 13:48:52] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 13:48:54] Khởi động VLAuto...
+
+[03-11 18:34:52] Khởi động VLAuto...
+
+[03-11 18:35:11] Khởi động VLAuto...
+
+[03-11 18:39:16] Khởi động VLAuto...
+
+[03-11 21:56:59] Khởi động VLAuto...
+
+[03-11 21:57:21] Khởi động VLAuto...
+[03-11 21:57:32] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 21:57:33] Ngưng làm Nhiệm vụ, đứng im.
+
+
+[03-11 21:57:41] Khởi động VLAuto...
+[03-11 21:57:45] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 21:57:46] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:10:09] Khởi động VLAuto...
+
+[03-11 22:10:19] Khởi động VLAuto...
+[03-11 22:10:30] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:10:31] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:12:26] Khởi động VLAuto...
+[03-11 22:12:42] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:12:43] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:12:52] Khởi động VLAuto...
+[03-11 22:13:09] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:13:10] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:16:59] Khởi động VLAuto...
+[03-11 22:17:16] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:17:17] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:27:35] Khởi động VLAuto...
+[03-11 22:27:51] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:27:52] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:32:25] Khởi động VLAuto...
+Ngày 05-11-2026
+======================================================================
+
+[05-11 09:11:14] Khởi động VLAuto...
+[05-11 09:11:45] Dã Tẩu: Tiệu diệt 50 Trường Thương ở Phù Dung Động => diet 50 'Trường Thương' o 'Phù Dung Động' (MapID 202)
+
+[05-11 09:11:46] Diệt 50 Trường Thương ở Phù Dung Động (map 202)
+[05-11 09:21:46] Kiểm tra định kỳ: 10 phút, Buoc 2 (diet quai: danh quai), tiến độ 24 / 50, về thành 0 lần
+

@@ -117,7 +117,13 @@ void GameWindow::Refresh()
 
 	if (!winProcess.ReadMemory((LPBYTE)NPC_BASE_ADD, (LPVOID)&lpBaseAdd, 4)) return;
 	lpCurAdd = lpBaseAdd + m_nPlayerIndex * NPC_DATA_SIZE;
-	if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, sizeof(Npc))) return;
+	// KNpc stride ~0x11AB8 (~72KB). Doc GOP ca struct de tran sang trang chua commit
+	// (index nhan vat lon sau khi doi map) => ERROR_PARTIAL_COPY => return => dong bang
+	// thong tin (mau/mana/map/vi tri/ke thu...). Doc TACH 2 cum data thuc su dung, bo
+	// qua ~64KB vung skill o giua; cum max o xa that bai thi giu max cu, khong return.
+	memset(&Npc, 0, sizeof(Npc));
+	if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90)) return;							// core: 0x0..m_RegY(0x1A88)
+	BOOL bMaxOK = winProcess.ReadMemory(lpCurAdd + 0x11A00, (LPVOID)&Npc.m_CurLifeMaxA, 0x10);	// LifeMax/ManaMax @0x11A00
 
 	if (Npc.m_Index == 0) // Disconnected
 	{
@@ -225,9 +231,14 @@ void GameWindow::Refresh()
 	}
 
 	m_nCurLife = Npc.m_CurLife;
-	m_nCurLifeMax = Npc.GetLifeMax();
 	m_nCurMana = Npc.m_CurMana;
-	m_nCurManaMax = Npc.GetManaMax();
+	if (bMaxOK)		// cum max doc rieng; that bai thi giu max cu (khong lam dong bang)
+	{
+		m_nCurLifeMax = Npc.GetLifeMax();
+		m_nCurManaMax = Npc.GetManaMax();
+	}
+	if (m_nCurLifeMax < m_nCurLife) m_nCurLifeMax = m_nCurLife;
+	if (m_nCurManaMax < m_nCurMana) m_nCurManaMax = m_nCurMana;
 	winProcess.ReadMemory((LPBYTE)MAP_ID_ADD, (LPVOID)&m_nMapID, sizeof(m_nMapID));
 	winProcess.ReadMemory((LPBYTE)FLAG_X_OFFST, (LPVOID)&m_nFlagX, 8);
 	m_nFlagX <<= 4;	m_nFlagY <<= 5;
@@ -243,12 +254,17 @@ void GameWindow::Refresh()
 	if (Npc.m_nPeopleIdx > 1)
 	{
 		lpCurAdd = lpBaseAdd + Npc.m_nPeopleIdx*NPC_DATA_SIZE;
-		winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, sizeof(Npc));
-		strncpy(m_szEnemyName, Npc.Name, 31);
-		m_nEnemySeries = Npc.m_Series;
-		m_nEnemyLife = Npc.m_CurLife;
-		m_nEnemyLifeMax = Npc.GetLifeMax();
-		m_nEnemyLevel = Npc.m_Level;
+		memset(&Npc, 0, sizeof(Npc));
+		if (winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90))		// core doi thu (nhu player)
+		{
+			BOOL bEMaxOK = winProcess.ReadMemory(lpCurAdd + 0x11A00, (LPVOID)&Npc.m_CurLifeMaxA, 0x10);
+			strncpy(m_szEnemyName, Npc.Name, 31);
+			m_nEnemySeries = Npc.m_Series;
+			m_nEnemyLife = Npc.m_CurLife;
+			m_nEnemyLifeMax = bEMaxOK ? Npc.GetLifeMax() : Npc.m_CurLife;
+			m_nEnemyLevel = Npc.m_Level;
+			if (m_nEnemyLifeMax < m_nEnemyLife) m_nEnemyLifeMax = m_nEnemyLife;
+		}
 	}
 
 	__int64 nExp;
@@ -596,14 +612,17 @@ void GameWindowsSet::RefreshWindows(BOOL bRefreshAll)
 			if (hWnd == NULL)
 				break;
 
-			TCHAR szGameY[MAX_PATH];
+			TCHAR szGameY[MAX_PATH] = _T("");
 			DWinProcess winProcess(hWnd);
-			winProcess.GetModuleBaseName(NULL, szGameY, MAX_PATH);
+			// GetModuleBaseName hay thất bại tạm thời lúc game mới mở (module chưa nạp xong / mở handle chưa được):
+			// trả về 0 => để nguyên chuỗi rỗng, bỏ qua lượt này, lần quét sau (3s) sẽ nhận lại
+			if (winProcess.GetModuleBaseName(NULL, szGameY, MAX_PATH) == 0)
+				continue;
 
 			_tcslwr(szGameY);
 			//if (!_tcsstr(szGameY, _TGameY_Exe)) continue;
 			if (!_tcsstr(szGameY, _TGameY_Exe1)
-				&& !_tcsstr(szGameY, _TGameY_Exe2)				
+				&& !_tcsstr(szGameY, _TGameY_Exe2)
 				)
 				continue;
 			if (FindGameWindow(hWnd) == NULL)

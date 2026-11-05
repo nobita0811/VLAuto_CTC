@@ -1,0 +1,29 @@
+#Font TCVN3
+#Gâ mét phÇn tªn vËt phÈm kh«ng muèn nhÆt, chiÒu dµi kh«ng qu¸ 32 kı tù
+#Tªn vËt phÈm lµ tªn lóc ch­a nhÆt vµo hµnh trang (cßn trªn mÆt ®Êt)
+#Danh s¸ch vËt phÈm dµi tèi ®a lµ 64 vËt phÈm
+ hoa t¸n
+ ®éc t¸n
+ khİ hoµn
+ thuËn t¸n
+ ®éc ®an
+ tiªn mËt
+b¹ch m·
+thanh m·
+h¾c m·
+hång m·
+hoµng m·
+MËt ®å thÇn bİ
+ThÇn bİ ®å chİ
+®å chİ
+ThÇn bİ lé chİ
+lé chİ
+Phi Phong
+Háa Phßng hoµn
+§éc Phßng hoµn
+Cao Trung hoµn
+Tr­êng MÖnh hoµn
+B¨ng Phßng hoµn
+Cao ThiÓm hoµn
+Gia Bµo hoµn
+§éc Phßng hoµn

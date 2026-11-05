@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DlgSettingSkill.h"
+#include "DlgDoSat.h"
 
 // CDlgAttack dialog
 
@@ -29,4 +30,5 @@ protected:
 public:
 	CToolTipCtrl		m_ToolTip;
 	CDlgSettingSkill	m_dlgSkill;			// Cua so Cai dat skill (modal)
+	CDlgDoSat			m_dlgDoSat;			// Cua so Cai dat Do sat / Cuu sat (modal)
 };

@@ -1,0 +1,8 @@
+; VLAuto MapPath - Map 180 Long Cung ®éng
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten]  [Driver] diem,mapDich,menu
+[Points]
+0,49568,93728
+[Sides]
+[Doors]
+0,179,51677,98450
+[Driver]

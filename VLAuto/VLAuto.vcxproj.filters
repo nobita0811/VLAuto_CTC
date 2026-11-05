@@ -69,6 +69,9 @@
     <ClCompile Include="DlgSettingSkill.cpp">
       <Filter>Source Files\TabDialogs</Filter>
     </ClCompile>
+    <ClCompile Include="DlgDoSat.cpp">
+      <Filter>Source Files\TabDialogs</Filter>
+    </ClCompile>
     <ClCompile Include="DlgBasic.cpp">
       <Filter>Source Files\TabDialogs</Filter>
     </ClCompile>
@@ -204,6 +207,9 @@
       <Filter>Header Files\TabDialogs</Filter>
     </ClInclude>
     <ClInclude Include="DlgSettingSkill.h">
+      <Filter>Header Files\TabDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgDoSat.h">
       <Filter>Header Files\TabDialogs</Filter>
     </ClInclude>
     <ClInclude Include="DlgBasic.h">

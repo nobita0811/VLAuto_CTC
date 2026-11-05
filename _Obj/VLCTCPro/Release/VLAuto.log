@@ -15,12 +15,13 @@
   DlgDebug.cpp
   DlgAttack.cpp
   DlgSettingSkill.cpp
+  DlgDoSat.cpp
   DlgBasic.cpp
   DlgCollect.cpp
   DlgCollectSetting.cpp
-  DlgBuySetting.cpp
   Generating Code...
   Compiling...
+  DlgBuySetting.cpp
   DlgMap.cpp
   DlgMove.cpp
   DlgMovePoints.cpp
@@ -40,9 +41,9 @@
   DlgPKQFilter.cpp
   DlgUtility.cpp
   YSAddPoint.cpp
-  YSBuyItem.cpp
   Generating Code...
   Compiling...
+  YSBuyItem.cpp
   YSPrizeSel.cpp
   YSTongPK.cpp
   YSKillQ.cpp

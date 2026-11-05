@@ -85,6 +85,7 @@ static char		s_szMenu[PT_MAX_MENU][64];
 static struct { int nOldMap, nNewMap; BOOL bDriver; } s_LastTrans = { 0, 0, 0 };
 
 // Ve trong game + phim tat
+BOOL			g_bDbgText = FALSE;	// Master text/overlay debug trong game (TestOffline). 0 = giong ban User
 static BOOL		s_bShow = FALSE;
 
 // Ve duong Auto dang di (tab Ban do) + lenh MoveTo gan nhat
@@ -1186,10 +1187,13 @@ static void __fastcall HookDrawGameSpace(void *pCoreShell)
 	((PFN_DRAWGAMESPACE)DGS_FUNC_ADD)(pCoreShell);
 	__try
 	{
-		DrawObstacles();
-		DrawStars();
-		DrawPath();
-		DrawWalk();
+		if (g_bDbgText)	// Tat debug text (giong ban User): khong ve overlay (do lag + roi mat)
+		{
+			DrawObstacles();
+			DrawStars();
+			DrawPath();
+			DrawWalk();
+		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
@@ -2481,7 +2485,7 @@ static void TvMsg(const char *szFormat, ...)
 	va_end(va);
 	szMsg[sizeof(szMsg) - 1] = 0;
 #if ADMIN_MODE
-	SystemMessage(1,szMsg);	// Ban User: tat thong bao MapPath (tu di) tren kenh chat
+	if (g_bDbgText) SystemMessage(1,szMsg);	// Ban User / tat debug: khong hien thong bao MapPath tren chat
 #endif
 }
 
@@ -2894,7 +2898,7 @@ void PathTravelBreathe()
 	s_szTvHold = NULL;
 	TvBreathe();
 	DWORD dwNow = GetTickCount();
-	if (!s_nTvTarget || !s_szTvHold || !ADMIN_MODE) { s_dwTvHoldTick = 0; return; }	// Ban nguoi dung: khong bao ly do dung cho (ten bien noi bo)
+	if (!s_nTvTarget || !s_szTvHold || !g_bDbgText) { s_dwTvHoldTick = 0; return; }	// Tat debug text: khong bao ly do dung cho
 	if (!s_dwTvHoldTick) s_dwTvHoldTick = dwNow;
 	if (dwNow - s_dwTvHoldTick > 5000 && dwNow - s_dwTvHoldMsg > 5000)
 	{
@@ -3167,7 +3171,7 @@ int PathWalkTo(int tx, int ty)
 			if (!s_W.pt[i].x && !s_W.pt[i].y) continue;
 			if (pBlock && pBlock[i]) continue;
 			int d = ObsReachDist(s_W.pt[i].x, s_W.pt[i].y);
-			if (d < dS) { dS = d; nStart = i; }
+			if (d >= 0 && d < dS) { dS = d; nStart = i; }	// bo qua -1 (bi tuong chan) - khong lam diem dau
 			d = __distance(s_W.pt[i].x, s_W.pt[i].y, tx, ty);
 			if (d < dE) { dE = d; nEnd = i; }
 		}

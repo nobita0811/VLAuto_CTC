@@ -1,0 +1,32 @@
+====** Font TCVN3 **====
+301PhatSon - NhËt ký NhiÖm vô VLAuto
+
+Ngµy 16-10-2026
+======================================================================
+
+[16-10 10:39:51] Khëi ®éng VLAuto...
+[16-10 10:39:51] [QT] Breath: Gen=qt_none Entrust=0
+[16-10 10:39:52] [QT] Breath: Gen=qt_yesou Entrust=0
+[16-10 10:39:52] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=162
+[16-10 10:39:52] [QT] GetNewQuest: Map=162 Shoping=0 NeedMoney=0 InTownOnly=0
+[16-10 10:39:58] [QT] GetNewQuest: da toi cho NPC Da Tau (52747,103224)
+[16-10 10:39:58] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[16-10 10:39:58] [QT] GetNewQuest: Map=162 Shoping=1 NeedMoney=0 InTownOnly=0
+[16-10 10:39:58] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=1
+[16-10 10:39:59] [QT] ClickToNpc: thay #11 D· tÈu, cach nguoi 202 > 128 -> chay toi
+[16-10 10:39:59] [QT] ClickToNpc: SetPeopleIdx(#11 D· tÈu) -> PEOPLE_IDX=11
+[16-10 10:40:00] [QT] GetNewQuest: hop thoai MsgSel2 3 dong: NhËn nhiÖm vô
+
+[16-10 10:41:49] Khëi ®éng VLAuto...
+[16-10 10:41:49] [QT] Breath: Gen=qt_none Entrust=0
+[16-10 10:41:49] [QT] Breath: Gen=qt_yesou Entrust=0
+[16-10 10:41:49] [QT] BreathYS: YS=ys_none Status=0 QID=0 Step=0 Map=162
+[16-10 10:41:49] [QT] GetNewQuest: Map=162 Shoping=0 NeedMoney=0 InTownOnly=0
+[16-10 10:41:56] [QT] GetNewQuest: da toi cho NPC Da Tau (52747,103224)
+[16-10 10:41:56] [QT] GetNewQuest: khong co hop thoai -> ClickToNpc
+[16-10 10:41:56] [QT] GetNewQuest: Map=162 Shoping=1 NeedMoney=0 InTownOnly=0
+[16-10 10:41:56] [QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=1
+[16-10 10:41:57] [QT] ClickToNpc: thay #11 D· tÈu, cach nguoi 202 > 128 -> chay toi
+[16-10 10:41:57] [QT] ClickToNpc: SetPeopleIdx(#11 D· tÈu) -> PEOPLE_IDX=11
+[16-10 10:41:58] [QT] GetNewQuest: MsgSel2 3 dong: [0]NhËn nhiÖm vô | [1]Xem t×nh h×nh chuçi nhiÖm vô | [2] KÕt thóc ®èi tho¹i!
+[16-10 10:41:58] [QT] GetNewQuest: chon dong [0] Nhan nhiem vu

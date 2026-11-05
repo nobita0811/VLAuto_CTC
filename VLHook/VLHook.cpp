@@ -120,6 +120,7 @@ LRESULT HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 		DebugAttackUnhook();
 		DebugFileUnhook();
 		DebugLowCfgUnhook();
+		theBasic.GiamCauHinhRestore();
 		theMain.ClearEverything();
 		CrashUninstall();
 
@@ -178,6 +179,7 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 		{ CRASH_STAGE("DebugFileBreathe"); DebugFileBreathe(); }
 		{ CRASH_STAGE("DebugQuestBreathe"); CQuestMoveAllow qa; CPauseMoveAllow pa; DebugQuestBreathe(); }
 		{ CRASH_STAGE("theBasic.TrimRamBreathe"); theBasic.TrimRamBreathe(); }
+		{ CRASH_STAGE("theBasic.GiamCauHinhBreathe"); theBasic.GiamCauHinhBreathe(); }
 		{ CRASH_STAGE("theMain.TongMoneyBreathe"); theMain.TongMoneyBreathe(); }
 		{ CRASH_STAGE("theMain.WalkCityBoxBreathe"); CPauseMoveAllow pa; theMain.WalkCityBoxBreathe(); }
 	}

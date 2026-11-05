@@ -3,6 +3,12 @@
 #define	NUM_ATTRIB			40
 #define	ALL_ATTRIB			79	// 15-10: thuoc tinh co trong magicdesc.ini 15_10
 #define MAXSETSKILL			8
+#define MAX_ENEMY			32
+// PARAM_ATTACK::m_nPKMode
+#define PKMODE_OFF			0	// Khong dung
+#define PKMODE_ALL			1	// Do sat tat ca: toi map la Switch('PK',2)
+#define PKMODE_LIST			2	// Do sat theo danh sach: ke thu trong tam skill -> PK 2, khong -> PK 1
+#define PKMODE_REVENGE		3	// Cuu sat theo danh sach: ke thu trong tam skill -> cuu sat nguoi do
 #define MAX_NODES			64
 #define MAX_MEMBERS			16
 #define MAX_CITY_NUM		7
@@ -45,6 +51,7 @@ struct PARAM_BASIC : public AutoParams
 	int		m_nExpLevel;	// cap toi thieu de chay Gioi han Exp
 	BOOL	m_bTrimRam;		// Giam RAM dinh ky (SetProcessWorkingSetSize trong game)
 	int		m_nTrimRamTime;	// So giay giua 2 lan giam RAM
+	int		m_nGiamCauHinh;	// Giam cau hinh: 0 = binh thuong, 1 = chi ve 1/9 region, 2 = tat ve canh (den man hinh)
 
 public:
 	void	InitValue();
@@ -112,6 +119,10 @@ struct PARAM_ATTACK : public AutoParams
 	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
 	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
 	BOOL	m_bTongEnemy;		// Tu ve: coi nguoi cung bang hoi la doi thu (FALSE = bo qua) - cho cu m_Revserved2
+	// Do sat / Cuu sat (cua so Cai dat Do Sat) - VLHook CVLAttack phai giu cung thu tu
+	int		m_nPKMapID;		// Map bat che do (0 = chua chon)
+	int		m_nPKMode;		// PKMODE_xxx
+	char	m_szEnemies[MAX_ENEMY][32];	// Ten ke thu (TCVN3 nhu ten trong game), het danh sach = chuoi rong
 
 public:
 	void	InitValue();
@@ -168,6 +179,8 @@ struct PARAM_MOVE : public AutoParams
 	int		m_nNodesMapID;	// Ban do cua danh sach toa do (0 = chua xac dinh)
 	POINT	m_GoNodes[MAX_NODES];	// Danh sach toa do di den noi luyen cong (sau khi vao cong map train)
 	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = chua xac dinh)
+	BOOL	m_bLureCreep;		// Quay quai: toi toa do train, chay qua tung con quai cho no theo roi ve diem neo moi danh
+	int		m_nLureRange;		// Pham vi quay quai quanh diem neo
 
 public:
 	void	InitValue();

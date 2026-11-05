@@ -170,7 +170,7 @@ void CDlgMap::OnButtonsClicked(UINT nID)
 			szMessage = _T("Việc lưu Pass rương vào chương trình có thể gây nguy hiểm!\n");
 			szMessage += _T("Nếu máy có nhiều người sử dụng, bạn không nên dùng chức năng này.\n");
 			szMessage += _T("Chỉ nên lưu Pass rương nếu bạn đang dùng máy ở nhà!");
-			MessageBox(szMessage, _T("VLAuto - Chú ý"), MB_ICONEXCLAMATION);
+			//MessageBox(szMessage, _T("VLAuto - Chú ý"), MB_ICONEXCLAMATION);
 		}
 		else
 		{
@@ -191,9 +191,9 @@ void CDlgMap::OnButtonsClicked(UINT nID)
 			else
 			{
 				szMessage = _T("Nhân vật sẽ tự bán trang bị vũ khí theo thuộc tính thiết lập tại phần Nhặt đồ.\n\n");
-				szMessage += _T("Bạn đã đọc kỹ Hướng dẫn cho mục này chưa?");
+				//szMessage += _T("Bạn đã đọc kỹ Hướng dẫn cho mục này chưa?");
 			}
-			int nRet = MessageBox(szMessage, _T("VLAuto - Xác nhận"), MB_YESNO|MB_ICONQUESTION);
+			int nRet = MessageBox(szMessage, _T("VLCTCPro - Xác nhận"), MB_YESNO|MB_ICONQUESTION);
 			if (nRet != IDYES) pButton->SetCheck(0);
 		}
 	}
@@ -209,7 +209,7 @@ void CDlgMap::OnCbnSelchangeDriverCombo()
 		CString szMesage = _T("Chức năng này chỉ dùng để quay lại nếu chưa bị mất điểm nhớ\n");
 		szMesage += _T("Trong trường hợp không thể quay lại, nhân vật sẽ thoát Game\n");
 		szMesage += _T("Xin hãy dùng các chế độ quay lại [Nơi đã đi qua 1-2-3] để thay thế!");
-		MessageBox(szMesage, _T("VLAuto"), MB_ICONEXCLAMATION);
+		//MessageBox(szMesage, _T("VLAuto"), MB_ICONEXCLAMATION);
 	}
 }
 

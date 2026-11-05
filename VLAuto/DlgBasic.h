@@ -27,6 +27,7 @@ protected:
 	afx_msg void		OnBnClickedAutoStartCheck();
 	afx_msg void		OnBnClickedExpLimitCheck();
 	afx_msg void		OnBnClickedTrimRamCheck();
+	afx_msg void		OnCbnSelchangeGiamCauHinh();
 
 	DECLARE_MESSAGE_MAP()
 

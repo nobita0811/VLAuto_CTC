@@ -254,15 +254,30 @@ void CVLMove::Breathe()
 	// Het duong MapPath (0) hoac map khong co MapPath (-1) thi game tu tim duong (GoTo) toi diem;
 	// GoTo ket thi chay thang nhu cu
 	static POINT ptFar = { 0, 0 };	// Diem dang tiep can tu xa
-	if (dZ > 1000) { ptFar.x = nDestX; ptFar.y = nDestY; }
-	if (dZ <= AUTO_GOTO_NEAR) ptFar.x = ptFar.y = 0;
-	if (ptFar.x == nDestX && ptFar.y == nDestY)
+	if (m_bRouteMove)
 	{
-		if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
+		// Danh sach toa do train: nguoi choi da ghi nhan 2 diem lien tiep la di toi duoc
+		// -> dung KPlayer::GoTo (game tu tim duong) di thang giua 2 diem, KHONG di vong theo
+		// MapPath. GoTo dang dua toi -> xong; da gan (<=AUTO_GOTO_NEAR) / GoTo ket -> MoveTo not doan cuoi.
+		if (AutoGoTo(nDestX, nDestY) > 0)
 		{
 			m_nLagCount = 0;
 			m_nLastdZ = MAX_INTNUM;
 			return;
+		}
+	}
+	else
+	{
+		if (dZ > 1000) { ptFar.x = nDestX; ptFar.y = nDestY; }
+		if (dZ <= AUTO_GOTO_NEAR) ptFar.x = ptFar.y = 0;
+		if (ptFar.x == nDestX && ptFar.y == nDestY)
+		{
+			if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
+			{
+				m_nLagCount = 0;
+				m_nLastdZ = MAX_INTNUM;
+				return;
+			}
 		}
 	}
 	if (dZ < 64)
@@ -274,6 +289,7 @@ void CVLMove::Breathe()
 		case status_movefirst:
 		case status_move:
 			m_nStatus = status_stand;
+			LureStart(nDestX, nDestY);	// Quay quai: vua toi toa do train
 			break;
 		case status_idle:
 			if (m_bMoveByMapYS)
@@ -285,6 +301,7 @@ void CVLMove::Breathe()
 			}
 			else if (m_bAroundPointPK)
 			{
+				LureStart(nDestX, nDestY);	// Quay quai: ve lai tam danh quanh diem
 				if (!P_PLAYER->m_bRideHorse && P_PLAYER->m_Doing == do_stand)
 					g_pCurPlayer->DoSit(); // Sit down when reach center
 			}
@@ -369,6 +386,7 @@ void CVLMove::GetCurNode()
 		for (int i = 0; i < nCount; i++)
 		{
 			int dZ = nPass == 0 ? ObsReachDist(pPts[i].x, pPts[i].y) : __distance(nPlayerX, nPlayerY, pPts[i].x, pPts[i].y);
+			if (dZ < 0) continue;	// -1 = trong vung nhung bi tuong chan: bo qua (het diem toi duoc thi pass 1 xet theo duong thang)
 			if (dZ < dMin)
 			{
 				dMin = dZ;
@@ -1057,6 +1075,7 @@ int CVLMove::GoNodesNearest(int nPlayerX, int nPlayerY, int nCount, int *pReach)
 	{
 		if (__distance(nPlayerX, nPlayerY, m_GoNodes[i].x, m_GoNodes[i].y) > 1500) continue;
 		int d = ObsReachDist(m_GoNodes[i].x, m_GoNodes[i].y);
+		if (d < 0) continue;	// -1 = bi tuong chan: khong phai "toi duoc"
 		if (d < dBest) { dBest = d; nBest = i; }
 	}
 	*pReach = dBest;
@@ -1103,6 +1122,7 @@ BOOL CVLMove::GoNodesBreathe()
 		int nReach, nNear = GoNodesNearest(nPlayerX, nPlayerY, nCount, &nReach);
 		int nCurReach = (__distance(nPlayerX, nPlayerY, m_GoNodes[m_nGoNode].x, m_GoNodes[m_nGoNode].y) > 1500) ? MAX_INTNUM :
 			ObsReachDist(m_GoNodes[m_nGoNode].x, m_GoNodes[m_nGoNode].y);
+		if (nCurReach < 0) nCurReach = MAX_INTNUM;	// Muc tieu hien tai bi tuong chan: uu tien chuyen sang diem toi duoc
 		if (nNear >= 0 && nNear != m_nGoNode && nReach < nCurReach)
 		{
 			SystemMessage(0, "<color=white>Di den noi luyen cong: chuyen sang diem %d (%d/%d) - gan nhat co duong toi",
@@ -1484,4 +1504,152 @@ BOOL CVLMove::GoToWorld(int MapId, int nDestX, int nDestY)
 	// nếu không dùng xa phu thì khoảng cách tổng khoảng cách giữa các điểm trên đường đi đến cổng vào map B
 	// di chuyển giữa 2 điểm dùng hàm KPlayer::GoTo(int nX, int nY)
 	return FALSE;
+}
+
+// ===== Quay quai (tab Di chuyen: IDC_LURE_CREEP_CHECK / IDC_LURE_CREEP_RANGE_EDIT) =====
+// Vua toi 1 toa do train (diem danh quanh / diem trong danh sach toa do) ma quanh do (m_nLureRange) co hon 1 con quai:
+// lay toa do do lam diem neo tam, chay qua tung con (gan nhat truoc) cho quai thay va duoi theo, chay ve diem neo
+// roi moi cho theAttack danh. Trong luc quay khong chon muc tieu (CVLAttack::Breathe dung truoc ProcessAttack).
+#define LURE_MAX_NPC		12		// Toi da so quai chay qua 1 lan
+#define LURE_TOUCH			120		// Cach quai bao nhieu thi coi la da chay qua (quai da thay)
+#define LURE_NPC_TIMEOUT	3000	// Chay toi 1 con qua lau (bi chan / quai chay) -> bo qua con do
+#define LURE_BACK_TIMEOUT	6000	// Chay ve diem neo toi da
+#define LURE_ANCHOR_NEAR	64		// Toi diem neo
+#define LURE_COOLDOWN		8000	// Giua 2 lan quay (diem danh quanh: quay lai moi lan ve tam)
+
+enum { lure_none = 0, lure_visit, lure_back };
+static int		s_nLureState = lure_none;
+static int		s_nLureMap = 0;
+static POINT	s_ptLureAnchor = { 0, 0 };
+static int		s_nLureIdx[LURE_MAX_NPC];
+static DWORD	s_dwLureID[LURE_MAX_NPC];
+static int		s_nLureCount = 0;
+static int		s_nLureStep = 0;
+static DWORD	s_dwLureStepTick = 0;
+static DWORD	s_dwLureStartTick = 0;
+static DWORD	s_dwLureEndTick = 0;
+
+static int LureRange(int nRange)
+{
+	if (nRange <= 0) return 500;
+	if (nRange < 100) return 100;
+	if (nRange > 2000) return 2000;
+	return nRange;
+}
+
+void CVLMove::LureStop()
+{
+	if (s_nLureState != lure_none) s_dwLureEndTick = GetTickCount();
+	s_nLureState = lure_none;
+	s_nLureCount = 0;
+}
+
+void CVLMove::LureStart(int nAnchorX, int nAnchorY)
+{
+	if (!m_bLureCreep || s_nLureState != lure_none) return;
+	if (!theAttack.m_bAutoHit || !P_PLAYER->m_FightMode || theAttack.m_nEnemyIdx) return;
+	if (m_bFollow && m_nLeaderIdx) return;	// Dang theo sau nguoi khac
+	DWORD dwNow = GetTickCount();
+	if (s_dwLureEndTick && dwNow - s_dwLureEndTick < LURE_COOLDOWN) return;
+
+	// Quai danh duoc (cung bo loc voi tim quai: con song, khong phai NPC ma / quai lag / ngoai vung train...)
+	KAliveNpc::RefreshNpcs();
+	int nRange = LureRange(m_nLureRange);
+	int nIdx[LURE_MAX_NPC], nCount = 0;
+	for (int i = 1; i < MAX_NPC && nCount < LURE_MAX_NPC; i++)
+	{
+		KAliveNpc& npc = theAttack.m_AliveNpc[i];
+		if (!npc.m_dwID) continue;
+		if (theAttack.m_bAvoidBoss && npc.m_nGoldType == 16) continue;
+		if (__distance(nAnchorX, nAnchorY, npc.m_nPosX, npc.m_nPosY) > nRange) continue;
+		nIdx[nCount++] = i;
+	}
+	if (nCount < 2) return;	// 0-1 con: danh luon
+
+	// Thu tu chay: tu diem neo, moi lan lay con gan diem dang dung nhat
+	int nX = nAnchorX, nY = nAnchorY;
+	s_nLureCount = 0;
+	while (s_nLureCount < nCount)
+	{
+		int nBest = -1, dBest = MAX_INTNUM;
+		for (int k = 0; k < nCount; k++)
+		{
+			if (nIdx[k] < 0) continue;
+			KAliveNpc& npc = theAttack.m_AliveNpc[nIdx[k]];
+			int d = __distance(nX, nY, npc.m_nPosX, npc.m_nPosY);
+			if (d < dBest) { dBest = d; nBest = k; }
+		}
+		if (nBest < 0) break;
+		KAliveNpc& npc = theAttack.m_AliveNpc[nIdx[nBest]];
+		s_nLureIdx[s_nLureCount] = nIdx[nBest];
+		s_dwLureID[s_nLureCount] = npc.m_dwID;
+		s_nLureCount++;
+		nX = npc.m_nPosX; nY = npc.m_nPosY;
+		nIdx[nBest] = -1;
+	}
+	s_ptLureAnchor.x = nAnchorX;
+	s_ptLureAnchor.y = nAnchorY;
+	s_nLureMap = *g_pMapID;
+	s_nLureStep = 0;
+	s_dwLureStepTick = dwNow;
+	s_dwLureStartTick = dwNow;
+	s_nLureState = lure_visit;
+	if (PEOPLE_IDX > 0 && PEOPLE_IDX < MAX_NPC && g_pNpcArray[PEOPLE_IDX]->m_Kind == kind_normal)
+		theAttack.SetPeopleIdx(0);
+	SystemMessage(0, "<color=yellow>Quay quai: %d con", s_nLureCount);
+}
+
+BOOL CVLMove::LureBreathe()
+{
+	if (s_nLureState == lure_none) return FALSE;
+	DWORD dwNow = GetTickCount();
+	DWORD dwMaxTime = LURE_NPC_TIMEOUT * s_nLureCount + LURE_BACK_TIMEOUT + 2000;
+	if (!m_bLureCreep || !P_PLAYER->m_FightMode || P_PLAYER->m_CurrentLife <= 0 || *g_pMapID != s_nLureMap ||
+		theAttack.m_nEnemyIdx || dwNow - s_dwLureStartTick > dwMaxTime)
+	{
+		LureStop();
+		return FALSE;
+	}
+	// Khong de game tu chay theo danh quai (PEOPLE_IDX)
+	if (PEOPLE_IDX > 0 && PEOPLE_IDX < MAX_NPC && g_pNpcArray[PEOPLE_IDX]->m_Kind == kind_normal)
+		theAttack.SetPeopleIdx(0);
+
+	int nPlayerX, nPlayerY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	while (s_nLureState == lure_visit)
+	{
+		if (s_nLureStep >= s_nLureCount)
+		{
+			s_nLureState = lure_back;
+			s_dwLureStepTick = dwNow;
+			break;
+		}
+		int i = s_nLureIdx[s_nLureStep];
+		KNpc* pNpc = g_pNpcArray[i];
+		BOOL bNext = !pNpc->IsExist() || pNpc->m_dwID != s_dwLureID[s_nLureStep] || pNpc->m_CurrentLife <= 0 ||
+			dwNow - s_dwLureStepTick > LURE_NPC_TIMEOUT;
+		int nX = 0, nY = 0;
+		if (!bNext)
+		{
+			pNpc->GetMapPos(&nX, &nY);
+			if (__distance(nPlayerX, nPlayerY, nX, nY) <= LURE_TOUCH) bNext = TRUE;
+		}
+		if (bNext)
+		{
+			s_nLureStep++;
+			s_dwLureStepTick = dwNow;
+			continue;
+		}
+		g_pCurPlayer->MoveTo(nX, nY);
+		return TRUE;
+	}
+	// Ve diem neo
+	if (__distance(nPlayerX, nPlayerY, s_ptLureAnchor.x, s_ptLureAnchor.y) <= LURE_ANCHOR_NEAR ||
+		dwNow - s_dwLureStepTick > LURE_BACK_TIMEOUT)
+	{
+		LureStop();
+		return FALSE;
+	}
+	g_pCurPlayer->MoveTo(s_ptLureAnchor.x, s_ptLureAnchor.y);
+	return TRUE;
 }

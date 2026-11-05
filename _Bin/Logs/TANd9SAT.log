@@ -1,0 +1,95 @@
+﻿====** UTF-8 **====
+TANÙSAT - Nhật ký Nhiệm vụ VLAuto
+
+Ngày 03-11-2026
+======================================================================
+
+[03-11 13:04:18] Khởi động VLAuto...
+[03-11 13:07:56] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 13:07:58] Khởi động VLAuto...
+[03-11 13:21:01] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 13:21:04] Khởi động VLAuto...
+[03-11 13:26:01] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 13:26:04] Khởi động VLAuto...
+[03-11 13:28:53] Ngừng hoạt động quá 3 phút, khởi động lại...
+
+[03-11 13:28:56] Khởi động VLAuto...
+
+[03-11 21:56:48] Khởi động VLAuto...
+
+[03-11 22:02:31] Khởi động VLAuto...
+
+[03-11 22:02:39] Khởi động VLAuto...
+[03-11 22:02:43] Hết lượt nhận nhiệm vụ => Cắn Lệnh Bài Dã Tẩu.
+
+[03-11 22:02:44] Không có Lệnh Bài Dã Tẩu trong túi / rương.
+
+[03-11 22:02:44] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:02:45] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:05:31] Khởi động VLAuto...
+[03-11 22:05:50] Hết lượt nhận nhiệm vụ => Cắn Lệnh Bài Dã Tẩu.
+
+[03-11 22:05:51] Không có Lệnh Bài Dã Tẩu trong túi / rương.
+
+[03-11 22:05:51] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:05:52] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:10:19] Khởi động VLAuto...
+[03-11 22:10:30] Hết lượt nhận nhiệm vụ => Cắn Lệnh Bài Dã Tẩu.
+
+[03-11 22:10:30] Không có Lệnh Bài Dã Tẩu trong túi / rương.
+
+[03-11 22:10:30] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:10:31] Ngưng làm Nhiệm vụ, đi luyện công.
+
+
+[03-11 22:18:08] Khởi động VLAuto...
+[03-11 22:18:24] Hết lượt nhận nhiệm vụ => Cắn Lệnh Bài Dã Tẩu.
+
+[03-11 22:18:24] Không có Lệnh Bài Dã Tẩu trong túi / rương.
+
+[03-11 22:18:24] Đã hoàn thành tối đa nhiệm vụ có thể nhận hôm nay => Ngưng, qua 12h đêm nhận tiếp!
+
+[03-11 22:18:25] Ngưng làm Nhiệm vụ, đi luyện công.
+
+Ngày 04-11-2026
+======================================================================
+
+[04-11 22:05:53] Khởi động VLAuto...
+[04-11 22:06:24] Dã Tẩu: Tìm Trang bị tăng Nội Lực lớn hơn 10 điểm => tim trang bi 'Nội Lực' > 10
+
+[04-11 22:06:24] Tìm trang bị : Nội lực tối đa (điểm) (89 manamax_v) >= 11
+[04-11 22:06:36] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[04-11 22:06:49] Dã Tẩu: Tìm Trang bị Tăng Kháng Hỏa lớn hơn 7 điểm => tim trang bi 'Kháng Hỏa' > 7
+
+[04-11 22:06:49] Tìm trang bị : Kháng hỏa (%) (102 fireres_p) >= 8
+[04-11 22:07:07] Lấy vật phẩm/trang bị trong rương đồ.
+[04-11 22:07:20] Phần thưởng: Kinh Nghiệm = 200000, Ngân Lượng = 0, Dấu hỏi (?) = 60000. Đã chọn: Kinh Nghiệm.
+
+[04-11 22:07:31] Dã Tẩu: Tiệu diệt 50 Voi Hoàng Hà ở Cán Viên Động => diet 50 'Voi Hoàng Hà' o 'Cán Viên Động' (MapID 124)
+
+[04-11 22:07:32] Diệt 50 Voi Hoàng Hà ở Cán Viên Động (map 124)
+Ngày 05-11-2026
+======================================================================
+
+[05-11 15:25:07] Khởi động VLAuto...
+
+[05-11 15:27:36] Khởi động VLAuto...
+
+[05-11 15:56:29] Khởi động VLAuto...
+
+[05-11 16:01:28] Khởi động VLAuto...
+
+[05-11 16:02:05] Khởi động VLAuto...
+
+[05-11 17:12:10] Khởi động VLAuto...

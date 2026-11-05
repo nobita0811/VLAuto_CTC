@@ -45,6 +45,10 @@ void CDlgBasic::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_TRIM_RAM_CHECK, g_pCurGameWin->m_prBasic.m_bTrimRam);
 	DDX_Text(pDX, IDC_TRIM_RAM_EDIT, g_pCurGameWin->m_prBasic.m_nTrimRamTime);
 	DDV_MinMaxInt(pDX, g_pCurGameWin->m_prBasic.m_nTrimRamTime, 10, 86400);
+	if (g_pCurGameWin->m_prBasic.m_nGiamCauHinh < 0 || g_pCurGameWin->m_prBasic.m_nGiamCauHinh > 2)
+		g_pCurGameWin->m_prBasic.m_nGiamCauHinh = 0;
+	DDX_CBIndex(pDX, IDC_GIAMCAUHINH_COMBO, g_pCurGameWin->m_prBasic.m_nGiamCauHinh);
+	if (g_pCurGameWin->m_prBasic.m_nGiamCauHinh < 0) g_pCurGameWin->m_prBasic.m_nGiamCauHinh = 0;
 
 	//UI Refresh
 	BOOL bChecked = ((CButton*)GetDlgItem(IDC_AUTO_START_CHECK))->GetCheck();
@@ -63,6 +67,7 @@ BEGIN_MESSAGE_MAP(CDlgBasic, CDialog)
 	ON_BN_CLICKED(IDC_AUTO_START_CHECK, &CDlgBasic::OnBnClickedAutoStartCheck)
 	ON_BN_CLICKED(IDC_EXP_LIMIT_CHECK, &CDlgBasic::OnBnClickedExpLimitCheck)
 	ON_BN_CLICKED(IDC_TRIM_RAM_CHECK, &CDlgBasic::OnBnClickedTrimRamCheck)
+	ON_CBN_SELCHANGE(IDC_GIAMCAUHINH_COMBO, &CDlgBasic::OnCbnSelchangeGiamCauHinh)
 END_MESSAGE_MAP()
 
 BOOL CDlgBasic::OnInitDialog()
@@ -70,6 +75,12 @@ BOOL CDlgBasic::OnInitDialog()
 	CDialog::OnInitDialog();
 	m_LifeIndicator.SetProgressType(0);
 	m_ManaIndicator.SetProgressType(1);
+	CComboBox* pGch = (CComboBox*)GetDlgItem(IDC_GIAMCAUHINH_COMBO);
+	pGch->ResetContent();
+	pGch->AddString(_T("Giảm cấu hình mức 0"));
+	pGch->AddString(_T("Giảm cấu hình mức 1"));
+	pGch->AddString(_T("Giảm cấu hình mức 2"));
+	pGch->SetCurSel(1);
 
 	if (m_ToolTip.Create(this))
 	{
@@ -86,6 +97,7 @@ BOOL CDlgBasic::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_EXP_MAX_EDIT), _T("% kinh nghiệm bắt đầu giảm (mặc định 20)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_EXP_MIN_EDIT), _T("% kinh nghiệm dừng giảm, chạy lại Auto (mặc định 1)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_TRIM_RAM_CHECK), _T("Giảm RAM game định kỳ (đẩy bộ nhớ ra standby/pagefile), chạy cả khi chưa check Auto"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_GIAMCAUHINH_COMBO), _T("Mức 0: bình thường - Mức 1: chỉ vẽ 1/9 cảnh quanh nhân vật (giảm ~1/3 CPU) - Mức 2: tắt vẽ cảnh, đen màn hình (giảm ~1/2 CPU)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_TRIM_RAM_EDIT), _T("Số giây giữa 2 lần giảm RAM (10 - 86400, mặc định 60)"));
 	}
 
@@ -211,6 +223,16 @@ void CDlgBasic::OnBnClickedExpLimitCheck()
 		GetDlgItem(IDC_EXP_MIN_EDIT)->EnableWindow(TRUE);
 		GetDlgItem(IDC_EXP_LEVEL_EDIT)->EnableWindow(TRUE);
 	}
+	g_pCurGameWin->SetGameParams(tab_basic);
+	if (g_pCurGameWin->m_bLoadDone)
+		g_pCurGameWin->SaveProfile();
+}
+
+void CDlgBasic::OnCbnSelchangeGiamCauHinh()
+{
+	if (g_pCurGameWin == NULL) return;
+	int nSel = ((CComboBox*)GetDlgItem(IDC_GIAMCAUHINH_COMBO))->GetCurSel();
+	g_pCurGameWin->m_prBasic.m_nGiamCauHinh = (nSel >= 0 && nSel <= 2) ? nSel : 0;
 	g_pCurGameWin->SetGameParams(tab_basic);
 	if (g_pCurGameWin->m_bLoadDone)
 		g_pCurGameWin->SaveProfile();

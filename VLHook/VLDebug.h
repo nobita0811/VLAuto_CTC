@@ -33,6 +33,7 @@ struct CQuestMoveAllow { CQuestMoveAllow() { DebugQuestMoveAllow(TRUE); } ~CQues
 BOOL		DebugQuestActive();							// Tab Nhiem vu dang chay buoc nao do (chay ca khi tam dung)
 // g_SysPause: KPlayer::MoveTo / GoTo bi chan, tru khi bao boi CPauseMoveAllow (JxCore.cpp)
 extern int	g_nPauseMoveAllow;
+extern BOOL	g_bDbgText;	// TestOffline: hien text + overlay debug trong game (0 = giong ban User: do lag / roi mat)
 struct CPauseMoveAllow
 {
 	BOOL m_bOn;

@@ -16,6 +16,8 @@
 #include <vector>
 #include <wincrypt.h>
 #pragma comment(lib, "crypt32.lib")   // DPAPI: CryptProtectData / CryptUnprotectData
+#include <winhttp.h>
+#pragma comment(lib, "winhttp.lib")   // nut "Kiem tra" tren login dialog (chan doan TLS 1.2)
 
 // g_szIniFile duoc VLAuto.cpp dat trong InitInstance (truoc khi goi gate).
 extern TCHAR g_szIniFile[MAX_PATH];
@@ -181,6 +183,89 @@ struct LoginResult {
     bool ok;
 };
 
+// Chan doan nhanh ngay tren login dialog: ep CHI TLS 1.2 va thu bat tay toi endpoint
+// license, ghi ket qua vao IDC_STATUS_STATIC. Giup nguoi dung (vd may ao Win7) biet
+// lieu khong dang nhap duoc co phai vi thieu TLS 1.2 hay khong.
+static void TlsCheckToStatus(HWND hDlg)
+{
+#ifndef WINHTTP_OPTION_SECURE_PROTOCOLS
+#define WINHTTP_OPTION_SECURE_PROTOCOLS 84
+#endif
+#ifndef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2
+#define WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2 0x00000800
+#endif
+    ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, L"Đang kiểm tra kết nối (TLS 1.2)...");
+    ::UpdateWindow(hDlg);
+
+    // Tach host + path tu endpoint da cau hinh (giu dong bo voi kEndpoint).
+    URL_COMPONENTS uc; memset(&uc, 0, sizeof uc); uc.dwStructSize = sizeof uc;
+    wchar_t host[256] = {0}, path[2048] = {0};
+    uc.lpszHostName = host; uc.dwHostNameLength = _countof(host);
+    uc.lpszUrlPath  = path; uc.dwUrlPathLength  = _countof(path);
+    if (!WinHttpCrackUrl(kEndpoint, 0, 0, &uc)) {
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, L"Lỗi cấu hình máy chủ.");
+        return;
+    }
+    INTERNET_PORT port = uc.nPort ? uc.nPort : 443;
+
+    DWORD err = 0, status = 0; bool ok = false;
+    HINTERNET hS = WinHttpOpen(L"VLCTCPro-TLSCheck/1.0", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    if (hS) {
+        WinHttpSetTimeouts(hS, 5000, 5000, 8000, 8000);
+        DWORD secprot = WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;   // CHI TLS 1.2
+        WinHttpSetOption(hS, WINHTTP_OPTION_SECURE_PROTOCOLS, &secprot, sizeof secprot);
+        HINTERNET hC = WinHttpConnect(hS, host, port, 0);
+        if (hC) {
+            HINTERNET hR = WinHttpOpenRequest(hC, L"GET", path, nullptr,
+                WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+            if (hR) {
+                if (WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                        WINHTTP_NO_REQUEST_DATA, 0, 0, 0)
+                    && WinHttpReceiveResponse(hR, nullptr)) {
+                    DWORD scl = sizeof status;
+                    WinHttpQueryHeaders(hR, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+                        WINHTTP_HEADER_NAME_BY_INDEX, &status, &scl, WINHTTP_NO_HEADER_INDEX);
+                    ok = true;   // bat tay TLS 1.2 thanh cong (co phan hoi HTTP)
+                } else err = GetLastError();
+                WinHttpCloseHandle(hR);
+            } else err = GetLastError();
+            WinHttpCloseHandle(hC);
+        } else err = GetLastError();
+        WinHttpCloseHandle(hS);
+    } else err = GetLastError();
+
+    if (ok) {
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Kết nối máy chủ OK (TLS 1.2). Mời đăng nhập.");
+        return;
+    }
+    switch (err) {
+    case ERROR_WINHTTP_SECURE_FAILURE:      // 12175
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Không kết nối được: máy thiếu TLS 1.2. Win7 cần SP1 + KB3140245.");
+        break;
+    case ERROR_WINHTTP_CANNOT_CONNECT:      // 12029
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Không kết nối được máy chủ. Kiểm tra mạng / tường lửa.");
+        break;
+    case ERROR_WINHTTP_NAME_NOT_RESOLVED:   // 12007
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Không phân giải được tên miền (DNS). Kiểm tra mạng.");
+        break;
+    case ERROR_WINHTTP_TIMEOUT:             // 12002
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Hết thời gian chờ máy chủ. Kiểm tra mạng.");
+        break;
+    default: {
+        wchar_t buf[160];
+        wsprintfW(buf, L"Kết nối thất bại (mã %lu). 12175 = thiếu TLS 1.2.", err);
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, buf);
+        break;
+    }
+    }
+}
+
 INT_PTR CALLBACK LoginProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg)
@@ -235,6 +320,11 @@ INT_PTR CALLBACK LoginProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
             if (r->autologin) r->remember = true;   // tu dang nhap thi buoc phai nho
             r->ok = true;
             ::EndDialog(h, 1);
+            return TRUE;
+        }
+        case IDC_TLS_CHECK_BUTTON:  // "Kiem tra" -> thu bat tay TLS 1.2, bao o IDC_STATUS_STATIC
+        {
+            TlsCheckToStatus(h);
             return TRUE;
         }
         case IDC_LOGIN_BUTTON2:  // "Coppy" -> chep ma may (HWID) vao clipboard

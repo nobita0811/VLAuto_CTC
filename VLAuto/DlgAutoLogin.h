@@ -92,6 +92,7 @@ struct AutoLoginJob
 	DWORD			dwActionTick;	// Lần thao tác gần nhất
 	DWORD			dwWait;			// Chờ bao lâu sau thao tác đó
 	BOOL			bLaunched;		// Đã mở Game cho lượt này
+	BOOL			bHidden;		// Đã ẩn cửa sổ Game vừa mở (tùy chọn ẩn game)
 	int				nScreen;		// Màn hình của thao tác gần nhất
 	int				nTries;			// Số lần thao tác liên tiếp trên cùng màn hình
 	CString			strStatus;
@@ -233,7 +234,7 @@ protected:
 	BOOL			IsGameProcess(DWORD dwPID);
 	DWORD			GetAccountGame(int nIndex, GameWindow** ppGameWin = NULL);
 	BOOL			IsAccountInGame(int nIndex);
-	BOOL			LaunchGame(int nIndex, CString& strError);
+	BOOL			LaunchGame(int nIndex, CString& strError, BOOL bHide = FALSE);
 	void			CloseGames(const std::vector<DWORD>& PIDs);
 	void			CheckClosingGames();
 	BOOL			IsClosingGame(DWORD dwPID);

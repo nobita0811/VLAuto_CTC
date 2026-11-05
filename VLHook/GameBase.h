@@ -162,6 +162,11 @@ extern DWORD_PTR g_dwNullUiPtr;
 #define LCF_VISIBLE_ADD		0x007AE608	// OPTION_VISIBLE_NUM: so nguoi choi hien thi (OPR 0x2B uParam 6 -> 0x63A670)
 #define LCF_KOPTION_ADD		0x017969C0	// KOption: +0 m_nSndVolume, +4 m_nMusicVolume (SetSndVolume 0x6443C0 / SetMusicVolume 0x644410)
 #define SCP_WEATHER_OFF		0x06		// BYTE KScenePlaceC::m_bEnableWeather (EnableWeather 0x63B9F0)
+#define CPU_GIAM_MUC_1		0x0063C371	// KScenePlaceC::Paint 0x63C2E0: vong 9 region 'sub ebx,1; jne 63C360' (75 ED) -> 90 90 = chi ve region dau
+#define CPU_GIAM_MUC_2		0x0063C2ED	// KScenePlaceC::Paint: 'je 63C402' (0F 84) -> 90 E9 = luon bo qua ve canh (den man hinh)
+#define CPU_SLEEP_1			0x005A9242	// 'push 1; call [Sleep]' (6A 01 FF15 14C17400) trong vong lap chinh - byte 2 = so ms
+#define CPU_SLEEP_2			0x00557727
+#define CPU_SLEEP_3			0x005A933E
 #define SCP_DYNALIGHT_OFF	0x3261A		// BYTE bong dong: KIpoTree(+0x325C0)+0x5A (EnableDynamicLights 0x63B900 -> 0x6FB4B0)
 
 #define GOTO_BASE_ADD	0x01796838	// this cua ham GOTO_FUNC_ADD (15-10)

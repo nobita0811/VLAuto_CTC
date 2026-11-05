@@ -1,0 +1,46 @@
+# 45 thong bao (tong 45). Cot: ms | id (1000 + kenh = khung chat) | uParam (khung chat: do dai) | nParam | so lan | chu (TCVN3)
+    437	161	00000001	0	1	
+    562	161	00000000	0	1	
+    562	161	00000001	0	1	
+    656	161	00000000	0	1	
+    656	161	00000001	0	1	
+    781	161	00000000	0	1	
+    781	161	00000001	0	1	
+    906	161	00000000	0	1	
+   2406	161	00000001	0	1	
+   2406	161	00000000	0	1	
+   2406	161	00000001	0	1	
+   2500	161	00000000	0	1	
+   2562	161	00000001	0	1	
+   2594	161	00000000	0	1	
+   2656	161	00000001	0	1	
+   2719	161	00000000	0	1	
+   3297	161	00000001	0	1	
+   3328	161	00000000	0	1	
+   3391	161	00000001	0	1	
+   3609	161	00000000	0	1	
+   3609	161	00000001	0	1	
+   3672	161	00000000	0	1	
+   4234	161	00000001	0	1	
+   4328	161	00000000	0	1	
+   4328	161	00000001	0	1	
+   4453	161	00000000	0	1	
+   4453	161	00000001	0	1	
+   4609	161	00000000	0	1	
+   4609	161	00000001	0	1	
+   4828	161	00000000	0	1	
+   5172	161	00000001	0	4	
+   5547	161	00000000	0	1	
+   5609	161	00000001	0	1	
+   6937	1001	00000045	1	1	[QT] ClickToNpc: het thoi gian cho, PEOPLE_IDX=0 Doing=3
+   7594	1001	0000004F	1	1	[QT] ClickToNpc: thay #90 D· tÈu, cach nguoi 666 > 128 -> chay toi
+   8266	1001	0000004F	1	1	[QT] ClickToNpc: thay #90 D· tÈu, cach nguoi 462 > 128 -> chay toi
+   8906	1001	0000004F	1	1	[QT] ClickToNpc: thay #90 D· tÈu, cach nguoi 258 > 128 -> chay toi
+   9516	1001	00000047	1	1	[QT] ClickToNpc: SetPeopleIdx(#90 D· tÈu) -> PEOPLE_IDX=90
+   9594	 64	282D03B8	0	1	D· tÈu: Chuçi nhiÖm vô D· TÈu víi nhiÒu phÇn th­ëng trang bÞ hkmp vµ nhanh chãng th¨ng ®¼ng cÊp. Sè nhiÖm vô tiÕp nhËn: 1/10. Sè nhiÖm vô hoµn thµnh: 0. [Vßng 3] ®· hoµn thµnh: 1 lÇn. Mçi ngµy sö dông LÖnh Bµi D· TÈu t¨ng thªm sè lÇn nhiÖm vô. Sö dông Hoµn Thµnh NhiÖm Vô ®Ó hoµn thµnh nhanh.NhiÖm vô hiÖn t¹i: TiÖu diÖt 50 TuyÕt ¶nh ë Ch©n Nói Tr­êng b¹ch | [0] Hoµn thµnh nhiÖm vô thø 1 | [1] Hñy nhiÖm vô | [2] Xem t×nh h×nh chuçi nhiÖm vô | [3] KÕt thóc ®èi tho¹i!
+  20797	161	00000001	0	1	
+  22219	1001	0000004A	1	1	MapPath: tu di T­¬ng D­¬ng -> Ch©n Nói Tr­êng B¹ch (3 buoc)
+  22328	1001	00000069	1	1	MapPath: T­¬ng D­¬ng -> xa phu chon " BiÖn Kinh phñ [200 L­îng]" -> BiÖn Kinh (con 3 buoc)
+  22547	161	00000001	0	2	
+  27391	1000	00000029	0	1	Thêi gian tÝch lòy trªn m¹ng ®· ®ñ 0 giê.
+  28328	161	00000001	0	2	

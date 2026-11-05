@@ -30,7 +30,7 @@ void CVLRecover::Breathe()
 	int nCurMP = P_PLAYER->m_CurrentMana;
 	int nMaxMP = P_PLAYER->GetManaMax();
 
-	if (m_bAutoHP && nCurHP < m_nAutoHPAmount && m_nHPBuffCount >= m_nAutoHPTimer * 20)
+	if (m_bAutoHP && nCurHP < m_nAutoHPAmount && nCurHP * 10 < nMaxHP * 7 && m_nHPBuffCount >= m_nAutoHPTimer * 20)
 	{	//Auto Buff HP
 		m_nHPBuffCount = 0;
 		if (!g_pCurPlayer->EatMedicine(medicine_blood))
@@ -44,7 +44,7 @@ void CVLRecover::Breathe()
 	}
 
 	if (nCurMP * 100 / nMaxMP > 60) m_bEmptyMana = 0;
-	if (m_bAutoMP && nCurMP < m_nAutoMPAmount && m_nMPBuffCount >= m_nAutoMPTimer * 20)
+	if (m_bAutoMP && nCurMP < m_nAutoMPAmount && nCurMP * 10 < nMaxMP * 7 && m_nMPBuffCount >= m_nAutoMPTimer * 20)
 	{	//Auto Buff MP
 		m_nMPBuffCount = 0;
 		if (!g_pCurPlayer->EatMedicine(medicine_mana))

@@ -109,6 +109,7 @@ public:
 	int		m_nExpLevel;	// cap toi thieu de chay Gioi han Exp
 	BOOL	m_bTrimRam;		// Giam RAM dinh ky
 	int		m_nTrimRamTime;	// So giay giua 2 lan giam RAM
+	int		m_nGiamCauHinh;	// Giam cau hinh 0/1/2 (giong PARAM_BASIC)
 //private:
 	int		m_nDistTimeCount;
 	int		m_nIdleTimeCount;
@@ -123,6 +124,8 @@ public:
 	BOOL ExpLimitCheck();
 	void ExpLimitBreathe();
 	void TrimRamBreathe();	// 200ms, ca khi tam dung
+	void GiamCauHinhBreathe();	// 200ms: ap dung m_nGiamCauHinh khi doi
+	void GiamCauHinhRestore();	// Truoc khi FreeLibrary: tra lai ma game goc
 	int GetExpPercent();
 private:
 	void SetExpStep(int nStep);
@@ -244,6 +247,7 @@ public:
 };
 
 #define MAXSETSKILL 8
+#define MAX_ENEMY 32
 
 class CVLAttack
 {
@@ -276,6 +280,10 @@ public:
 	int		m_Revserved[1];		// PARAM_ATTACK::InitValue ghi tran m_AlterSkill[2] vao day (2000) - khong dung
 	BOOL	m_bOnlyBlueBoss;	// Chi danh boss xanh (ten quai mau xanh)
 	BOOL	m_bTongEnemy;		// Tu ve: coi nguoi cung bang hoi la doi thu (FALSE = bo qua) - cho cu m_Revserved2
+	// Do sat / Cuu sat - cung thu tu voi PARAM_ATTACK (VLAuto/AutoParams.h)
+	int		m_nPKMapID;
+	int		m_nPKMode;		// 0 tat, 1 do sat tat ca, 2 do sat theo DS, 3 cuu sat theo DS
+	char	m_szEnemies[MAX_ENEMY][32];
 
 	//Private
 	DWORD	m_LastNpcID;
@@ -312,6 +320,9 @@ public:
 	void	ProcessAttack();
 	int		GetCurTargetIdx();
 	void	SendVLCmdSkill(int nSkillId, int nX, int nY);
+	void	PKSwitchBreathe(BOOL bFindingTrain);	// Do sat / Cuu sat theo cai dat
+	BOOL	PKSwitchActive();	// Dang o map PK va da toi bai train
+	BOOL	IsListedEnemy(const char* szName);
 };
 
 #define	NUM_BADITEMS	60
@@ -428,6 +439,8 @@ public:
 	int		m_nNodesMapID;	// Ban do cua m_Nodes (0 = khong kiem tra)
 	POINT	m_GoNodes[MAX_NODES];	// Danh sach toa do di den noi luyen cong (GoTrainBreathe)
 	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = khong kiem tra)
+	BOOL	m_bLureCreep;		// Quay quai (giong PARAM_MOVE)
+	int		m_nLureRange;		// Pham vi quay quai quanh diem neo
 	//private
 	int		m_nStatus;
 	int		m_nPreNode;
@@ -452,6 +465,9 @@ public:
 	BOOL	GoNodesBreathe();
 	BOOL	HaveGoNodes();
 	BOOL	NearTrainArea(int nPlayerX, int nPlayerY);
+	void	LureStart(int nAnchorX, int nAnchorY);	// Vua toi toa do train: >1 quai thi bat dau quay quai
+	BOOL	LureBreathe();							// TRUE = dang quay quai (chua danh)
+	void	LureStop();
 	int		m_nMapPoints, m_nStart, m_nEnd;
 	POINT	MapPoints[MAX_POINTS];
 	int		MapSides[MAX_POINTS][MAX_POINTS];

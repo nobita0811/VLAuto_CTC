@@ -1,0 +1,1818 @@
+04:30:57.507 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+04:31:00.514 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+04:31:00.514   Bấm Bắt Đầu Trò Chơi: chạy mã LỖI sau 0 ms, exit 0 (GetLastError 6)
+04:31:01.014 Màn hình 2 lần 2: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+04:31:01.014   Bấm Bắt Đầu Trò Chơi: chạy mã LỖI sau 0 ms, exit 0 (GetLastError 6)
+04:31:01.514 Màn hình 2 lần 3: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 4000 ms từ đầu lượt)
+04:31:01.514   Bấm Bắt Đầu Trò Chơi: chạy mã LỖI sau 0 ms, exit 0 (GetLastError 6)
+04:31:02.014 Màn hình 2 lần 4: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 4500 ms từ đầu lượt)
+04:31:02.014 Kết thúc lượt: Không bấm được Bắt Đầu Trò Chơi
+04:31:07.069 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3062 ms từ đầu lượt)
+04:31:07.069   Bấm Bắt Đầu Trò Chơi: chạy mã LỖI sau 0 ms, exit 0 (GetLastError 6)
+04:31:07.566 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 3562 ms từ đầu lượt)
+04:41:43.785 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+04:41:46.829 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+04:41:46.829   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+04:41:46.829 PID 14240 sau thao tác: init notice sel login role smc = 00000000/00000000 0B031790/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+04:41:47.327 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+04:41:47.327   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+04:41:47.327 PID 14240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B070C48/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+04:41:49.386 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5594 ms từ đầu lượt)
+04:41:49.386   Đang chọn server: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+04:41:49.386 PID 14240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B070C48/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+04:41:49.896 Màn hình 4 lần 2: Đang chọn server (chờ 500 ms, 6109 ms từ đầu lượt)
+04:41:51.986   Chọn server + Xác định: chạy mã xong sau 2078 ms, exit 1 (GetLastError 6)
+04:41:51.986 PID 14240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B070C48/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+04:42:00.956 Màn hình 4 lần 3: Đang chọn server (chờ 500 ms, 17172 ms từ đầu lượt)
+04:42:03.057   Chọn server + Xác định: chạy mã xong sau 2093 ms, exit 1 (GetLastError 6)
+04:42:03.057 PID 14240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B070C48/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+04:42:04.513 Kết thúc lượt: Game đã tắt
+11:45:34.148 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+11:45:37.559 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+11:45:37.559   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:45:37.559 PID 6580 sau thao tác: init notice sel login role smc = 00000000/00000000 1355A238/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:45:38.059 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+11:45:38.069   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+11:45:38.069 PID 6580 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13470928/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:45:40.069 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6016 ms từ đầu lượt)
+11:45:40.089   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+11:45:40.089 PID 6580 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13470928/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:45:40.589 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6532 ms từ đầu lượt)
+11:45:40.589   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:45:40.589 PID 6580 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13470928/00000000 134BA440/00000000 00000000/00000000 00000000/00000000
+11:45:41.589   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:45:41.589 PID 6580 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13470928/00000000 134BA440/00000000 135B8660/00000000 00000000/00000000
+11:45:41.589 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7532 ms từ đầu lượt)
+11:45:43.609 Kết thúc lượt: thành công
+11:48:07.988 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+11:48:11.433 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3531 ms từ đầu lượt)
+11:48:11.433   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:48:11.433 PID 18620 sau thao tác: init notice sel login role smc = 00000000/00000000 0B0DB048/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:48:11.933 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4031 ms từ đầu lượt)
+11:48:11.933   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:48:11.933 PID 18620 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1343A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:48:13.933 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+11:48:13.943   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+11:48:13.943 PID 18620 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1343A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:48:14.433 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+11:48:14.433   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:48:14.433 PID 18620 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1343A910/00000000 1356C760/00000000 00000000/00000000 00000000/00000000
+11:48:15.433   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:48:15.433 PID 18620 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1343A910/00000000 1356C760/00000000 13582020/00000000 00000000/00000000
+11:48:15.433 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7531 ms từ đầu lượt)
+11:48:17.443 Kết thúc lượt: thành công
+12:07:41.090 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 110 ms từ đầu lượt)
+12:07:44.543 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3563 ms từ đầu lượt)
+12:07:44.544   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:07:44.544 PID 5220 sau thao tác: init notice sel login role smc = 00000000/00000000 0B090DD0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:07:45.063 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4078 ms từ đầu lượt)
+12:07:45.065   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:07:45.067 PID 5220 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13611800/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:07:47.071 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6094 ms từ đầu lượt)
+12:07:47.088   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+12:07:47.088 PID 5220 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13611800/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:07:47.568 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6594 ms từ đầu lượt)
+12:07:47.572   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:07:47.572 PID 5220 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13611800/00000000 136512B0/00000000 00000000/00000000 00000000/00000000
+12:07:48.595   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:07:48.595 PID 5220 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13611800/00000000 136512B0/00000000 13669628/00000000 00000000/00000000
+12:07:48.595 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7610 ms từ đầu lượt)
+12:07:50.585 Kết thúc lượt: thành công
+12:16:51.416 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+12:16:54.902 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+12:16:54.903   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:16:54.903 PID 18736 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE4E0B0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:16:55.396 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+12:16:55.399   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:16:55.399 PID 18736 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355D4D0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:16:57.440 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+12:16:57.448   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+12:16:57.448 PID 18736 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355D4D0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:16:57.929 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+12:16:57.931   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:16:57.931 PID 18736 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355D4D0/00000000 135FC978/00000000 00000000/00000000 00000000/00000000
+12:16:58.950   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:16:58.951 PID 18736 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355D4D0/00000000 135FC978/00000000 13698388/00000000 00000000/00000000
+12:16:58.951 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7547 ms từ đầu lượt)
+12:17:00.961 Kết thúc lượt: thành công
+13:02:19.577 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:02:22.572 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+13:02:22.572   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:02:22.573 PID 16548 sau thao tác: init notice sel login role smc = 00000000/00000000 1358D700/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:23.068 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+13:02:23.070   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:02:23.070 PID 16548 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13584F60/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:25.092 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+13:02:25.105   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+13:02:25.106 PID 16548 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13584F60/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:25.588 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+13:02:25.591   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:02:25.591 PID 16548 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13584F60/00000000 13624B30/00000000 00000000/00000000 00000000/00000000
+13:02:26.584   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:02:26.585 PID 16548 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13584F60/00000000 13624B30/00000000 136C3100/00000000 00000000/00000000
+13:02:26.585 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7016 ms từ đầu lượt)
+13:02:28.584 Kết thúc lượt: thành công
+13:09:44.474 s7caytien00309: Đã thoát game: quanh quẩn 1 điểm 1 phút
+17:01:57.530 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+17:02:00.520 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+17:02:00.521   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:02:00.521 PID 19148 sau thao tác: init notice sel login role smc = 00000000/00000000 134E9178/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:02:01.517 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+17:02:01.520   Bấm Xác định (Nhắc nhở): chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+17:02:01.520 PID 19148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345B918/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:02:03.512 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+17:02:03.528   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+17:02:03.528 PID 19148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345B918/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:02:04.009 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+17:02:04.013   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:02:04.013 PID 19148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345B918/00000000 13590B70/00000000 00000000/00000000 00000000/00000000
+17:02:05.009   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:02:05.009 PID 19148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345B918/00000000 13590B70/00000000 135A8EE8/00000000 00000000/00000000
+17:02:05.009 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+17:02:07.007 Kết thúc lượt: thành công
+17:03:56.090 s7caytien00309: Đã thoát game: quanh quẩn 1 điểm 1 phút
+17:22:14.445 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+17:22:17.940 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+17:22:17.940   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:22:17.940 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 0B089C98/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:22:18.438 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+17:22:18.439   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:22:18.439 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B9BD0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:22:20.440 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+17:22:20.440   Đang chọn server: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:22:20.441 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B9BD0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:22:20.938 Màn hình 4 lần 2: Đang chọn server (chờ 500 ms, 6500 ms từ đầu lượt)
+17:22:20.948   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+17:22:20.948 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B9BD0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:22:21.435 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 7000 ms từ đầu lượt)
+17:22:21.437   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:22:21.437 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B9BD0/00000000 138D1B70/00000000 00000000/00000000 00000000/00000000
+17:22:22.426   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:22:22.426 PID 20604 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B9BD0/00000000 138D1B70/00000000 138E9EE8/00000000 00000000/00000000
+17:22:22.426 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 8000 ms từ đầu lượt)
+17:22:24.442 Kết thúc lượt: thành công
+18:20:19.966 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+18:20:22.974 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+18:20:22.975   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:20:22.975 PID 21440 sau thao tác: init notice sel login role smc = 00000000/00000000 13762ED8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:20:23.485 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+18:20:23.488   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:20:23.488 PID 21440 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B071EB8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:20:25.502 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5531 ms từ đầu lượt)
+18:20:25.519   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+18:20:25.519 PID 21440 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B071EB8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:20:25.998 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6031 ms từ đầu lượt)
+18:20:26.000   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:20:26.000 PID 21440 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B071EB8/00000000 137ECA78/00000000 00000000/00000000 00000000/00000000
+18:20:27.002   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:20:27.003 PID 21440 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B071EB8/00000000 137ECA78/00000000 13885380/00000000 00000000/00000000
+18:20:27.003 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+18:20:28.995 Kết thúc lượt: thành công
+18:22:24.554 s7caytien00309: Đã thoát game: quanh quẩn 1 điểm 1 phút
+18:35:34.819 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+18:35:38.301 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+18:35:38.302   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:35:38.302 PID 21232 sau thao tác: init notice sel login role smc = 00000000/00000000 138844A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:35:38.811 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+18:35:38.813   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:35:38.813 PID 21232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A5850/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:35:40.807 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+18:35:40.819   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+18:35:40.819 PID 21232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A5850/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:35:41.301 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+18:35:41.303   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:35:41.303 PID 21232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A5850/00000000 138C35E8/00000000 00000000/00000000 00000000/00000000
+18:35:42.308   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+18:35:42.308 PID 21232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A5850/00000000 138C35E8/00000000 138DBE00/00000000 00000000/00000000
+18:35:42.309 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+18:35:44.314 Kết thúc lượt: thành công
+18:36:44.892 s7caytien00309: Đã thoát game: quanh quẩn 1 điểm 1 phút
+18:56:38.750 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+18:56:41.748 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+18:56:41.749   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:56:41.749 PID 22788 sau thao tác: init notice sel login role smc = 00000000/00000000 0AF001E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:56:42.248 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+18:56:42.251   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:56:42.251 PID 22788 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377C918/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:56:44.238 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+18:56:44.251   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:56:44.252 PID 22788 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377C918/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:56:44.751 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+18:56:44.754   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+18:56:44.754 PID 22788 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377C918/00000000 1389C868/00000000 00000000/00000000 00000000/00000000
+18:56:45.747   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+18:56:45.747 PID 22788 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377C918/00000000 1389C868/00000000 138B4BE0/00000000 00000000/00000000
+18:56:45.747 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+18:56:47.753 Kết thúc lượt: thành công
+18:58:25.329 s7caytien00309: Đã thoát game: quanh quẩn 1 điểm 1 phút
+18:58:44.822 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+18:58:47.838 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+18:58:47.838   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:58:47.839 PID 12460 sau thao tác: init notice sel login role smc = 00000000/00000000 1377F920/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:58:48.337 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+18:58:48.339   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:58:48.339 PID 12460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B08E1E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:58:50.341 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+18:58:50.352   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 183)
+18:58:50.352 PID 12460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B08E1E8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+18:58:50.837 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+18:58:50.840   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+18:58:50.840 PID 12460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B08E1E8/00000000 137C0A80/00000000 00000000/00000000 00000000/00000000
+18:58:51.843   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+18:58:51.843 PID 12460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B08E1E8/00000000 137C0A80/00000000 138B8360/00000000 00000000/00000000
+18:58:51.844 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7016 ms từ đầu lượt)
+18:58:53.839 Kết thúc lượt: thành công
+02:34:45.984 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+02:34:48.978 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+02:34:48.979   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:34:48.979 PID 26488 sau thao tác: init notice sel login role smc = 00000000/00000000 1369CF38/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:34:49.474 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+02:34:49.477   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:34:49.477 PID 26488 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B098F18/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:34:51.518 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5532 ms từ đầu lượt)
+02:34:51.529   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+02:34:51.529 PID 26488 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B098F18/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:34:52.012 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6032 ms từ đầu lượt)
+02:34:52.015   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:34:52.015 PID 26488 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B098F18/00000000 136E4140/00000000 00000000/00000000 00000000/00000000
+02:34:53.027   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:34:53.027 PID 26488 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B098F18/00000000 136E4140/00000000 137E0EB8/00000000 00000000/00000000
+02:34:53.027 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+02:34:55.043 Kết thúc lượt: thành công
+09:49:53.158 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+09:49:56.588 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3532 ms từ đầu lượt)
+09:49:56.588   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:49:56.588 PID 14708 sau thao tác: init notice sel login role smc = 00000000/00000000 136840D8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:49:57.091 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4032 ms từ đầu lượt)
+09:49:57.091   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:49:57.091 PID 14708 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07E918/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:49:59.092 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6032 ms từ đầu lượt)
+09:49:59.109   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+09:49:59.109 PID 14708 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07E918/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:49:59.610 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+09:49:59.613   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+09:49:59.613 PID 14708 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07E918/00000000 136BCC60/00000000 00000000/00000000 00000000/00000000
+09:50:00.607   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:50:00.607 PID 14708 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07E918/00000000 136BCC60/00000000 136D7A90/00000000 00000000/00000000
+09:50:00.607 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7547 ms từ đầu lượt)
+09:50:02.598 Kết thúc lượt: thành công
+12:35:29.992 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+12:35:32.989 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+12:35:32.989   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:32.990 PID 18572 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE76FA8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:33.502 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+12:35:33.504   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+12:35:33.504 PID 18572 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE7B070/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:35.547 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5563 ms từ đầu lượt)
+12:35:35.558   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+12:35:35.558 PID 18572 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE7B070/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:36.060 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6078 ms từ đầu lượt)
+12:35:36.063   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:36.063 PID 18572 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE7B070/00000000 13616A08/00000000 00000000/00000000 00000000/00000000
+12:35:37.058   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:37.058 PID 18572 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE7B070/00000000 13616A08/00000000 136B5368/00000000 00000000/00000000
+12:35:37.058 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7078 ms từ đầu lượt)
+12:35:39.070 Kết thúc lượt: thành công
+17:38:48.956 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:38:51.959 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+17:38:51.960   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:38:51.960 PID 2092 sau thao tác: init notice sel login role smc = 00000000/00000000 1355F2A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:38:52.468 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+17:38:52.471   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:38:52.471 PID 2092 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356AD10/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:38:54.471 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+17:38:54.501   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+17:38:54.501 PID 2092 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356AD10/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:38:54.960 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+17:38:54.964   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:38:54.964 PID 2092 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356AD10/00000000 136851E8/00000000 00000000/00000000 00000000/00000000
+17:38:55.999   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:38:55.999 PID 2092 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356AD10/00000000 136851E8/00000000 1369D560/00000000 00000000/00000000
+17:38:55.999 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+17:38:58.015 Kết thúc lượt: thành công
+19:57:24.113 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+19:57:27.597 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+19:57:27.598   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:57:27.598 PID 2148 sau thao tác: init notice sel login role smc = 00000000/00000000 0AD79D88/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:57:28.110 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+19:57:28.112   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:57:28.112 PID 2148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADE25D8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:57:30.102 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+19:57:30.113   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+19:57:30.113 PID 2148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADE25D8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:57:30.610 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+19:57:30.612   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:57:30.612 PID 2148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADE25D8/00000000 136A8540/00000000 00000000/00000000 00000000/00000000
+19:57:31.604   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:57:31.604 PID 2148 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADE25D8/00000000 136A8540/00000000 136C3370/00000000 00000000/00000000
+19:57:31.604 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+19:57:33.599 Kết thúc lượt: thành công
+21:53:11.693 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+21:53:15.187 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+21:53:15.188   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:53:15.188 PID 21612 sau thao tác: init notice sel login role smc = 00000000/00000000 1388AFC8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:53:15.686 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+21:53:15.687   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:53:15.688 PID 21612 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B4CF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:53:17.684 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+21:53:17.684   Đang chọn server: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:53:17.684 PID 21612 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B4CF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:53:18.181 Màn hình 4 lần 2: Đang chọn server (chờ 500 ms, 6500 ms từ đầu lượt)
+21:53:19.394   Chọn server + Xác định: chạy mã xong sau 1219 ms, exit 1 (GetLastError 6)
+21:53:19.395 PID 21612 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B4CF8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:53:19.684 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 8000 ms từ đầu lượt)
+21:53:19.686   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:53:19.686 PID 21612 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137B4CF8/00000000 138D2DC8/00000000 00000000/00000000 00000000/00000000
+21:56:11.861 Kết thúc lượt: Quá thời gian đăng nhập
+21:56:17.364 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 3016 ms từ đầu lượt)
+21:56:20.849 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 6500 ms từ đầu lượt)
+21:56:20.850   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:20.851 PID 16772 sau thao tác: init notice sel login role smc = 00000000/00000000 1346E060/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:21.359 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 7000 ms từ đầu lượt)
+21:56:21.362   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:21.362 PID 16772 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13488258/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:23.350 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 9000 ms từ đầu lượt)
+21:56:23.542   Chọn server + Xác định: chạy mã xong sau 188 ms, exit 1 (GetLastError 183)
+21:56:23.543 PID 16772 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13488258/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:23.861 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 9500 ms từ đầu lượt)
+21:56:23.864   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+21:56:23.864 PID 16772 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13488258/00000000 135AD7B8/00000000 00000000/00000000 00000000/00000000
+21:56:24.850   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+21:56:24.850 PID 16772 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13488258/00000000 135AD7B8/00000000 134C6F50/00000000 00000000/00000000
+21:56:24.851 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 10500 ms từ đầu lượt)
+21:56:26.855 Kết thúc lượt: thành công
+02:28:53.730 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+02:28:56.730 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+02:28:56.731   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:28:56.731 PID 24508 sau thao tác: init notice sel login role smc = 00000000/00000000 13803AE8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:28:57.237 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+02:28:57.241   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+02:28:57.241 PID 24508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:28:59.251 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+02:28:59.280   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+02:28:59.280 PID 24508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+02:28:59.747 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+02:28:59.757   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+02:28:59.757 PID 24508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/00000000 137D07A8/00000000 00000000/00000000 00000000/00000000
+02:29:00.755   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+02:29:00.755 PID 24508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/00000000 137D07A8/00000000 138C7380/00000000 00000000/00000000
+02:29:00.755 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7032 ms từ đầu lượt)
+02:29:02.813 Kết thúc lượt: thành công
+10:19:49.165 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+10:19:52.185 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+10:19:52.187   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:19:52.187 PID 17076 sau thao tác: init notice sel login role smc = 00000000/00000000 0AFDF4F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:19:52.682 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+10:19:52.685   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:19:52.685 PID 17076 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357B128/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:19:54.683 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5531 ms từ đầu lượt)
+10:19:54.694   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+10:19:54.694 PID 17076 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357B128/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:19:55.181 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6031 ms từ đầu lượt)
+10:19:55.185   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:19:55.185 PID 17076 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357B128/00000000 13624350/00000000 00000000/00000000 00000000/00000000
+10:19:56.187   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:19:56.187 PID 17076 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357B128/00000000 13624350/00000000 136C3060/00000000 00000000/00000000
+10:19:56.187 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+10:19:58.201 Kết thúc lượt: thành công
+10:43:20.696 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+10:43:23.734 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3047 ms từ đầu lượt)
+10:43:23.735   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:43:23.735 PID 8136 sau thao tác: init notice sel login role smc = 00000000/00000000 13472F00/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:43:24.231 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3547 ms từ đầu lượt)
+10:43:24.233   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:43:24.233 PID 8136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1353DFA0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:43:26.228 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+10:43:26.239   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+10:43:26.239 PID 8136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1353DFA0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:43:26.736 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+10:43:26.738   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+10:43:26.738 PID 8136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1353DFA0/00000000 13472F00/00000000 00000000/00000000 00000000/00000000
+10:43:27.766   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:43:27.766 PID 8136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1353DFA0/00000000 13472F00/00000000 13596100/00000000 00000000/00000000
+10:43:27.766 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7079 ms từ đầu lượt)
+10:43:29.774 Kết thúc lượt: thành công
+12:59:50.131 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+12:59:53.140 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+12:59:53.141   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:59:53.141 PID 16852 sau thao tác: init notice sel login role smc = 00000000/00000000 0B200300/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:59:53.640 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+12:59:53.643   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:59:53.643 PID 16852 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13577A90/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:59:55.636 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+12:59:55.649   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+12:59:55.649 PID 16852 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13577A90/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:59:56.135 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+12:59:56.138   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:59:56.138 PID 16852 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13577A90/00000000 13698290/00000000 00000000/00000000 00000000/00000000
+12:59:57.132   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:59:57.132 PID 16852 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13577A90/00000000 13698290/00000000 136B30C0/00000000 00000000/00000000
+12:59:57.132 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7016 ms từ đầu lượt)
+12:59:59.132 Kết thúc lượt: thành công
+13:29:02.690 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+13:29:06.175 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+13:29:06.176   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:29:06.176 PID 14508 sau thao tác: init notice sel login role smc = 00000000/00000000 0AF77EA8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:29:06.688 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+13:29:06.689   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:29:06.689 PID 14508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790108/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:29:08.719 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6032 ms từ đầu lượt)
+13:29:08.732   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+13:29:08.732 PID 14508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790108/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:29:09.226 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+13:29:09.228   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:29:09.228 PID 14508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790108/00000000 137D3B20/00000000 00000000/00000000 00000000/00000000
+13:32:03.004 Kết thúc lượt: Quá thời gian đăng nhập
+13:32:08.520 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 3515 ms từ đầu lượt)
+13:32:12.003 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 7000 ms từ đầu lượt)
+13:32:12.003   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:12.003 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 13816960/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:32:12.519 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 7515 ms từ đầu lượt)
+13:32:12.521   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:12.521 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B05B228/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:32:15.005 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 10000 ms từ đầu lượt)
+13:32:15.016   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:15.017 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B05B228/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:32:15.516 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 10500 ms từ đầu lượt)
+13:32:15.517   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:15.518 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B05B228/00000000 138BF750/00000000 00000000/00000000 00000000/00000000
+13:32:50.040 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 45031 ms từ đầu lượt)
+13:32:50.049   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:50.049 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B05B228/00000000 138BF750/00000000 00000000/00000000 00000000/00000000
+13:32:50.540 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 45531 ms từ đầu lượt)
+13:32:50.542   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:32:50.542 PID 2764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B05B228/00000000 138BF750/00000000 00000000/00000000 00000000/00000000
+13:32:53.043 Kết thúc lượt: Game đã tắt
+13:32:55.050 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+13:32:58.545 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+13:32:58.546   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:32:58.546 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 0B00FE30/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:32:59.046 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+13:32:59.048   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:32:59.048 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B061448/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:33:01.046 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+13:33:01.055   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+13:33:01.056 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B061448/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:33:01.538 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+13:33:01.541   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:33:01.541 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B061448/00000000 137D6F10/00000000 00000000/00000000 00000000/00000000
+13:34:33.562 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 98515 ms từ đầu lượt)
+13:34:33.573   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+13:34:33.573 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B061448/00000000 137D6F10/00000000 00000000/00000000 00000000/00000000
+13:34:34.063 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 99015 ms từ đầu lượt)
+13:34:34.065   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:34.065 PID 20340 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B061448/00000000 137D6F10/00000000 00000000/00000000 00000000/00000000
+13:34:37.075 Kết thúc lượt: Game đã tắt
+13:34:39.081 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+13:34:42.579 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+13:34:42.580   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:42.580 PID 15184 sau thao tác: init notice sel login role smc = 00000000/00000000 0AF30498/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:43.081 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+13:34:43.082   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:43.082 PID 15184 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137904B8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:45.597 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6531 ms từ đầu lượt)
+13:34:45.609   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:45.609 PID 15184 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137904B8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:46.590 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 7516 ms từ đầu lượt)
+13:34:46.593   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:46.593 PID 15184 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137904B8/00000000 137D1990/00000000 00000000/00000000 00000000/00000000
+13:37:39.169 Kết thúc lượt: Quá thời gian đăng nhập
+13:41:28.808 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:41:31.811 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+13:41:31.811   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:41:31.811 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 0AFE4D68/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:41:32.304 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+13:41:32.306   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:41:32.306 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 136094A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:41:34.312 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+13:41:34.324   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+13:41:34.324 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 136094A0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:41:34.811 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+13:41:34.814   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:41:34.814 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 136094A0/00000000 1363E9B8/00000000 00000000/00000000 00000000/00000000
+13:42:28.809 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 60000 ms từ đầu lượt)
+13:42:28.821   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+13:42:28.821 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 136094A0/00000000 1363E9B8/00000000 00000000/00000000 00000000/00000000
+13:42:29.311 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 60500 ms từ đầu lượt)
+13:42:29.313   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:42:29.313 PID 20888 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 136094A0/00000000 1363E9B8/00000000 00000000/00000000 00000000/00000000
+13:42:32.305 Kết thúc lượt: Game đã tắt
+13:42:34.312 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:49:56.486 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:49:59.475 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+13:49:59.476   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:49:59.476 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 0B0559E0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:49:59.974 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+13:49:59.976   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:49:59.976 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:50:01.983 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+13:50:01.998   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+13:50:01.999 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:50:02.480 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+13:50:02.482   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:50:02.482 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/00000000 13817530/00000000 00000000/00000000 00000000/00000000
+13:52:27.590 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 151110 ms từ đầu lượt)
+13:52:27.606   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+13:52:27.606 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/00000000 13817530/00000000 00000000/00000000 00000000/00000000
+13:52:28.086 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 151610 ms từ đầu lượt)
+13:52:28.088   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:52:28.088 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/00000000 13817530/00000000 00000000/00000000 00000000/00000000
+13:52:29.081   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:52:29.081 PID 15176 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFD9F40/00000000 13817530/00000000 138B3608/00000000 00000000/00000000
+13:52:29.081 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 152610 ms từ đầu lượt)
+13:52:31.086 Kết thúc lượt: thành công
+16:42:23.155 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+16:42:26.144 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+16:42:26.145   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:42:26.145 PID 22500 sau thao tác: init notice sel login role smc = 00000000/00000000 13775E38/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:42:26.667 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+16:42:26.668   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:42:26.668 PID 22500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B062970/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:42:28.698 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+16:42:28.711   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+16:42:28.711 PID 22500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B062970/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:42:29.208 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6063 ms từ đầu lượt)
+16:42:29.211   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:42:29.211 PID 22500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B062970/00000000 137BD580/00000000 00000000/00000000 00000000/00000000
+16:42:30.211   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:42:30.211 PID 22500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B062970/00000000 137BD580/00000000 138B86B0/00000000 00000000/00000000
+16:42:30.211 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7063 ms từ đầu lượt)
+16:42:32.230 Kết thúc lượt: thành công
+20:00:42.800 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+20:00:46.242 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3547 ms từ đầu lượt)
+20:00:46.242   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:00:46.242 PID 6072 sau thao tác: init notice sel login role smc = 00000000/00000000 135EA668/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:00:46.752 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4047 ms từ đầu lượt)
+20:00:46.752   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:00:46.752 PID 6072 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0853F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:00:48.759 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6063 ms từ đầu lượt)
+20:00:48.772   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+20:00:48.772 PID 6072 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0853F8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:00:49.272 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6578 ms từ đầu lượt)
+20:00:49.272   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:00:49.272 PID 6072 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0853F8/00000000 1368E7B0/00000000 00000000/00000000 00000000/00000000
+20:00:50.292   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:00:50.292 PID 6072 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0853F8/00000000 1368E7B0/00000000 136A95E0/00000000 00000000/00000000
+20:00:50.292 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7594 ms từ đầu lượt)
+20:00:52.302 Kết thúc lượt: thành công
+22:16:47.944 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+22:16:51.428 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+22:16:51.430   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:16:51.430 PID 5760 sau thao tác: init notice sel login role smc = 00000000/00000000 1365D688/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:16:51.935 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+22:16:51.943   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+22:16:51.943 PID 5760 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13571D30/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:16:53.936 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+22:16:54.087   Chọn server + Xác định: chạy mã xong sau 157 ms, exit 1 (GetLastError 6)
+22:16:54.087 PID 5760 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13571D30/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:16:54.429 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+22:16:54.436   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:16:54.436 PID 5760 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13571D30/00000000 136A4400/00000000 00000000/00000000 00000000/00000000
+22:16:55.431   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:16:55.431 PID 5760 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13571D30/00000000 136A4400/00000000 135C0348/00000000 00000000/00000000
+22:16:55.431 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+22:16:57.431 Kết thúc lượt: thành công
+21:56:52.544 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+21:56:55.963 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3516 ms từ đầu lượt)
+21:56:55.963   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:56:55.963 PID 17484 sau thao tác: init notice sel login role smc = 00000000/00000000 0AEDC910/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:56.463 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+21:56:56.463   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:56:56.463 PID 17484 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135601A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:58.483 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+21:56:58.493   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+21:56:58.493 PID 17484 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135601A0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:58.982 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+21:56:58.985   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:56:58.985 PID 17484 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135601A0/00000000 1368B400/00000000 00000000/00000000 00000000/00000000
+21:56:59.984   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:56:59.984 PID 17484 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135601A0/00000000 1368B400/00000000 136A3778/00000000 00000000/00000000
+21:56:59.984 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7531 ms từ đầu lượt)
+21:57:01.982 Kết thúc lượt: thành công
+13:12:00.792 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 110 ms từ đầu lượt)
+13:12:04.216 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3532 ms từ đầu lượt)
+13:12:04.217   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:12:04.217 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 13567E50/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:12:04.717 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4032 ms từ đầu lượt)
+13:12:04.720   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:12:04.720 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:12:06.737 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6047 ms từ đầu lượt)
+13:12:06.754   Chọn server + Xác định: chạy mã xong sau 32 ms, exit 1 (GetLastError 6)
+13:12:06.754 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/80000000 00000000/00000000 00000000/00000000
+13:12:07.236 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+13:12:07.241   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+13:12:07.241 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/00000000 00000000/00000000 00000000/00000000
+13:12:12.280 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 11594 ms từ đầu lượt)
+13:12:12.289   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+13:12:12.289 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/00000000 00000000/00000000 00000000/00000000
+13:12:12.775 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 12094 ms từ đầu lượt)
+13:12:12.777   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:12:12.777 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/00000000 00000000/00000000 00000000/00000000
+13:13:46.586 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 105907 ms từ đầu lượt)
+13:13:46.596   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:13:46.596 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/00000000 00000000/00000000 00000000/00000000
+13:13:47.094 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 106407 ms từ đầu lượt)
+13:13:47.095   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:13:47.095 PID 1876 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13637D68/00000000 13597F70/00000000 00000000/00000000 00000000/00000000
+13:15:01.190 Kết thúc lượt: Quá thời gian đăng nhập
+13:15:06.732 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 3515 ms từ đầu lượt)
+13:15:09.727 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 6515 ms từ đầu lượt)
+13:15:09.727   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:15:09.727 PID 12764 sau thao tác: init notice sel login role smc = 00000000/00000000 135E8558/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:15:10.227 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 7015 ms từ đầu lượt)
+13:15:10.228   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:15:10.228 PID 12764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE27AB8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:15:12.224 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 9015 ms từ đầu lượt)
+13:15:12.240   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+13:15:12.240 PID 12764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE27AB8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:15:12.736 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 9515 ms từ đầu lượt)
+13:15:12.739   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+13:15:12.739 PID 12764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE27AB8/00000000 13612320/00000000 00000000/00000000 00000000/00000000
+13:15:13.726   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+13:15:13.726 PID 12764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE27AB8/00000000 13612320/00000000 136B0348/00000000 00000000/00000000
+13:15:13.726 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 10515 ms từ đầu lượt)
+13:15:15.727 Kết thúc lượt: thành công
+13:34:06.753 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+13:34:09.795 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3047 ms từ đầu lượt)
+13:34:09.796   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:09.796 PID 23992 sau thao tác: init notice sel login role smc = 00000000/00000000 0B2A6CB8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:10.303 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3562 ms từ đầu lượt)
+13:34:10.304   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:10.304 PID 23992 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2A85D0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:12.302 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5562 ms từ đầu lượt)
+13:34:12.410   Chọn server + Xác định: chạy mã xong sau 110 ms, exit 1 (GetLastError 6)
+13:34:12.410 PID 23992 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2A85D0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:34:12.810 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6062 ms từ đầu lượt)
+13:34:12.813   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:12.814 PID 23992 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2A85D0/00000000 136A16D8/00000000 00000000/00000000 00000000/00000000
+13:34:13.826   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:34:13.826 PID 23992 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2A85D0/00000000 136A16D8/00000000 136BC508/00000000 00000000/00000000
+13:34:13.826 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7078 ms từ đầu lượt)
+13:34:15.887 Kết thúc lượt: thành công
+14:07:43.571 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+14:07:47.066 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+14:07:47.070   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:07:47.070 PID 22892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13755C48/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:07:49.112 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+14:07:49.606   Chọn server + Xác định: chạy mã xong sau 484 ms, exit -1073741819 (GetLastError 6)
+14:07:49.606 PID 22892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13755C48/00000000 13792568/80000000 00000000/00000000 00000000/00000000
+14:07:49.617 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6063 ms từ đầu lượt)
+14:07:49.617   Đang đăng nhập: chạy mã LỖI sau 0 ms, exit 0 (GetLastError 5)
+14:07:49.617 Kết thúc lượt: Không nhập được tài khoản
+14:07:51.657 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+14:07:54.686 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+14:07:54.687   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:07:54.687 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 135585A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:07:55.179 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+14:07:55.182   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:07:55.182 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B1C2008/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:07:57.180 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5531 ms từ đầu lượt)
+14:07:57.277   Chọn server + Xác định: chạy mã xong sau 94 ms, exit 1 (GetLastError 183)
+14:07:57.278 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B1C2008/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:07:57.688 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6031 ms từ đầu lượt)
+14:07:57.692   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:07:57.693 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B1C2008/00000000 135976E8/00000000 00000000/00000000 00000000/00000000
+14:07:58.690   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+14:07:58.690 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B1C2008/00000000 135976E8/00000000 135AFA60/00000000 00000000/00000000
+14:07:58.690 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+14:08:00.709 Kết thúc lượt: thành công
+14:35:28.414 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+14:35:31.440 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+14:35:31.441   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:35:31.441 PID 18588 sau thao tác: init notice sel login role smc = 00000000/00000000 0ADE5B78/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:35:31.947 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3547 ms từ đầu lượt)
+14:35:31.949   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:35:31.949 PID 18588 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADA5BE8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:35:33.978 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5578 ms từ đầu lượt)
+14:35:34.068   Chọn server + Xác định: chạy mã xong sau 94 ms, exit 1 (GetLastError 183)
+14:35:34.069 PID 18588 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADA5BE8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:35:34.485 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6078 ms từ đầu lượt)
+14:35:34.488   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:35:34.489 PID 18588 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADA5BE8/00000000 136A41C8/00000000 00000000/00000000 00000000/00000000
+14:35:35.499   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+14:35:35.500 PID 18588 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADA5BE8/00000000 136A41C8/00000000 136BC540/00000000 00000000/00000000
+14:35:35.500 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7094 ms từ đầu lượt)
+14:35:37.529 Kết thúc lượt: thành công
+11:50:49.171 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+11:50:52.608 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3531 ms từ đầu lượt)
+11:50:52.608   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:50:52.608 PID 5528 sau thao tác: init notice sel login role smc = 00000000/00000000 1364A648/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:50:53.128 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4063 ms từ đầu lượt)
+11:50:53.128   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:50:53.128 PID 5528 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135703C8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:50:55.208 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6141 ms từ đầu lượt)
+11:50:55.218   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:50:55.218 PID 5528 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135703C8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:50:55.718 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6641 ms từ đầu lượt)
+11:50:55.718   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:50:55.718 PID 5528 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135703C8/00000000 1368C1B0/00000000 00000000/00000000 00000000/00000000
+11:50:56.758   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:50:56.758 PID 5528 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135703C8/00000000 1368C1B0/00000000 136A4528/00000000 00000000/00000000
+11:50:56.758 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7688 ms từ đầu lượt)
+11:50:58.778 Kết thúc lượt: thành công
+13:02:32.928 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+13:02:35.930 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+13:02:35.931   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:02:35.931 PID 7716 sau thao tác: init notice sel login role smc = 00000000/00000000 0AEDE9D8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:36.431 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+13:02:36.433   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:02:36.433 PID 7716 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13574788/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:38.425 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+13:02:38.436   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:02:38.436 PID 7716 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13574788/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:02:38.932 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+13:02:38.936   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:02:38.936 PID 7716 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13574788/00000000 13624E88/00000000 00000000/00000000 00000000/00000000
+13:02:39.960   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+13:02:39.961 PID 7716 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13574788/00000000 13624E88/00000000 136BCE68/00000000 00000000/00000000
+13:02:39.961 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+13:02:41.983 Kết thúc lượt: thành công
+11:41:57.114 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 110 ms từ đầu lượt)
+11:42:00.535 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3531 ms từ đầu lượt)
+11:42:00.536   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:42:00.536 PID 16412 sau thao tác: init notice sel login role smc = 00000000/00000000 135E8378/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:42:01.027 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4031 ms từ đầu lượt)
+11:42:01.029   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:42:01.029 PID 16412 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B086E80/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:42:03.055 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6047 ms từ đầu lượt)
+11:42:03.073   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+11:42:03.073 PID 16412 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B086E80/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:42:03.554 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+11:42:03.557   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:42:03.557 PID 16412 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B086E80/00000000 13690F98/00000000 00000000/00000000 00000000/00000000
+11:42:04.582   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:42:04.583 PID 16412 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B086E80/00000000 13690F98/00000000 136A6858/00000000 00000000/00000000
+11:42:04.583 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7578 ms từ đầu lượt)
+11:42:06.585 Kết thúc lượt: thành công
+22:47:57.894 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+22:48:00.910 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+22:48:00.910   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:48:00.910 PID 25536 sau thao tác: init notice sel login role smc = 00000000/00000000 13574420/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:48:01.410 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+22:48:01.412   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:48:01.413 PID 25536 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365A998/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:48:03.404 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+22:48:03.423   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+22:48:03.424 PID 25536 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365A998/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:48:03.903 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+22:48:03.908   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:48:03.908 PID 25536 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365A998/00000000 1369A7D8/00000000 00000000/00000000 00000000/00000000
+22:48:04.922   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:48:04.922 PID 25536 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365A998/00000000 1369A7D8/00000000 136B5608/00000000 00000000/00000000
+22:48:04.922 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+22:48:06.929 Kết thúc lượt: thành công
+09:56:59.557 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+09:57:02.561 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+09:57:02.562   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:57:02.562 PID 16052 sau thao tác: init notice sel login role smc = 00000000/00000000 135595E0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:57:03.060 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+09:57:03.062   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:57:03.063 PID 16052 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1354C620/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:57:05.060 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+09:57:05.075   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+09:57:05.075 PID 16052 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1354C620/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:57:05.561 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+09:57:05.565   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:57:05.565 PID 16052 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1354C620/00000000 1367F188/00000000 00000000/00000000 00000000/00000000
+09:57:06.554   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:57:06.554 PID 16052 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1354C620/00000000 1367F188/00000000 13697500/00000000 00000000/00000000
+09:57:06.554 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7015 ms từ đầu lượt)
+09:57:08.562 Kết thúc lượt: thành công
+06:07:42.577 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+06:07:45.606 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+06:07:45.607   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:07:45.607 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 0ADC7418/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:07:46.105 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+06:07:46.108   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:07:46.108 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13656178/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:07:48.143 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5563 ms từ đầu lượt)
+06:07:48.144   Đang chọn server: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+06:07:48.144 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13656178/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:07:48.647 Màn hình 4 lần 2: Đang chọn server (chờ 500 ms, 6078 ms từ đầu lượt)
+06:07:48.673   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+06:07:48.673 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13656178/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:07:49.159 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6578 ms từ đầu lượt)
+06:07:49.163   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+06:07:49.163 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13656178/00000000 13696930/00000000 00000000/00000000 00000000/00000000
+06:07:50.159   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:07:50.159 PID 18200 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13656178/00000000 13696930/00000000 136AECA8/00000000 00000000/00000000
+06:07:50.159 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7578 ms từ đầu lượt)
+06:07:52.150 Kết thúc lượt: thành công
+06:31:18.122 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+06:31:21.539 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3516 ms từ đầu lượt)
+06:31:21.540   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:31:21.540 PID 12232 sau thao tác: init notice sel login role smc = 00000000/00000000 13362B68/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:31:22.037 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+06:31:22.040   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:31:22.040 PID 12232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7E80/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:31:24.060 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+06:31:24.078   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+06:31:24.078 PID 12232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7E80/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:31:24.553 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+06:31:24.553   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:31:24.553 PID 12232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7E80/00000000 13477A90/00000000 00000000/00000000 00000000/00000000
+06:31:25.555   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:31:25.556 PID 12232 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7E80/00000000 13477A90/00000000 134928C0/00000000 00000000/00000000
+06:31:25.556 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7531 ms từ đầu lượt)
+06:31:27.578 Kết thúc lượt: thành công
+16:51:46.749 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+16:51:50.238 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+16:51:50.239   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:51:50.239 PID 24284 sau thao tác: init notice sel login role smc = 00000000/00000000 135DE5C0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:51:50.739 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+16:51:50.740   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:51:50.740 PID 24284 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13578A80/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:51:52.749 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6016 ms từ đầu lượt)
+16:51:52.762   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+16:51:52.762 PID 24284 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13578A80/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:51:53.250 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6516 ms từ đầu lượt)
+16:51:53.252   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+16:51:53.252 PID 24284 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13578A80/00000000 13685B10/00000000 00000000/00000000 00000000/00000000
+16:51:53.758   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:51:53.758 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:51:55.777 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+16:51:59.272 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+16:51:59.273   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:51:59.273 PID 19000 sau thao tác: init notice sel login role smc = 00000000/00000000 0B044EE8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:51:59.765 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+16:51:59.767   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:51:59.767 PID 19000 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:01.762 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+16:52:01.773   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:01.773 PID 19000 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:02.261 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+16:52:02.263   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:02.263 PID 19000 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1378A910/00000000 138A4AD8/00000000 00000000/00000000 00000000/00000000
+16:52:02.768   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:02.768 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:04.766 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+16:52:07.770 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+16:52:07.771   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:07.771 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 1380BAE0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:08.270 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+16:52:08.272   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:08.272 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B03FF38/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:10.270 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+16:52:10.282   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+16:52:10.282 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B03FF38/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:10.769 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+16:52:10.772   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:10.772 PID 24516 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B03FF38/00000000 13834E10/00000000 00000000/00000000 00000000/00000000
+16:52:11.267   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:11.267 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:13.269 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+16:52:16.271 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+16:52:16.271   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:16.272 PID 18492 sau thao tác: init notice sel login role smc = 00000000/00000000 13812188/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:16.770 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+16:52:16.772   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:16.772 PID 18492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790358/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:18.772 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+16:52:18.783   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+16:52:18.783 PID 18492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790358/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:19.268 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+16:52:19.270   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:19.270 PID 18492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13790358/00000000 137D7A60/00000000 00000000/00000000 00000000/00000000
+16:52:19.766   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:19.766 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+16:52:23.768 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+16:52:26.781 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+16:52:26.781   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:26.782 PID 15624 sau thao tác: init notice sel login role smc = 00000000/00000000 137A7C68/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:27.277 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+16:52:27.279   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:27.279 PID 15624 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137AE0C8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:29.280 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+16:52:29.292   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+16:52:29.292 PID 15624 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137AE0C8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+16:52:29.777 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+16:52:29.780   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+16:52:29.780 PID 15624 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137AE0C8/00000000 138469F8/00000000 00000000/00000000 00000000/00000000
+16:52:30.783   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+16:52:30.783 PID 15624 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137AE0C8/00000000 138469F8/00000000 138E4948/00000000 00000000/00000000
+16:52:30.783 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7016 ms từ đầu lượt)
+16:52:32.789 Kết thúc lượt: thành công
+17:23:16.514 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+17:23:19.998 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+17:23:19.999   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:23:19.999 PID 23832 sau thao tác: init notice sel login role smc = 00000000/00000000 0B01EE88/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:23:20.511 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4015 ms từ đầu lượt)
+17:23:20.514   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:23:20.514 PID 23832 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A2420/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:23:22.516 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6015 ms từ đầu lượt)
+17:23:22.530   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+17:23:22.531 PID 23832 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A2420/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:23:23.012 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6515 ms từ đầu lượt)
+17:23:23.015   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:23:23.015 PID 23832 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A2420/00000000 1383A560/00000000 00000000/00000000 00000000/00000000
+17:23:24.020   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:23:24.021 PID 23832 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137A2420/00000000 1383A560/00000000 138D63E0/00000000 00000000/00000000
+17:23:24.021 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7515 ms từ đầu lượt)
+17:23:26.015 Kết thúc lượt: thành công
+17:35:55.348 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:35:58.339 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:35:58.340   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:35:58.340 PID 19764 sau thao tác: init notice sel login role smc = 00000000/00000000 0B050448/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:35:58.848 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:35:58.849   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:35:58.849 PID 19764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13773060/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:36:00.847 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+17:36:00.859   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+17:36:00.860 PID 19764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13773060/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:36:01.346 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+17:36:01.349   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:36:01.349 PID 19764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13773060/00000000 13814F40/00000000 00000000/00000000 00000000/00000000
+17:36:02.353   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:36:02.353 PID 19764 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13773060/00000000 13814F40/00000000 138A5A90/00000000 00000000/00000000
+17:36:02.353 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+17:36:04.347 Kết thúc lượt: thành công
+17:46:38.425 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:46:41.417 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:46:41.418   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:46:41.418 PID 20304 sau thao tác: init notice sel login role smc = 00000000/00000000 13700B20/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:46:41.925 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:46:41.928   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:46:41.928 PID 20304 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0BA950/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:46:43.932 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+17:46:43.943   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:46:43.943 PID 20304 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0BA950/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:46:44.927 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+17:46:44.929   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:46:44.929 PID 20304 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0BA950/00000000 136CA950/00000000 00000000/00000000 00000000/00000000
+17:46:45.927   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:46:45.927 PID 20304 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0BA950/00000000 136CA950/00000000 137C2230/00000000 00000000/00000000
+17:46:45.927 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+17:46:47.924 Kết thúc lượt: thành công
+17:47:24.943 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:47:27.945 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:47:27.946   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:27.946 PID 18124 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE88358/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:28.433 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:47:28.434   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:28.434 PID 18124 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE89C70/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:30.441 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+17:47:30.458   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+17:47:30.459 PID 18124 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE89C70/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:30.936 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+17:47:30.937   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:30.938 PID 18124 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE89C70/00000000 1345DA78/00000000 00000000/00000000 00000000/00000000
+17:47:31.461   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+17:47:31.461 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+17:47:33.984 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:47:36.992 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:47:36.993   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:36.993 PID 24248 sau thao tác: init notice sel login role smc = 00000000/00000000 1356F180/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:37.487 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:47:37.489   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:37.489 PID 24248 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE8AB48/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:39.482 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+17:47:39.493   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:39.493 PID 24248 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE8AB48/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:47:39.990 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+17:47:39.992   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:47:39.992 PID 24248 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE8AB48/00000000 135BCA20/00000000 00000000/00000000 00000000/00000000
+17:47:40.483   Thông báo của Game (lỗi): Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+17:47:40.483 Kết thúc lượt: Tài khoản vào server: Hệ thống đang bận, xin chờ giây lát!
+17:47:42.494 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+19:38:05.882 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+19:38:08.892 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+19:38:08.893   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:38:08.893 PID 17476 sau thao tác: init notice sel login role smc = 00000000/00000000 0B052658/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:38:09.387 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+19:38:09.389   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:38:09.390 PID 17476 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B082EF0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:38:11.395 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+19:38:11.405   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+19:38:11.405 PID 17476 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B082EF0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:38:11.887 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+19:38:11.889   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:38:11.890 PID 17476 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B082EF0/00000000 1382E1D0/00000000 00000000/00000000 00000000/00000000
+19:38:12.895   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:38:12.895 PID 17476 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B082EF0/00000000 1382E1D0/00000000 138CA3E0/00000000 00000000/00000000
+19:38:12.896 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7015 ms từ đầu lượt)
+19:38:14.899 Kết thúc lượt: thành công
+19:39:20.404 Bật hẹn giờ theo nhóm
+19:49:03.923 Tắt hẹn giờ theo nhóm
+19:49:10.759 Bật hẹn giờ theo nhóm
+19:49:50.698 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+19:49:54.191 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+19:49:54.192   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:49:54.192 PID 20744 sau thao tác: init notice sel login role smc = 00000000/00000000 0B00CCA8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:49:54.687 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+19:49:54.690   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:49:54.690 PID 20744 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B042FF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:49:56.687 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+19:49:56.700   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+19:49:56.700 PID 20744 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B042FF8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+19:49:57.183 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+19:49:57.186   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:49:57.186 PID 20744 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B042FF8/00000000 138B77F8/00000000 00000000/00000000 00000000/00000000
+19:49:58.209   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+19:49:58.209 PID 20744 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B042FF8/00000000 138B77F8/00000000 138D2BC0/00000000 00000000/00000000
+19:49:58.209 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7516 ms từ đầu lượt)
+19:50:00.242 Kết thúc lượt: thành công
+19:50:02.514 Tắt hẹn giờ theo nhóm
+20:08:25.938 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+20:08:28.944 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+20:08:28.945   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:08:28.946 PID 21672 sau thao tác: init notice sel login role smc = 00000000/00000000 135760B8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:08:29.434 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+20:08:29.437   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:08:29.437 PID 21672 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE4FA78/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:08:31.432 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+20:08:31.441   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:08:31.441 PID 21672 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE4FA78/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:08:31.942 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+20:08:31.944   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:08:31.944 PID 21672 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE4FA78/00000000 13685208/00000000 00000000/00000000 00000000/00000000
+20:08:32.953   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+20:08:32.953 PID 21672 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE4FA78/00000000 13685208/00000000 1369D580/00000000 00000000/00000000
+20:08:32.953 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7016 ms từ đầu lượt)
+20:08:34.966 Kết thúc lượt: thành công
+20:30:09.491 Bật hẹn giờ theo nhóm
+20:31:00.363 Hẹn giờ nhóm 2: 20:31 login 1 tài khoản
+20:31:00.371 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+20:31:03.858 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+20:31:03.859   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:31:03.859 PID 23860 sau thao tác: init notice sel login role smc = 00000000/00000000 13856608/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:31:04.368 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+20:31:04.369   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+20:31:04.369 PID 23860 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377BE70/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:31:06.369 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+20:31:06.385   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+20:31:06.386 PID 23860 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377BE70/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:31:06.861 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+20:31:06.863   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:31:06.863 PID 23860 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377BE70/00000000 137B6810/00000000 00000000/00000000 00000000/00000000
+20:31:07.868   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:31:07.868 PID 23860 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1377BE70/00000000 137B6810/00000000 138AE308/00000000 00000000/00000000
+20:31:07.868 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+20:31:09.856 Kết thúc lượt: thành công
+20:35:00.098 Hẹn giờ nhóm 2: 20:35 out game 1 tài khoản
+20:51:16.351 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+20:51:19.339 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+20:51:19.340   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:51:19.340 PID 20812 sau thao tác: init notice sel login role smc = 00000000/00000000 1355C1C0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:51:19.850 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+20:51:19.852   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:51:19.853 PID 20812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13568430/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:51:21.849 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+20:51:21.859   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+20:51:21.860 PID 20812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13568430/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:51:22.347 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+20:51:22.350   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:51:22.350 PID 20812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13568430/00000000 13670B90/00000000 00000000/00000000 00000000/00000000
+20:51:23.349   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+20:51:23.349 PID 20812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13568430/00000000 13670B90/00000000 1368B9C0/00000000 00000000/00000000
+20:51:23.349 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+20:51:25.348 Kết thúc lượt: thành công
+20:58:00.211 Hẹn giờ nhóm 2: 20:58 login 1 tài khoản
+20:58:00.216 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+20:58:03.703 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+20:58:03.704   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:58:03.704 PID 24136 sau thao tác: init notice sel login role smc = 00000000/00000000 13702B90/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:58:04.209 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+20:58:04.210   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:58:04.210 PID 24136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137044A8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:58:06.201 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+20:58:06.212   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:58:06.212 PID 24136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137044A8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+20:58:06.729 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+20:58:06.731   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+20:58:06.732 PID 24136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137044A8/00000000 1373F2B0/00000000 00000000/00000000 00000000/00000000
+20:58:08.223   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+20:58:08.223 PID 24136 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 137044A8/00000000 1373F2B0/00000000 1375A0E0/00000000 00000000/00000000
+20:58:08.224 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 8016 ms từ đầu lượt)
+20:58:10.215 Kết thúc lượt: thành công
+20:59:00.281 Hẹn giờ nhóm 2: 20:59 out game 1 tài khoản
+21:02:55.618 Tắt hẹn giờ theo nhóm
+21:12:38.238 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+21:12:41.248 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+21:12:41.249   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:12:41.249 PID 24556 sau thao tác: init notice sel login role smc = 00000000/00000000 13797560/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:41.747 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+21:12:41.749   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:12:41.749 PID 24556 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1382D7F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:43.748 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+21:12:43.758   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:12:43.758 PID 24556 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1382D7F8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:44.247 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+21:12:44.249   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:12:44.249 PID 24556 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1382D7F8/00000000 1383C2C8/00000000 00000000/00000000 00000000/00000000
+21:12:45.266   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+21:12:45.266 PID 24556 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1382D7F8/00000000 1383C2C8/00000000 138D83E8/00000000 00000000/00000000
+21:12:45.266 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+21:12:47.269 Kết thúc lượt: thành công
+21:12:53.785 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+21:12:56.786 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+21:12:56.787   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:12:56.787 PID 20964 sau thao tác: init notice sel login role smc = 00000000/00000000 135671F0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:57.277 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+21:12:57.279   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:12:57.279 PID 20964 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13635A50/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:59.277 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+21:12:59.289   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:12:59.289 PID 20964 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13635A50/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:12:59.789 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+21:12:59.791   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+21:12:59.792 PID 20964 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13635A50/00000000 13595C58/00000000 00000000/00000000 00000000/00000000
+21:13:00.787   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+21:13:00.787 PID 20964 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13635A50/00000000 13595C58/00000000 1368D118/00000000 00000000/00000000
+21:13:00.787 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+21:13:02.782 Kết thúc lượt: thành công
+22:05:20.567 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+22:05:23.561 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+22:05:23.562   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:05:23.562 PID 20268 sau thao tác: init notice sel login role smc = 00000000/00000000 134C1480/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:24.057 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+22:05:24.059   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:05:24.060 PID 20268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134ABF78/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:26.064 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+22:05:26.077   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+22:05:26.078 PID 20268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134ABF78/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:26.566 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+22:05:26.569   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:05:26.569 PID 20268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134ABF78/00000000 134ECEE8/00000000 00000000/00000000 00000000/00000000
+22:05:27.562   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+22:05:27.562 PID 20268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134ABF78/00000000 134ECEE8/00000000 135E7600/00000000 00000000/00000000
+22:05:27.562 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+22:05:29.568 Kết thúc lượt: thành công
+05:08:01.553 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+05:08:05.038 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+05:08:05.039   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:08:05.039 PID 7828 sau thao tác: init notice sel login role smc = 00000000/00000000 0AFE25E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+05:08:05.549 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+05:08:05.553   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:08:05.553 PID 7828 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13557720/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+05:08:07.548 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+05:08:07.564   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+05:08:07.564 PID 7828 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13557720/00000000 1358B380/00000000 00000000/00000000 00000000/00000000
+05:08:08.041 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+05:08:08.045   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:08:08.045 PID 7828 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13557720/00000000 1358B380/00000000 00000000/00000000 00000000/00000000
+05:08:09.047   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:08:09.047 PID 7828 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13557720/00000000 1358B380/00000000 13683610/00000000 00000000/00000000
+05:08:09.047 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+05:08:11.036 Kết thúc lượt: thành công
+06:17:13.411 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+06:17:16.902 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+06:17:16.903   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:17:16.903 PID 16652 sau thao tác: init notice sel login role smc = 00000000/00000000 13619798/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:17:17.402 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+06:17:17.405   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:17:17.405 PID 16652 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B027DE8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:17:19.406 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+06:17:19.425   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+06:17:19.425 PID 16652 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B027DE8/00000000 135E6458/00000000 00000000/00000000 00000000/00000000
+06:17:19.897 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+06:17:19.901   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:17:19.901 PID 16652 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B027DE8/00000000 135E6458/00000000 00000000/00000000 00000000/00000000
+06:17:20.901   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:17:20.902 PID 16652 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B027DE8/00000000 135E6458/00000000 136DD3C0/00000000 00000000/00000000
+06:17:20.902 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+06:17:22.907 Kết thúc lượt: thành công
+06:38:29.801 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+06:38:32.810 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+06:38:32.811   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:38:32.811 PID 18268 sau thao tác: init notice sel login role smc = 00000000/00000000 1362D1F0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:38:33.301 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+06:38:33.302   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:38:33.302 PID 18268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEE7018/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:38:35.335 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+06:38:35.345   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:38:35.345 PID 18268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEE7018/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+06:38:35.834 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+06:38:35.836   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:38:35.836 PID 18268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEE7018/00000000 136D5890/00000000 00000000/00000000 00000000/00000000
+06:38:36.857   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+06:38:36.857 PID 18268 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEE7018/00000000 136D5890/00000000 136F06C0/00000000 00000000/00000000
+06:38:36.857 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7062 ms từ đầu lượt)
+06:38:38.883 Kết thúc lượt: thành công
+07:09:31.403 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+07:09:34.404 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+07:09:34.405   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:09:34.405 PID 332 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE66DF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:09:34.902 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+07:09:34.904   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:09:34.905 PID 332 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE68710/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:09:36.903 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+07:09:36.913   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+07:09:36.913 PID 332 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE68710/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:09:37.404 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+07:09:37.407   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:09:37.407 PID 332 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE68710/00000000 1365CC90/00000000 00000000/00000000 00000000/00000000
+07:09:38.398   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:09:38.398 PID 332 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE68710/00000000 1365CC90/00000000 13756E48/00000000 00000000/00000000
+07:09:38.399 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+07:09:40.408 Kết thúc lượt: thành công
+07:31:26.160 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+07:31:29.652 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+07:31:29.653   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:31:29.653 PID 15812 sau thao tác: init notice sel login role smc = 00000000/00000000 1370D538/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:31:30.159 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+07:31:30.162   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:31:30.162 PID 15812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1362B918/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:31:32.186 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+07:31:32.196   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+07:31:32.196 PID 15812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1362B918/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:31:32.685 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+07:31:32.687   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:31:32.687 PID 15812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1362B918/00000000 1366D740/00000000 00000000/00000000 00000000/00000000
+07:31:33.684   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:31:33.685 PID 15812 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1362B918/00000000 1366D740/00000000 13764318/00000000 00000000/00000000
+07:31:33.685 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7531 ms từ đầu lượt)
+07:31:35.681 Kết thúc lượt: thành công
+07:40:06.907 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+07:40:09.906 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+07:40:09.907   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:40:09.907 PID 18460 sau thao tác: init notice sel login role smc = 00000000/00000000 13636390/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:40:10.405 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+07:40:10.407   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:40:10.407 PID 18460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13556618/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:40:12.434 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5531 ms từ đầu lượt)
+07:40:12.444   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+07:40:12.444 PID 18460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13556618/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:40:12.932 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6031 ms từ đầu lượt)
+07:40:12.935   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:40:12.935 PID 18460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13556618/00000000 135EFDC8/00000000 00000000/00000000 00000000/00000000
+07:40:13.929   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:40:13.929 PID 18460 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13556618/00000000 135EFDC8/00000000 1368D0F0/00000000 00000000/00000000
+07:40:13.929 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+07:40:15.971 Kết thúc lượt: thành công
+07:55:00.742 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+07:55:04.230 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+07:55:04.230   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:55:04.231 PID 18696 sau thao tác: init notice sel login role smc = 00000000/00000000 1359A4F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:55:04.730 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+07:55:04.732   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:55:04.732 PID 18696 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13590928/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:55:06.727 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+07:55:06.741   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+07:55:06.741 PID 18696 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13590928/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:55:07.225 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+07:55:07.228   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:55:07.228 PID 18696 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13590928/00000000 136BB928/00000000 00000000/00000000 00000000/00000000
+07:55:08.234   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:55:08.235 PID 18696 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13590928/00000000 136BB928/00000000 136D6758/00000000 00000000/00000000
+07:55:08.235 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+07:55:10.234 Kết thúc lượt: thành công
+09:16:56.045 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+09:16:59.054 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+09:16:59.054   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:16:59.055 PID 9492 sau thao tác: init notice sel login role smc = 00000000/00000000 1365AAD0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:16:59.562 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+09:16:59.564   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:16:59.565 PID 9492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365C3E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:17:01.553 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+09:17:01.563   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:17:01.563 PID 9492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365C3E8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:17:02.053 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+09:17:02.055   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:17:02.055 PID 9492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365C3E8/00000000 136185F0/00000000 00000000/00000000 00000000/00000000
+09:17:03.083   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:17:03.083 PID 9492 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1365C3E8/00000000 136185F0/00000000 136B3AB0/00000000 00000000/00000000
+09:17:03.083 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+09:17:05.083 Kết thúc lượt: thành công
+14:41:38.449 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+14:41:41.485 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3047 ms từ đầu lượt)
+14:41:41.486   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:41:41.486 PID 15372 sau thao tác: init notice sel login role smc = 00000000/00000000 0B2CB228/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:41.980 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3547 ms từ đầu lượt)
+14:41:41.982   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:41:41.983 PID 15372 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2D84D8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:44.018 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5579 ms từ đầu lượt)
+14:41:44.029   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+14:41:44.029 PID 15372 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2D84D8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:44.511 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6079 ms từ đầu lượt)
+14:41:44.514   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:41:44.514 PID 15372 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B2D84D8/00000000 1359E6E0/00000000 00000000/00000000 00000000/00000000
+14:41:45.019   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+14:41:45.019 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+14:41:47.052 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+14:41:50.547 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+14:41:50.548   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:41:50.548 PID 25956 sau thao tác: init notice sel login role smc = 00000000/00000000 137A4438/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:51.061 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4015 ms từ đầu lượt)
+14:41:51.063   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:41:51.063 PID 25956 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B087FB0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:53.073 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+14:41:53.084   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:41:53.084 PID 25956 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B087FB0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:41:53.573 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+14:41:53.575   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:41:53.575 PID 25956 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B087FB0/00000000 138272A8/00000000 00000000/00000000 00000000/00000000
+14:41:54.072   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+14:41:54.072 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+14:41:56.089 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+14:42:01.108 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+14:42:04.121 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+14:42:04.122   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:42:04.122 PID 16872 sau thao tác: init notice sel login role smc = 00000000/00000000 0AECC960/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:42:04.618 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+14:42:04.619   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:42:04.619 PID 16872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356A360/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:42:06.659 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+14:42:06.668   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:42:06.668 PID 16872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356A360/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:42:07.153 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+14:42:07.157   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:42:07.157 PID 16872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356A360/00000000 136817F0/00000000 00000000/00000000 00000000/00000000
+14:42:08.145   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 0)
+14:42:08.146 PID 16872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356A360/00000000 136817F0/00000000 136970B0/00000000 00000000/00000000
+14:42:08.146 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+14:42:10.161 Kết thúc lượt: thành công
+15:26:36.294 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+15:26:39.309 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+15:26:39.310   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:26:39.310 PID 23480 sau thao tác: init notice sel login role smc = 00000000/00000000 137A7618/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:26:39.824 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+15:26:39.826   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:26:39.827 PID 23480 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0424C8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:26:41.851 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5562 ms từ đầu lượt)
+15:26:41.860   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:26:41.860 PID 23480 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0424C8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:26:42.348 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6062 ms từ đầu lượt)
+15:26:42.350   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:26:42.350 PID 23480 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0424C8/00000000 138C9B18/00000000 00000000/00000000 00000000/00000000
+15:26:43.354   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:26:43.354 PID 23480 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0424C8/00000000 138C9B18/00000000 138E4948/00000000 00000000/00000000
+15:26:43.354 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7062 ms từ đầu lượt)
+15:26:45.395 Kết thúc lượt: thành công
+23:45:45.591 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 110 ms từ đầu lượt)
+23:45:48.988 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3516 ms từ đầu lượt)
+23:45:48.989   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+23:45:48.990 PID 21544 sau thao tác: init notice sel login role smc = 00000000/00000000 13579BD0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+23:45:49.497 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+23:45:49.506   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+23:45:49.506 PID 21544 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B077848/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+23:45:51.499 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6016 ms từ đầu lượt)
+23:45:51.519   Chọn server + Xác định: chạy mã xong sau 31 ms, exit 1 (GetLastError 6)
+23:45:51.520 PID 21544 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B077848/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+23:45:51.995 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6516 ms từ đầu lượt)
+23:45:52.000   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+23:45:52.000 PID 21544 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B077848/00000000 1368FB40/00000000 00000000/00000000 00000000/00000000
+23:45:53.001   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+23:45:53.001 PID 21544 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B077848/00000000 1368FB40/00000000 136AA970/00000000 00000000/00000000
+23:45:53.001 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7516 ms từ đầu lượt)
+23:45:54.996 Kết thúc lượt: thành công
+00:30:39.974 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+00:30:42.987 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+00:30:42.988   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+00:30:42.988 PID 17904 sau thao tác: init notice sel login role smc = 00000000/00000000 134F2148/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+00:30:43.982 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4015 ms từ đầu lượt)
+00:30:43.985   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+00:30:43.985 PID 17904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13475020/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+00:30:45.985 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6015 ms từ đầu lượt)
+00:30:46.001   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+00:30:46.001 PID 17904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13475020/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+00:30:46.483 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6515 ms từ đầu lượt)
+00:30:46.486   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+00:30:46.486 PID 17904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13475020/00000000 134BBF78/00000000 00000000/00000000 00000000/00000000
+00:30:47.477   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+00:30:47.477 PID 17904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13475020/00000000 134BBF78/00000000 135B9190/00000000 00000000/00000000
+00:30:47.478 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7515 ms từ đầu lượt)
+00:30:49.483 Kết thúc lượt: thành công
+05:59:28.135 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+05:59:31.624 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+05:59:31.625   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:59:31.625 PID 6640 sau thao tác: init notice sel login role smc = 00000000/00000000 0B2E6B28/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+05:59:32.119 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+05:59:32.121   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:59:32.121 PID 6640 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134A0BD8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+05:59:34.124 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+05:59:34.137   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+05:59:34.137 PID 6640 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134A0BD8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+05:59:34.620 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+05:59:34.623   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:59:34.623 PID 6640 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134A0BD8/00000000 135189C0/00000000 00000000/00000000 00000000/00000000
+05:59:35.626   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+05:59:35.626 PID 6640 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 134A0BD8/00000000 135189C0/00000000 135B43D0/00000000 00000000/00000000
+05:59:35.626 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+05:59:37.613 Kết thúc lượt: thành công
+10:58:51.660 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+10:58:54.678 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3031 ms từ đầu lượt)
+10:58:54.679   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:58:54.679 PID 25816 sau thao tác: init notice sel login role smc = 00000000/00000000 1362E3E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:58:55.190 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3531 ms từ đầu lượt)
+10:58:55.192   Bấm Xác định (Nhắc nhở): chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+10:58:55.192 PID 25816 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0B8260/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:58:57.203 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+10:58:57.212   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+10:58:57.213 PID 25816 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0B8260/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+10:58:57.714 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6063 ms từ đầu lượt)
+10:58:57.716   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:58:57.716 PID 25816 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0B8260/00000000 135E62E8/00000000 00000000/00000000 00000000/00000000
+10:58:58.713   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+10:58:58.713 PID 25816 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0B8260/00000000 135E62E8/00000000 136851C8/00000000 00000000/00000000
+10:58:58.714 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7063 ms từ đầu lượt)
+10:59:00.718 Kết thúc lượt: thành công
+12:02:58.803 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+12:03:02.286 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+12:03:02.287   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:03:02.287 PID 28240 sau thao tác: init notice sel login role smc = 00000000/00000000 1378B918/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:02.785 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+12:03:02.787   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:03:02.787 PID 28240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFC6D30/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:04.786 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+12:03:04.799   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:03:04.799 PID 28240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFC6D30/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:05.295 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+12:03:05.297   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:03:05.297 PID 28240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFC6D30/00000000 13826470/00000000 00000000/00000000 00000000/00000000
+12:03:06.295   Serial ổ đĩa gửi server: D09F-4FB1 (ngẫu nhiên)
+12:03:06.296   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:03:06.296 PID 28240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFC6D30/00000000 13826470/00000000 138C57E8/00000000 00000000/00000000
+12:03:06.296 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+12:03:08.295 Kết thúc lượt: thành công
+12:03:08.791 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+12:03:11.794 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+12:03:11.795   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:03:11.795 PID 12724 sau thao tác: init notice sel login role smc = 00000000/00000000 13585698/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:12.287 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+12:03:12.288   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:03:12.288 PID 12724 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357F2D0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:14.285 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+12:03:14.296   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:03:14.296 PID 12724 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357F2D0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:03:14.791 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+12:03:14.800   Đang đăng nhập: chạy mã xong sau 15 ms, exit 1 (GetLastError 183)
+12:03:14.800 PID 12724 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357F2D0/00000000 1369D250/00000000 00000000/00000000 00000000/00000000
+12:03:15.802   Serial ổ đĩa gửi server: 0C01-36CD (ngẫu nhiên)
+12:03:15.803   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:03:15.803 PID 12724 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357F2D0/00000000 1369D250/00000000 136B55C8/00000000 00000000/00000000
+12:03:15.803 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7015 ms từ đầu lượt)
+12:03:17.802 Kết thúc lượt: thành công
+13:21:09.291 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+13:21:12.321 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3047 ms từ đầu lượt)
+13:21:12.321   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:21:12.321 PID 18300 sau thao tác: init notice sel login role smc = 00000000/00000000 0B036258/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:21:12.821 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3547 ms từ đầu lượt)
+13:21:12.821   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:21:12.821 PID 18300 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357D5C8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:21:14.851 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5578 ms từ đầu lượt)
+13:21:14.862   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:21:14.862 PID 18300 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357D5C8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:21:15.351 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6078 ms từ đầu lượt)
+13:21:15.354   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:21:15.354 PID 18300 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357D5C8/00000000 13613270/00000000 00000000/00000000 00000000/00000000
+13:21:15.871   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+13:21:15.871 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+13:21:17.894 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:21:20.911 Kết thúc lượt: Game đã tắt
+13:21:22.928 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:21:25.553 Bật hẹn giờ theo nhóm
+13:21:25.976 Kết thúc lượt: Game đã tắt
+13:21:26.202 Tắt hẹn giờ theo nhóm
+13:36:51.027 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:36:54.031 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+13:36:54.031   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:36:54.031 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 134D3208/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:36:54.532 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+13:36:54.532   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:36:54.532 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:36:56.521 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+13:36:56.521   Đang chọn server: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:36:56.521 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:36:57.041 Màn hình 4 lần 2: Đang chọn server (chờ 500 ms, 6016 ms từ đầu lượt)
+13:36:57.051   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+13:36:57.061 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:36:57.551 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6531 ms từ đầu lượt)
+13:36:57.551   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:36:57.551 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345A910/00000000 1357C840/00000000 00000000/00000000 00000000/00000000
+13:36:58.571   Serial ổ đĩa gửi server: A14A-530C (ngẫu nhiên)
+13:36:58.571   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+13:36:58.571 PID 18392 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1345A910/00000000 1357C840/00000000 13597670/00000000 00000000/00000000
+13:36:58.571 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7547 ms từ đầu lượt)
+13:37:00.581 Kết thúc lượt: thành công
+07:03:48.761 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 94 ms từ đầu lượt)
+07:03:52.160 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+07:03:52.161   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:03:52.161 PID 4252 sau thao tác: init notice sel login role smc = 00000000/00000000 13493818/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:03:52.660 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+07:03:52.664   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:03:52.664 PID 4252 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7BF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:03:54.663 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+07:03:54.679   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+07:03:54.680 PID 4252 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7BF8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:03:55.170 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+07:03:55.174   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:03:55.174 PID 4252 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7BF8/00000000 135BF448/00000000 00000000/00000000 00000000/00000000
+07:03:56.161   Serial ổ đĩa gửi server: 56BE-FF7F (ngẫu nhiên)
+07:03:56.162   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+07:03:56.162 PID 4252 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0D7BF8/00000000 135BF448/00000000 135DA278/00000000 00000000/00000000
+07:03:56.162 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+07:03:58.184 Kết thúc lượt: thành công
+07:08:46.608 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+07:08:49.601 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+07:08:49.602   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+07:08:49.602 PID 16984 sau thao tác: init notice sel login role smc = 00000000/00000000 135CBB70/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:08:50.104 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+07:08:50.106   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+07:08:50.106 PID 16984 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE17D58/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:08:52.104 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+07:08:52.113   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+07:08:52.113 PID 16984 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE17D58/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+07:08:52.601 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+07:08:52.604   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+07:08:52.604 PID 16984 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE17D58/00000000 13675788/00000000 00000000/00000000 00000000/00000000
+07:08:53.598   Serial ổ đĩa gửi server: 947F-809B (ngẫu nhiên)
+07:08:53.598   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+07:08:53.598 PID 16984 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE17D58/00000000 13675788/00000000 1368DB00/00000000 00000000/00000000
+07:08:53.598 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+07:08:55.598 Kết thúc lượt: thành công
+09:16:20.324 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+09:16:23.324 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+09:16:23.324   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+09:16:23.325 PID 15500 sau thao tác: init notice sel login role smc = 00000000/00000000 13701728/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:16:23.821 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+09:16:23.823   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+09:16:23.824 PID 15500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADD6C80/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:16:25.830 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+09:16:25.844   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+09:16:25.845 PID 15500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADD6C80/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:16:26.328 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+09:16:26.330   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+09:16:26.330 PID 15500 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADD6C80/00000000 13661930/00000000 00000000/00000000 00000000/00000000
+09:16:26.820   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+09:16:26.820 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+09:16:28.821 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+11:07:20.724 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+11:07:23.726 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+11:07:23.726   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:07:23.726 PID 16044 sau thao tác: init notice sel login role smc = 00000000/00000000 1359C920/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:07:24.226 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+11:07:24.226   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:07:24.226 PID 16044 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE47A78/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:07:26.226 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+11:07:26.236   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:07:26.236 PID 16044 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE47A78/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:07:26.734 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+11:07:26.736   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:07:26.736 PID 16044 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE47A78/00000000 136A57B0/00000000 00000000/00000000 00000000/00000000
+11:07:27.726   Serial ổ đĩa gửi server: 52E8-6911 (ngẫu nhiên)
+11:07:27.726   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:07:27.726 PID 16044 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE47A78/00000000 136A57B0/00000000 136C05E0/00000000 00000000/00000000
+11:07:27.726 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+11:07:29.726 Kết thúc lượt: thành công
+11:14:50.853 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+11:14:53.889 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3032 ms từ đầu lượt)
+11:14:53.890   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:14:53.890 PID 21320 sau thao tác: init notice sel login role smc = 00000000/00000000 135DB610/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:14:54.388 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3532 ms từ đầu lượt)
+11:14:54.391   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:14:54.391 PID 21320 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13563EC0/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:14:56.405 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+11:14:56.419   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+11:14:56.419 PID 21320 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13563EC0/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+11:14:56.898 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+11:14:56.900   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:14:56.900 PID 21320 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13563EC0/00000000 136845C0/00000000 00000000/00000000 00000000/00000000
+11:14:57.895   Serial ổ đĩa gửi server: C2B8-1E00 (ngẫu nhiên)
+11:14:57.896   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+11:14:57.896 PID 21320 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13563EC0/00000000 136845C0/00000000 1369C938/00000000 00000000/00000000
+11:14:57.896 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+11:14:59.922 Kết thúc lượt: thành công
+12:55:53.461 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+12:55:56.951 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+12:55:56.952   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:55:56.952 PID 19160 sau thao tác: init notice sel login role smc = 00000000/00000000 13355928/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:55:57.452 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+12:55:57.454   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:55:57.454 PID 19160 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADC8FC8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:55:59.442 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+12:55:59.456   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+12:55:59.457 PID 19160 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADC8FC8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:55:59.946 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+12:55:59.950   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:55:59.950 PID 19160 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADC8FC8/00000000 13472CF8/00000000 00000000/00000000 00000000/00000000
+12:56:00.945   Serial ổ đĩa gửi server: A941-6881 (ngẫu nhiên)
+12:56:00.945   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+12:56:00.945 PID 19160 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0ADC8FC8/00000000 13472CF8/00000000 1348B070/00000000 00000000/00000000
+12:56:00.945 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+12:56:02.944 Kết thúc lượt: thành công
+13:00:04.089 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+13:00:07.083 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+13:00:07.084   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:00:07.084 PID 18236 sau thao tác: init notice sel login role smc = 00000000/00000000 0B047FF8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:00:07.591 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+13:00:07.593   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:00:07.593 PID 18236 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B031878/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:00:09.591 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+13:00:09.608   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 183)
+13:00:09.608 PID 18236 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B031878/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+13:00:10.082 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+13:00:10.085   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+13:00:10.085 PID 18236 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B031878/00000000 1366DEF8/00000000 00000000/00000000 00000000/00000000
+13:00:11.096   Serial ổ đĩa gửi server: 96B0-3BB9 (ngẫu nhiên)
+13:00:11.097   Đang đăng nhập: chạy mã xong sau 15 ms, exit 1 (GetLastError 183)
+13:00:11.097 PID 18236 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B031878/00000000 1366DEF8/00000000 13686270/00000000 00000000/00000000
+13:00:11.097 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7015 ms từ đầu lượt)
+13:00:13.583 Kết thúc lượt: thành công
+21:56:39.157 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+21:56:42.156 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+21:56:42.156   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:42.157 PID 16240 sau thao tác: init notice sel login role smc = 00000000/00000000 0B072FA8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:42.651 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+21:56:42.653   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:42.653 PID 16240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:44.654 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+21:56:44.665   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+21:56:44.665 PID 16240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:45.149 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+21:56:45.152   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:45.152 PID 16240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355A910/00000000 135F77F8/00000000 00000000/00000000 00000000/00000000
+21:56:46.153   Serial ổ đĩa gửi server: 6AF4-74BF (ngẫu nhiên)
+21:56:46.154   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:46.154 PID 16240 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1355A910/00000000 135F77F8/00000000 13696878/00000000 00000000/00000000
+21:56:46.154 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+21:56:48.156 Kết thúc lượt: thành công
+21:56:50.661 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 16 ms từ đầu lượt)
+21:56:54.150 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+21:56:54.151   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:54.151 PID 23968 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE3CAE0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:54.652 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4000 ms từ đầu lượt)
+21:56:54.654   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:54.654 PID 23968 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE69660/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:56.653 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6000 ms từ đầu lượt)
+21:56:56.663   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+21:56:56.663 PID 23968 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE69660/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+21:56:57.144 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6500 ms từ đầu lượt)
+21:56:57.146   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:57.147 PID 23968 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE69660/00000000 1367A628/00000000 00000000/00000000 00000000/00000000
+21:56:58.154   Serial ổ đĩa gửi server: 573C-23BB (ngẫu nhiên)
+21:56:58.154   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+21:56:58.154 PID 23968 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE69660/00000000 1367A628/00000000 136929A0/00000000 00000000/00000000
+21:56:58.154 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7500 ms từ đầu lượt)
+21:57:00.158 Kết thúc lượt: thành công
+22:10:01.602 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+22:10:04.606 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+22:10:04.607   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:10:04.607 PID 10892 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE4BD58/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:10:05.105 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+22:10:05.108   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:10:05.108 PID 10892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357A910/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:10:07.099 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+22:10:07.109   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:10:07.109 PID 10892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357A910/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:10:07.605 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+22:10:07.607   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:10:07.607 PID 10892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357A910/00000000 135BBE78/00000000 00000000/00000000 00000000/00000000
+22:10:08.605   Serial ổ đĩa gửi server: 5D07-7FAC (ngẫu nhiên)
+22:10:08.606   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+22:10:08.606 PID 10892 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1357A910/00000000 135BBE78/00000000 136B3758/00000000 00000000/00000000
+22:10:08.606 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+22:10:10.613 Kết thúc lượt: thành công
+22:05:37.828 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 109 ms từ đầu lượt)
+22:05:41.206 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3500 ms từ đầu lượt)
+22:05:41.207   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:05:41.207 PID 24928 sau thao tác: init notice sel login role smc = 00000000/00000000 1348A558/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:41.722 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4015 ms từ đầu lượt)
+22:05:41.724   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:05:41.724 PID 24928 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13484868/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:44.220 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6500 ms từ đầu lượt)
+22:05:44.234   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:05:44.234 PID 24928 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13484868/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+22:05:44.720 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 7000 ms từ đầu lượt)
+22:05:44.723   Đang đăng nhập: chạy mã xong sau 15 ms, exit 1 (GetLastError 6)
+22:05:44.723 PID 24928 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13484868/00000000 134C7890/00000000 00000000/00000000 00000000/00000000
+22:05:45.711   Serial ổ đĩa gửi server: 748B-F998 (ngẫu nhiên)
+22:05:45.712   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+22:05:45.712 PID 24928 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13484868/00000000 134C7890/00000000 135C1A48/00000000 00000000/00000000
+22:05:45.712 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 8000 ms từ đầu lượt)
+22:05:47.722 Kết thúc lượt: thành công
+09:11:06.059 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 141 ms từ đầu lượt)
+09:11:09.431 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3516 ms từ đầu lượt)
+09:11:09.432   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:11:09.432 PID 18904 sau thao tác: init notice sel login role smc = 00000000/00000000 0B0C9F18/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:11:09.930 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4016 ms từ đầu lượt)
+09:11:09.931   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:11:09.932 PID 18904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0CC880/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:11:11.942 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6031 ms từ đầu lượt)
+09:11:11.958   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+09:11:11.958 PID 18904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0CC880/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+09:11:12.457 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+09:11:12.461   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:11:12.461 PID 18904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0CC880/00000000 136C4910/00000000 00000000/00000000 00000000/00000000
+09:11:13.485   Serial ổ đĩa gửi server: D9FB-206C (ngẫu nhiên)
+09:11:13.486   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+09:11:13.486 PID 18904 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B0CC880/00000000 136C4910/00000000 135E21F0/00000000 00000000/00000000
+09:11:13.486 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7562 ms từ đầu lượt)
+09:11:15.475 Kết thúc lượt: thành công
+14:01:13.014 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 110 ms từ đầu lượt)
+14:01:16.439 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3532 ms từ đầu lượt)
+14:01:16.440   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:01:16.440 PID 20552 sau thao tác: init notice sel login role smc = 00000000/00000000 0B0D8C88/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:16.948 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 4047 ms từ đầu lượt)
+14:01:16.952   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:01:16.952 PID 20552 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135A94F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:18.953 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 6047 ms từ đầu lượt)
+14:01:18.965   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+14:01:18.965 PID 20552 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135A94F8/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:19.443 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6547 ms từ đầu lượt)
+14:01:19.445   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:01:19.446 PID 20552 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135A94F8/00000000 135F5228/00000000 00000000/00000000 00000000/00000000
+14:01:20.487   Serial ổ đĩa gửi server: F0F1-BE9B (ngẫu nhiên)
+14:01:20.488   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+14:01:20.488 PID 20552 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135A94F8/00000000 135F5228/00000000 136F12F0/00000000 00000000/00000000
+14:01:20.488 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7578 ms từ đầu lượt)
+14:01:22.483 Kết thúc lượt: thành công
+14:01:22.980 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+14:01:25.998 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+14:01:25.999   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:01:25.999 PID 18444 sau thao tác: init notice sel login role smc = 00000000/00000000 13613DA8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:26.491 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+14:01:26.493   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:01:26.493 PID 18444 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135AA918/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:28.521 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+14:01:28.530   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:01:28.531 PID 18444 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135AA918/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:01:29.029 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+14:01:29.031   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:01:29.031 PID 18444 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135AA918/00000000 136BAD80/00000000 00000000/00000000 00000000/00000000
+14:01:30.033   Serial ổ đĩa gửi server: C063-5D80 (ngẫu nhiên)
+14:01:30.034   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:01:30.034 PID 18444 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 135AA918/00000000 136BAD80/00000000 136D5BB0/00000000 00000000/00000000
+14:01:30.034 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+14:01:32.033 Kết thúc lượt: thành công
+17:11:29.409 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:11:32.430 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3032 ms từ đầu lượt)
+17:11:32.430   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:11:32.430 PID 2872 sau thao tác: init notice sel login role smc = 00000000/00000000 0B028CA0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:32.954 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3547 ms từ đầu lượt)
+17:11:32.955   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:11:32.956 PID 2872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13787E38/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:34.987 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5578 ms từ đầu lượt)
+17:11:34.997   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+17:11:34.998 PID 2872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13787E38/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:35.482 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6078 ms từ đầu lượt)
+17:11:35.491   Đang đăng nhập: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+17:11:35.491 PID 2872 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13787E38/00000000 1381C768/00000000 00000000/00000000 00000000/00000000
+17:11:35.976   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:35.976 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:38.001 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:11:41.010 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3016 ms từ đầu lượt)
+17:11:41.011   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:41.011 PID 22144 sau thao tác: init notice sel login role smc = 00000000/00000000 136F94E8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:41.505 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3516 ms từ đầu lượt)
+17:11:41.506   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:41.506 PID 22144 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1367D008/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:43.544 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+17:11:43.553   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+17:11:43.553 PID 22144 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1367D008/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:44.041 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+17:11:44.043   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:44.043 PID 22144 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1367D008/00000000 1379EE08/00000000 00000000/00000000 00000000/00000000
+17:11:44.548   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:44.548 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:46.567 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 15 ms từ đầu lượt)
+17:11:49.580 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3015 ms từ đầu lượt)
+17:11:49.581   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:49.581 PID 19660 sau thao tác: init notice sel login role smc = 00000000/00000000 136BF3F8/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:50.075 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+17:11:50.076   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:50.076 PID 19660 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07FD60/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:52.077 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5515 ms từ đầu lượt)
+17:11:52.087   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+17:11:52.087 PID 19660 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07FD60/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:11:52.569 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6015 ms từ đầu lượt)
+17:11:52.571   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:11:52.571 PID 19660 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0B07FD60/00000000 136FA868/00000000 00000000/00000000 00000000/00000000
+17:11:53.077   Thông báo của Game (lỗi): Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:53.077 Kết thúc lượt: Tài khoản vào server: Tài khoản này hiện đang được sử dụng. Xin xác nhận đá tài khoản
+17:11:55.071 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:11:58.079 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:12:01.067 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:12:01.067   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:12:01.068 PID 20324 sau thao tác: init notice sel login role smc = 00000000/00000000 0AE36298/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:12:01.574 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:12:01.575   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:12:01.575 PID 20324 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356DB90/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:12:03.591 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5516 ms từ đầu lượt)
+17:12:03.602   Chọn server + Xác định: chạy mã xong sau 15 ms, exit 1 (GetLastError 183)
+17:12:03.602 PID 20324 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356DB90/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:12:04.086 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6016 ms từ đầu lượt)
+17:12:04.088   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:12:04.088 PID 20324 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356DB90/00000000 135AF860/00000000 00000000/00000000 00000000/00000000
+17:12:05.112   Serial ổ đĩa gửi server: 4D93-C122 (ngẫu nhiên)
+17:12:05.112   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+17:12:05.112 PID 20324 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 1356DB90/00000000 135AF860/00000000 136A7358/00000000 00000000/00000000
+17:12:05.112 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+17:12:07.108 Kết thúc lượt: thành công
+17:20:59.483 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+17:21:02.483 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+17:21:02.484   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:21:02.484 PID 19260 sau thao tác: init notice sel login role smc = 00000000/00000000 0AD34868/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:21:02.975 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+17:21:02.976   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:21:02.977 PID 19260 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEBFB50/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:21:04.985 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+17:21:04.994   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+17:21:04.994 PID 19260 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEBFB50/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+17:21:05.480 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+17:21:05.483   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:21:05.483 PID 19260 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEBFB50/00000000 1369D5A8/00000000 00000000/00000000 00000000/00000000
+17:21:06.485   Serial ổ đĩa gửi server: 8231-CEFB (ngẫu nhiên)
+17:21:06.486   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+17:21:06.486 PID 19260 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AEBFB50/00000000 1369D5A8/00000000 136B83D8/00000000 00000000/00000000
+17:21:06.486 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+17:21:08.481 Kết thúc lượt: thành công

@@ -4,7 +4,7 @@
 #define CLIENT_VERSION		"0.1"
 #define HASH_CODE			0x4683
 
-#define VLVERSION	"0.86"
+#define VLVERSION	"0.89"
 
 // Ban build (dung chung VLAuto + VLHook qua GameDef.h). Sua 2 dong duoi roi build lai,
 // hoac chay BuildRelease.ps1 (truyen /DADMIN_MODE=.. /DADMIN_TESTER=.. qua bien CL, khong sua file nay)
@@ -18,6 +18,8 @@
 #define ADMIN_TESTER	0
 #endif
 #define LICENSE_REQUIRED	(!ADMIN_MODE || ADMIN_TESTER)
+// Ban Tester Offline (ADMIN_MODE 1, ADMIN_TESTER 0): co nut chan doan tai cho (vd: kiem tra TLS 1.2).
+#define TEST_OFFLINE_BUILD	(ADMIN_MODE && !ADMIN_TESTER)
 
 // ---- Khung anti-tamper (Phase 0) ----
 // LP_HARDEN: cong tac tong bat/tat MOI lop anti-tamper (integrity P2, anti-debug

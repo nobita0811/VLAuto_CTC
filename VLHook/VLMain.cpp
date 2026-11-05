@@ -544,6 +544,11 @@ void CVLMain::LoadOptions()
 	m_bPrintScreen = GetPrivateProfileInt("Options", "PrintScreen", 0, m_szIniFile);
 	m_bAttackBossFirst = GetPrivateProfileInt("Options", "AttackBossFirst", 1, m_szIniFile);
 	GetPrivateProfileString("Options", "ControlPass", "", m_szControlPass, 32, m_szIniFile);
+#if TEST_OFFLINE_BUILD
+	g_bDbgText = GetPrivateProfileInt("Options", "ShowDbgTextIngame", 0, m_szIniFile);	// TestOffline: checkbox tab Tro giup (mac dinh tat)
+#elif ADMIN_MODE
+	g_bDbgText = TRUE;	// Tester online: luon hien text debug nhu truoc (khong co checkbox)
+#endif
 }
 
 void CVLMain::ExitGame(int nLicCheck)

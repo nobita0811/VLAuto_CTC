@@ -484,7 +484,7 @@ BOOL CDlgAutoLogin::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_SERVER_REGION_COMBO), _T("Đọc từ UiConfig\\serverlist_.txt"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTO_RELOGIN_COUNT_CHECK), _T("Đăng nhập thất bại thì chờ 2s rồi thử lại, tối đa số lần bên cạnh (bỏ check: không thử lại)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_COUNT_RELOGIN_EDIT), _T("Số lần thử lại khi đăng nhập thất bại"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_HIDEGAME_LOGIN_CHECK), _T("Auto Login đăng nhập vào game xong thì ẩn cửa sổ Game (bấm \"Mở game\" để hiện lại)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_HIDEGAME_LOGIN_CHECK), _T("Auto Login ẩn cửa sổ Game ngay từ lúc mở game, đăng nhập trong lúc ẩn (double-click dòng tài khoản để hiện)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTO_LOGINALL_CHECK), _T("Mở Auto xong chờ số ms bên cạnh rồi tự login các tài khoản bật \"Tự động đăng nhập lại\" (chỉ một lần mỗi lần mở Auto)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_DELAYTIME_LOGINALL_EDIT), _T("Thời gian chờ (ms) sau khi mở Auto, tối thiểu 2000"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_WAIT_OPENGAME_LOGIN_EDIT), _T("ms chờ sau khi mở Game rồi mới xem Game đang ở màn hình nào (mặc định 3000, tối thiểu 500)"));
@@ -549,8 +549,7 @@ void CDlgAutoLogin::LoadAccounts()
 	CheckDlgButton(IDC_AUTO_RELOGIN_LOOP_CHECK, GetPrivateProfileInt(_T("AutoLogin"), _T("Loop"), 0, m_strDataFile) ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_AUTO_LOGINALL_CHECK, GetPrivateProfileInt(_T("AutoLogin"), _T("AutoLoginAll"), 0, m_strDataFile) ? BST_CHECKED : BST_UNCHECKED);
 	SetDlgItemInt(IDC_DELAYTIME_LOGINALL_EDIT, GetPrivateProfileInt(_T("AutoLogin"), _T("AutoLoginAllDelay"), DEFAULT_LOGINALL_DELAY, m_strDataFile), FALSE);
-	CheckDlgButton(IDC_HIDEGAME_LOGIN_CHECK, GetPrivateProfileInt(_T("AutoLogin"), _T("HideGame"), 0, m_strDataFile) ? BST_CHECKED : BST_UNCHECKED);
-	m_nTongKeep = (int)GetPrivateProfileInt(_T("AutoLogin"), _T("TongKeep"), DEFAULT_TONG_KEEP, m_strDataFile);
+	CheckDlgButton(IDC_HIDEGAME_LOGIN_CHECK, GetPrivateProfileInt(_T("AutoLogin"), _T("HideGame"), 0, m_strDataFile) ? BST_CHECKED : BST_UNCHECKED);	m_nTongKeep = (int)GetPrivateProfileInt(_T("AutoLogin"), _T("TongKeep"), DEFAULT_TONG_KEEP, m_strDataFile);
 	m_bHenGio = GetPrivateProfileInt(_T("AutoLogin"), _T("HenGio"), 0, m_strDataFile) != 0;
 	for (int i = 0; i < _countof(s_ExitOpts); i++)
 	{
@@ -1172,8 +1171,8 @@ BOOL CDlgAutoLogin::IsAccountInGame(int nIndex)
 	return bInGame;
 }
 
-// Mở Game mới, gắn với tài khoản nIndex (nIndex < 0: không gắn)
-BOOL CDlgAutoLogin::LaunchGame(int nIndex, CString& strError)
+// Mở Game mới, gắn với tài khoản nIndex (nIndex < 0: không gắn). bHide: mở ở trạng thái ẩn (SW_HIDE)
+BOOL CDlgAutoLogin::LaunchGame(int nIndex, CString& strError, BOOL bHide)
 {
 	OnGamePathKillFocus();	// Lấy Game Path vừa gõ tay
 	if (m_strGamePath.IsEmpty() || !PathFileExists(m_strGamePath))
@@ -1187,6 +1186,11 @@ BOOL CDlgAutoLogin::LaunchGame(int nIndex, CString& strError)
 	CString strCmdLine;
 	strCmdLine.Format(_T("\"%s\""), (LPCTSTR)m_strGamePath);
 	STARTUPINFO si = { sizeof(si) };
+	if (bHide)
+	{
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
+	}
 	PROCESS_INFORMATION pi = { 0 };
 	BOOL bCreated = CreateProcess(m_strGamePath, strCmdLine.GetBuffer(), NULL, NULL, FALSE, 0, NULL, strDir, &si, &pi);
 	DWORD dwError = GetLastError();
@@ -1194,6 +1198,9 @@ BOOL CDlgAutoLogin::LaunchGame(int nIndex, CString& strError)
 	if (!bCreated)
 	{
 		strError.Format(_T("Không mở được Game (GetLastError = %d)"), dwError);
+		// 1455 ERROR_COMMITMENT_LIMIT / 1450 ERROR_NO_SYSTEM_RESOURCES / 8 ERROR_NOT_ENOUGH_MEMORY: Windows hết bộ nhớ ảo (RAM + pagefile)
+		if (dwError == ERROR_COMMITMENT_LIMIT || dwError == ERROR_NO_SYSTEM_RESOURCES || dwError == ERROR_NOT_ENOUGH_MEMORY)
+			strError += _T(" - Windows hết bộ nhớ ảo, tăng pagefile hoặc bớt game");
 		return FALSE;
 	}
 	CloseHandle(pi.hThread);
@@ -1212,45 +1219,11 @@ void CDlgAutoLogin::CloseGames(const std::vector<DWORD>& PIDs)
 	for (int i = 0; i < (int)PIDs.size(); i++)
 	{
 		if (!IsGameProcess(PIDs[i]))
-			continue;
-		for (int j = 0; j < (int)m_Accounts.size(); j++)
-			if (m_Accounts[j].dwProcessId == PIDs[i])
-				m_Accounts[j].dwProcessId = 0;
-		BOOL bInGame = FALSE;
-		HANDLE hGame = OpenProcess(PROCESS_VM_READ, FALSE, PIDs[i]);
-		if (hGame)
-		{
-			bInGame = ReadGameDword(hGame, LG_SMC_BASE_ADD) != 0;
-			CloseHandle(hGame);
-		}
-		BOOL bPosted = FALSE;
-		HWND hWnd = NULL;
-		while ((hWnd = ::FindWindowEx(NULL, hWnd, VLTK_WINCLASS, NULL)) != NULL)
-		{
-			DWORD dwWndPID = 0;
-			GetWindowThreadProcessId(hWnd, &dwWndPID);
-			if (dwWndPID != PIDs[i])
-				continue;
-			::ShowWindowAsync(hWnd, SW_HIDE);
-			if (bInGame && ::PostMessage(hWnd, WM_CLOSE, 0, 0))
-				bPosted = TRUE;
-		}
-		if (!bPosted)
-		{
-			TerminateGame(PIDs[i]);	// Chưa vào game / chưa có cửa sổ để gửi WM_CLOSE
-			ClosingGame closing = { PIDs[i], dwNow };	// Theo dõi tới khi process kết thúc hẳn
-			m_Closing.push_back(closing);
-			continue;
-		}
-		BOOL bFound = FALSE;
-		for (int j = 0; j < (int)m_Closing.size(); j++)
-			if (m_Closing[j].dwPID == PIDs[i])
-				bFound = TRUE;
-		if (!bFound)
-		{
-			ClosingGame closing = { PIDs[i], dwNow + GAME_CLOSE_TIMEOUT };
-			m_Closing.push_back(closing);
-		}
+			continue;		
+		TerminateGame(PIDs[i]);	
+		ClosingGame closing = { PIDs[i], dwNow };	// Theo dõi tới khi process kết thúc hẳn
+		m_Closing.push_back(closing);
+		continue;
 	}
 	UpdateGameStatus();
 }
@@ -1370,10 +1343,15 @@ void CDlgAutoLogin::OnBnClickedOpenGame()
 		}
 		return;
 	}
+	else
+	{
+		CString strError1;
+		LaunchGame(nSel, strError1);
+	}
 	CString strError;
 	if (!LaunchGame(nSel, strError))
 	{
-		MessageBox(strError + _T("\n") + m_strGamePath, _T("Auto Login"), MB_OK | MB_ICONWARNING);
+		//MessageBox(strError + _T("\n") + m_strGamePath, _T("Auto Login"), MB_OK | MB_ICONWARNING);
 		return;
 	}
 	UpdateGameStatus();
@@ -1778,6 +1756,7 @@ void CDlgAutoLogin::RunLogin()
 		m_Job.dwStartTick = m_Job.dwActionTick = GetTickCount();
 		m_Job.dwWait = 0;
 		m_Job.bLaunched = FALSE;
+		m_Job.bHidden = FALSE;
 		m_Job.nScreen = scr_none;
 		m_Job.nTries = 0;
 		m_Job.strGameInfo.Empty();
@@ -1807,6 +1786,18 @@ void CDlgAutoLogin::RunLogin()
 			return;
 		}
 	}
+	// Ẩn game từ lúc mở: Game có thể bỏ qua SW_HIDE của STARTUPINFO => cửa sổ Game vừa hiện thì ẩn (một lần,
+	// double-click dòng tài khoản để hiện lại trong lúc đăng nhập)
+	if (dwPID && m_Job.bLaunched && !m_Job.bHidden && IsDlgButtonChecked(IDC_HIDEGAME_LOGIN_CHECK) == BST_CHECKED)
+	{
+		HWND hGameWnd = FindGameWindowOfProcess(dwPID);
+		if (hGameWnd)
+		{
+			if (::IsWindowVisible(hGameWnd))
+				ShowGameWindows(dwPID, SW_HIDE);
+			m_Job.bHidden = TRUE;
+		}
+	}
 	if (dwPID == 0)
 	{
 		if (bWaiting)
@@ -1817,7 +1808,7 @@ void CDlgAutoLogin::RunLogin()
 			return;
 		}
 		CString strError;
-		if (!LaunchGame(nIndex, strError))
+		if (!LaunchGame(nIndex, strError, IsDlgButtonChecked(IDC_HIDEGAME_LOGIN_CHECK) == BST_CHECKED))
 		{
 			EndJob(nIndex, strError, FALSE, FALSE);
 			return;

@@ -1,0 +1,30 @@
+; VLAuto MapPath - Map 9 Tr­êng Giang Nguyªn §Çu
+; [Points] i,x,y  [Sides] i,j  [Doors] diem,mapDich,xVao,yVao[,loai(0 di bo/trap,1 Obj,2 NPC),ten[,dong1,dong2,... (NPC: chon dong menu dem tu 0)]]  [Driver] diem,mapDich,menu  [Item] ten,dong1,dong2,... (dung vat pham o map bat ky, chon dong menu dem tu 0 -> toi map nay)  [NPC] x,y 15 dong: Ruong, Xa phu 1-4, Tap hoa, Hieu thuoc, VLTN, Tho ren, Dich quan, Da Tau, Ban ngua, du phong 1-3 (0,0 = khong co)
+[Points]
+0,76674,177500
+1,76016,178359
+2,75795,179647
+3,75789,180823
+4,76120,181831
+5,76352,182674
+6,76631,183322
+7,77456,183193
+8,78335,183311
+9,79011,183060
+10,79357,182324
+11,79418,181800
+[Sides]
+0,1
+1,2
+2,3
+3,4
+4,5
+5,6
+6,7
+7,8
+8,9
+9,10
+10,11
+[Doors]
+11,10,51296,102688
+[Driver]

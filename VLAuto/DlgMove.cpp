@@ -40,10 +40,12 @@ void CDlgMove::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ATTACKWHENMOVE_CHECK, g_pCurGameWin->m_prMove.m_bAttackWhenMove);
 	DDX_Check(pDX, IDC_NOATTACKFOLLOW_CHECK, g_pCurGameWin->m_prMove.m_bNoAttackFollow);
 	DDX_Check(pDX, IDC_MOVEBYMAP_CHECK, g_pCurGameWin->m_prMove.m_bMoveByMap);
+	DDX_Check(pDX, IDC_LURE_CREEP_CHECK, g_pCurGameWin->m_prMove.m_bLureCreep);
 
 	//Editboxes
 	DDX_Text(pDX, IDC_FOLLOWDISTANCE_EDIT, g_pCurGameWin->m_prMove.m_nFollowDistance);
 	DDX_Text(pDX, IDC_POINTRANGE_EDIT, g_pCurGameWin->m_prMove.m_nPointRange);
+	DDX_Text(pDX, IDC_LURE_CREEP_RANGE_EDIT, g_pCurGameWin->m_prMove.m_nLureRange);
 
 	//UI Refresh
 	BOOL bChecked, bChecked1;
@@ -58,6 +60,7 @@ void CDlgMove::DoDataExchange(CDataExchange* pDX)
 	}
 	bChecked1 = ((CButton*)GetDlgItem(IDC_ROUTEPOINT_CHECK))->GetCheck();
 	GetDlgItem(IDC_POINTRANGE_EDIT)->EnableWindow(!bChecked1 && !bChecked);
+	GetDlgItem(IDC_LURE_CREEP_RANGE_EDIT)->EnableWindow(((CButton*)GetDlgItem(IDC_LURE_CREEP_CHECK))->GetCheck());
 
 	UpdateNearByPlayers(pDX->m_bSaveAndValidate);
 	if (!pDX->m_bSaveAndValidate) UpdatePointsList();
@@ -73,6 +76,7 @@ void CDlgMove::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CDlgMove, CDialog)
 	ON_CONTROL_RANGE(BN_CLICKED, 1000, 2000, &CDlgMove::OnButtonsClicked)
+	ON_EN_KILLFOCUS(IDC_LURE_CREEP_RANGE_EDIT, &CDlgMove::OnEnKillfocusLureRange)
 END_MESSAGE_MAP()
 
 // CDlgMove message handlers
@@ -94,6 +98,8 @@ BOOL CDlgMove::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_POINTY_EDIT), _T("Tọa độ đánh quanh điểm"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_POINTRANGE_EDIT), _T("Phạm vi đánh Quanh điểm và theo Tọa độ"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_ROUTEPOINT_CHECK), _T("Hành trình luyện công - Đánh quái theo tọa độ"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_LURE_CREEP_CHECK), _T("Quây quái: tới tọa độ train, nếu có hơn 1 con quái thì chạy qua từng con cho nó đi theo, về lại tọa độ đó rồi mới đánh"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_LURE_CREEP_RANGE_EDIT), _T("Phạm vi quây quái quanh tọa độ train (100 - 2000)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MOVE_LIST_BUTTON), _T("Sửa danh sách tọa độ Hành trình (số TĐ luyện công / số TĐ đi đến nơi luyện công)"));
 	}
 
@@ -104,6 +110,14 @@ BOOL CDlgMove::PreTranslateMessage(MSG* pMsg)
 {
 	m_ToolTip.RelayEvent(pMsg);
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+// O pham vi quay quai: roi o la ap dung ngay (cac o so khac chi luu khi bam checkbox)
+void CDlgMove::OnEnKillfocusLureRange()
+{
+	if (g_pCurGameWin == NULL) return;
+	UpdateData();
+	g_pCurGameWin->SetGameParams(tab_move);
 }
 
 void CDlgMove::OnButtonsClicked(UINT nID)

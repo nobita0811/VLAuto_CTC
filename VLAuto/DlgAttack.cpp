@@ -26,6 +26,7 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	GetDlgItem(IDC_SETTING_SKILL_BTN)->EnableWindow(g_pCurGameWin != NULL);
+	GetDlgItem(IDC_SETTING_DOSAT_BTN)->EnableWindow(g_pCurGameWin != NULL);
 
 	// Cua so Cai dat skill dang mo => lam moi theo nhan vat hien tai
 	if (m_dlgSkill.GetSafeHwnd() != NULL && !pDX->m_bSaveAndValidate)
@@ -35,6 +36,9 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 		else
 			m_dlgSkill.UpdateData(FALSE);
 	}
+	// Cua so Cai dat Do sat dang mo => lam moi theo nhan vat hien tai
+	if (m_dlgDoSat.GetSafeHwnd() != NULL && !pDX->m_bSaveAndValidate)
+		m_dlgDoSat.RefreshFromParams();
 
 	if (g_pCurGameWin == NULL)
 		return;
@@ -115,6 +119,10 @@ BOOL CDlgAttack::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_SETTING_SKILL_BTN), _T("Thiết lập chiêu thức, chuyển chiêu"));
 	}
 
+#if !ADMIN_MODE	
+	if (GetDlgItem(IDC_SETTING_DOSAT_BTN)) GetDlgItem(IDC_SETTING_DOSAT_BTN)->ShowWindow(SW_HIDE);	// Ẩn nút cài đặt đồ sát
+
+#endif
 	return FALSE;
 }
 
@@ -130,6 +138,11 @@ void CDlgAttack::OnButtonsClicked(UINT nID)
 	if (nID == IDC_SETTING_SKILL_BTN)
 	{
 		m_dlgSkill.DoModal();
+		return;
+	}
+	if (nID == IDC_SETTING_DOSAT_BTN)
+	{
+		m_dlgDoSat.DoModal();
 		return;
 	}
 

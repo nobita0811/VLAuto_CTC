@@ -1,0 +1,75 @@
+[1]
+Map=75_Khoả Lang động
+Ruong=1,50965,101546
+[2]
+Map=93_Tiến Cúc động
+Ruong=80,56185,96224
+[3]
+Map=124_Cán Viên động
+Ruong=80,56185,96224
+[4]
+Map=152_Tuyết Báo động tầng 8
+Ruong=80,56185,96224
+[5]
+Map=181_Lưỡng Thủy động
+Ruong=162,52041,100888
+[6]
+Map=198_Thanh khê động
+Ruong=162,52041,100888
+[7]
+Map=200_Cổ Dương động
+Ruong=80,56185,96224
+[8]
+Map=201_Băng Hà động
+Ruong=1,50965,101546
+[9]
+Map=202_Phù Dung động
+Ruong=11,101864,165711
+[10]
+Map=203_Vô Danh động
+Ruong=162,52041,100888
+[11]
+Map=204_Phi Thiên động
+Ruong=37,55197,98564
+[12]
+Map=205_Dương Trung động
+Ruong=80,56185,96224
+[13]
+Map=224_Sa mạc địa biểu
+Ruong=176,44562,106070
+[14]
+Map=225_Sa Mạc 1
+Ruong=176,44562,106070
+[15]
+Map=226_Sa Mạc 2
+Ruong=176,44562,106070
+[16]
+Map=227_Sa Mạc 3
+Ruong=176,44562,106070
+[17]
+Map=320_Chân núi Trường Bạch
+Ruong=78,50415,106942
+[18]
+Map=321_Trường Bạch sơn Nam
+Ruong=1,50965,101546
+[19]
+Map=322_Trường Bạch sơn Bắc
+Ruong=11,101864,165711
+[20]
+Map=336_Phong Lăng độ
+Ruong=
+[21]
+Map=340_Mạc Cao Quật
+Ruong=11,101864,165711
+[22]
+Map=207_Tần Lăng tầng 3
+Ruong=1,50965,101546
+[23]
+Map=143_Dược Vương động tầng 3
+Ruong=37,55197,98564
+[24]
+Map=144_Dược Vương động tầng 4
+Ruong=37,55197,98564
+[25]
+Map=10_Nhạn Thạch động
+Ruong=11,101864,165711
