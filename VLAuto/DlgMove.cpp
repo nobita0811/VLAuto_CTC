@@ -134,9 +134,16 @@ void CDlgMove::OnButtonsClicked(UINT nID)
 	{
 		if (((CButton*)GetDlgItem(nID))->GetCheck())
 		{
+			((CButton*)GetDlgItem(IDC_ROUTEPOINT_CHECK))->SetCheck(0);	// Loai tru nhau: chi 1 trong 2
 			g_pCurGameWin->m_prMove.m_nPointX = g_pCurGameWin->m_nOffX;
 			g_pCurGameWin->m_prMove.m_nPointY = g_pCurGameWin->m_nOffY;
+			g_pCurGameWin->m_prMove.m_nPointMapID = g_pCurGameWin->m_nMapID;	// Lay map vua nhan lam map train
 		}
+	}
+	else if (nID == IDC_ROUTEPOINT_CHECK)
+	{
+		if (((CButton*)GetDlgItem(nID))->GetCheck())
+			((CButton*)GetDlgItem(IDC_AROUNDPOINT_CHECK))->SetCheck(0);	// Loai tru nhau: chi 1 trong 2
 	}
 	UpdateData();
 	g_pCurGameWin->SetGameParams(tab_move);

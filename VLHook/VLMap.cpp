@@ -1204,7 +1204,6 @@ static int DriverTargetMap()
 {
 	if (theMap.m_nTrainMapID) return theMap.m_nTrainMapID;
 	if (theMove.m_bRouteMove && theMove.m_nNodesMapID && theMove.m_Nodes[0].x) return theMove.m_nNodesMapID;
-	if (theMove.m_nGoNodesMapID && theMove.m_GoNodes[0].x && theMove.m_GoNodes[0].y) return theMove.m_nGoNodesMapID;
 	return 0;
 }
 
@@ -1289,7 +1288,9 @@ void CVLMap::GetDriver()
 		s_dwReturnTick = 0;
 		if (!P_PLAYER->m_FightMode && *g_pMapID == s_nReturnMap)
 		{
-			SystemMessage(0, "<color=yellow>Khong tro lai dia diem cu duoc - chon Nhung noi da di qua");
+			SystemMessage(0, nDriverOpt == 3
+				? "<color=yellow>Khong tro lai dia diem cu duoc - dung im o xa phu"
+				: "<color=yellow>Khong tro lai dia diem cu duoc - chon Nhung noi da di qua");
 			CloseAllWindows(0);
 			return;
 		}
@@ -1344,6 +1345,15 @@ void CVLMap::GetDriver()
 		else if (m_nDriverStep == 1)
 		{
 			m_bNoDriverRecent = 0;
+			if (nDriverOpt == 3)
+			{
+				// "Quay lai dia diem cu": buoc 0 da thu "Tro lai dia diem cu" nhung khong ve duoc
+				// -> dung im o xa phu (khong chon "Noi da di qua", khong thoat game), thu lai sau 30s
+				SystemMessage(0, "<color=yellow>Khong tro lai dia diem cu duoc - dung im o xa phu");
+				CloseAllWindows(0);
+				dwNoRouteTick = GetTickCount();
+				return;
+			}
 			theMove.m_bFindingWay = TRUE;
 			// Menu chinh co san map can toi (vd ten thanh) -> chon luon
 			if (szTarget[0] && nDriverOpt != 3 && theMain.ClickMenuStr(szTarget))
@@ -1353,9 +1363,8 @@ void CVLMap::GetDriver()
 			}
 			if (theMain.ClickMenuStr(VISITED_PLACES, 0))
 			{
-				if (nDriverOpt == 3)
-					theMain.ExitGame();
-				else if (nDriverOpt == 4)
+				// (opt 3 "Quay lai dia diem cu" da duoc xu ly o tren: dung im o xa phu, khong vao day)
+				if (nDriverOpt == 4)
 				{
 					if (theMain.ClickMenuStr(TV(L"Đi đến nơi làm nhiệm vụ Dã Tẩu")))
 						return;

@@ -1047,21 +1047,38 @@ BOOL CVLMove::HaveGoNodes()
 	return !m_nGoNodesMapID || m_nGoNodesMapID == *g_pMapID;
 }
 
-// Nhan vat da o gan bai train (vd "Tro lai dia diem cu" dua thang toi bai): khong can di theo danh sach di den
+// Nhan vat da o gan bai train (vd "Tro lai dia diem cu" dua thang toi bai, hoac vua login o ngay bai
+// train): khong can di theo danh sach di den (khong chay nguoc ra cong roi di lai tu dau)
 BOOL CVLMove::NearTrainArea(int nPlayerX, int nPlayerY)
 {
 	const int nNear = 400;
+	// 1) Da o sat diem / toa do luyen cong
 	if (m_bMoveByMapYS)
 	{
 		for (int i = 0; i < m_nMapPoints; i++)
 			if (__distance(nPlayerX, nPlayerY, MapPoints[i].x, MapPoints[i].y) <= nNear) return TRUE;
-		return FALSE;
 	}
-	if (m_bAroundPointPK)
-		return (m_nPointX || m_nPointY) && __distance(nPlayerX, nPlayerY, m_nPointX, m_nPointY) <= nNear;
-	if (m_bRouteMove && (!m_nNodesMapID || m_nNodesMapID == *g_pMapID))
+	else if (m_bAroundPointPK)
+	{
+		if ((m_nPointX || m_nPointY) && __distance(nPlayerX, nPlayerY, m_nPointX, m_nPointY) <= nNear) return TRUE;
+	}
+	else if (m_bRouteMove && (!m_nNodesMapID || m_nNodesMapID == *g_pMapID))
+	{
 		for (int i = 0; i < MAX_NODES && m_Nodes[i].x && m_Nodes[i].y; i++)
 			if (__distance(nPlayerX, nPlayerY, m_Nodes[i].x, m_Nodes[i].y) <= nNear) return TRUE;
+	}
+	// 2) Co danh sach di den noi luyen cong (GoNodes): neu dang o gan diem CUOI (bai train) hon la gan
+	//    diem DAU (cong vao) => nhan vat da o trong map, da toi noi luyen cong -> danh tai cho, khong
+	//    chay nguoc ra cong di lai danh sach tu dau.
+	if (HaveGoNodes())
+	{
+		int nCount = 0;
+		while (nCount < MAX_NODES && m_GoNodes[nCount].x && m_GoNodes[nCount].y) nCount++;
+		if (nCount >= 2 &&
+			__distance(nPlayerX, nPlayerY, m_GoNodes[nCount - 1].x, m_GoNodes[nCount - 1].y) <
+			__distance(nPlayerX, nPlayerY, m_GoNodes[0].x, m_GoNodes[0].y))
+			return TRUE;
+	}
 	return FALSE;
 }
 

@@ -30,8 +30,9 @@ int CDlgMovePoints::GetTrainMapID()
 {
 	if (g_pCurGameWin == NULL) return 0;
 	PARAM_MOVE &pm = g_pCurGameWin->m_prMove;
-	if (pm.m_nNodesMapID && pm.m_Nodes[0].x && pm.m_Nodes[0].y) return pm.m_nNodesMapID;
-	if (pm.m_nGoNodesMapID && pm.m_GoNodes[0].x && pm.m_GoNodes[0].y) return pm.m_nGoNodesMapID;
+	// Map train chi co khi tick 1 trong 2 option (loai tru nhau); khong tick = "Ban do bat ky"
+	if (pm.m_bRouteMove && pm.m_nNodesMapID && pm.m_Nodes[0].x && pm.m_Nodes[0].y) return pm.m_nNodesMapID;
+	if (pm.m_bAroundPoint && pm.m_nPointMapID && pm.m_nPointX && pm.m_nPointY) return pm.m_nPointMapID;
 	return 0;
 }
 

@@ -693,6 +693,7 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 			{
 				pGameWin->m_prMove.m_nPointX = pGameWin->m_nOffX;
 				pGameWin->m_prMove.m_nPointY = pGameWin->m_nOffY;
+				pGameWin->m_prMove.m_nPointMapID = pGameWin->m_nMapID;	// Lay map vua nhan lam map train
 			}
 			else if (pGameWin->m_prMove.m_bRouteMove)
 			{

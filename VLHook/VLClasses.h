@@ -441,6 +441,7 @@ public:
 	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = khong kiem tra)
 	BOOL	m_bLureCreep;		// Quay quai (giong PARAM_MOVE)
 	int		m_nLureRange;		// Pham vi quay quai quanh diem neo
+	int		m_nPointMapID;		// Ban do cua "Danh quanh diem" (map luc ghi diem; 0 = chua xac dinh)
 	//private
 	int		m_nStatus;
 	int		m_nPreNode;

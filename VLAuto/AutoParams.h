@@ -181,6 +181,7 @@ struct PARAM_MOVE : public AutoParams
 	int		m_nGoNodesMapID;	// Ban do cua m_GoNodes (0 = chua xac dinh)
 	BOOL	m_bLureCreep;		// Quay quai: toi toa do train, chay qua tung con quai cho no theo roi ve diem neo moi danh
 	int		m_nLureRange;		// Pham vi quay quai quanh diem neo
+	int		m_nPointMapID;		// Ban do cua "Danh quanh diem" (map luc ghi diem; 0 = chua xac dinh)
 
 public:
 	void	InitValue();

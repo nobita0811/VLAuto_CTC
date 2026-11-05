@@ -186,6 +186,26 @@ struct LoginResult {
 // Chan doan nhanh ngay tren login dialog: ep CHI TLS 1.2 va thu bat tay toi endpoint
 // license, ghi ket qua vao IDC_STATUS_STATIC. Giup nguoi dung (vd may ao Win7) biet
 // lieu khong dang nhap duoc co phai vi thieu TLS 1.2 hay khong.
+// Giong lib: chi dung proxy khi may dat THU CONG, khong tu dong WPAD (tranh treo).
+static void ApplyManualProxy(HINTERNET hSession)
+{
+    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie;
+    memset(&ie, 0, sizeof ie);
+    if (WinHttpGetIEProxyConfigForCurrentUser(&ie)) {
+        if (ie.lpszProxy && ie.lpszProxy[0]) {
+            WINHTTP_PROXY_INFO pi;
+            memset(&pi, 0, sizeof pi);
+            pi.dwAccessType    = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
+            pi.lpszProxy       = ie.lpszProxy;
+            pi.lpszProxyBypass = ie.lpszProxyBypass;
+            WinHttpSetOption(hSession, WINHTTP_OPTION_PROXY, &pi, sizeof pi);
+        }
+        if (ie.lpszProxy)         GlobalFree(ie.lpszProxy);
+        if (ie.lpszProxyBypass)   GlobalFree(ie.lpszProxyBypass);
+        if (ie.lpszAutoConfigUrl) GlobalFree(ie.lpszAutoConfigUrl);
+    }
+}
+
 static void TlsCheckToStatus(HWND hDlg)
 {
 #ifndef WINHTTP_OPTION_SECURE_PROTOCOLS
@@ -209,9 +229,19 @@ static void TlsCheckToStatus(HWND hDlg)
     INTERNET_PORT port = uc.nPort ? uc.nPort : 443;
 
     DWORD err = 0, status = 0; bool ok = false;
-    HINTERNET hS = WinHttpOpen(L"VLCTCPro-TLSCheck/1.0", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+    HINTERNET hS = WinHttpOpen(L"VLCTCPro-TLSCheck/1.0", WINHTTP_ACCESS_TYPE_NO_PROXY,
                                WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
     if (hS) {
+        ApplyManualProxy(hS);   // di thang; chi dung proxy neu may dat thu cong
+        // IPv6 "fast fallback" (giong Happy Eyeballs cua trinh duyet): may BAT IPv6 nhung
+        // KHONG co duong ra (SYN bi nuot) -> WinHTTP thu IPv6 truoc roi treo het gio du
+        // IPv4 vao duoc. Bat option: thu IPv6 ~300ms roi tu dong roi sang IPv4; van giu
+        // ten mien nen SNI/chung chi dung. Win10 1903+; may cu hon thi bo qua (khong sao).
+#ifndef WINHTTP_OPTION_IPV6_FAST_FALLBACK
+#define WINHTTP_OPTION_IPV6_FAST_FALLBACK 140
+#endif
+        { BOOL fastfb = TRUE;
+          WinHttpSetOption(hS, WINHTTP_OPTION_IPV6_FAST_FALLBACK, &fastfb, sizeof fastfb); }
         WinHttpSetTimeouts(hS, 5000, 5000, 8000, 8000);
         DWORD secprot = WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;   // CHI TLS 1.2
         WinHttpSetOption(hS, WINHTTP_OPTION_SECURE_PROTOCOLS, &secprot, sizeof secprot);

@@ -229,13 +229,17 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 		{ CRASH_STAGE("theQuest.CheckStatus"); theQuest.CheckStatus(); }
 }
 
-// Bo "Noi luyen cong" (Tab Ban do): map train = map cua danh sach toa do luyen cong,
-// khong co thi lay map cua danh sach toa do di den noi luyen cong
+// Map train chi xac dinh khi tick 1 trong 2 option (loai tru nhau):
+//  - "Di chuyen theo toa do" (m_bRouteMove): map = map cua danh sach toa do train
+//  - "Danh quanh diem" (m_bAroundPoint): map = map vua nhan khi ghi diem
+// Khong tick ca hai => khong co map train => khong tim duong / di chuyen lien map.
 static void SyncTrainMap()
 {
 	int nMap = 0;
-	if (theMove.m_nNodesMapID && theMove.m_Nodes[0].x && theMove.m_Nodes[0].y) nMap = theMove.m_nNodesMapID;
-	else if (theMove.m_nGoNodesMapID && theMove.m_GoNodes[0].x && theMove.m_GoNodes[0].y) nMap = theMove.m_nGoNodesMapID;
+	if (theMove.m_bRouteMove && theMove.m_nNodesMapID && theMove.m_Nodes[0].x && theMove.m_Nodes[0].y)
+		nMap = theMove.m_nNodesMapID;
+	else if (theMove.m_bAroundPoint && theMove.m_nPointMapID && theMove.m_nPointX && theMove.m_nPointY)
+		nMap = theMove.m_nPointMapID;
 	theMap.m_nTrainMapID = nMap;
 }
 
