@@ -48,6 +48,7 @@ protected:
 	afx_msg LRESULT		OnReceiveFeedBack(WPARAM wParam, LPARAM lParam);
 	afx_msg void		OnBnClickedAutoLoginButton();
 	afx_msg void		OnBnClickedAutoHideButton();
+	afx_msg BOOL		OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);	// VLHook tra toa do (phim nong trong game, cua so Danh sach dang dong)
 
 	DECLARE_MESSAGE_MAP()
 

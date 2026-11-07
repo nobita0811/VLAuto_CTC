@@ -3213,7 +3213,9 @@ int PathWalkTo(int tx, int ty)
 	if (s_nWIdx >= s_nWLen) return 0;
 	if (GetTickCount() - s_dwWTick > 15000)
 	{	// 15s khong toi duoc diem tiep: lap lai tu vi tri hien tai
-		SystemMessage("<color=yellow>MapPath: ket duong, tinh lai duong di");
+#if ADMIN_MODE
+		if (g_bDbgText) SystemMessage("<color=yellow>MapPath: ket duong, tinh lai duong di");	// Ban User: khong hien
+#endif
 		s_nWLen = -1;
 		return 1;
 	}

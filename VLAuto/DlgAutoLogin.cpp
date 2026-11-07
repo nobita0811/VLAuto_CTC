@@ -1329,32 +1329,10 @@ void CDlgAutoLogin::UpdateGameStatus()
 // Mở Game mới cho tài khoản đang chọn; tài khoản đã có Game thì đưa Game đó lên trước
 void CDlgAutoLogin::OnBnClickedOpenGame()
 {
-	int nSel = GetSelectedAccount();
-	if (nSel >= 0 && GetAccountGame(nSel))
-	{
-		HWND hGameWnd = FindGameWindowOfProcess(m_Accounts[nSel].dwProcessId);
-		if (hGameWnd)
-		{
-			if (!::IsWindowVisible(hGameWnd))
-				ShowGameWindows(m_Accounts[nSel].dwProcessId, SW_SHOW);
-			if (::IsIconic(hGameWnd))
-				::ShowWindow(hGameWnd, SW_RESTORE);
-			::SetForegroundWindow(hGameWnd);
-		}
-		return;
-	}
-	else
-	{
-		CString strError1;
-		LaunchGame(nSel, strError1);
-	}
+	// Mỗi lần bấm chỉ mở đúng 1 bản game, không phụ thuộc tài khoản đang chọn
+	// trong danh sách (nIndex = -1 => LaunchGame không ghi PID vào tài khoản nào).
 	CString strError;
-	if (!LaunchGame(nSel, strError))
-	{
-		//MessageBox(strError + _T("\n") + m_strGamePath, _T("Auto Login"), MB_OK | MB_ICONWARNING);
-		return;
-	}
-	UpdateGameStatus();
+	LaunchGame(-1, strError);
 }
 
 // Thoát Game của tài khoản đang chọn (và thôi đăng nhập / đăng nhập lại tài khoản này)

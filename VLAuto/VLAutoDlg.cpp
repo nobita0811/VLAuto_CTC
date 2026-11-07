@@ -15,6 +15,8 @@
 #include "DlgMove.h"
 #include "DlgParty.h"
 #include "DlgMap.h"
+#include "DlgDebug.h"		// AllowMessageFromGame()
+#include "DlgMovePoints.h"	// g_pMovePointsDlg (cap nhat live khi cua so Danh sach dang mo)
 #include "DlgYeSou.h"
 #include "DlgAbout.h"
 #include "DlgExit.h"
@@ -64,6 +66,7 @@ BEGIN_MESSAGE_MAP(CVLAutoDlg, CDialog)
 	ON_MESSAGE(WM_FEEDBACK, &CVLAutoDlg::OnReceiveFeedBack)
 	ON_BN_CLICKED(IDC_AUTO_LOGIN_BUTTON, &CVLAutoDlg::OnBnClickedAutoLoginButton)
 	ON_BN_CLICKED(IDC_AUTO_HIDE_BUTTON, &CVLAutoDlg::OnBnClickedAutoHideButton)
+	ON_WM_COPYDATA()
 END_MESSAGE_MAP()
 
 
@@ -114,6 +117,10 @@ BOOL CVLAutoDlg::OnInitDialog()
 
 	// Tạo sẵn cửa sổ Auto Login (ẩn) để đăng nhập chạy ngầm từ lúc mở Auto
 	m_DlgAutoLogin.Create(CDlgAutoLogin::IDD, this);
+
+	// Cho phep VLHook gui WM_COPYDATA (toa do doc bang phim nong trong game) ve cua so chinh,
+	// de van cap nhat danh sach khi cua so "Danh sach toa do" dang dong
+	AllowMessageFromGame(GetSafeHwnd(), WM_COPYDATA);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -831,6 +838,59 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+// VLHook tra toa do doc duoc ve day khi bat che do doc bang PHIM NONG trong game
+// (Ctrl+Insert / Ctrl+Del) ma cua so "Danh sach toa do" dang DONG -> ghi thang vao
+// cau hinh roi luu. Khi cua so do dang mo thi reply ve chinh no (CDlgMovePoints), khong toi day.
+BOOL CVLAutoDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+{
+	if (pCopyDataStruct->dwData != READPOS_COPYDATA_ID || g_pCurGameWin == NULL)
+		return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+	if (pCopyDataStruct->cbData != sizeof(READPOS_REPLY) || !pCopyDataStruct->lpData)
+		return TRUE;
+	READPOS_REPLY reply;
+	memcpy(&reply, pCopyDataStruct->lpData, sizeof(reply));
+	if (reply.cbSize != sizeof(READPOS_REPLY)) return TRUE;
+	if (reply.nMapX <= 0 || reply.nMapY <= 0) return TRUE;			// toa do khong hop le (chua vao game?)
+	if (reply.nKind != rpk_node && reply.nKind != rpk_gonode) return TRUE;
+
+	int nList = (reply.nKind == rpk_gonode) ? 1 : 0;
+
+	// Cua so "Danh sach toa do" dang mo -> chen thang vao no de hien ngay (live).
+	// (Doc bang phim nong trong game khong co hWndReply nen hook tra ve cua so chinh.)
+	if (g_pMovePointsDlg && ::IsWindow(g_pMovePointsDlg->GetSafeHwnd()))
+	{
+		POINT ptAbs = { reply.nAbsX, reply.nAbsY };
+		g_pMovePointsDlg->OnReadPosNode(nList, reply.nMapID, ptAbs);
+		return TRUE;
+	}
+
+	PARAM_MOVE& pm = g_pCurGameWin->m_prMove;
+	POINT* pNodes = nList ? pm.m_GoNodes : pm.m_Nodes;
+	int& nNodesMapID = nList ? pm.m_nGoNodesMapID : pm.m_nNodesMapID;
+
+	// Khac ban do -> xoa danh sach cu (moi list chi 1 ban do, giong CDlgMovePoints::OnReadPosNode)
+	if (pNodes[0].x && pNodes[0].y && nNodesMapID && reply.nMapID && nNodesMapID != reply.nMapID)
+		memset(pNodes, 0, sizeof(POINT) * MAX_NODES);
+	if (reply.nMapID) nNodesMapID = reply.nMapID;
+
+	// Them vao o trong dau tien (x hoac y = 0 = het danh sach)
+	for (int i = 0; i < MAX_NODES; i++)
+		if (!(pNodes[i].x && pNodes[i].y))
+		{
+			pNodes[i].x = reply.nAbsX;
+			pNodes[i].y = reply.nAbsY;
+			break;
+		}
+
+	g_pCurGameWin->SetGameParams(tab_move);		// luu cau hinh + day xuong hook (mo cua so Danh sach se thay)
+
+	// Cap nhat ngay so luong tren nut "Danh sách tọa độ" cua tab Di chuyen (dang hien)
+	CDlgMove* pMoveDlg = (CDlgMove*)m_MainTab.GetTabDlg(tab_move);
+	if (pMoveDlg && pMoveDlg->GetSafeHwnd())
+		pMoveDlg->UpdatePointsList();
+	return TRUE;
 }
 
 void CVLAutoDlg::OnShutDown(BOOL bRestart)

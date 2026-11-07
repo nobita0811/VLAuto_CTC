@@ -22,6 +22,7 @@
 #define WM_HOOK_UTIL		WM_USER + 109
 #define WM_HOOK_EXDATA		WM_USER + 110
 #define WM_HOOK_DEBUG		WM_USER + 111
+#define WM_HOOK_READPOS		WM_USER + 112
 
 #define SHIFTED				0x8000
 #define SYS_TIMER			40		// ~50ms
@@ -243,12 +244,165 @@ static void SyncTrainMap()
 	theMap.m_nTrainMapID = nMap;
 }
 
+//================= READPOS: doc toa do TRONG game, tra ve UI qua WM_COPYDATA =================
+// Phim nong trong game (Ctrl+Insert / Ctrl+Del / Space) chi hoat dong khi dang o che do doc.
+// hWndReply + nKind duoc GIU qua moi lan bam phim cho den khi UI gui cmd_stopreadpos
+// (hoac dong cua so Danh sach toa do). Thong bao hien tren dau nhan vat (m_szTopText),
+// khoi phuc ten bang goc khi ket thuc.
+static struct READPOS_STATE
+{
+	BOOL	bActive;			// Dang trong che do doc toa do
+	int		nKind;				// List dang doc (rpk_node / rpk_gonode)
+	HWND	hWndReply;			// Cua so UI nhan WM_COPYDATA (GIU qua moi lan bam phim)
+	BOOL	bNameSaved;			// Da luu chu tren dau goc chua
+	char	szTopText[64];		// Chu tren dau goc (khoi phuc khi stop)
+} g_ReadPos;
+
+// Doc vi tri HIEN TAI cua nhan vat -> toa do map (hien thi) + tuyet doi (luu config)
+static void GetCurReadPos(int *pnMapID, int *pnMapX, int *pnMapY, int *pnAbsX, int *pnAbsY)
+{
+	int nAbsX = 0, nAbsY = 0;
+	P_PLAYER->GetMapPos(&nAbsX, &nAbsY);
+	*pnMapID = *g_pMapID;
+	*pnAbsX = nAbsX;
+	*pnAbsY = nAbsY;
+	*pnMapX = nAbsX >> 8;
+	*pnMapY = nAbsY >> 9;
+}
+
+// Tam thay chu tren dau nhan vat bang thong bao (doc toa do / Auto tam ngung...).
+// Dung chung 1 slot backup: nhan vat chi co 1 dong chu tren dau, luu lai ten goc de khoi phuc.
+static BOOL g_bTopSaved = FALSE;
+static char g_szTopSaved[64];
+
+static void SetOverheadText(const char *szText)
+{
+	if (!g_bTopSaved)
+	{
+		memcpy(g_szTopSaved, P_PLAYER->m_szTopText, sizeof(g_szTopSaved));
+		g_bTopSaved = TRUE;
+	}
+	lstrcpynA(P_PLAYER->m_szTopText, szText, sizeof(P_PLAYER->m_szTopText));
+}
+
+static void RestoreOverheadText()
+{
+	if (g_bTopSaved)
+	{
+		memcpy(P_PLAYER->m_szTopText, g_szTopSaved, sizeof(g_szTopSaved));
+		g_bTopSaved = FALSE;
+	}
+}
+
+static void SendReadPosReply(HWND hWndReply, int nKind, int nMapID, int nMapX, int nMapY, int nAbsX, int nAbsY)
+{
+	if (!hWndReply || !_IsWindow(hWndReply)) return;
+	READPOS_REPLY reply;
+	memset(&reply, 0, sizeof(reply));
+	reply.cbSize = sizeof(reply);
+	reply.nKind = nKind;
+	reply.nMapID = nMapID;
+	reply.nMapX = nMapX;	reply.nMapY = nMapY;
+	reply.nAbsX = nAbsX;	reply.nAbsY = nAbsY;
+	COPYDATASTRUCT cds;
+	cds.dwData = READPOS_COPYDATA_ID;
+	cds.cbData = sizeof(reply);
+	cds.lpData = &reply;
+	_SendMessage(hWndReply, WM_COPYDATA, (WPARAM)theMain.m_hWndGame, (LPARAM)&cds);
+}
+
+// Toa do vua doc da co trong list chua (cung ban do) -> tranh luu trung.
+// theMove duoc UI dong bo qua WM_HOOK_MOVE moi lan SetGameParams(tab_move).
+// Khac ban do thi UI se xoa list cu roi tao moi, nen khong tinh la trung.
+static BOOL IsDupReadPos(int nKind, int nMapID, int nAbsX, int nAbsY)
+{
+	const POINT *pNodes  = (nKind == rpk_gonode) ? theMove.m_GoNodes : theMove.m_Nodes;
+	int          nListID = (nKind == rpk_gonode) ? theMove.m_nGoNodesMapID : theMove.m_nNodesMapID;
+	if (nListID && nMapID && nListID != nMapID) return FALSE;	// khac ban do: list cu se bi xoa
+	for (int i = 0; i < MAX_NODES; i++)
+	{
+		if (!pNodes[i].x && !pNodes[i].y) break;	// het node (slot trong)
+		if (pNodes[i].x == nAbsX && pNodes[i].y == nAbsY) return TRUE;
+	}
+	return FALSE;
+}
+
+// Doc vi tri hien tai vao list dang doc + hien thong bao tren dau nhan vat
+static void DoReadPosInto(int nKind)
+{
+	int nMapID, nMapX, nMapY, nAbsX, nAbsY;
+	GetCurReadPos(&nMapID, &nMapX, &nMapY, &nAbsX, &nAbsY);
+
+	if (IsDupReadPos(nKind, nMapID, nAbsX, nAbsY))
+	{
+		char szTop[128], szSys[160];
+		sprintf(szTop, TV(L"Tọa độ (%d,%d) đã có, không lưu trùng. Bấm SPACE đọc tiếp"), nMapX, nMapY);
+		sprintf(szSys, TV(L"<color=red>Tọa độ (%d,%d) đã có, không lưu trùng.<color> Bấm SPACE đọc tiếp"), nMapX, nMapY);
+		SetOverheadText(szTop);
+		SystemMessage(szSys);
+		return;		// khong gui reply -> UI khong luu
+	}
+
+	SendReadPosReply(g_ReadPos.hWndReply, nKind, nMapID, nMapX, nMapY, nAbsX, nAbsY);
+
+	char szMsg[128];
+	if (nKind == rpk_gonode)
+		sprintf(szMsg, TV(L"Tọa độ nơi LC :%d,%d , bấm SPACE đọc tiếp"), nMapX, nMapY);
+	else
+		sprintf(szMsg, TV(L"Tọa độ LC :%d,%d , bấm SPACE đọc tiếp"), nMapX, nMapY);
+	SetOverheadText(szMsg);
+	SystemMessage(szMsg);
+}
+
+// Bat dau (hoac chuyen) che do doc toa do cho list nKind, doc ngay vi tri hien tai
+static void StartReadPos(HWND hWndReply, int nKind)
+{
+	g_ReadPos.bActive = TRUE;
+	g_ReadPos.hWndReply = (hWndReply && _IsWindow(hWndReply)) ? hWndReply : theMain.m_hWndAuto;
+	g_ReadPos.nKind = nKind;
+	DoReadPosInto(nKind);
+}
+
+static void StopReadPos()
+{
+	if (!g_ReadPos.bActive) return;
+	g_ReadPos.bActive = FALSE;
+	g_ReadPos.hWndReply = NULL;
+	RestoreOverheadText();
+	SystemMessage(TV(L"<color=yellow>Kết thúc đọc tọa độ."));
+}
+
+// Lenh doc tiep (bare SPACE) vao list dang active
+static void ReadPosNext()
+{
+	if (!g_ReadPos.bActive) return;
+	DoReadPosInto(g_ReadPos.nKind);
+}
+
+// Phim nong Ctrl+Insert (list 0) / Ctrl+Del (list 1): bat/chuyen list roi doc ngay
+static void HotkeyReadList(int nKind)
+{
+	StartReadPos(g_ReadPos.hWndReply, nKind);
+}
+
+// Lenh mot lan: doc vi tri luu ruong, tra ve UI (rpk_box), khong vao che do doc
+static void DoSaveBox(HWND hWndReply)
+{
+	int nMapID, nMapX, nMapY, nAbsX, nAbsY;
+	GetCurReadPos(&nMapID, &nMapX, &nMapY, &nAbsX, &nAbsY);
+	SendReadPosReply(hWndReply, rpk_box, nMapID, nMapX, nMapY, nAbsX, nAbsY);
+	char szMsg[128];
+	sprintf(szMsg, TV(L"Đã lưu vị trí rương: <color=green>(%d,%d)<color> map %d"), nMapX, nMapY, nMapID);
+	SystemMessage(szMsg);
+}
+
 LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg >= WM_HOOK_MAIN && uMsg <= WM_HOOK_DEBUG)
+	if (uMsg >= WM_HOOK_MAIN && uMsg <= WM_HOOK_READPOS)
 	{
 		CCrashStageReset stageReset;
-		CRASH_STAGE(uMsg == WM_HOOK_DEBUG ? "NewWndProc: lenh DEBUG (OnDebugCommand)" : "NewWndProc: nhan tham so tu VLAuto (WM_HOOK_*)");
+		CRASH_STAGE(uMsg == WM_HOOK_DEBUG ? "NewWndProc: lenh DEBUG (OnDebugCommand)" :
+		            (uMsg == WM_HOOK_READPOS ? "NewWndProc: lenh READPOS (doc toa do)" : "NewWndProc: nhan tham so tu VLAuto (WM_HOOK_*)"));
 		DWORD dwProcessID;
 		_GetWindowThreadProcessId(theMain.m_hWndAuto, &dwProcessID);
 		HANDLE hProcess_Auto = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, dwProcessID);
@@ -333,6 +487,24 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				OnDebugCommand(&dbgParam);
 			}
 			break;
+		case WM_HOOK_READPOS:
+			{
+				READPOS_PARAM rpParam;
+				memset(&rpParam, 0, sizeof(rpParam));
+				ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&rpParam, min((UINT)lParam, sizeof(rpParam)), NULL);
+				CloseHandle(hProcess_Auto);
+				hProcess_Auto = NULL;
+				if (rpParam.cbSize == sizeof(READPOS_PARAM))
+				{
+					if (rpParam.nCmd == cmd_startreadpos)
+						StartReadPos(rpParam.hWndReply, rpParam.nKind);
+					else if (rpParam.nCmd == cmd_stopreadpos)
+						StopReadPos();
+					else if (rpParam.nCmd == cmd_savebox)
+						DoSaveBox(rpParam.hWndReply);
+				}
+			}
+			break;
 		}
 
 		if (hProcess_Auto) CloseHandle(hProcess_Auto);
@@ -348,6 +520,12 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #if ADMIN_MODE
 		if (DebugPathKey(wParam, lParam)) return 0;	// Phim sua MapPath (cua so DEBUG)
 #endif
+		// Dang doc toa do: Space don = doc tiep vao list dang active (chi khi khong giu Ctrl)
+		if (g_ReadPos.bActive && wParam == VK_SPACE && !(_GetKeyState(VK_CONTROL) & SHIFTED))
+		{
+			ReadPosNext();
+			return 0;
+		}
 		if (_GetKeyState(VK_CONTROL) & SHIFTED)
 		{
 			BOOL bCaught = TRUE;
@@ -367,8 +545,17 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				theUtil.OpenCloseNpcShop();
 			else if (wParam == VK_SPACE)
 				theUtil.ReadPosition();
+			else if (wParam == VK_INSERT)
+				HotkeyReadList(rpk_node);			// Ctrl+Insert: doc toa do vao list 0 (luyen cong)
 			else if (wParam == VK_DELETE)
-				theUtil.DeleteSysMessages();
+			{
+				if (_GetKeyState(VK_SHIFT) & SHIFTED)
+					theUtil.DeleteSysMessages();	// Ctrl+Shift+Del: xoa thong bao he thong
+				else
+					HotkeyReadList(rpk_gonode);		// Ctrl+Del: bat/doc toa do vao list 1 (noi luyen cong)
+			}
+			else if (wParam == VK_END)
+				StopReadPos();						// Ctrl+End: ket thuc che do doc toa do (khoi phuc ten bang)
 			else if (wParam == 'X')
 				theUtil.CheckLifeTime();
 			else if (wParam == 'N')
@@ -422,9 +609,13 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (g_SysPause)
 		{
 			SystemMessage(TV(L"<color=yellow>Auto: Tạm ngưng!!!<color>"), 1);
+			SetOverheadText(TV(L"Auto đang tạm ngưng, click chuột phải 2 lần để tiếp tục"));
 		}
 		else
+		{
 			SystemMessage(TV(L"<color=yellow>Auto: <color=green>Mở lại!!!"), 1);
+			RestoreOverheadText();
+		}
 		break;
 	}
 	}

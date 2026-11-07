@@ -25,6 +25,7 @@ protected:
 	afx_msg void	OnButtonsClicked(UINT nID);
 	afx_msg void	OnCbnSelchangeDriverCombo();
 	afx_msg void	OnCbnSelchangeSaveitemCombo();
+	afx_msg BOOL	OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);	// Nhan vi tri ruong tu VLHook
 
 	DECLARE_MESSAGE_MAP()
 

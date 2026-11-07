@@ -7,6 +7,7 @@
 #include "GameCore.h"
 #include "GameWindow.h"
 #include "DlgMovePoints.h"
+#include "DlgDebug.h"		// AllowMessageFromGame()
 
 // Ten ban do theo MapNames.ini (giong tab Co ban)
 CString CDlgMovePoints::GetMapName(int nMapID)
@@ -50,6 +51,9 @@ static const UINT s_uNodeXID[MOVEPOINTS_LISTS]		= { IDC_NODEX_EDIT, IDC_NODEX_ED
 static const UINT s_uNodeYID[MOVEPOINTS_LISTS]		= { IDC_NODEY_EDIT, IDC_NODEY_EDIT2 };
 static const TCHAR* s_szListName[MOVEPOINTS_LISTS]	= { _T("Danh sách tọa độ luyện công"), _T("Danh sách tọa độ đi đến nơi luyện công") };
 
+// Con tro toi cua so Danh sach toa do dang mo (xem DlgMovePoints.h)
+CDlgMovePoints* g_pMovePointsDlg = NULL;
+
 // CDlgMovePoints dialog
 
 IMPLEMENT_DYNAMIC(CDlgMovePoints, CDialog)
@@ -91,6 +95,8 @@ void CDlgMovePoints::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CDlgMovePoints, CDialog)
 	ON_CONTROL_RANGE(BN_CLICKED, 1000, 2000, &CDlgMovePoints::OnButtonsClicked)
 	ON_CONTROL_RANGE(LBN_SELCHANGE, IDC_MOVEPOINT_LIST, IDC_MOVEPOINT_LIST2, &CDlgMovePoints::OnListSelChange)
+	ON_WM_COPYDATA()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 // CDlgMovePoints message handlers
@@ -104,6 +110,7 @@ BOOL CDlgMovePoints::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_MOVEPOINT_LIST), _T("Danh sách tọa độ Hành trình luyện công"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MOVEPOINT_LIST2), _T("Sau khi vào cổng map luyện công: đi theo MapPath tới tọa độ đầu tiên, rồi đi lần lượt theo danh sách tới nơi luyện công"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MAP_MOVELIST2_EDIT), _T("Bản đồ của danh sách - chỉ đi theo tọa độ khi ở đúng bản đồ này"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_FINISHREAD_BUTTON), _T("Kết thúc đọc tọa độ, khôi phục tên bang trên đầu nhân vật (phím tắt Ctrl + End)"));
 		for (int i = 0; i < MOVEPOINTS_LISTS; i++)
 		{
 			m_ToolTip.AddTool(GetDlgItem(s_uAddID[i]), _T("Thêm tọa độ hiện tại của nhân vật"));
@@ -121,6 +128,10 @@ BOOL CDlgMovePoints::OnInitDialog()
 	for (int i = 0; i < MOVEPOINTS_LISTS; i++)
 		ShowSelNode(i);
 
+	// Game (quyen thuong) gui toa do len VLAuto bang WM_COPYDATA => phai cho phep (UIPI)
+	AllowMessageFromGame(GetSafeHwnd(), WM_COPYDATA);
+
+	g_pMovePointsDlg = this;		// danh dau cua so dang mo (cua so chinh cap nhat live)
 	return TRUE;
 }
 
@@ -133,6 +144,11 @@ BOOL CDlgMovePoints::PreTranslateMessage(MSG* pMsg)
 void CDlgMovePoints::OnButtonsClicked(UINT nID)
 {
 	if (g_pCurGameWin == NULL) return;
+	if (nID == IDC_FINISHREAD_BUTTON)		// Ket thuc che do doc toa do (khoi phuc ten bang tren dau)
+	{
+		SendReadPosCmd(cmd_stopreadpos, 0);
+		return;
+	}
 	for (int i = 0; i < MOVEPOINTS_LISTS; i++)
 	{
 		if (nID == s_uAddID[i])			OnBnClickedAddButton(i);
@@ -238,29 +254,72 @@ void CDlgMovePoints::UpdatePointsList(int nList, BOOL bSave)
 	}
 }
 
+// "Đọc TĐ": bat che do doc toa do trong VLHook (doc ngay vi tri hien tai, roi tiep tuc bang phim nong trong game).
+// VLHook tra toa do ve qua WM_COPYDATA -> OnCopyData -> OnReadPosNode (khong con doc bo nho cross-process bi tre).
 void CDlgMovePoints::OnBnClickedAddButton(int nList)
 {
 	if (g_pCurGameWin == NULL) return;
-	CListBox& lstPoints = m_PoinList[nList];
-	int nCount = lstPoints.GetCount();
+	SendReadPosCmd(cmd_startreadpos, nList ? rpk_gonode : rpk_node);
+}
+
+// Gui lenh doc toa do xuong VLHook (param ben vung vi PostMessage la bat dong bo)
+void CDlgMovePoints::SendReadPosCmd(int nCmd, int nKind)
+{
+	if (g_pCurGameWin == NULL || !g_pCurGameWin->m_hWnd) return;
+	static READPOS_PARAM param;
+	memset(&param, 0, sizeof(param));
+	param.cbSize	= sizeof(param);
+	param.hWndReply	= GetSafeHwnd();
+	param.nCmd		= nCmd;
+	param.nKind		= nKind;
+	param.nCurMapID	= g_pCurGameWin->m_nMapID;
+	::PostMessage(g_pCurGameWin->m_hWnd, WM_HOOK_READPOS, (WPARAM)&param, sizeof(param));
+}
+
+// VLHook gui toa do doc duoc ve bang WM_COPYDATA (dung ca khi dialog dang modal vi la SendMessage)
+BOOL CDlgMovePoints::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+{
+	if (pCopyDataStruct->dwData != READPOS_COPYDATA_ID || g_pCurGameWin == NULL)
+		return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+	if (pCopyDataStruct->cbData != sizeof(READPOS_REPLY) || !pCopyDataStruct->lpData)
+		return TRUE;
+	READPOS_REPLY reply;
+	memcpy(&reply, pCopyDataStruct->lpData, sizeof(reply));
+	if (reply.cbSize != sizeof(READPOS_REPLY)) return TRUE;
+	if (reply.nMapX <= 0 || reply.nMapY <= 0) return TRUE;	// toa do khong hop le (chua vao game?)
+	if (reply.nKind == rpk_node || reply.nKind == rpk_gonode)
+	{
+		POINT ptAbs = { reply.nAbsX, reply.nAbsY };
+		OnReadPosNode(reply.nKind == rpk_gonode ? 1 : 0, reply.nMapID, ptAbs);
+	}
+	return TRUE;
+}
+
+// Chen toa do VLHook tra ve vao danh sach nList; khac ban do thi xoa list cu (moi list 1 ban do)
+void CDlgMovePoints::OnReadPosNode(int nList, int nMapID, POINT ptAbs)
+{
+	CListBox& lst = m_PoinList[nList];
 	int& nNodesMapID = GetNodesMapID(nList);
-	int nCurMapID = g_pCurGameWin->m_nMapID;
-	if (nCount && nNodesMapID && nNodesMapID != nCurMapID)
+	if (lst.GetCount() && nNodesMapID && nMapID && nNodesMapID != nMapID)
 	{
-		CString szMessage;
-		szMessage.Format(_T("%s đang thuộc bản đồ %s,\nnhân vật đang ở %s.\n\nXóa danh sách cũ để lập danh sách mới cho bản đồ này?"),
-			s_szListName[nList], (LPCTSTR)GetMapName(nNodesMapID), (LPCTSTR)GetMapName(nCurMapID));
-		if (MessageBox(szMessage, _T("VLAuto"), MB_YESNO|MB_ICONQUESTION) != IDYES)
-			return;
-		lstPoints.ResetContent();
-		nCount = 0;
+		lst.ResetContent();
+		m_Pts[nList].RemoveAll();
 	}
-	nNodesMapID = nCurMapID; // Danh sach chua co ban do -> gan ban do hien tai
-	if (nCount < MAX_NODES)
-	{
-		POINT pt = { g_pCurGameWin->m_nOffX, g_pCurGameWin->m_nOffY };
-		InsertPoint(nList, -1, pt);
-	}
+	if (nMapID) nNodesMapID = nMapID;
+	if (lst.GetCount() < MAX_NODES)
+		InsertPoint(nList, -1, ptAbs);
+	UpdateData(TRUE);		// listbox -> m_prMove.m_Nodes / m_GoNodes
+	UpdateMapName();
+	ShowSelNode(nList);
+	g_pCurGameWin->SetGameParams(tab_move);	// day xuong hook (luu cau hinh)
+}
+
+// Dong cua so: tat che do doc toa do, khoi phuc ten bang tren dau nhan vat
+void CDlgMovePoints::OnDestroy()
+{
+	g_pMovePointsDlg = NULL;			// cua so dong: cua so chinh se tu ghi config
+	SendReadPosCmd(cmd_stopreadpos, 0);
+	CDialog::OnDestroy();
 }
 
 void CDlgMovePoints::OnBnClickedDelButton(int nList)

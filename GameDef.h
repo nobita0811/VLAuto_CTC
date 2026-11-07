@@ -786,6 +786,9 @@ enum SENDCMD
 	cmd_useam,			// Da dung 1 Tho Dia Phu / Hoi Thanh Phu (VLAuto dem cho bang Thong ke)
 	cmd_tongmoney,		// VLAuto -> Game: gop lParam luong tien tren nguoi vao quy bang (bang Thong ke > Gom tien)
 	cmd_walkcitybox,	// VLAuto -> Game: chay bo (MapPath, khong xa phu / vat pham) toi map lParam roi mo ruong de luu ruong (tab Tro giup)
+	cmd_startreadpos,	// VLAuto -> Game: bat che do doc toa do (gui kem WM_HOOK_READPOS, lParam = READPOS_KIND)
+	cmd_stopreadpos,	// VLAuto -> Game: tat che do doc toa do (luu not list dang doc, khoi phuc ten bang)
+	cmd_savebox,		// VLAuto -> Game: doc vi tri luu ruong hien tai, tra ve UI qua WM_COPYDATA (rpk_box)
 };
 
 //=============================== DEBUG ===============================
@@ -1012,6 +1015,40 @@ struct DEBUG_REPLY
 	BOOL	bOK;
 	int		nResult[4];
 	char	szText[DEBUG_TEXT_SIZE];
+};
+
+//=============================== DOC TOA DO (READPOS) ===============================
+// VLAuto -> VLHook : PostMessage(hWndGame, WM_HOOK_READPOS, (WPARAM)&READPOS_PARAM, sizeof(READPOS_PARAM))
+//                    nCmd = cmd_startreadpos / cmd_stopreadpos / cmd_savebox
+// VLHook -> VLAuto : SendMessage(hWndReply, WM_COPYDATA, hWndGame, &COPYDATASTRUCT)
+//                    dwData = READPOS_COPYDATA_ID, lpData = READPOS_REPLY
+// VLHook doc toa do TRONG game (phim nong Ctrl+Insert / Ctrl+Del / Space) nen tra ve bat dong bo:
+// hWndReply + nKind phai duoc GIU LAI qua moi lan bam phim cho den khi cmd_stopreadpos.
+#define READPOS_COPYDATA_ID	0x53505256	// 'VRPS'
+
+enum READPOS_KIND
+{
+	rpk_node = 0,	// Danh sach toa do luyen cong (list 0, m_Nodes) - Ctrl+Insert
+	rpk_gonode,		// Danh sach toa do di den noi luyen cong (list 1, m_GoNodes) - Ctrl+Del
+	rpk_box,		// Vi tri luu ruong (tab Ban do)
+};
+
+struct READPOS_PARAM
+{
+	UINT	cbSize;
+	HWND	hWndReply;		// Cua so nhan WM_COPYDATA (CVLAutoDlg)
+	int		nCmd;			// cmd_startreadpos / cmd_stopreadpos / cmd_savebox
+	int		nKind;			// READPOS_KIND (list dang doc khi start)
+	int		nCurMapID;		// Map ID hien tai ben UI (de so sanh clear/append)
+};
+
+struct READPOS_REPLY
+{
+	UINT	cbSize;
+	int		nKind;			// READPOS_KIND
+	int		nMapID;			// Map ID luc doc
+	int		nMapX, nMapY;	// Toa do map (hien thi)
+	int		nAbsX, nAbsY;	// Toa do tuyet doi (luu config)
 };
 
 

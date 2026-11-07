@@ -2,12 +2,14 @@
 //
 
 #include "stdafx.h"
+#include "../GameDef.h"
 #include "VLAuto.h"
 #include "GameWindow.h"
 #include "DlgCollect.h"
 #include "DlgMap.h"
 #include "DlgMovePoints.h"
 #include "DlgBuySetting.h"
+#include "DlgDebug.h"		// AllowMessageFromGame()
 
 // CDlgMap dialog
 
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CDlgMap, CDialog)
 	ON_CONTROL_RANGE(BN_CLICKED, 1000, 2000, &CDlgMap::OnButtonsClicked)
 	ON_CBN_SELCHANGE(IDC_DRIVER_COMBO, &CDlgMap::OnCbnSelchangeDriverCombo)
 	ON_CBN_SELCHANGE(IDC_SAVEITEM_COMBO, &CDlgMap::OnCbnSelchangeSaveitemCombo)
+	ON_WM_COPYDATA()
 END_MESSAGE_MAP()
 
 // CDlgMap message handlers
@@ -112,6 +115,8 @@ BOOL CDlgMap::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_LUU_RUONG_BUTTON), _T("Lấy vị trí hiện tại của nhân vật (đứng cạnh Rương) làm nơi cất đồ"));
 	}
 
+	AllowMessageFromGame(GetSafeHwnd(), WM_COPYDATA);	// Cho phep VLHook gui WM_COPYDATA (vi tri ruong)
+
 	return FALSE;
 }
 
@@ -154,14 +159,18 @@ void CDlgMap::OnButtonsClicked(UINT nID)
 	}
 	else if (nID == IDC_LUU_RUONG_BUTTON)
 	{
-		if (!g_pCurGameWin->m_nMapID || (!g_pCurGameWin->m_nOffX && !g_pCurGameWin->m_nOffY))
+		// Doc vi tri ruong truc tiep trong game qua VLHook (tranh toa do cu khi doi map)
+		if (g_pCurGameWin->m_hWnd)
 		{
-			MessageBox(_T("Chưa đọc được vị trí nhân vật!"), _T("VLAuto"), MB_ICONEXCLAMATION);
-			return;
+			static READPOS_PARAM param;
+			memset(&param, 0, sizeof(param));
+			param.cbSize	= sizeof(param);
+			param.hWndReply	= GetSafeHwnd();
+			param.nCmd		= cmd_savebox;
+			param.nKind		= rpk_box;
+			param.nCurMapID	= g_pCurGameWin->m_nMapID;
+			::PostMessage(g_pCurGameWin->m_hWnd, WM_HOOK_READPOS, (WPARAM)&param, sizeof(param));
 		}
-		g_pCurGameWin->m_prMap.m_nBoxMapID = g_pCurGameWin->m_nMapID;
-		g_pCurGameWin->m_prMap.m_nBoxX = g_pCurGameWin->m_nOffX;
-		g_pCurGameWin->m_prMap.m_nBoxY = g_pCurGameWin->m_nOffY;
 	}
 	else if (nID == IDC_GETMONEY_CHECK)
 	{
@@ -217,4 +226,27 @@ void CDlgMap::OnCbnSelchangeSaveitemCombo()
 {
 	UpdateData();
 	g_pCurGameWin->SetGameParams(tab_map);
+}
+
+// Nhan vi tri ruong VLHook doc truc tiep trong game (WM_COPYDATA)
+BOOL CDlgMap::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+{
+	if (pCopyDataStruct->dwData != READPOS_COPYDATA_ID || g_pCurGameWin == NULL)
+		return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+	if (pCopyDataStruct->cbData != sizeof(READPOS_REPLY) || !pCopyDataStruct->lpData)
+		return TRUE;
+
+	READPOS_REPLY reply;
+	memcpy(&reply, pCopyDataStruct->lpData, sizeof(reply));
+	if (reply.cbSize != sizeof(READPOS_REPLY) || reply.nKind != rpk_box)
+		return TRUE;
+	if (reply.nMapX <= 0 || reply.nMapY <= 0)
+		return TRUE;
+
+	g_pCurGameWin->m_prMap.m_nBoxMapID	= reply.nMapID;
+	g_pCurGameWin->m_prMap.m_nBoxX		= reply.nAbsX;
+	g_pCurGameWin->m_prMap.m_nBoxY		= reply.nAbsY;
+	UpdateCustomBox();
+	g_pCurGameWin->SetGameParams(tab_map);
+	return TRUE;
 }

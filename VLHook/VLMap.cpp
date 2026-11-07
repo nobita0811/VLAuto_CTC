@@ -950,6 +950,24 @@ void CVLMap::GetRepairItems()
 	m_bNeedRepairItems = 0;
 }
 
+// Chon "Sua ky [..." trong bang hoi sua do Hoang Kim.
+// Index dong "Sua ky" khong co dinh (co bang [0]=Sua ky, [1]=Tam thoi khong sua),
+// nen quet het cac dong tim FULL_REPAIR roi click. Khong thay -> giu hanh vi cu (click dong cuoi).
+template <class TMsgSel>
+static void ClickRepairChoice(TMsgSel* pMsgSel)
+{
+	for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
+	{
+		if (strstr((char*)pMsgSel->m_pMessages[i]->Msg, FULL_REPAIR))
+		{
+			pMsgSel->OnClickMsg(i);		// Sua ky do Hoang Kim
+			SystemMessage(TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim"));
+			return;
+		}
+	}
+	pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
+}
+
 void CVLMap::GetGroceries()
 {
 	KUiMsgSel2* pMsgSel = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
@@ -964,13 +982,7 @@ void CVLMap::GetGroceries()
 	{
 		if (pShop)
 		{
-			if (strstr(pMsgSel->m_pMessages[1]->Msg, FULL_REPAIR))
-			{
-				pMsgSel->OnClickMsg(1); // Full Repair
-				SystemMessage(TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim"));
-			}
-			else
-				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
+			ClickRepairChoice(pMsgSel);
 			return;
 		}
 		for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
@@ -1037,13 +1049,7 @@ void CVLMap::GetPharmacy()
 	{
 		if (pShop)
 		{
-			if (strstr(pMsgSel->m_pMessages[1]->Msg, FULL_REPAIR))
-			{
-				pMsgSel->OnClickMsg(1); // Full Repair
-				SystemMessage(TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim"));
-			}
-			else
-				pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
+			ClickRepairChoice(pMsgSel);
 			return;
 		}
 		bShopLoaded = 0;

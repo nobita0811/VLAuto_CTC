@@ -27,6 +27,8 @@
 #define WM_HOOK_YESOU		WM_USER + 108
 #define WM_HOOK_UTIL		WM_USER + 109
 #define WM_HOOK_EXDATA		WM_USER + 110
+// WM_HOOK_DEBUG = WM_USER + 111 (DlgDebug.h)
+#define WM_HOOK_READPOS		WM_USER + 112	// Doc toa do trong game (READPOS_PARAM)
 #define WM_FEEDBACK			WM_USER + 200
 
 enum TAB_INDEXES

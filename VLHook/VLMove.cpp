@@ -1497,14 +1497,20 @@ int AutoGoTo(int tx, int ty)
 	{	// Lan goi truoc khong dua nhan vat tien them
 		if (++s_nGoToFails >= GOTO_MAX_FAILS)
 		{
+#if ADMIN_MODE
+			// Chi bao o ban Tester; ban User (ADMIN_MODE==0) tat
 			SystemMessage(0, "<color=yellow>GoTo: khong tu tim duong toi (%d/%d) duoc, chay thang", tx >> 8, ty >> 9);
+#endif
 			return -1;
 		}
 	}
 	else if (s_dwGoToCall)
 		s_nGoToFails = 0;
+#if ADMIN_MODE
+	// Chi hien "GoTo: tu tim duong toi (x/y)" o ban Tester de debug; ban User (ADMIN_MODE==0) tat
 	if (!s_dwGoToCall)
 		SystemMessage(0, "<color=white>GoTo: tu tim duong toi <color=green>(%d/%d)", tx >> 8, ty >> 9);
+#endif
 	s_dwGoToCall = dwNow;
 	PathNoteMove(tx, ty, "GoTo");
 	g_pCurPlayer->GoTo(tx, ty);
