@@ -332,7 +332,7 @@ public:
 public:
 	CVLAttack(void);
 	void	Breathe();
-	void	SetPeopleIdx(int nIndex);
+	void	SetPeopleIdxAt(int nIndex, const char* szFile, int nLine);	// goi qua macro SetPeopleIdx(n)
 	BOOL	IsApproaching();	// Dang tu chay vong vat can toi quai (PEOPLE_IDX tam = 0)
 	void	StopApproach();
 	void	SetAutoHit();
@@ -356,6 +356,8 @@ public:
 	void	BuffBuaReset();
 	void	BuffBuaStopCast();	// Tra lai skill tay trai + tam danh
 };
+// Ghi file:dong noi doi muc tieu (danhquai.log, DebugDanhQuai trong VLAttack.cpp)
+#define SetPeopleIdx(n)	SetPeopleIdxAt((n), __FILE__, __LINE__)
 
 #define	NUM_BADITEMS	60
 class KBadObj

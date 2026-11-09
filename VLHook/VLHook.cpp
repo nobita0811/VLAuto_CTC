@@ -9,6 +9,7 @@
 #include "VLHook.h"
 #include "../CrashHandler.h"
 
+void DebugLogFlushAll();	// VLAttack.cpp - ghi bo dem danhquai.log / cuusat.log
 void CuuSatLogParams();	// VLAttack.cpp - debug log Cuu sat / Do sat (DebugCuuSat)
 
 #define WM_HOOKEX			WM_USER + 99
@@ -125,6 +126,7 @@ LRESULT HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 		DebugLowCfgUnhook();
 		theBasic.GiamCauHinhRestore();
 		theMain.ClearEverything();
+		DebugLogFlushAll();
 		CrashUninstall();
 
 		FreeLibrary(g_hDll);

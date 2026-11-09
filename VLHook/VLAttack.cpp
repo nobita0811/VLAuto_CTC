@@ -7,10 +7,268 @@
 #include "VLDebug.h"
 #include "VLObstacle.h"
 #include "TcvnText.h"
+#include "../CrashHandler.h"
+void DebugLogFlushAll();	// cuoi file: ghi bo dem danhquai.log / cuusat.log
 
 // Debug log Cuu sat / Do sat (tab Chien dau) -> <thu muc auto>\Logs\cuusat.log
 // 1 = bat ghi log, 0 = tat (khong bien dich code log)
-#define DebugCuuSat 1
+#define DebugCuuSat 0
+// Debug log Danh quai -> <thu muc auto>\Logs\danhquai.log: trang thai moi vong Breathe + moi lan doi / bo muc tieu (ly do, file:dong)
+#define DebugDanhQuai 0
+
+#if DebugCuuSat || DebugDanhQuai
+// ===== Bo dem log: gom nhieu dong trong RAM, vuot nguong / qua thoi gian moi ghi file 1 lan =====
+struct KBufLog
+{
+	const char*	szName;		// Ten file (khong duoi) trong <auto>\Logs
+	int			nMaxSize;	// File lon hon => doi ten <ten>_bak.log, mo file moi
+	int			nBufSize;
+	int			nFlushAt;	// Bo dem vuot nguong => ghi
+	DWORD		dwFlushTime;// Hoac qua thoi gian nay chua ghi => ghi
+	char*		pBuf;
+	int			nLen;
+	DWORD		dwFlushTick;
+};
+
+static void BLFlush(KBufLog* L)
+{
+	L->dwFlushTick = GetTickCount();
+	if (!L->nLen) return;
+	char szFile[MAX_PATH], szDir[MAX_PATH];
+	sprintf(szDir, "%s\\Logs", theMain.m_szCurFolder);
+	CreateDirectoryA(szDir, NULL);
+	sprintf(szFile, "%s\\%s.log", szDir, L->szName);
+
+	BOOL bNew = FALSE;
+	WIN32_FILE_ATTRIBUTE_DATA fa;
+	if (!GetFileAttributesExA(szFile, GetFileExInfoStandard, &fa))
+		bNew = TRUE;
+	else if (fa.nFileSizeLow > (DWORD)L->nMaxSize || fa.nFileSizeHigh)
+	{
+		char szBak[MAX_PATH];
+		sprintf(szBak, "%s\\%s_bak.log", szDir, L->szName);
+		DeleteFileA(szBak);
+		MoveFileA(szFile, szBak);
+		bNew = TRUE;
+	}
+	FILE* f = fopen(szFile, "ab");
+	if (!f) return;	// Khong mo duoc (file dang bi khoa...): giu bo dem, lan sau ghi tiep
+	if (bNew) fputs("\xEF\xBB\xBF", f);	// BOM UTF-8
+	fwrite(L->pBuf, 1, L->nLen, f);
+	fclose(f);
+	L->nLen = 0;
+}
+
+// Them 1 dong (TCVN3) vao bo dem (doi sang UTF-8)
+static void BLAppend(KBufLog* L, const char* szTcvnLine)
+{
+	char szUtf8[4200];
+	int nLen = Tcvn3ToUtf8(szTcvnLine, szUtf8, sizeof(szUtf8) - 3);
+	if (nLen < 0) nLen = 0;
+	szUtf8[nLen++] = '\r'; szUtf8[nLen++] = '\n'; szUtf8[nLen] = 0;
+	if (L->nLen + nLen > L->nBufSize) BLFlush(L);
+	if (L->nLen + nLen > L->nBufSize) L->nLen = 0;	// File bi khoa lau: bo bo dem cu, khong tran
+	memcpy(L->pBuf + L->nLen, szUtf8, nLen);
+	L->nLen += nLen;
+	if (L->nLen >= L->nFlushAt || GetTickCount() - L->dwFlushTick >= L->dwFlushTime)
+		BLFlush(L);
+}
+#endif
+
+// ===== Debug log Danh quai =====
+#if DebugDanhQuai
+#define DQ_LOG_MAXSIZE		(16 * 1024 * 1024)	// Qua 16MB => danhquai_bak.log
+#define DQ_BUF_SIZE			(128 * 1024)
+#define DQ_BUF_FLUSH		(64 * 1024)
+#define DQ_FLUSH_TIME		30000
+
+static char		s_DQBuf[DQ_BUF_SIZE];
+static KBufLog	s_DQFile = { "danhquai", DQ_LOG_MAXSIZE, DQ_BUF_SIZE, DQ_BUF_FLUSH, DQ_FLUSH_TIME, s_DQBuf, 0, 0 };
+
+static const char*	s_pszDQWhy = NULL;		// Ly do cho lan SetPeopleIdx ke tiep (DQ_WHY)
+static const char*	s_pszDQExit = NULL;		// Diem thoat Breathe vong nay (DQ_EXIT)
+static char			s_szDQExitBuf[200];		// Ly do thoat co so lieu (DQ_EXITF)
+static int			s_nDQPeople = 0;		// PEOPLE_IDX sau lan doi cuoi cua auto => khac = game / luong khac tu doi
+static DWORD		s_dwDQPeopleID = 0;
+static int			s_nDQCast = 0;			// So lan nhan vat ra don vao muc tieu hien tai
+static int			s_nDQLastDoing = -1;
+static int			s_nDQLag = 0, s_nDQLagMax = 0;	// Dem lag cua IsLagTarget (nhip chua mat mau / nguong)
+static char			s_szDQLast[1200] = "";	// Dong trang thai vong truoc (giong het => chi dem)
+static int			s_nDQRepeat = 0;
+static DWORD		s_dwDQFightTick = 0;	// Lan cuoi co muc tieu la quai
+
+static void DQLog(const char* szFormat, ...)
+{
+	if (!theAttack.m_bAutoHit) return;	// Chi ghi khi bat Danh quai
+	char szMsg[1200];
+	va_list vl;
+	va_start(vl, szFormat);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFormat, vl);
+	va_end(vl);
+	szMsg[sizeof(szMsg) - 1] = 0;
+
+	if (s_nDQRepeat)
+	{	// Dong trang thai vong truoc lap lai: ghi so lan truoc dong moi
+		char szRep[64];
+		sprintf(szRep, "      (giong tren x%d vong)", s_nDQRepeat);
+		BLAppend(&s_DQFile, szRep);
+		s_nDQRepeat = 0;
+	}
+	SYSTEMTIME st; GetLocalTime(&st);
+	char szLine[1400];
+	_snprintf(szLine, sizeof(szLine) - 1, "[%02d:%02d:%02d.%03d] %s",
+		st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, szMsg);
+	szLine[sizeof(szLine) - 1] = 0;
+	BLAppend(&s_DQFile, szLine);
+}
+
+static const char* DQDoing(int nDoing)
+{
+	switch (nDoing)
+	{
+	case do_none:	return "none";
+	case do_stand:	return "dung";
+	case do_walk:	return "di";
+	case do_run:	return "chay";
+	case do_jump:	return "nhay";
+	case do_skill:	return "skill";
+	case do_magic:	return "phep";
+	case do_attack:	return "danh";
+	case do_sit:	return "ngoi";
+	case do_hurt:	return "bi_danh";
+	case do_death:	return "chet";
+	case do_defense:return "do";
+	case do_idle:	return "nghi";
+	case do_revive:	return "hoi_sinh";
+	}
+	static char sz[16];
+	sprintf(sz, "%d", nDoing);
+	return sz;
+}
+
+// Mo ta NPC: #idx Ten(id, mau, kc, doing)
+static void DQNpcDesc(int nIdx, char* szOut, int nOut)
+{
+	if (nIdx <= 0 || nIdx >= MAX_NPC) { _snprintf(szOut, nOut, "0"); szOut[nOut - 1] = 0; return; }
+	KNpc* pNpc = g_pNpcArray[nIdx];
+	if (!pNpc->IsExist()) { _snprintf(szOut, nOut, "#%d(khong ton tai)", nIdx); szOut[nOut - 1] = 0; return; }
+	int x, y, nx, ny;
+	P_PLAYER->GetMapPos(&x, &y);
+	pNpc->GetMapPos(&nx, &ny);
+	_snprintf(szOut, nOut, "#%d %s(id %u mau %d kc %d %s%s)", nIdx, pNpc->Name, pNpc->m_dwID, pNpc->m_CurrentLife,
+		__distance(x, y, nx, ny), DQDoing(pNpc->m_Doing),
+		pNpc->m_Kind == kind_normal ? "" : (pNpc->m_Kind == kind_player ? " NGUOI" : " NPC"));
+	szOut[nOut - 1] = 0;
+}
+
+static void DQExitF(const char* szFormat, ...)
+{
+	va_list vl;
+	va_start(vl, szFormat);
+	_vsnprintf(s_szDQExitBuf, sizeof(s_szDQExitBuf) - 1, szFormat, vl);
+	va_end(vl);
+	s_szDQExitBuf[sizeof(s_szDQExitBuf) - 1] = 0;
+	s_pszDQExit = s_szDQExitBuf;
+}
+
+// Dau vong Breathe: PEOPLE_IDX doi ma khong qua SetPeopleIdx => game tu doi (vd KNpc::DoSkill khong ra duoc skill
+// xoa m_nPeopleIdx, quai chet / ra khoi tam nhin...) hoac doan code ghi thang PEOPLE_IDX
+static void DQLoopBegin(CVLAttack* a)
+{
+	s_pszDQExit = NULL;
+	if (!a->m_bAutoHit) { s_nDQPeople = PEOPLE_IDX; s_nDQRepeat = 0; s_szDQLast[0] = 0; return; }
+	int nPeople = PEOPLE_IDX;
+	if (nPeople != s_nDQPeople)
+	{
+		char szOld[160], szNew[160];
+		DQNpcDesc(s_nDQPeople, szOld, sizeof(szOld));
+		DQNpcDesc(nPeople, szNew, sizeof(szNew));
+		DQLog("!! PEOPLE_IDX DOI NGOAI AUTO (game tu doi): %s -> %s | nv %s skill %d tam %d mana %d (da danh %d lan)",
+			szOld, szNew, DQDoing(P_PLAYER->m_Doing), g_pCurPlayer->m_nLeftSkillID,
+			P_PLAYER->m_CurrentAttackRadius, P_PLAYER->m_CurrentMana, s_nDQCast);
+		s_nDQPeople = nPeople;
+		s_nDQCast = 0;
+	}
+	// Dem so lan ra don: nhan vat chuyen sang danh / skill / phep
+	int nDoing = P_PLAYER->m_Doing;
+	BOOL bHit = (nDoing == do_attack || nDoing == do_skill || nDoing == do_magic);
+	BOOL bWasHit = (s_nDQLastDoing == do_attack || s_nDQLastDoing == do_skill || s_nDQLastDoing == do_magic);
+	if (bHit && !bWasHit && nPeople) s_nDQCast++;
+	s_nDQLastDoing = nDoing;
+	if (nPeople > 0 && nPeople < MAX_NPC && g_pNpcArray[nPeople]->m_Kind == kind_normal)
+		s_dwDQFightTick = GetTickCount();
+}
+
+// Cuoi vong Breathe: 1 dong trang thai (giong het vong truoc thi chi dem)
+static void DQLoopEnd(CVLAttack* a)
+{
+	if (!a->m_bAutoHit) return;
+	char szTarget[160];
+	DQNpcDesc(PEOPLE_IDX, szTarget, sizeof(szTarget));
+	char szLine[1200];
+	_snprintf(szLine, sizeof(szLine) - 1,
+		"VONG | %s | muc tieu %s danh %d lan | last id %u mau %d lag %d/%d | nv %s tam %d mana %d ngua %d"
+		" | skill %d/%d buff %d pause %d | move st %d timduong %d train %d theo %d | ke thu %d tiepcan %d bua %d boss %d"
+		" | lag %u,%u,%u",
+		s_pszDQExit ? s_pszDQExit : "het vong",
+		szTarget, s_nDQCast, a->m_LastNpcID, a->m_LastNpcLife, s_nDQLag, s_nDQLagMax,
+		DQDoing(P_PLAYER->m_Doing), P_PLAYER->m_CurrentAttackRadius, P_PLAYER->m_CurrentMana, P_PLAYER->m_bRideHorse,
+		a->m_bDoingSkill, a->m_bDoingSkillEx, theRecover.m_bDoingBuff, theMain.m_bPause,
+		theMove.m_nStatus, theMove.m_bFindingWay, theMove.m_bGoTrain || PathTravelActive(), theMove.m_bFollow,
+		a->m_nEnemyIdx, a->IsApproaching(), a->m_bBuaCasting, a->m_nBossWait,
+		a->m_BadNpc[0].m_dwID, a->m_BadNpc[1].m_dwID, a->m_BadNpc[2].m_dwID);
+	szLine[sizeof(szLine) - 1] = 0;
+	s_nDQPeople = PEOPLE_IDX;
+	if (!strcmp(szLine, s_szDQLast)) { s_nDQRepeat++; return; }
+	strcpy(s_szDQLast, szLine);
+	DQLog("%s", szLine);
+}
+
+struct KDQLoop
+{
+	CVLAttack* a;
+	KDQLoop(CVLAttack* p) : a(p) { DQLoopBegin(p); }
+	~KDQLoop() { DQLoopEnd(a); }
+};
+
+#define DQ_WHY(s)		(s_pszDQWhy = (s))
+#define DQ_EXIT(s)		(s_pszDQExit = (s))
+#define DQ_EXITF(...)	DQExitF(__VA_ARGS__)
+#define DQ_LOG(...)		DQLog(__VA_ARGS__)
+#else
+#define DQ_WHY(s)		((void)0)
+#define DQ_EXIT(s)		((void)0)
+#define DQ_EXITF(...)	((void)0)
+#define DQ_LOG(...)		((void)0)
+#endif
+
+// Lenh di chuyen (KPlayer::MoveTo / GoTo) tu phan khac khi dang danh quai => ghi noi goi (JxCore.cpp goi)
+void DanhQuaiNoteMove(void* pCaller, int nX, int nY, const char* szWhat)
+{
+#if DebugDanhQuai
+	if (!theAttack.m_bAutoHit) return;
+	const char* szStage = g_pszCrashStage ? g_pszCrashStage : "?";
+	if (!strcmp(szStage, "theAttack.Breathe")) return;	// Chien dau tu di (da ghi o su kien rieng)
+	if (GetTickCount() - s_dwDQFightTick > 3000) return;	// Khong dang danh quai
+	static void* s_pLastCaller = NULL;
+	static DWORD s_dwLastTick = 0;
+	static int s_nSkip = 0;
+	if (pCaller == s_pLastCaller && GetTickCount() - s_dwLastTick < 2000) { s_nSkip++; return; }
+	HMODULE hMod = NULL;
+	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)pCaller, &hMod);
+	int x, y;
+	P_PLAYER->GetMapPos(&x, &y);
+	char szTarget[160];
+	DQNpcDesc(PEOPLE_IDX, szTarget, sizeof(szTarget));
+	DQLog("!! DI CHUYEN TU PHAN KHAC khi dang danh: %s(%d,%d) cach %d | tu %s, VLHook+0x%X%s | muc tieu %s",
+		szWhat, nX, nY, __distance(x, y, nX, nY), szStage, (DWORD)((BYTE*)pCaller - (BYTE*)hMod),
+		s_nSkip ? " (+lan lap truoc)" : "", szTarget);
+	s_pLastCaller = pCaller;
+	s_dwLastTick = GetTickCount();
+	s_nSkip = 0;
+#endif
+}
 SHORT __stdcall _VLGetKeyState(int nVirKey)
 {
 	if (nVirKey >= VK_F2 && nVirKey <= VK_F12)
@@ -127,6 +385,7 @@ static BOOL ApproachTarget(CVLAttack *p)
 		s_nApproachIdx = nPeople;
 		s_dwApproachID = pNpc->m_dwID;
 		s_dwApproachTick = GetTickCount();
+		DQ_WHY(TV(L"Tiếp cận: đường thẳng tới quái bị vật cản chặn => tạm bỏ PEOPLE_IDX, tự chạy vòng"));
 		p->SetPeopleIdx(0);
 	}
 	else if (nPeople && nPeople != s_nApproachIdx)
@@ -138,6 +397,7 @@ static BOOL ApproachTarget(CVLAttack *p)
 	if (!pNpc->IsExist() || pNpc->m_dwID != s_dwApproachID || pNpc->m_CurrentLife <= 0 ||
 		pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive)
 	{
+		DQ_WHY(TV(L"Tiếp cận: quái chết / biến mất"));
 		p->SetPeopleIdx(0);
 		ApproachReset();
 		return FALSE;
@@ -145,6 +405,7 @@ static BOOL ApproachTarget(CVLAttack *p)
 	if (GetTickCount() - s_dwApproachTick > APPROACH_TIMEOUT)
 	{	// Khong toi duoc (bi vay ben kia tuong...): bo quai nay mot luc
 		p->AddBadNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
+		DQ_WHY(TV(L"Tiếp cận quá 10s không tới được => đưa vào danh sách quái lag (bỏ ~60s)"));
 		p->SetPeopleIdx(0);
 		ApproachReset();
 		return FALSE;
@@ -154,12 +415,15 @@ static BOOL ApproachTarget(CVLAttack *p)
 	pNpc->GetMapPos(&nx, &ny);
 	if (__distance(x, y, nx, ny) <= P_PLAYER->m_CurrentAttackRadius || ObsLineClear(x, y, nx, ny))
 	{	// Da thay quai: tra cho game danh
+		DQ_WHY(TV(L"Tiếp cận: đã thấy quái / vào tầm => trả lại mục tiêu cho game đánh"));
 		p->SetPeopleIdx(s_nApproachIdx);
 		ApproachReset();
 		return FALSE;
 	}
 	PathNoteMove(nx, ny, "Toi quai");
 	g_pCurPlayer->MoveTo(nx, ny);
+	DQ_EXITF("tiep can: tu chay vong vat can toi #%d (kc %d, %ds)", s_nApproachIdx, __distance(x, y, nx, ny),
+		(GetTickCount() - s_dwApproachTick) / 1000);
 	return TRUE;
 }
 
@@ -576,53 +840,10 @@ static int		s_nCSReqFlag = -1;			// Lenh Switch('PK',x) gan nhat do auto gui
 static DWORD	s_dwCSReqTick = 0;
 
 static char		s_CSBuf[CS_BUF_SIZE];
-static int		s_nCSBufLen = 0;
-static DWORD	s_dwCSFlushTick = 0;
+static KBufLog	s_CSFile = { "cuusat", CS_LOG_MAXSIZE, CS_BUF_SIZE, CS_BUF_FLUSH, CS_FLUSH_TIME, s_CSBuf, 0, 0 };
 
-// Ghi ca bo dem ra file 1 lan (mo / dong file 1 lan thay vi moi dong)
-static void CSFlush()
-{
-	s_dwCSFlushTick = GetTickCount();
-	if (!s_nCSBufLen) return;
-	char szFile[MAX_PATH], szDir[MAX_PATH];
-	sprintf(szDir, "%s\\Logs", theMain.m_szCurFolder);
-	CreateDirectoryA(szDir, NULL);
-	sprintf(szFile, "%s\\cuusat.log", szDir);
-
-	BOOL bNew = FALSE;
-	WIN32_FILE_ATTRIBUTE_DATA fa;
-	if (!GetFileAttributesExA(szFile, GetFileExInfoStandard, &fa))
-		bNew = TRUE;
-	else if (fa.nFileSizeLow > CS_LOG_MAXSIZE || fa.nFileSizeHigh)
-	{
-		char szBak[MAX_PATH];
-		sprintf(szBak, "%s\\cuusat_bak.log", szDir);
-		DeleteFileA(szBak);
-		MoveFileA(szFile, szBak);
-		bNew = TRUE;
-	}
-	FILE* f = fopen(szFile, "ab");
-	if (!f) return;	// Khong mo duoc (file dang bi khoa...): giu bo dem, lan sau ghi tiep
-	if (bNew) fputs("\xEF\xBB\xBF", f);	// BOM UTF-8
-	fwrite(s_CSBuf, 1, s_nCSBufLen, f);
-	fclose(f);
-	s_nCSBufLen = 0;
-}
-
-// Them 1 dong (TCVN3) vao bo dem (doi sang UTF-8); vuot nguong / qua thoi gian thi ghi file
-static void CSAppend(const char* szTcvnLine)
-{
-	char szUtf8[4200];
-	int nLen = Tcvn3ToUtf8(szTcvnLine, szUtf8, sizeof(szUtf8) - 3);
-	if (nLen < 0) nLen = 0;
-	szUtf8[nLen++] = '\r'; szUtf8[nLen++] = '\n'; szUtf8[nLen] = 0;
-	if (s_nCSBufLen + nLen > CS_BUF_SIZE) CSFlush();
-	if (s_nCSBufLen + nLen > CS_BUF_SIZE) s_nCSBufLen = 0;	// File bi khoa lau: bo bo dem cu, khong tran
-	memcpy(s_CSBuf + s_nCSBufLen, szUtf8, nLen);
-	s_nCSBufLen += nLen;
-	if (s_nCSBufLen >= CS_BUF_FLUSH || GetTickCount() - s_dwCSFlushTick >= CS_FLUSH_TIME)
-		CSFlush();
-}
+static void CSFlush() { BLFlush(&s_CSFile); }
+static void CSAppend(const char* szTcvnLine) { BLAppend(&s_CSFile, szTcvnLine); }
 
 // Ghi 1 dong: [ngay gio.ms] [ten nhan vat] noi dung. Chuoi TCVN3 (ten) -> UTF-8.
 static void CSLog(const char* szFormat, ...)
@@ -1031,6 +1252,9 @@ void CVLAttack::Breathe()
 	int nX, nY, nRange;
 
 	if (g_NetworkOffline) return;
+#if DebugDanhQuai
+	KDQLoop dqLoop(this);	// Ghi trang thai vong nay vao danhquai.log (cuoi ham, moi nhanh return)
+#endif
 
 	DebugAttackWatch();	// Cua so DEBUG > Chien dau: Kiem tra doi tuong dang danh
 	// Buff bua dang cast ma doi muc tieu / tat chuc nang / tat danh quai => tra skill tay trai ngay
@@ -1039,6 +1263,7 @@ void CVLAttack::Breathe()
 	{
 		if (m_bBuffBua && P_PLAYER->m_FightMode && !m_nEnemyIdx && PEOPLE_IDX == 0 && BuaTargetValid())
 		{	// Game xoa muc tieu vi khong ra duoc bua (dang hoi chieu / thieu mana...) => giu doi tuong, bo bua nay
+			DQ_WHY(TV(L"Buff bùa: game xóa mục tiêu (không ra được bùa) => gán lại đối tượng bùa"));
 			SetPeopleIdx(m_nBuaTarget);
 			BuaNext();
 		}
@@ -1050,7 +1275,7 @@ void CVLAttack::Breathe()
 	// Tab Di chuyen dang tim duong toi bai train / dang tu di MapPath: chi buff (o tren), chua tu ve / tim quai.
 	// Bo quai dang nham (neu khong PathTravelBreathe cho "danh quai doc duong" ma khong ai danh -> dung im)
 	BOOL bFindingTrain = (theMove.m_bGoTrain || PathTravelActive()) && P_PLAYER->m_FightMode;
-	if (bFindingTrain && m_nEnemyIdx) { SetPeopleIdx(0); m_nEnemyIdx = 0; }
+	if (bFindingTrain && m_nEnemyIdx) { DQ_WHY(TV(L"Đang tìm đường tới bãi train: bỏ kẻ thù")); SetPeopleIdx(0); m_nEnemyIdx = 0; }
 	if (bFindingTrain || theMove.m_bFindingWay || !P_PLAYER->m_FightMode || !m_bAutoHit) ApproachReset();
 	// Dang tim duong toi bai train (GoTrain / MapPath / RouteFinding cach cu): bo ca quai muc tieu con sot tu truoc
 	// (PEOPLE_IDX van tro quai => game KNpcAI::FollowAttack tu chay theo danh quai doc duong, bo lo trinh).
@@ -1060,6 +1285,8 @@ void CVLAttack::Breathe()
 		int nPeople = PEOPLE_IDX;
 		if (nPeople > 0 && nPeople < MAX_NPC && g_pNpcArray[nPeople]->m_Kind == kind_normal)
 		{
+			DQ_WHY(bFindingTrain ? TV(L"Đang tìm đường tới bãi train / MapPath: bỏ quái mục tiêu")
+				: TV(L"Di chuyển đang tìm đường (m_bFindingWay): bỏ quái mục tiêu"));
 			SetPeopleIdx(0);
 			m_LastNpcID = 0;
 		}
@@ -1071,13 +1298,21 @@ void CVLAttack::Breathe()
 		if (bFindingTrain)
 		{
 			theRecover.OnUseAM();
+			DQ_EXIT("tu ve thoat game: dung TDP");
 			return;
 		}
+		DebugLogFlushAll();
 		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	PKSwitchBreathe(bFindingTrain);	// Do sat / Cuu sat (chi doi trang thai PK)
-	if (m_bDoingSkill || m_bDoingSkillEx || theRecover.m_bDoingBuff || theMain.m_bPause) return;
-	if (bFindingTrain) return;
+	if (m_bDoingSkill || m_bDoingSkillEx || theRecover.m_bDoingBuff || theMain.m_bPause)
+	{
+		DQ_EXIT(m_bDoingSkill ? "dang ra skill buff truc tiep (DirectSkill)" :
+			m_bDoingSkillEx ? "dang ra skill xen ke (AlterSkill)" :
+			theRecover.m_bDoingBuff ? "Hoi phuc dang buff" : "tam dung (m_bPause)");
+		return;
+	}
+	if (bFindingTrain) { DQ_EXIT("dang tim duong toi bai train / MapPath"); return; }
 
 	// ActiveSkill Adjustment
 	// Ap sat: ep tam danh moi nhip - game tu dat lai m_CurrentAttackRadius theo tam skill (doi skill, dong bo...)
@@ -1090,7 +1325,11 @@ void CVLAttack::Breathe()
 
 	AutoDefence();
 
-	if (m_nEnemyIdx || theQuest.m_bNeedGoPCK) return;
+	if (m_nEnemyIdx || theQuest.m_bNeedGoPCK)
+	{
+		DQ_EXIT(m_nEnemyIdx ? "dang danh ke thu (tu ve)" : "nhiem vu can ve PCK");
+		return;
+	}
 
 	if (m_bSkillChanged)
 	{
@@ -1108,14 +1347,14 @@ void CVLAttack::Breathe()
 		m_bSkillChanged = 0;
 	}
 
-	if (!P_PLAYER->m_FightMode || (!m_bAutoHit && !m_bBuffBua)) return;
-	if (theMove.m_bFindingWay) return;
-	if (theMove.m_nStatus == status_movefirst) return;
-	if (theMove.m_nStatus == status_move && !theMove.m_bAttackWhenMove) return;
-	if (m_bAutoHit && theMove.LureBreathe()) return;	// Dang quay quai: chua danh
+	if (!P_PLAYER->m_FightMode || (!m_bAutoHit && !m_bBuffBua)) { DQ_EXIT("khong o che do chien dau"); return; }
+	if (theMove.m_bFindingWay) { DQ_EXIT("Di chuyen dang tim duong (m_bFindingWay)"); return; }
+	if (theMove.m_nStatus == status_movefirst) { DQ_EXIT("Di chuyen: status_movefirst (di toi diem dau)"); return; }
+	if (theMove.m_nStatus == status_move && !theMove.m_bAttackWhenMove) { DQ_EXIT("Di chuyen: dang di, khong danh khi di"); return; }
+	if (m_bAutoHit && theMove.LureBreathe()) { DQ_EXIT("dang quay quai (Lure)"); return; }	// Dang quay quai: chua danh
 
 	// Buff bua (doc lap voi Danh quai): con doi tuong can buff thi buff truoc, xong het moi danh
-	if (BuffBuaBreathe()) return;
+	if (BuffBuaBreathe()) { DQ_EXIT("dang buff bua"); return; }
 	if (!m_bAutoHit) return;
 
 	ProcessAttack();
@@ -1133,6 +1372,7 @@ void CVLAttack::Breathe()
 		if (m_bDownHorse && P_PLAYER->m_bRideHorse)
 		{
 			ExecuteScript(SCK_SHORTCUT_HORSE); // Xuong ngua
+			DQ_EXIT("danh boss: xuong ngua");
 			return;
 		}
 
@@ -1145,7 +1385,7 @@ void CVLAttack::Breathe()
 
 	//Check if Target is LAG
 	int nTargetIdx = GetCurTargetIdx();
-	if (!IsLagTarget(nTargetIdx)) return;
+	if (!IsLagTarget(nTargetIdx)) return;	// DQ_EXIT dat trong IsLagTarget (ly do giu muc tieu)
 
 	KAliveNpc::RefreshNpcs();
 
@@ -1158,6 +1398,7 @@ void CVLAttack::Breathe()
 		{
 			if (theMove.m_bAroundPointPK || theMove.m_bRouteMove)
 				theMove.m_nStatus = status_idle;
+			DQ_EXIT("theo sau: khong thay nguoi dan, khong danh");
 			return;
 		}
 		if (theMove.m_nLeaderIdx)
@@ -1195,14 +1436,17 @@ void CVLAttack::Breathe()
 		{
 			ExecuteScript(SCK_SHORTCUT_HORSE); // Xuong ngua
 			m_LastNpcID = 0;
+			DQ_EXITF("tim thay quai #%d nhung phai XUONG NGUA truoc (chua gan muc tieu)", nTargetIdx);
 		}
 		else if (!m_bDownHorse && !P_PLAYER->m_bRideHorse && HAVE_HORSE)
 		{
 			ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
 			m_LastNpcID = 0;
+			DQ_EXITF("tim thay quai #%d nhung phai LEN NGUA truoc (chua gan muc tieu)", nTargetIdx);
 		}
 		else
 		{
+			DQ_WHY(TV(L"Chọn quái mới (SearchNearestNpc)"));
 			SetPeopleIdx(nTargetIdx);
 			m_bSkillChanged = TRUE;
 			theMove.m_nStatus = status_attack;
@@ -1210,6 +1454,7 @@ void CVLAttack::Breathe()
 	}
 	else
 	{
+		DQ_WHY(TV(L"Không tìm thấy quái trong tầm"));
 		SetPeopleIdx(0);
 		if (theMove.m_bMoveByMapYS || theMove.m_bAroundPointPK || theMove.m_bRouteMove)
 			theMove.m_nStatus = status_idle;
@@ -1218,9 +1463,28 @@ void CVLAttack::Breathe()
 	}
 }
 
-void CVLAttack::SetPeopleIdx(int nIndex)
+// Goi qua macro SetPeopleIdx(n) (VLClasses.h) => biet file:dong noi doi muc tieu
+void CVLAttack::SetPeopleIdxAt(int nIndex, const char* szFile, int nLine)
 {
+#if DebugDanhQuai
+	int nOld = PEOPLE_IDX;
+	if (nOld != nIndex)
+	{
+		char szOld[160], szNew[160];
+		DQNpcDesc(nOld, szOld, sizeof(szOld));
+		DQNpcDesc(nIndex, szNew, sizeof(szNew));
+		const char* szName = strrchr(szFile, '\\');
+		szName = szName ? szName + 1 : szFile;
+		DQLog("DOI MUC TIEU: %s -> %s (da danh %d lan) | ly do: %s | %s:%d", szOld, szNew, s_nDQCast,
+			s_pszDQWhy ? s_pszDQWhy : "(khong ghi ly do)", szName, nLine);
+		s_nDQCast = 0;
+	}
+	s_pszDQWhy = NULL;
+#endif
 	PEOPLE_IDX = nIndex;
+#if DebugDanhQuai
+	s_nDQPeople = nIndex;
+#endif
 }
 
 BOOL CVLAttack::IsApproaching()
@@ -1323,6 +1587,11 @@ void CVLAttack::HandleDirectSkills()
 			m_nDoingDirectSkill[i] = 18;	// 1800ms
 			m_LastNpcID = 0;
 			m_bDoingSkill = TRUE;
+#if DebugDanhQuai
+			if (PEOPLE_IDX) DQ_LOG("BUFF SKILL truc tiep o %d (skill %d): trang thai buff het / < 18s => bo muc tieu ~1.8s de buff",
+				i, m_SettingSkills[i]);
+#endif
+			DQ_WHY(TV(L"Buff skill trực tiếp (trạng thái buff hết hạn / không thấy)"));
 			SetPeopleIdx(0);
 		}
 	}
@@ -1375,6 +1644,7 @@ void CVLAttack::HandleInDirectSkills()
 			{
 				m_LastNpcID = 0;
 				m_bDoingSkillEx = TRUE;
+				DQ_WHY(TV(L"Skill xen kẽ 1 đến chu kỳ => bỏ mục tiêu để ra skill"));
 				SetPeopleIdx(0);
 				nTimeWait = 12;
 				nSkillIdx = m_AlterSkill[0].nUseSkill - 1;
@@ -1386,6 +1656,7 @@ void CVLAttack::HandleInDirectSkills()
 			{
 				m_LastNpcID = 0;
 				m_bDoingSkillEx = TRUE;
+				DQ_WHY(TV(L"Skill xen kẽ 2 đến chu kỳ => bỏ mục tiêu để ra skill"));
 				SetPeopleIdx(0);
 				nTimeWait = 12;
 				nSkillIdx = m_AlterSkill[1].nUseSkill - 1;
@@ -1474,10 +1745,12 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 		if (nFollowCount < 8)
 		{
 			nFollowCount++;
+			DQ_EXIT("theo sau nguoi choi (800ms)");
 			return 0;
 		}
 		else
 		{
+			DQ_WHY(TV(L"Theo sau người chơi đủ 800ms"));
 			SetPeopleIdx(0);
 			nFollowCount = 0;
 			return TRUE;
@@ -1485,6 +1758,7 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 	}
 	if (!pNpc->IsExist() || pNpc->m_Kind != kind_normal)
 	{
+		DQ_WHY(TV(L"Mục tiêu không tồn tại / không phải quái"));
 		SetPeopleIdx(0);
 		return TRUE;
 	}
@@ -1492,6 +1766,7 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 	// va ra skill vao cho trong, quai khong mat mau nhung phai doi het nLagAttCheck. Bo ngay.
 	if (pNpc->IsGhost())
 	{
+		DQ_WHY(TV(L"Quái \"ma\" (vùng đã nạp lại)"));
 		SetPeopleIdx(0);
 		m_LastNpcLife = 0;
 		dwLastNpcID = 0;
@@ -1503,6 +1778,7 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 	// toi het nLagAttCheck => game van ra skill vao xac / cho trong.
 	if (pNpc->m_CurrentLife <= 0 || pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive)
 	{
+		DQ_WHY(TV(L"Quái đã chết"));
 		SetPeopleIdx(0);
 		m_LastNpcLife = 0;
 		dwLastNpcID = 0;
@@ -1511,16 +1787,19 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 	}
 	if (m_bAvoidBoss && pNpc->m_cGold.m_nGoldType == 16)
 	{
+		DQ_WHY(TV(L"Tránh boss"));
 		SetPeopleIdx(0);
 		return TRUE;
 	}
 	if (m_bOnlyBlueBoss == TRUE && !IsBlueBoss(pNpc))
 	{	// Chi danh boss xanh: bo muc tieu khac (vd quai dang danh truoc khi bat)
+		DQ_WHY(TV(L"Chỉ đánh boss xanh: mục tiêu không phải boss xanh"));
 		SetPeopleIdx(0);
 		return TRUE;
 	}
 	if (!DebugQuestTargetOK(pNpc->Name))
 	{	// DEBUG > Nhiem vu > Buoc 4: bo quai khong phai quai nhiem vu (vd dang danh truoc khi bat Buoc 4)
+		DQ_WHY(TV(L"DEBUG Nhiệm vụ: không phải quái nhiệm vụ"));
 		SetPeopleIdx(0);
 		m_LastNpcLife = 0;
 		dwLastNpcID = 0;
@@ -1541,6 +1820,10 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 	{
 		if (pNpc->m_CurrentLife < m_LastNpcLife - 1)
 		{	// OK, Npc is dying
+#if DebugDanhQuai
+			DQExitF("giu muc tieu: quai mat mau %d -> %d", m_LastNpcLife, pNpc->m_CurrentLife);
+			s_nDQLag = 0;
+#endif
 			m_LastNpcLife = pNpc->m_CurrentLife;
 			nLagCount = 0;
 			theMove.m_nStatus = status_attack;
@@ -1564,14 +1847,25 @@ BOOL CVLAttack::IsLagTarget(int nIndex)
 
 			if (P_PLAYER->m_Doing == do_attack && nLagCount < nLagRunCheck && nLagCount > 2)
 				nLagCount = nLagRunCheck; //attacking then increase check lag
-			if (nLagCount < nLagAttCheck) return 0;
+#if DebugDanhQuai
+			s_nDQLag = nLagCount; s_nDQLagMax = nLagAttCheck;
+#endif
+			if (nLagCount < nLagAttCheck) { DQ_EXIT("giu muc tieu: quai chua mat mau, dem lag"); return 0; }
+#if DebugDanhQuai
+			DQ_LOG("QUAI LAG: %u %d nhip khong mat mau (nguong %d = chay %d + danh), mau %d => bo ~60s",
+				pNpc->m_dwID, nLagCount, nLagAttCheck, nLagRunCheck, pNpc->m_CurrentLife);
+#endif
 			// Quai lag: ghi vao m_BadNpc va bo han. Truoc day du 3 o thi khong ghi duoc, nLagCount giu nguyen
 			// => moi nhip deu "lag" nhung SearchNearestNpc van nhan lai chinh con do (khoa cung muc tieu)
 			AddBadNpc(pNpc->m_dwID, pNpc->m_CurrentLife);
+			DQ_WHY(TV(L"Quái lag: quá ngưỡng nhịp không mất máu"));
 			SetPeopleIdx(0);
 			m_LastNpcLife = 0;
 			dwLastNpcID = 0;
 			nLagCount = 0;
+#if DebugDanhQuai
+			s_nDQLag = 0;
+#endif
 		}
 	}
 	return TRUE;
@@ -1602,19 +1896,34 @@ int CVLAttack::SearchNearestNpc(int nX, int nY, int nRange)
 	int nMinQIndex = 0, dMinQ = nRange;
 
 	BOOL bNoFullLag = (m_BadNpc[0].IsNull() || m_BadNpc[1].IsNull() || m_BadNpc[2].IsNull());
+#if DebugDanhQuai
+	int nDQInRange = 0, nDQSkipIdx = 0, nDQSkipDist = 0;
+	DWORD dwDQLast = m_LastNpcID;
+#endif
 
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (!m_AliveNpc[i].m_dwID) continue;
 		if (m_AliveNpc[i].m_dwID == m_LastNpcID)
 		{
+#if DebugDanhQuai
+			nDQSkipIdx = i;
+			nDQSkipDist = __distance(m_AliveNpc[i].m_nPosX, m_AliveNpc[i].m_nPosY, nX, nY);
+#endif
 			m_LastNpcID = 0;
 			continue;
 		}
 		dZ = __distance(m_AliveNpc[i].m_nPosX, m_AliveNpc[i].m_nPosY, nX, nY);
 		if (dZ >= nRange) continue;
+#if DebugDanhQuai
+		nDQInRange++;
+#endif
 
-		if (m_bAvoidBoss && m_AliveNpc[i].m_nGoldType == 16 && dZ <= 800) return 0;
+		if (m_bAvoidBoss && m_AliveNpc[i].m_nGoldType == 16 && dZ <= 800)
+		{
+			DQ_EXITF("tim quai: co boss (tranh boss) trong 800 => khong danh");
+			return 0;
+		}
 
 		if (bNoFullLag)
 		{
@@ -1646,6 +1955,27 @@ int CVLAttack::SearchNearestNpc(int nX, int nY, int nRange)
 		}
 	}
 	if (nMinQIndex) nMinIndex = nMinQIndex;
+#if DebugDanhQuai
+	{
+		char szSkip[200] = "";
+		if (nDQSkipIdx)
+			_snprintf(szSkip, sizeof(szSkip) - 1, " | !! BO QUA quai vua danh #%d id %u kc %d (m_LastNpcID)",
+				nDQSkipIdx, dwDQLast, nDQSkipDist);
+		else if (dwDQLast)
+			_snprintf(szSkip, sizeof(szSkip) - 1, " | m_LastNpcID %u khong con trong danh sach quai song", dwDQLast);
+		szSkip[sizeof(szSkip) - 1] = 0;
+		if (nMinIndex)
+		{
+			int nd = __distance(m_AliveNpc[nMinIndex].m_nPosX, m_AliveNpc[nMinIndex].m_nPosY, nX, nY);
+			DQ_LOG("TIM QUAI: tam %d tu (%d,%d): %d quai trong tam%s => chon #%d %s id %u kc %d%s%s",
+				nRange, nX, nY, nDQInRange, bNoFullLag ? "" : " (DU 3 quai lag: chon con XA)",
+				nMinIndex, g_pNpcArray[nMinIndex]->Name, m_AliveNpc[nMinIndex].m_dwID, nd,
+				nMinIndex == nMinQIndex ? " (quai nhiem vu)" : "", szSkip);
+		}
+		else
+			DQ_EXITF("tim quai: khong co quai trong tam %d (%d quai)%s", nRange, nDQInRange, szSkip);
+	}
+#endif
 	if (nMinIndex)
 	{
 		if (m_bAvoidBoss && m_AliveNpc[nMinIndex].m_nGoldType == 16)
@@ -1762,6 +2092,7 @@ void CVLAttack::AutoDefence()
 				CS_LOG("TU VE: thoat game vi %s trong tam %d", g_pNpcArray[i]->Name, dZ);
 				CSFlush();	// Ghi bo dem log truoc khi tien trinh chet
 #endif
+				DebugLogFlushAll();
 				TerminateProcess(GetCurrentProcess(), 0);
 				return;
 			}
@@ -1829,7 +2160,7 @@ void CVLAttack::AutoDefence()
 void CVLAttack::ReleaseEnemy()
 {
 	if (!m_nEnemyIdx) return;
-	if (PEOPLE_IDX == m_nEnemyIdx) SetPeopleIdx(0);
+	if (PEOPLE_IDX == m_nEnemyIdx) { DQ_WHY(TV(L"Thả kẻ thù (ReleaseEnemy)")); SetPeopleIdx(0); }
 	SetDefSkills(m_SettingSkills[skill_left], 0);
 	m_nEnemyIdx = 0;
 	m_bSkillChanged = TRUE;
@@ -1846,6 +2177,7 @@ void CVLAttack::ProcessAttack()
 
 	if (!pEnemy->IsExist() || pEnemy->m_Doing == do_death || pEnemy->m_Doing == do_revive)
 	{
+		DQ_WHY(TV(L"ProcessAttack: m_nPeopleIdx không tồn tại / chết"));
 		SetPeopleIdx(0);
 		return;
 	}
@@ -1853,6 +2185,7 @@ void CVLAttack::ProcessAttack()
 	int nRelation = g_pCoreShell->GetNPCRelation(m_nPeopleIdx);
 	if (nRelation != relation_enemy)
 	{
+		DQ_WHY(TV(L"ProcessAttack: không phải kẻ địch"));
 		SetPeopleIdx(0);
 		return;
 	}
@@ -1873,6 +2206,7 @@ void CVLAttack::ProcessAttack()
 	{
 		int nX = nEnemyX - nPlayerX + 400;
 		int nY = (nEnemyY - nPlayerY) / 2 + 280;
+		DQ_WHY(TV(L"ProcessAttack: ra skill vào m_nPeopleIdx"));
 		SetPeopleIdx(m_nPeopleIdx);
 		SendVLCmdSkill(g_pCurPlayer->m_nLeftSkillID, nX, nY);
 	}
@@ -1887,4 +2221,15 @@ int CVLAttack::GetCurTargetIdx()
 void CVLAttack::SendVLCmdSkill(int nSkillId, int nX, int nY)
 {
 	::SendClientCmdSkill(nSkillId, nX, nY);
+}
+
+// Ghi bo dem log ra file (go hook / thoat game)
+void DebugLogFlushAll()
+{
+#if DebugDanhQuai
+	BLFlush(&s_DQFile);
+#endif
+#if DebugCuuSat
+	BLFlush(&s_CSFile);
+#endif
 }
