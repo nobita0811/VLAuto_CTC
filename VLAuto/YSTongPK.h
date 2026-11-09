@@ -24,6 +24,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	CTcvnEdit			m_NameEdit;	// Dan ten copy tu game: giu byte TCVN3 goc
 	CListCtrl		m_QuestList;
 	YSTongPKOpt*	m_pTongPKOpt;
 	int				m_nPointX;

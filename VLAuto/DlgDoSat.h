@@ -39,4 +39,5 @@ protected:
 
 public:
 	CListBox			m_EnemyList;
+	CTcvnEdit			m_InputEdit;	// Dan ten copy tu game: giu byte TCVN3 goc
 };

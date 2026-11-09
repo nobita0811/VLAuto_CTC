@@ -56,7 +56,7 @@ void CYSTongPK::DoDataExchange(CDataExchange* pDX)
 		m_nPointY = m_pTongPKOpt->m_nPointY;
 		SetDlgItemInt(IDC_POINTX_EDIT, m_nPointX >> 8);
 		SetDlgItemInt(IDC_POINTY_EDIT, m_nPointY >> 9);
-		MultiByteToWideChar(CP_ACP, 0, m_pTongPKOpt->m_szVictimName, -1, szVictimName, 32);
+		TCVN3ToUnicode(m_pTongPKOpt->m_szVictimName, szVictimName, 31);
 		SetDlgItemText(IDC_VICTIM_COMBO, szVictimName);
 	}
 	else
@@ -64,7 +64,7 @@ void CYSTongPK::DoDataExchange(CDataExchange* pDX)
 		m_pTongPKOpt->m_nPointX = m_nPointX;
 		m_pTongPKOpt->m_nPointY = m_nPointY;
 		GetDlgItemText(IDC_VICTIM_COMBO, szVictimName, 32);
-		WideCharToMultiByte(CP_ACP, 0, szVictimName, -1, m_pTongPKOpt->m_szVictimName, 32, 0, 0);
+		UnicodeToTCVN3(szVictimName, m_pTongPKOpt->m_szVictimName, 31);
 	}
 }
 
@@ -78,6 +78,7 @@ END_MESSAGE_MAP()
 BOOL CYSTongPK::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
+	m_NameEdit.AttachTo(this, IDC_VICTIM_COMBO);
 
 	m_QuestList.SetExtendedStyle(LVS_EX_GRIDLINES|LVS_EX_FULLROWSELECT);
 	m_QuestList.InsertColumn(0, _T("Tác phường"), LVCFMT_LEFT, 73);
@@ -106,7 +107,7 @@ BOOL CYSTongPK::OnInitDialog()
 		if (!pGameWin->m_hWnd) continue;
 		if (pGameWin == g_pCurGameWin) continue;
 
-		MultiByteToWideChar(CP_ACP, 0, pGameWin->m_szPlayerName, -1, szPlayerName, 32);
+		TCVN3ToUnicode(pGameWin->m_szPlayerName, szPlayerName, 31);
 		pVictimList->AddString(szPlayerName);
 	}
 

@@ -73,6 +73,7 @@ END_MESSAGE_MAP()
 BOOL CDlgParty::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+	m_NameEdit.AttachTo(this, IDC_NEARBYPLAYER_COMBO);
 
 	CComboBox *pCombo = (CComboBox *)GetDlgItem(IDC_PTALL_COMBO);
 	pCombo->AddString(_T("Không mời tất cả"));
@@ -163,7 +164,8 @@ void CDlgParty::UpdateNearByPlayers()
 		lpCurAdd = lpBaseAdd + i*NPC_DATA_SIZE;
 		winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, sizeof(Npc));
 		if (!Npc.m_Index || Npc.m_NpcKind != 1) continue;
-		MultiByteToWideChar(CP_ACP, 0, Npc.Name, -1, szName, 32);
+		Npc.Name[31] = 0;
+		TCVN3ToUnicode(Npc.Name, szName, 31);
 		pNearByPlayer->AddString(szName);
 	}
 }
@@ -178,7 +180,7 @@ void CDlgParty::UpdateMembersList(BOOL bSave)
 		for (int i = 0; i < nCount; i++)
 		{
 			m_MemberList.GetText(i, szName);
-			WideCharToMultiByte(CP_ACP, 0, szName, -1, g_pCurGameWin->m_prParty.m_szMemberName[i], 32, 0, 0);
+			UnicodeToTCVN3(szName, g_pCurGameWin->m_prParty.m_szMemberName[i], 31);
 		}
 	}
 	else
@@ -186,7 +188,7 @@ void CDlgParty::UpdateMembersList(BOOL bSave)
 		m_MemberList.ResetContent();
 		for (int i=0; g_pCurGameWin->m_prParty.m_szMemberName[i][0]; i++)
 		{
-			MultiByteToWideChar(CP_ACP, 0, g_pCurGameWin->m_prParty.m_szMemberName[i], -1, szName, 32);
+			TCVN3ToUnicode(g_pCurGameWin->m_prParty.m_szMemberName[i], szName, 31);
 			m_MemberList.AddString(szName);
 		}
 	}

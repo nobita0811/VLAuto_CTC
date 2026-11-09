@@ -6,7 +6,11 @@
 #include "VLClasses.h"
 #include "VLDebug.h"
 #include "VLObstacle.h"
+#include "TcvnText.h"
 
+// Debug log Cuu sat / Do sat (tab Chien dau) -> <thu muc auto>\Logs\cuusat.log
+// 1 = bat ghi log, 0 = tat (khong bien dich code log)
+#define DebugCuuSat 1
 SHORT __stdcall _VLGetKeyState(int nVirKey)
 {
 	if (nVirKey >= VK_F2 && nVirKey <= VK_F12)
@@ -555,14 +559,239 @@ static BOOL GetPKArmPoint(int* pX, int* pY)
 	return FALSE;
 }
 
+// ===== Debug log Cuu sat / Do sat =====
+#if DebugCuuSat
+#define CS_LOG_MAXSIZE		(8 * 1024 * 1024)	// Qua 8MB => doi ten sang cuusat_bak.log, mo file moi
+#define CS_LOG_HEARTBEAT	30000				// Ghi tom tat trang thai moi 30s (ke ca khi khong doi)
+#define CS_BUF_SIZE			(64 * 1024)			// Bo dem log trong RAM
+#define CS_BUF_FLUSH		(32 * 1024)			// Bo dem vuot nguong nay => ghi ra file 1 lan
+#define CS_FLUSH_TIME		30000				// Hoac da 30s chua ghi => ghi (de file khong bi cu qua lau)
+#define CS_SCAN_RANGE		1000				// Quet nguoi choi trong pham vi nay, ghi ly do hanh dong
+
+static char		s_szCSLastState[256] = "";	// Ly do / trang thai lan truoc (chi ghi khi doi)
+static DWORD	s_dwCSHeartbeat = 0;
+static DWORD	s_dwCSLastBreathe = 0;		// Lan cuoi PKSwitchBreathe duoc goi
+static int		s_nCSLastPKFlag = -1;
+static int		s_nCSReqFlag = -1;			// Lenh Switch('PK',x) gan nhat do auto gui
+static DWORD	s_dwCSReqTick = 0;
+
+static char		s_CSBuf[CS_BUF_SIZE];
+static int		s_nCSBufLen = 0;
+static DWORD	s_dwCSFlushTick = 0;
+
+// Ghi ca bo dem ra file 1 lan (mo / dong file 1 lan thay vi moi dong)
+static void CSFlush()
+{
+	s_dwCSFlushTick = GetTickCount();
+	if (!s_nCSBufLen) return;
+	char szFile[MAX_PATH], szDir[MAX_PATH];
+	sprintf(szDir, "%s\\Logs", theMain.m_szCurFolder);
+	CreateDirectoryA(szDir, NULL);
+	sprintf(szFile, "%s\\cuusat.log", szDir);
+
+	BOOL bNew = FALSE;
+	WIN32_FILE_ATTRIBUTE_DATA fa;
+	if (!GetFileAttributesExA(szFile, GetFileExInfoStandard, &fa))
+		bNew = TRUE;
+	else if (fa.nFileSizeLow > CS_LOG_MAXSIZE || fa.nFileSizeHigh)
+	{
+		char szBak[MAX_PATH];
+		sprintf(szBak, "%s\\cuusat_bak.log", szDir);
+		DeleteFileA(szBak);
+		MoveFileA(szFile, szBak);
+		bNew = TRUE;
+	}
+	FILE* f = fopen(szFile, "ab");
+	if (!f) return;	// Khong mo duoc (file dang bi khoa...): giu bo dem, lan sau ghi tiep
+	if (bNew) fputs("\xEF\xBB\xBF", f);	// BOM UTF-8
+	fwrite(s_CSBuf, 1, s_nCSBufLen, f);
+	fclose(f);
+	s_nCSBufLen = 0;
+}
+
+// Them 1 dong (TCVN3) vao bo dem (doi sang UTF-8); vuot nguong / qua thoi gian thi ghi file
+static void CSAppend(const char* szTcvnLine)
+{
+	char szUtf8[4200];
+	int nLen = Tcvn3ToUtf8(szTcvnLine, szUtf8, sizeof(szUtf8) - 3);
+	if (nLen < 0) nLen = 0;
+	szUtf8[nLen++] = '\r'; szUtf8[nLen++] = '\n'; szUtf8[nLen] = 0;
+	if (s_nCSBufLen + nLen > CS_BUF_SIZE) CSFlush();
+	if (s_nCSBufLen + nLen > CS_BUF_SIZE) s_nCSBufLen = 0;	// File bi khoa lau: bo bo dem cu, khong tran
+	memcpy(s_CSBuf + s_nCSBufLen, szUtf8, nLen);
+	s_nCSBufLen += nLen;
+	if (s_nCSBufLen >= CS_BUF_FLUSH || GetTickCount() - s_dwCSFlushTick >= CS_FLUSH_TIME)
+		CSFlush();
+}
+
+// Ghi 1 dong: [ngay gio.ms] [ten nhan vat] noi dung. Chuoi TCVN3 (ten) -> UTF-8.
+static void CSLog(const char* szFormat, ...)
+{
+	char szMsg[1024];
+	va_list vl;
+	va_start(vl, szFormat);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFormat, vl);
+	va_end(vl);
+	szMsg[sizeof(szMsg) - 1] = 0;
+
+	SYSTEMTIME st; GetLocalTime(&st);
+	char szName[64] = "?";
+	if (g_pCurPlayer && P_PLAYER) { strncpy(szName, P_PLAYER->Name, sizeof(szName) - 1); szName[sizeof(szName) - 1] = 0; }
+	char szLine[1400];
+	_snprintf(szLine, sizeof(szLine) - 1, "[%02d-%02d %02d:%02d:%02d.%03d] [%s] %s",
+		st.wDay, st.wMonth, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, szName, szMsg);
+	szLine[sizeof(szLine) - 1] = 0;
+	CSAppend(szLine);
+}
+
+// Ghi ly do / trang thai chi khi khac lan truoc (tranh 1 dong moi giay)
+static void CSState(const char* szFormat, ...)
+{
+	char szMsg[256];
+	va_list vl;
+	va_start(vl, szFormat);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, szFormat, vl);
+	va_end(vl);
+	szMsg[sizeof(szMsg) - 1] = 0;
+	if (!strcmp(szMsg, s_szCSLastState)) return;
+	strcpy(s_szCSLastState, szMsg);
+	CSLog("TRANG THAI: %s", szMsg);
+}
+#define CS_LOG(...)		CSLog(__VA_ARGS__)
+#define CS_STATE(...)	CSState(__VA_ARGS__)
+#else
+#define CS_LOG(...)		((void)0)
+#define CS_STATE(...)	((void)0)
+#endif
+
 static void SwitchPK(int nFlag)
 {
 	if (P_PLAYER->m_nPKFlag == nFlag) return;
 	DWORD dwNow = GetTickCount();
 	if (s_dwPKSwitchTick && dwNow - s_dwPKSwitchTick < PK_SWITCH_DELAY) return;
 	s_dwPKSwitchTick = dwNow;
+	CS_LOG("GUI Switch('PK',%d)  (PK hien tai %d)", nFlag, P_PLAYER->m_nPKFlag);
+#if DebugCuuSat
+	s_nCSReqFlag = nFlag;
+	s_dwCSReqTick = dwNow;
+#endif
 	ExecuteScript(nFlag == 2 ? "Switch('PK',2)" : (nFlag == 1 ? "Switch('PK',1)" : "Switch('PK',0)"));
 }
+
+#if DebugCuuSat
+// Goi moi nhip PKSwitchBreathe (truoc moi return): theo doi PKFlag doi, Breathe bi bo nhip, gui lenh ma server khong doi
+static void CSWatch()
+{
+	DWORD dwNow = GetTickCount();
+	if (s_dwCSLastBreathe && dwNow - s_dwCSLastBreathe > 3000)
+		CS_LOG("CANH BAO: PKSwitchBreathe khong chay %u ms (Breathe bi dung: SysPause / ExpLimit / gom tien bang / ve thanh luu ruong / mat mang...)",
+			dwNow - s_dwCSLastBreathe);
+	s_dwCSLastBreathe = dwNow;
+
+	int nFlag = P_PLAYER->m_nPKFlag;
+	if (nFlag != s_nCSLastPKFlag)
+	{
+		if (s_nCSLastPKFlag >= 0)
+		{
+			if (s_nCSReqFlag == nFlag && dwNow - s_dwCSReqTick < 10000)
+				CS_LOG("PKFlag %d -> %d (theo lenh auto, sau %u ms)", s_nCSLastPKFlag, nFlag, dwNow - s_dwCSReqTick);
+			else
+				CS_LOG("PKFlag %d -> %d (KHONG phai do Do sat/Cuu sat: nguoi choi tu doi / Tu ve / ve thanh / server)", s_nCSLastPKFlag, nFlag);
+		}
+		s_nCSLastPKFlag = nFlag;
+		if (s_nCSReqFlag == nFlag) s_nCSReqFlag = -1;
+	}
+	else if (s_nCSReqFlag >= 0 && dwNow - s_dwCSReqTick > 2500)
+	{
+		CS_LOG("SERVER KHONG DOI PK: da gui Switch('PK',%d) %u ms truoc, PK van la %d", s_nCSReqFlag, dwNow - s_dwCSReqTick, nFlag);
+		s_nCSReqFlag = -1;
+	}
+}
+#endif
+
+// Goi tu VLHook.cpp khi nhan tham so tab Chien dau (WM_HOOK_ATTACK)
+void CuuSatLogParams()
+{
+#if DebugCuuSat
+	CVLAttack &a = theAttack;
+	char szList[700] = "";
+	int nCount = 0;
+	for (int i = 0; i < MAX_ENEMY && a.m_szEnemies[i][0]; i++, nCount++)
+	{
+		if (strlen(szList) + strlen(a.m_szEnemies[i]) + 4 >= sizeof(szList)) { strcat(szList, " ..."); break; }
+		if (i) strcat(szList, ", ");
+		strcat(szList, a.m_szEnemies[i]);
+	}
+	CS_LOG("NHAN THAM SO: che do %d  MapPK %d (map hien tai %d)  Tu ve %d  PhamVi %d  AlwaysF9 %d  DS %d ten: %s",
+		a.m_nPKMode, a.m_nPKMapID, *g_pMapID, a.m_nAutoDefence, a.m_nDefenceRange, a.m_bAlwaysF9, nCount, szList);
+	s_szCSLastState[0] = 0;	// Ghi lai trang thai ngay nhip sau
+#endif
+}
+
+#if DebugCuuSat
+// Quet moi nguoi choi trong CS_SCAN_RANGE, ghi: ten-Index-khoang cach-ke thu|bo qua-ly do.
+// Chi ghi khi ket qua khac lan truoc (khoang cach lam tron 100).
+static void CSScanPlayers(CVLAttack* a, int nPlayerX, int nPlayerY, BOOL bArmed)
+{
+	static DWORD s_dwLastHash = 0;
+	const char* szEnemy = TV(L"kẻ thù");
+	const char* szSkip = TV(L"bỏ qua");
+	int nRange = a->m_nDefenceRange;
+	int nMode = a->m_nPKMode;
+	int nSelfIdx = g_pCurPlayer->m_nIndex;
+
+	struct { int nIdx, dZ; BOOL bEnemy; const char* szWhy; } aList[64];
+	int nCount = 0;
+	DWORD dwHash = 2166136261u ^ (nMode * 31 + bArmed * 7 + P_PLAYER->m_nPKFlag * 3 + a->m_nAutoDefence + nRange * 131);
+	for (int i = 1; i < MAX_NPC && nCount < 64; i++)
+	{
+		if (i == nSelfIdx) continue;
+		KNpc* pNpc = g_pNpcArray[i];
+		if (!pNpc->IsExist() || pNpc->m_Kind != kind_player) continue;
+		int nX, nY;
+		pNpc->GetMapPos(&nX, &nY);
+		int dZ = __distance(nPlayerX, nPlayerY, nX, nY);
+		if (dZ > CS_SCAN_RANGE) continue;
+
+		BOOL bEnemy = FALSE;
+		const char* szWhy;
+		BOOL bListed = (nMode == 2 || nMode == 3) && a->IsListedEnemy(pNpc->Name);
+		int nRel = g_pCoreShell->GetNPCRelation(i);
+		if (pNpc->m_CurrentLife <= 0) szWhy = TV(L"đã chết");
+		else if (pNpc->IsGhost()) szWhy = TV(L"hồn ma");
+		else if (pNpc->m_CurrentCamp == camp_begin) szWhy = TV(L"tân thủ");
+		else if (bListed)
+		{
+			if (dZ > nRange) szWhy = TV(L"có trong danh sách nhưng ngoài tầm");
+			else if (!bArmed) szWhy = TV(L"có trong danh sách nhưng đồ sát/cừu sát chưa bật");
+			else if (nMode == 3 && nRel == relation_enemy) { bEnemy = TRUE; szWhy = TV(L"cừu sát - đã là kẻ thù"); }
+			else { bEnemy = TRUE; szWhy = nMode == 2 ? TV(L"có trong danh sách đồ sát") : TV(L"có trong danh sách cừu sát"); }
+		}
+		else if (!a->m_nAutoDefence)
+			szWhy = nMode == 2 || nMode == 3 ? TV(L"không có trong danh sách đồ sát (tự vệ tắt)") : TV(L"tự vệ tắt");
+		else if (SkipSameTong(pNpc)) szWhy = TV(L"cùng bang");
+		else if (nRel == relation_ally) szWhy = TV(L"đồng minh");
+		else if (nRel == relation_none && P_PLAYER->m_CurrentCamp == pNpc->m_CurrentCamp && P_PLAYER->m_CurrentCamp < camp_free)
+			szWhy = TV(L"cùng phe");
+		else if (nRel == relation_none && pNpc->m_nPKFlag != 2) szWhy = TV(L"không bật đồ sát");
+		else if (dZ >= nRange) szWhy = TV(L"không trong tầm tự vệ");
+		else { bEnemy = TRUE; szWhy = TV(L"tự vệ"); }
+
+		aList[nCount].nIdx = i; aList[nCount].dZ = dZ; aList[nCount].bEnemy = bEnemy; aList[nCount].szWhy = szWhy;
+		nCount++;
+		dwHash = (dwHash ^ (DWORD)(i * 7919 + dZ / 100 * 13 + bEnemy)) * 16777619u;
+		dwHash = (dwHash ^ (DWORD)(size_t)szWhy) * 16777619u;
+	}
+	if (dwHash == s_dwLastHash) return;
+	s_dwLastHash = dwHash;
+
+	CS_LOG("QUET %d: che do %d  armed %d  PK %d  Tu ve %d  tam %d  => %d nguoi", CS_SCAN_RANGE, nMode, bArmed,
+		P_PLAYER->m_nPKFlag, a->m_nAutoDefence, nRange, nCount);
+	for (int k = 0; k < nCount; k++)
+		CS_LOG("  %s-%d-%d-%s-%s", g_pNpcArray[aList[k].nIdx]->Name, aList[k].nIdx, aList[k].dZ,
+			aList[k].bEnemy ? szEnemy : szSkip, aList[k].szWhy);
+}
+#endif
 
 // Tam quet bat Do sat theo DS / Cuu sat = "Pham vi tim ke thu" (IDC_DEFENCERANGE_EDIT) tren tab Chien dau.
 // Khong phu thuoc che do Tu ve (Bo qua / Danh tra / ...) - co the vua Do sat vua Danh tra.
@@ -576,6 +805,18 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 	int nMap = *g_pMapID;
 	if (m_nPKMode < 1 || m_nPKMode > 3 || !m_nPKMapID || nMap != m_nPKMapID)
 	{
+		if (s_bPKArmed)
+			CS_LOG("TAT (disarm): che do %d  MapPK %d  map hien tai %d", m_nPKMode, m_nPKMapID, nMap);
+#if DebugCuuSat
+		if (m_nPKMode >= 1 && m_nPKMode <= 3)
+		{
+			if (!m_nPKMapID) CS_STATE("Chua chon map PK (MapPK = 0) => khong chay");
+			else CS_STATE("Sai map: dang o map %d, map cai dat %d => khong chay", nMap, m_nPKMapID);
+		}
+		else
+			CS_STATE("Che do = %d (tat)", m_nPKMode);
+		s_dwCSLastBreathe = 0;
+#endif
 		s_bPKArmed = FALSE;
 		s_nPKArmMap = 0;
 		return;
@@ -583,26 +824,46 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 	DWORD dwNow = GetTickCount();
 	if (dwNow - s_dwPKCheckTick < PK_CHECK_DELAY) return;
 	s_dwPKCheckTick = dwNow;
+#if DebugCuuSat
+	CSWatch();
+#endif
 
-	if (theMain.m_bPause || !P_PLAYER->m_FightMode || P_PLAYER->m_CurrentCamp == camp_begin) return;
-	if (P_PLAYER->m_CurrentLife <= 0) return;
+	if (theMain.m_bPause) { CS_STATE("Auto dang tam dung (m_bPause) => khong chay"); return; }
+	if (!P_PLAYER->m_FightMode) { CS_STATE("Dang trong thanh (FightMode 0) => khong chay"); return; }
+	if (P_PLAYER->m_CurrentCamp == camp_begin) { CS_STATE("Nhan vat la tan thu (camp_begin) => khong chay"); return; }
+	if (P_PLAYER->m_CurrentLife <= 0) { CS_STATE("Nhan vat da chet => khong chay"); return; }
 
 	int nPlayerX, nPlayerY;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+#if DebugCuuSat
+	CSScanPlayers(this, nPlayerX, nPlayerY, s_bPKArmed && s_nPKArmMap == nMap);
+#endif
 	if (!s_bPKArmed || s_nPKArmMap != nMap)
 	{
-		if (bFindingTrain) return;	// Dang tu di toi bai train
+		if (bFindingTrain)
+		{	// Dang tu di toi bai train
+			CS_STATE("Chua bat: dang tu di toi bai train (GoTrain %d / MapPath) - cho toi noi", theMove.m_bGoTrain);
+			return;
+		}
 		int nX, nY;
-		if (GetPKArmPoint(&nX, &nY) && __distance(nPlayerX, nPlayerY, nX, nY) > PK_ARM_NEAR) return;
+		if (GetPKArmPoint(&nX, &nY) && __distance(nPlayerX, nPlayerY, nX, nY) > PK_ARM_NEAR)
+		{
+			CS_STATE("Chua bat: cach diem bat (%d,%d) %d > %d (minh o %d,%d)", nX, nY,
+				__distance(nPlayerX, nPlayerY, nX, nY) / 100 * 100, PK_ARM_NEAR, nPlayerX / 100 * 100, nPlayerY / 100 * 100);
+			return;
+		}
 		s_bPKArmed = TRUE;
 		s_nPKArmMap = nMap;
 		s_dwPKSeenTick = 0;
 		s_dwRevengeID = 0;
 		s_nPKZeroTry = 0;
+		CS_LOG("BAT (armed): che do %d  map %d  vi tri (%d,%d)  PK %d  PhamVi %d", m_nPKMode, nMap, nPlayerX, nPlayerY,
+			P_PLAYER->m_nPKFlag, PKSkillRange(this));
 	}
 
 	if (m_nPKMode == 1)
 	{	// Do sat tat ca
+		CS_STATE("Do sat tat ca: giu PK 2");
 		SwitchPK(2);
 		return;
 	}
@@ -611,18 +872,61 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 	int nRange = PKSkillRange(this);
 	int nSelfIdx = g_pCurPlayer->m_nIndex;
 	int nFound = 0, dMin = MAX_INTNUM;
+#if DebugCuuSat
+	int nListedSeen = 0, nListedOut = 0, nListedSkip = 0;	// Nguoi trong DS: thay / ngoai tam / bi bo qua (chet, tan thu...)
+	char szNear[160] = "";
+#endif
 	for (int i = 1; i < MAX_NPC; i++)
 	{
 		if (i == nSelfIdx) continue;
 		KNpc* pNpc = g_pNpcArray[i];
 		if (!pNpc->IsExist() || pNpc->m_Kind != kind_player) continue;
-		if (pNpc->m_CurrentLife <= 0 || pNpc->IsGhost() || pNpc->m_CurrentCamp == camp_begin) continue;
 		if (!IsListedEnemy(pNpc->Name)) continue;
+#if DebugCuuSat
+		nListedSeen++;
+#endif
+		if (pNpc->m_CurrentLife <= 0 || pNpc->IsGhost() || pNpc->m_CurrentCamp == camp_begin)
+		{
+#if DebugCuuSat
+			nListedSkip++;
+#endif
+			continue;
+		}
 		int nX, nY;
 		pNpc->GetMapPos(&nX, &nY);
 		int dZ = __distance(nPlayerX, nPlayerY, nX, nY);
+#if DebugCuuSat
+		if (dZ > nRange)
+		{
+			nListedOut++;
+			if (!szNear[0]) _snprintf(szNear, sizeof(szNear) - 1, "%s cach %d", pNpc->Name, dZ);
+		}
+#endif
 		if (dZ <= nRange && dZ < dMin) { dMin = dZ; nFound = i; }
 	}
+#if DebugCuuSat
+	if (nFound)
+		CS_STATE("Che do %d: THAY %s TRONG TAM (tam %d)  Rel %d  PK nguoi do %d  PK minh %d", m_nPKMode, g_pNpcArray[nFound]->Name,
+			nRange, g_pCoreShell->GetNPCRelation(nFound), g_pNpcArray[nFound]->m_nPKFlag, P_PLAYER->m_nPKFlag);
+	else if (nListedOut)
+		CS_STATE("Che do %d: co %d nguoi trong DS nhung NGOAI TAM %d", m_nPKMode, nListedOut, nRange);
+	static DWORD s_dwCSNearTick = 0;
+	if (!nFound && nListedOut && dwNow - s_dwCSNearTick >= 5000)
+	{	// Nguoi trong DS dang o gan nhung ngoai tam: ghi khoang cach toi da 5s/lan
+		s_dwCSNearTick = dwNow;
+		CS_LOG("  DS ngoai tam: %s (tam %d)", szNear, nRange);
+	}
+	else if (nListedSkip)
+		CS_STATE("Che do %d: nguoi trong DS chet / tan thu / hon ma => bo qua", m_nPKMode);
+	else
+		CS_STATE("Che do %d: khong thay ai trong DS quanh day (tam %d)", m_nPKMode, nRange);
+	if (dwNow - s_dwCSHeartbeat >= CS_LOG_HEARTBEAT)
+	{
+		s_dwCSHeartbeat = dwNow;
+		CS_LOG("NHIP: che do %d  armed  PK %d  vi tri (%d,%d)  DS thay %d / ngoai tam %d / bo qua %d  ZeroTry %d",
+			m_nPKMode, P_PLAYER->m_nPKFlag, nPlayerX, nPlayerY, nListedSeen, nListedOut, nListedSkip, s_nPKZeroTry);
+	}
+#endif
 
 	if (m_nPKMode == 2)
 	{	// Do sat theo danh sach
@@ -639,7 +943,10 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 			if (!P_PLAYER->m_nPKFlag)
 				s_nPKZeroTry = 0;
 			else if (P_PLAYER->m_nPKFlag == 2 && s_nPKZeroTry >= PK_ZERO_TRIES)
+			{
+				CS_STATE("Do sat DS: het ke thu, ve Luyen cong that bai %d lan => ve Chien dau", s_nPKZeroTry);
 				SwitchPK(1);
+			}
 			else if (P_PLAYER->m_nPKFlag == 2)
 			{
 				DWORD dwLast = s_dwPKSwitchTick;
@@ -658,8 +965,23 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 	if (P_PLAYER->m_nPKFlag) SwitchPK(0);
 	if (!nFound) return;
 	KNpc* pEnemy = g_pNpcArray[nFound];
-	if (g_pCoreShell->GetNPCRelation(nFound) == relation_enemy) return;	// Dang la ke thu roi (da cuu sat / do sat)
+	if (g_pCoreShell->GetNPCRelation(nFound) == relation_enemy)
+	{	// Dang la ke thu roi (da cuu sat / do sat)
+#if DebugCuuSat
+		if (s_dwRevengeID == pEnemy->m_dwID && s_dwRevengeTick)
+		{
+			CS_LOG("CUU SAT THANH CONG: %s da la ke thu (sau %u ms)", pEnemy->Name, dwNow - s_dwRevengeTick);
+			s_dwRevengeTick = 0;
+		}
+#endif
+		return;
+	}
 	if (s_dwRevengeID == pEnemy->m_dwID && dwNow - s_dwRevengeTick < PK_REVENGE_DELAY) return;
+	if (s_dwRevengeID == pEnemy->m_dwID && s_dwRevengeTick)
+		CS_LOG("CUU SAT CHUA AN: gui %s %u ms truoc ma van chua la ke thu (Rel %d) => gui lai", pEnemy->Name,
+			dwNow - s_dwRevengeTick, g_pCoreShell->GetNPCRelation(nFound));
+	CS_LOG("GUI CUU SAT: %s  ID %u  idx %d  cach %d  Rel %d  PK minh %d  PK nguoi do %d", pEnemy->Name, pEnemy->m_dwID, nFound,
+		dMin, g_pCoreShell->GetNPCRelation(nFound), P_PLAYER->m_nPKFlag, pEnemy->m_nPKFlag);
 	s_dwRevengeID = pEnemy->m_dwID;
 	s_dwRevengeTick = dwNow;
 	KUiPlayerItem thePlayer;
@@ -1356,6 +1678,9 @@ void CVLAttack::AutoDefence()
 			nPKTimeCount = 0;
 		if (nPKTimeCount > 100 && nPKTimeCount % 20 == 1 && !PKSwitchActive())	// Dang Do sat / Cuu sat: khong tu tat PK
 		{	// 100 ~ 30s khong co ke thu => ve Luyen cong; chua ve duoc thi thu lai moi ~6s
+			if (m_nPKMode >= 1 && m_nPKMode <= 3)
+				CS_LOG("TU VE tu tat PK (30s khong ke thu) vi Do sat/Cuu sat CHUA BAT (armed %d, map %d / MapPK %d)",
+					PKSwitchActive(), *g_pMapID, m_nPKMapID);
 			ExecuteScript("Switch('PK',0)");
 			return;
 		}
@@ -1433,6 +1758,10 @@ void CVLAttack::AutoDefence()
 			}
 			if (nDefenceMode == 3)
 			{	// Thoat game: giet tien trinh ngay, khong cho Exit() / dem nguoc cua game
+#if DebugCuuSat
+				CS_LOG("TU VE: thoat game vi %s trong tam %d", g_pNpcArray[i]->Name, dZ);
+				CSFlush();	// Ghi bo dem log truoc khi tien trinh chet
+#endif
 				TerminateProcess(GetCurrentProcess(), 0);
 				return;
 			}
@@ -1544,6 +1873,7 @@ void CVLAttack::ProcessAttack()
 	{
 		int nX = nEnemyX - nPlayerX + 400;
 		int nY = (nEnemyY - nPlayerY) / 2 + 280;
+		SetPeopleIdx(m_nPeopleIdx);
 		SendVLCmdSkill(g_pCurPlayer->m_nLeftSkillID, nX, nY);
 	}
 

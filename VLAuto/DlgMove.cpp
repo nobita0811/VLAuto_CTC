@@ -84,6 +84,7 @@ END_MESSAGE_MAP()
 BOOL CDlgMove::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+	m_NameEdit.AttachTo(this, IDC_NEARBYPLAYER_COMBO);
 
 	if (m_ToolTip.Create(this))
 	{
@@ -155,13 +156,13 @@ void CDlgMove::UpdateNearByPlayers(BOOL bSave)
 	if (bSave)
 	{
 		GetDlgItemText(IDC_NEARBYPLAYER_COMBO, szName, 32);
-		WideCharToMultiByte(CP_ACP, 0, szName, -1, g_pCurGameWin->m_prMove.m_szLeader, 32, 0, 0);
+		UnicodeToTCVN3(szName, g_pCurGameWin->m_prMove.m_szLeader, 31);
 	}
 	else
 	{
 		if (((CButton*)GetDlgItem(IDC_FOLLOW_CHECK))->GetCheck())
 		{
-			MultiByteToWideChar(CP_ACP, 0, g_pCurGameWin->m_prMove.m_szLeader, -1, szName, 32);
+			TCVN3ToUnicode(g_pCurGameWin->m_prMove.m_szLeader, szName, 31);
 			SetDlgItemText(IDC_NEARBYPLAYER_COMBO, szName);
 			return;
 		}
@@ -183,7 +184,8 @@ void CDlgMove::UpdateNearByPlayers(BOOL bSave)
 		lpCurAdd = lpBaseAdd + i*NPC_DATA_SIZE;
 		winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, sizeof(Npc));
 		if (!Npc.m_Index || Npc.m_NpcKind != 1) continue;
-		MultiByteToWideChar(CP_ACP, 0, Npc.Name, -1, szName, 32);
+		Npc.Name[31] = 0;
+		TCVN3ToUnicode(Npc.Name, szName, 31);
 		pNearByPlayer->AddString(szName);
 	}
 }

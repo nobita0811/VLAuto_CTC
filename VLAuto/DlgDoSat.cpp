@@ -62,6 +62,7 @@ BOOL CDlgDoSat::OnInitDialog()
 	pMode->AddString(_T("Đồ sát theo danh sách"));		// PKMODE_LIST
 	pMode->AddString(_T("Cừu sát theo danh sách"));		// PKMODE_REVENGE
 	((CEdit*)GetDlgItem(IDC_INPUT_ENEMY_EDIT))->SetLimitText(31);
+	m_InputEdit.AttachTo(this, IDC_INPUT_ENEMY_EDIT);
 
 	CDialog::OnInitDialog();	// UpdateData(FALSE)
 	UpdateNearByPlayers();
@@ -203,8 +204,20 @@ BOOL CDlgDoSat::AddEnemy(LPCTSTR szName)
 		MessageBox(_T("Tên quá dài (tối đa 31 ký tự)!"), 0, MB_ICONEXCLAMATION);
 		return FALSE;
 	}
-	if (m_EnemyList.FindStringExact(-1, strName) != LB_ERR)
-		return TRUE;
+	// Ten that (gui DLL) la byte TCVN3: ky tu khong co trong TCVN3 (vd chu Trung, emoji) se thanh '?' => ten sai
+	if (!IsTCVN3Exact(strName))
+	{
+		MessageBox(_T("Tên có ký tự không thuộc bảng mã TCVN3 của game, sẽ không khớp tên trong game!\n")
+			_T("Hãy copy tên trong game rồi dán (Ctrl+V) vào ô nhập, hoặc chọn từ danh sách người chơi xung quanh."), 0, MB_ICONEXCLAMATION);
+		return FALSE;
+	}
+	// So khop phan biet hoa thuong (FindStringExact khong phan biet)
+	for (int i = 0; i < m_EnemyList.GetCount(); i++)
+	{
+		CString strOld;
+		m_EnemyList.GetText(i, strOld);
+		if (strOld == strName) return TRUE;
+	}
 	if (m_EnemyList.GetCount() >= MAX_ENEMY)
 	{
 		CString strMsg;
@@ -256,7 +269,8 @@ void CDlgDoSat::OnBnClickedClear()
 	ApplyParams();
 }
 
-// File danh sach: van ban Unicode (UTF-16 co BOM), moi dong 1 ten - sua tay bang Notepad duoc
+// File danh sach: van ban Unicode (UTF-16 co BOM), moi dong 1 ten - sua tay bang Notepad duoc.
+// Byte TCVN3 la trong ten (vd 0xD9) luu thanh U+F7xx => doc lai dung byte goc.
 void CDlgDoSat::OnBnClickedSave()
 {
 	CFileDialog fDlg(FALSE, _T(".enm"), 0, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, ENEMY_FILE_FILTER, this);
@@ -280,7 +294,7 @@ void CDlgDoSat::OnBnClickedSave()
 	file.Close();
 }
 
-// Doc file UTF-16 (co BOM) / UTF-8 / ANSI, moi dong 1 ten
+// Doc file UTF-16 (co BOM) / UTF-8 / byte TCVN3, moi dong 1 ten
 void CDlgDoSat::OnBnClickedLoad()
 {
 	CFileDialog fDlg(TRUE, _T(".enm"), 0, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, ENEMY_FILE_FILTER, this);
@@ -308,12 +322,17 @@ void CDlgDoSat::OnBnClickedLoad()
 	{
 		LPCSTR s = (LPCSTR)p;
 		if (nLen >= 3 && p[0] == 0xEF && p[1] == 0xBB && p[2] == 0xBF) s += 3;
-		UINT cp = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s, -1, NULL, 0) > 0 ? CP_UTF8 : CP_ACP;
-		int nW = MultiByteToWideChar(cp, 0, s, -1, NULL, 0);
-		if (nW > 0)
+		if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s, -1, NULL, 0) > 0)
 		{
-			MultiByteToWideChar(cp, 0, s, -1, strText.GetBuffer(nW), nW);
+			int nW = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+			MultiByteToWideChar(CP_UTF8, 0, s, -1, strText.GetBuffer(nW), nW);
 			strText.ReleaseBuffer();
+		}
+		else
+		{	// Khong phai UTF-8: file byte TCVN3 (copy tu game) - doi theo bang TCVN3, khong theo ACP may
+			int n = (int)strlen(s);
+			TCVN3ToUnicode(s, strText.GetBuffer(n + 1), n);
+			strText.ReleaseBuffer(n);
 		}
 	}
 
@@ -324,8 +343,14 @@ void CDlgDoSat::OnBnClickedLoad()
 		CString strLine = strText.Tokenize(_T("\r\n"), nPos);
 		if (nPos < 0) break;
 		strLine.Trim();
-		if (!strLine.IsEmpty() && strLine.GetLength() <= 31 && m_EnemyList.GetCount() < MAX_ENEMY
-			&& m_EnemyList.FindStringExact(-1, strLine) == LB_ERR)
+		BOOL bDup = FALSE;
+		for (int i = 0; i < m_EnemyList.GetCount() && !bDup; i++)
+		{
+			CString strOld;
+			m_EnemyList.GetText(i, strOld);
+			bDup = strOld == strLine;
+		}
+		if (!strLine.IsEmpty() && strLine.GetLength() <= 31 && m_EnemyList.GetCount() < MAX_ENEMY && !bDup)
 			m_EnemyList.AddString(strLine);
 	}
 	ApplyParams();

@@ -85,6 +85,17 @@ public:
 // Global Functions;
 void TCVN3ToUnicode(LPCSTR szTCVN3String, LPWSTR szUnicodeString, int nMaxLen);
 void UnicodeToTCVN3(LPCWSTR szUnicodeString, LPSTR szTCVN3String, int nMaxLen);
+BOOL IsTCVN3Exact(LPCWSTR szUnicodeString);
+BOOL GetClipboardGameText(CStringW& strOut);
+
+// O nhap ten nhan vat: dan (paste) ten copy tu game giu dung byte TCVN3
+class CTcvnEdit : public CEdit
+{
+public:
+	void AttachTo(CWnd* pParent, UINT nID);
+protected:
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+};
 unsigned int HashString2ID(const char* szFileName);
 
 INT_PTR GetDeviceIoControlAdd();

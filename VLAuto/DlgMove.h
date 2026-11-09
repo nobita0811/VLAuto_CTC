@@ -26,6 +26,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	CTcvnEdit			m_NameEdit;	// Dan ten copy tu game: giu byte TCVN3 goc
 	CToolTipCtrl	m_ToolTip;
 	afx_msg void OnBnClickedMoveListButton();
 };

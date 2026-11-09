@@ -34,6 +34,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	CTcvnEdit			m_NameEdit;	// Dan ten copy tu game: giu byte TCVN3 goc
 	CListBox			m_MemberList;
 	CToolTipCtrl		m_ToolTip;
 };

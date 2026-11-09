@@ -9,6 +9,8 @@
 #include "VLHook.h"
 #include "../CrashHandler.h"
 
+void CuuSatLogParams();	// VLAttack.cpp - debug log Cuu sat / Do sat (DebugCuuSat)
+
 #define WM_HOOKEX			WM_USER + 99
 #define WM_HOOK_MAIN		WM_USER + 100
 #define WM_HOOK_BASIC		WM_USER + 101
@@ -428,6 +430,7 @@ LRESULT CALLBACK NewWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_HOOK_ATTACK:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theAttack, lParam, NULL);
 			theAttack.SetAutoHit();
+			CuuSatLogParams();	// VLAttack.cpp - chi ghi khi DebugCuuSat 1
 			break;
 		case WM_HOOK_COLLECT:
 			ReadProcessMemory(hProcess_Auto, (LPCVOID)wParam, (LPVOID)&theCollect, lParam, NULL);

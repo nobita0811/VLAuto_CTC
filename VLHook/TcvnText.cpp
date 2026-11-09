@@ -43,7 +43,13 @@ int Tcvn3ToUtf8(const char* szTcvn, char* szOut, int nOut)
 	for (const unsigned char* p = (const unsigned char*)szTcvn; *p; p++)
 	{
 		unsigned int w = *p;
-		if (w >= 0x80 && s_Rev[w - 0x80]) w = s_Rev[w - 0x80];	// byte ngoai bang: giu nguyen nhu Latin-1
+		if (w >= 0x80 && !s_Rev[w - 0x80])
+		{	// Byte ngoai bang TCVN3 (vd 0xD9 trong ten "TN{D9}So{D9}33"): ghi ro ma hex de doi chieu
+			if (n + 4 > nOut - 1) break;
+			n += sprintf(szOut + n, "{%02X}", w);
+			continue;
+		}
+		if (w >= 0x80) w = s_Rev[w - 0x80];
 		int nNeed = w < 0x80 ? 1 : (w < 0x800 ? 2 : 3);
 		if (n + nNeed > nOut - 1) break;
 		if (nNeed == 1)
