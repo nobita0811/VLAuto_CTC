@@ -451,14 +451,24 @@ int ObsReachDist(int x, int y)
 		if (s_pStamp[n] != s_dwGen) return d;	// Bien bi chan - khong biet, coi nhu thang
 		return PathDist(n) + __distance(cx, cy, x, y);
 	}
-	// Diem o nut bi chan (o tam giac): lay nut quanh no toi duoc
+	// Diem o nut bi chan (o tam giac) hoac sat vat can: tim nut toi duoc gan nhat trong ban kinh.
+	// Diem dan duong dat tay co the lech vao o vat can; chi do 9 o sat canh (+-8 don vi) la qua hep,
+	// lam diem gan bi coi la khong toi duoc va thua diem xa hon o ngoai vung grid.
 	int n = NodeOf(x, y), nx = n % s_nW, ny = n / s_nW, nBest = MAX_INTNUM;
-	for (int k = 0; k < 9; k++)
+	const int R = 6;	// 6 nut ~ 48 don vi
+	for (int dy = -R; dy <= R; dy++)
 	{
-		int ax = nx + k % 3 - 1, ay = ny + k / 3 - 1;
-		if (ax < 0 || ay < 0 || ax >= s_nW || ay >= s_nH) continue;
-		int a = ay * s_nW + ax;
-		if (s_pStamp[a] == s_dwGen) nBest = min(nBest, PathDist(a) + (k == 4 ? 0 : OB_NODE));
+		int ay = ny + dy;
+		if (ay < 0 || ay >= s_nH) continue;
+		for (int dx = -R; dx <= R; dx++)
+		{
+			int ax = nx + dx;
+			if (ax < 0 || ax >= s_nW) continue;
+			int a = ay * s_nW + ax;
+			if (s_pStamp[a] != s_dwGen) continue;
+			int dz = PathDist(a) + __distance(NodeX(a), NodeY(a), x, y);
+			if (dz < nBest) nBest = dz;
+		}
 	}
 	return nBest;
 }

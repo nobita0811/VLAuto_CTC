@@ -167,6 +167,297 @@ CVLAttack::CVLAttack(void)
 	m_bSkillChanged = TRUE;
 	m_nPeopleIdx = 0;
 	m_nEnemyIdx = 0;
+	m_nBuaTarget = 0;
+	m_dwBuaTargetID = 0;
+	m_nBuaCur = 0;
+	m_dwBuaTick = 0;
+	m_bBuaCasting = FALSE;
+	m_nBuaSavedRadius = 0;
+	m_nBuaPhase = 0;
+	memset(m_dwBuaDone, 0, sizeof(m_dwBuaDone));
+	memset(m_dwBuaDoneTime, 0, sizeof(m_dwBuaDoneTime));
+	m_nBuaDoneNext = 0;
+	m_nBuaPrevPeople = 0;
+	m_dwBuaPrevPeopleID = 0;
+	m_bBuaOnlyPlayer = FALSE;
+	m_nBuaRange = 0;
+	m_dwBuaTargetStart = 0;
+}
+
+//================================Buff bua================================
+// Chuyen tu BuffBua (KeoXe C#, TinSu.cs). Doc lap voi Danh quai: tu tim doi tuong (ke thu gan nhat
+// chua dinh bua; quai + nguoi choi hoac chi nguoi choi), lan luot dat ActiveSkill = tung bua, het bua
+// thi tra skill tay trai va tim doi tuong khac. Bat ca Danh quai: buff het doi tuong roi moi danh.
+// Ban C# ghi bo nho tu ngoai (CreateRemoteThread); o day chay trong DLL, theo nhip Breathe (khong Sleep).
+static BOOL SkipSameTong(KNpc* pNpc);	// dinh nghia ben duoi
+#define NPC_STATESPR_OFFSET	(0x1DC8 + 0x15BC)	// KNpc::m_DataRes (KNpcRes, xem NPCP_FUNC_ADD) . m_cStateSpr[6]
+#define NPC_STATESPR_SIZE	0x9C				// sizeof(KStateSpr); m_nID (id trang thai) o dau
+#define NPC_STATESPR_NUM	6
+#define BUA_CAST_TIMEOUT	4000				// ms/bua: qua thoi gian ma quai chua dinh (mien nhiem, het mana...) => bo qua bua do
+
+static int PlayerSkillLevel(int nSkillId)
+{
+	for (int i = 0; i < MAX_NPCSKILL; i++)
+		if (P_PLAYER->m_Skills[i].SkillId == nSkillId)
+			return P_PLAYER->m_Skills[i].SkillLevel;
+	return 0;
+}
+
+static BOOL NpcHasState(KNpc* pNpc, int nStateId)
+{
+	const BYTE* p = (const BYTE*)pNpc + NPC_STATESPR_OFFSET;
+	for (int i = 0; i < NPC_STATESPR_NUM; i++)
+		if (*(const int*)(p + i * NPC_STATESPR_SIZE) == nStateId)
+			return TRUE;
+	return FALSE;
+}
+
+void CVLAttack::BuffBuaStopCast()
+{
+	if (!m_bBuaCasting) return;
+	m_bBuaCasting = FALSE;
+	if (m_nBuaSavedRadius >= 75)
+		P_PLAYER->m_CurrentAttackRadius = m_nBuaSavedRadius;
+	SetActiveSkill(g_pCurPlayer->m_nLeftSkillID);
+	m_bSkillChanged = TRUE;	// Nhip sau dat lai skill trai/phai + ngua nhu binh thuong
+}
+
+void CVLAttack::BuffBuaReset()
+{
+	BuffBuaStopCast();
+	m_nBuaTarget = 0;
+	m_dwBuaTargetID = 0;
+	m_nBuaCur = 0;
+	m_nBuaPhase = 0;
+}
+
+// Quai dang buff bua con song, dung con (m_dwID khong doi)
+BOOL CVLAttack::BuaTargetValid()
+{
+	int n = m_nBuaTarget;
+	if (n <= 0 || n >= MAX_NPC) return FALSE;
+	KNpc* pNpc = g_pNpcArray[n];
+	return pNpc->IsExist() && pNpc->m_dwID == m_dwBuaTargetID && pNpc->m_Kind == kind_normal
+		&& pNpc->m_CurrentLife > 0 && pNpc->m_Doing != do_death && pNpc->m_Doing != do_revive;
+}
+
+// Bo qua bua hien tai, sang bua sau
+void CVLAttack::BuaNext()
+{
+	m_nBuaCur++;
+	m_dwBuaTick = GetTickCount();
+	m_nBuaPhase = 0;
+}
+
+#define BUA_APPROACH_TIMEOUT	10000	// ms: chay toi doi tuong qua lau (ket vat can...) => bo
+#define BUA_DONE_HOLD	30000	// ms: doi tuong da buff xong thi trong thoi gian nay khong buff lai
+
+BOOL CVLAttack::BuaIsDone(DWORD dwID)
+{
+	if (!dwID) return FALSE;
+	DWORD dwNow = GetTickCount();
+	for (int i = 0; i < BUA_DONE_NUM; i++)
+		if (m_dwBuaDone[i] == dwID && dwNow - m_dwBuaDoneTime[i] < BUA_DONE_HOLD) return TRUE;
+	return FALSE;
+}
+
+void CVLAttack::BuaMarkDone(DWORD dwID)
+{
+	if (!dwID) return;
+	int iSlot = -1;
+	for (int i = 0; i < BUA_DONE_NUM && iSlot < 0; i++)
+		if (m_dwBuaDone[i] == dwID) iSlot = i;
+	if (iSlot < 0)
+	{
+		iSlot = m_nBuaDoneNext;
+		m_nBuaDoneNext = (m_nBuaDoneNext + 1) % BUA_DONE_NUM;
+	}
+	m_dwBuaDone[iSlot] = dwID;
+	m_dwBuaDoneTime[iSlot] = GetTickCount();
+}
+
+// Con bua nao da chon + da hoc ma doi tuong chua dinh
+BOOL CVLAttack::BuaNeedCast(KNpc* pNpc)
+{
+	for (int k = 0; k < MAX_BUFFBUA; k++)
+	{
+		int nSkill = m_BuaSkills[k];
+		int nState = BuffBuaStateOf(nSkill);
+		if (nSkill > 0 && nState && PlayerSkillLevel(nSkill) > 0 && !NpcHasState(pNpc, nState))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+// Tim doi tuong gan nhat can buff bua: ke thu (quai + nguoi choi, hoac chi nguoi choi), trong tam tim quai,
+// chua buff xong gan day, con thieu it nhat 1 bua
+static int BuaSearchRange(CVLAttack* pAttack)
+{
+	int nRange = pAttack->m_nBuaRange;
+	if (nRange < 75) nRange = pAttack->m_nSearchRange;	// Chua dat => dung tam tim quai
+	if (nRange < 75) nRange = 400;
+	return nRange;
+}
+
+int CVLAttack::SearchBuaTarget()
+{
+	int nRange = BuaSearchRange(this);
+	int nSelfIdx = g_pCurPlayer->m_nIndex;
+	int nPlayerX, nPlayerY, nNpcX, nNpcY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+
+	int nBest = 0, dMin = nRange;
+	for (int i = 1; i < MAX_NPC; i++)
+	{
+		if (i == nSelfIdx) continue;
+		KNpc* pNpc = g_pNpcArray[i];
+		if (!pNpc->IsExist()) continue;
+		if (pNpc->m_Kind == kind_player)
+		{
+			if (pNpc->m_CurrentCamp == camp_begin || SkipSameTong(pNpc)) continue;
+		}
+		else if (pNpc->m_Kind != kind_normal || m_bBuaOnlyPlayer)
+			continue;
+		if (pNpc->m_CurrentLife <= 0 || pNpc->m_Doing == do_death || pNpc->m_Doing == do_revive) continue;
+		if (pNpc->IsGhost()) continue;
+		if (m_bAvoidBoss && pNpc->m_cGold.m_nGoldType == 16) continue;
+		pNpc->GetMapPos(&nNpcX, &nNpcY);
+		int dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
+		if (dZ >= dMin) continue;
+		if (BuaIsDone(pNpc->m_dwID) || !BuaNeedCast(pNpc)) continue;
+		if (g_pCoreShell->GetNPCRelation(i) != relation_enemy) continue;
+		dMin = dZ;
+		nBest = i;
+	}
+	return nBest;
+}
+
+// Buff xong doi tuong hien tai: nho lai, tra skill; muc tieu danh truoc do (neu con) thi danh tiep,
+// khong thi bo muc tieu => phan danh quai tu tim muc tieu moi (tat danh quai thi dung yen)
+void CVLAttack::BuaFinishTarget()
+{
+	BuaMarkDone(m_dwBuaTargetID);
+	BuffBuaStopCast();
+	int nBack = 0;
+	int n = m_nBuaPrevPeople;
+	if (m_bAutoHit && n > 0 && n < MAX_NPC)
+	{
+		KNpc* pNpc = g_pNpcArray[n];
+		if (pNpc->IsExist() && pNpc->m_dwID == m_dwBuaPrevPeopleID && pNpc->m_CurrentLife > 0
+			&& pNpc->m_Doing != do_death && pNpc->m_Doing != do_revive)
+			nBack = n;
+	}
+	SetPeopleIdx(nBack);
+	m_nBuaTarget = 0;
+	m_dwBuaTargetID = 0;
+	m_nBuaCur = 0;
+	m_nBuaPhase = 0;
+}
+
+BOOL CVLAttack::BuffBuaBreathe()
+{
+	if (!m_bBuffBua)
+	{
+		BuffBuaReset();
+		return FALSE;
+	}
+
+	DWORD dwNow = GetTickCount();
+	if (m_nBuaTarget && !BuaTargetValid())	// Doi tuong chet / mat => bo, tim con khac
+	{
+		int nOld = m_nBuaTarget;
+		BuffBuaReset();
+		if (PEOPLE_IDX == nOld) SetPeopleIdx(0);
+	}
+	if (!m_nBuaTarget)
+	{
+		int nTarget = SearchBuaTarget();
+		if (!nTarget) return FALSE;	// Khong con ai can buff => phan danh quai lam viec
+		BuffBuaReset();
+		int nPeople = PEOPLE_IDX;
+		m_nBuaPrevPeople = nPeople;
+		m_dwBuaPrevPeopleID = (nPeople > 0 && nPeople < MAX_NPC) ? g_pNpcArray[nPeople]->m_dwID : 0;
+		m_nBuaTarget = nTarget;
+		m_dwBuaTargetID = g_pNpcArray[nTarget]->m_dwID;
+		m_nBuaCur = 0;
+		m_nBuaPhase = 0;
+		m_dwBuaTick = dwNow;
+		m_dwBuaTargetStart = dwNow;
+	}
+	KNpc* pNpc = g_pNpcArray[m_nBuaTarget];
+
+	// Khoang cach toi doi tuong; chay ra ngoai 1.5 lan tam quet => bo
+	int nPlayerX, nPlayerY, nNpcX, nNpcY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	pNpc->GetMapPos(&nNpcX, &nNpcY);
+	int nDist = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
+	if (nDist > BuaSearchRange(this) * 3 / 2)
+	{
+		BuaFinishTarget();
+		return TRUE;
+	}
+
+	// Bua hien tai da ra chieu xong => sang bua sau, KHONG doi trang thai hien tren doi tuong:
+	// de ActiveSkill = bua dang hoi chieu thi game (KNpc::DoSkill, CanCast sai) xoa m_nPeopleIdx.
+	if (m_bBuaCasting && m_nBuaCur < MAX_BUFFBUA)
+	{
+		// Phai thay ranh -> ra chieu -> ranh (tranh tinh nham dong tac danh thuong dang do)
+		BOOL bInCast = (P_PLAYER->m_Doing == do_skill || P_PLAYER->m_Doing == do_magic);
+		if (!bInCast)
+		{
+			if (m_nBuaPhase == 2) BuaNext();
+			else m_nBuaPhase = 1;
+		}
+		else if (m_nBuaPhase == 1)
+			m_nBuaPhase = 2;
+	}
+
+	// Tim bua tiep theo: da chon, da hoc, doi tuong chua dinh va chua qua thoi gian thu
+	int nSkill = 0;
+	while (m_nBuaCur < MAX_BUFFBUA)
+	{
+		nSkill = m_BuaSkills[m_nBuaCur];
+		int nState = BuffBuaStateOf(nSkill);
+		if (nSkill > 0 && nState && PlayerSkillLevel(nSkill) > 0
+			&& !NpcHasState(pNpc, nState) && dwNow - m_dwBuaTick < BUA_CAST_TIMEOUT)
+			break;
+		BuaNext();
+	}
+	if (m_nBuaCur >= MAX_BUFFBUA)	// Da buff xong doi tuong nay; nhip sau tim doi tuong khac
+	{
+		BuaFinishTarget();
+		return TRUE;
+	}
+
+	// Ra lenh cast: skill -> tam -> muc tieu (game KNpcAI::FollowAttack tu chay toi va ra chieu)
+	if (!m_bBuaCasting)
+	{
+		m_nBuaSavedRadius = P_PLAYER->m_CurrentAttackRadius;
+		m_bBuaCasting = TRUE;
+	}
+	P_PLAYER->m_ActiveSkillID = nSkill;
+	int nRange = HitCloseRange(this);
+	if (!nRange)
+	{
+		KSkill* pSkill = (KSkill*)(SKL_BASE_ADD + (nSkill - 1) * SKL_DATA_SIZE);
+		nRange = (pSkill->m_dwSkillID == (DWORD)nSkill) ? pSkill->m_nSkillRange : 0;
+		if (nRange < 75) nRange = 400;	// mac dinh giong ban C#
+	}
+	P_PLAYER->m_CurrentAttackRadius = nRange;
+	// Ngoai tam skill: game (KNpcAI::FollowAttack) tu chay toi doi tuong roi moi ra chieu.
+	// Luc dang chay chua tinh thoi gian thu bua; chay qua lau (ket vat can) thi bo doi tuong.
+	if (nDist > nRange)
+	{
+		m_dwBuaTick = dwNow;
+		if (dwNow - m_dwBuaTargetStart > BUA_APPROACH_TIMEOUT)
+		{
+			BuaFinishTarget();
+			return TRUE;
+		}
+	}
+	if (PEOPLE_IDX != m_nBuaTarget)
+		SetPeopleIdx(m_nBuaTarget);
+	return TRUE;
 }
 
 // Nguoi choi cung bang hoi voi minh: so ma bang KNpc+0x1CCC (game cung so the nay trong GetRelation 0x636C6E)
@@ -221,6 +512,7 @@ static BOOL EnemyInDefenceRange(int nRange)
 #define PK_SWITCH_DELAY		3000	// Toi thieu giua 2 lan Switch('PK',x)
 #define PK_LIST_HOLD		10000	// Do sat theo DS: ke thu ra khoi tam bao lau moi chuyen ve chien dau
 #define PK_REVENGE_DELAY	10000	// Cuu sat cung 1 nguoi: gui lai sau
+#define PK_ZERO_TRIES		3		// Do sat theo DS: ve Luyen cong that bai bao nhieu lan thi ve Chien dau
 
 static BOOL		s_bPKArmed = FALSE;
 static int		s_nPKArmMap = 0;
@@ -229,6 +521,7 @@ static DWORD	s_dwPKSwitchTick = 0;
 static DWORD	s_dwPKSeenTick = 0;
 static DWORD	s_dwRevengeID = 0;
 static DWORD	s_dwRevengeTick = 0;
+static int		s_nPKZeroTry = 0;
 
 BOOL CVLAttack::IsListedEnemy(const char* szName)
 {
@@ -271,16 +564,10 @@ static void SwitchPK(int nFlag)
 	ExecuteScript(nFlag == 2 ? "Switch('PK',2)" : (nFlag == 1 ? "Switch('PK',1)" : "Switch('PK',0)"));
 }
 
-// Tam ra skill: AttackRadius cua skill tu ve (khong dat thi skill tay trai); khong doc duoc thi tam tu ve
+// Tam quet bat Do sat theo DS / Cuu sat = "Pham vi tim ke thu" (IDC_DEFENCERANGE_EDIT) tren tab Chien dau.
+// Khong phu thuoc che do Tu ve (Bo qua / Danh tra / ...) - co the vua Do sat vua Danh tra.
 static int PKSkillRange(CVLAttack* p)
 {
-	int nSkillId = p->m_SettingSkills[skill_defence] ? p->m_SettingSkills[skill_defence] : g_pCurPlayer->m_nLeftSkillID;
-	if (nSkillId > 0 && nSkillId < 3000)
-	{
-		KSkill* pSkill = (KSkill*)(SKL_BASE_ADD + (nSkillId - 1) * SKL_DATA_SIZE);
-		if (pSkill->m_dwSkillID == (DWORD)nSkillId && pSkill->m_nSkillRange > 0)
-			return pSkill->m_nSkillRange;
-	}
 	return p->m_nDefenceRange;
 }
 
@@ -311,6 +598,7 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 		s_nPKArmMap = nMap;
 		s_dwPKSeenTick = 0;
 		s_dwRevengeID = 0;
+		s_nPKZeroTry = 0;
 	}
 
 	if (m_nPKMode == 1)
@@ -341,18 +629,36 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 		if (nFound)
 		{
 			s_dwPKSeenTick = dwNow;
+			s_nPKZeroTry = 0;
 			SwitchPK(2);
 		}
 		else if (!s_dwPKSeenTick || dwNow - s_dwPKSeenTick >= PK_LIST_HOLD)
-			SwitchPK(1);
+		{
+			// Het ke thu: ve Luyen cong; server tu choi (vua do sat) => sau PK_ZERO_TRIES lan van la 2 thi ve Chien dau.
+			// (Ban cu goi SwitchPK(0) roi SwitchPK(1) lien nhau => lan 2 luon bi chan 3s => khong bao gio ve 1)
+			if (!P_PLAYER->m_nPKFlag)
+				s_nPKZeroTry = 0;
+			else if (P_PLAYER->m_nPKFlag == 2 && s_nPKZeroTry >= PK_ZERO_TRIES)
+				SwitchPK(1);
+			else if (P_PLAYER->m_nPKFlag == 2)
+			{
+				DWORD dwLast = s_dwPKSwitchTick;
+				SwitchPK(0);
+				if (s_dwPKSwitchTick != dwLast) s_nPKZeroTry++;	// Da thuc su gui lenh
+			}
+			else
+				SwitchPK(0);	// Dang Chien dau => thu ve Luyen cong
+		}
 		return;
 	}
 
-	// Cuu sat theo danh sach
+	// Cuu sat theo danh sach: khong can Chien dau hay Do sat => uu tien dua PK ve Luyen cong
+	// (khong chan: server KPlayerPK::EnmityPOpen khong doi PK 0, nen cuu sat van gui ngay ca khi chua ve duoc).
+	// Tu ve se khong tu bat PK 1 khi dang Cuu sat (xem AutoDefence).
+	if (P_PLAYER->m_nPKFlag) SwitchPK(0);
 	if (!nFound) return;
 	KNpc* pEnemy = g_pNpcArray[nFound];
 	if (g_pCoreShell->GetNPCRelation(nFound) == relation_enemy) return;	// Dang la ke thu roi (da cuu sat / do sat)
-	if (!P_PLAYER->m_nPKFlag) { SwitchPK(1); return; }	// Luyen cong: chuyen chien dau truoc
 	if (s_dwRevengeID == pEnemy->m_dwID && dwNow - s_dwRevengeTick < PK_REVENGE_DELAY) return;
 	s_dwRevengeID = pEnemy->m_dwID;
 	s_dwRevengeTick = dwNow;
@@ -365,6 +671,39 @@ void CVLAttack::PKSwitchBreathe(BOOL bFindingTrain)
 	ProcessPeople(&thePlayer, ACTION_REVENGE);
 }
 
+// Debug (VLDebugAttack PlayerList): trang thai Do sat / Cuu sat
+void DbgOut(const char *szFormat, ...);	// VLDebug.cpp
+void PKSwitchDump()
+{
+	CVLAttack &a = theAttack;
+	static const char* s_szMode[] = { "Tat", "Do sat tat ca", "Do sat theo DS", "Cuu sat theo DS" };
+	int nMode = (a.m_nPKMode >= 0 && a.m_nPKMode <= 3) ? a.m_nPKMode : 0;
+	DbgOut("--- Do sat / Cuu sat: che do %d (%s)  MapPK %d  Map hien tai %d  Armed %d (map %d)  FightMode %d\n",
+		a.m_nPKMode, s_szMode[nMode], a.m_nPKMapID, *g_pMapID, s_bPKArmed, s_nPKArmMap, P_PLAYER->m_FightMode);
+	if (a.m_nPKMode < 1) return;
+	int nPlayerX, nPlayerY, nX, nY;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+	if (GetPKArmPoint(&nX, &nY))
+		DbgOut("    Diem bat: (%d,%d)  cach %d (can <= %d)\n", nX, nY, __distance(nPlayerX, nPlayerY, nX, nY), PK_ARM_NEAR);
+	else
+		DbgOut("    Diem bat: khong co (toi map la bat)\n");
+	int nRange = PKSkillRange(&a);
+	DbgOut("    Tam bat PK %d  PKFlag %d  ZeroTry %d  Pause %d\n", nRange, P_PLAYER->m_nPKFlag, s_nPKZeroTry, theMain.m_bPause);
+	int nListed = 0;
+	for (int i = 0; i < MAX_ENEMY && a.m_szEnemies[i][0]; i++) nListed++;
+	DbgOut("    Danh sach ke thu: %d ten\n", nListed);
+	for (int i = 1; i < MAX_NPC; i++)
+	{
+		KNpc* pNpc = g_pNpcArray[i];
+		if (i == g_pCurPlayer->m_nIndex || !pNpc->IsExist() || pNpc->m_Kind != kind_player) continue;
+		if (!a.IsListedEnemy(pNpc->Name)) continue;
+		pNpc->GetMapPos(&nX, &nY);
+		int dZ = __distance(nPlayerX, nPlayerY, nX, nY);
+		DbgOut("    [DS] %s  dZ %d %s  Rel %d  PK %d  Life %d\n", pNpc->Name, dZ, dZ <= nRange ? "TRONG TAM" : "ngoai tam",
+			g_pCoreShell->GetNPCRelation(i), pNpc->m_nPKFlag, pNpc->m_CurrentLife);
+	}
+}
+
 void CVLAttack::Breathe()
 {
 	int nX, nY, nRange;
@@ -372,6 +711,18 @@ void CVLAttack::Breathe()
 	if (g_NetworkOffline) return;
 
 	DebugAttackWatch();	// Cua so DEBUG > Chien dau: Kiem tra doi tuong dang danh
+	// Buff bua dang cast ma doi muc tieu / tat chuc nang / tat danh quai => tra skill tay trai ngay
+	// (cac nhanh return ben duoi co the khong toi BuffBuaBreathe)
+	if (m_bBuaCasting)
+	{
+		if (m_bBuffBua && P_PLAYER->m_FightMode && !m_nEnemyIdx && PEOPLE_IDX == 0 && BuaTargetValid())
+		{	// Game xoa muc tieu vi khong ra duoc bua (dang hoi chieu / thieu mana...) => giu doi tuong, bo bua nay
+			SetPeopleIdx(m_nBuaTarget);
+			BuaNext();
+		}
+		else if (!m_bBuffBua || !P_PLAYER->m_FightMode || PEOPLE_IDX != m_nBuaTarget || m_nEnemyIdx)
+			BuffBuaReset();
+	}
 	HandleDirectSkills();
 	HandleInDirectSkills();
 	// Tab Di chuyen dang tim duong toi bai train / dang tu di MapPath: chi buff (o tren), chua tu ve / tim quai.
@@ -435,11 +786,15 @@ void CVLAttack::Breathe()
 		m_bSkillChanged = 0;
 	}
 
-	if (!P_PLAYER->m_FightMode || !m_bAutoHit) return;
+	if (!P_PLAYER->m_FightMode || (!m_bAutoHit && !m_bBuffBua)) return;
 	if (theMove.m_bFindingWay) return;
 	if (theMove.m_nStatus == status_movefirst) return;
 	if (theMove.m_nStatus == status_move && !theMove.m_bAttackWhenMove) return;
-	if (theMove.LureBreathe()) return;	// Dang quay quai: chua danh
+	if (m_bAutoHit && theMove.LureBreathe()) return;	// Dang quay quai: chua danh
+
+	// Buff bua (doc lap voi Danh quai): con doi tuong can buff thi buff truoc, xong het moi danh
+	if (BuffBuaBreathe()) return;
+	if (!m_bAutoHit) return;
 
 	ProcessAttack();
 
@@ -464,6 +819,7 @@ void CVLAttack::Breathe()
 	}
 
 	if (ApproachTarget(this)) return;	// Duong thang toi quai bi chan: tu chay vong vat can
+
 
 	//Check if Target is LAG
 	int nTargetIdx = GetCurTargetIdx();
@@ -992,12 +1348,14 @@ void CVLAttack::AutoDefence()
 	if (!m_bAlwaysF9)
 	{
 		static int nPKTimeCount = 0;
-		if (P_PLAYER->m_nPKFlag)
+		// Moi nhip o day ~300ms (Breathe 100ms, chi chay 1/3 nhip).
+		// Dem thoi gian PK bat ma KHONG co ke thu: co ke thu thi dem lai tu dau.
+		if (P_PLAYER->m_nPKFlag && !m_nEnemyIdx)
 			nPKTimeCount++;
 		else
 			nPKTimeCount = 0;
-		if (nPKTimeCount > 600 && nPKTimeCount % 50 == 1 && !m_nEnemyIdx && !PKSwitchActive())	// Dang Do sat / Cuu sat: khong tu tat PK
-		{	// 600 ~ 3 minutes
+		if (nPKTimeCount > 100 && nPKTimeCount % 20 == 1 && !PKSwitchActive())	// Dang Do sat / Cuu sat: khong tu tat PK
+		{	// 100 ~ 30s khong co ke thu => ve Luyen cong; chua ve duoc thi thu lai moi ~6s
 			ExecuteScript("Switch('PK',0)");
 			return;
 		}
@@ -1131,8 +1489,8 @@ void CVLAttack::AutoDefence()
 				ExecuteScript(SCK_SHORTCUT_HORSE);
 		}
 
-		if (!P_PLAYER->m_nPKFlag && nEnemyRelation == relation_none)
-			ExecuteScript("Switch('PK',1)");
+		// Danh tra khong tu chuyen PK sang Chien dau (PK 1) nua - trang thai PK do nguoi choi / Do sat - Cuu sat quyet dinh
+		(void)nEnemyRelation;
 	}
 	else
 		ReleaseEnemy();

@@ -146,7 +146,7 @@ void CVLMove::Breathe()
 	}
 	if (!bInFightMode)	// return from city
 	{
-		if (nWaitTime++ < 6) return; // wait for 1.2s
+		if (nWaitTime++ < 3) return; // wait for 0.5s
 		nWaitTime = 0;
 		bInFightMode = TRUE;
 	}
@@ -565,7 +565,7 @@ BOOL CVLMove::LoadingMapPath()
 {
 	if ((*g_pMapID) != nLastMapID)
 	{	// Cho nap map 1.2s tinh tu luc vao map (vd MapPath da cho san khi qua cong thi khong cho them)
-		if (MapEnterElapsed() < 1200) return TRUE;
+		if (MapEnterElapsed() < 600) return TRUE;
 		nLastMapID = (*g_pMapID);
 
 		m_nCurPoint = -1;
@@ -601,7 +601,9 @@ void CVLMove::LoadMap(const char *szMapFile)
 	pFile = fopen(szMapFileName, "r");
 	if (pFile == NULL)
 	{
+#ifdef ADMIN_MODE
 		SystemMessage(0, TV(L"Không đọc được file MAP: %s!"), szMapFile);
+#endif
 		return;
 	}
 	int i = 0;

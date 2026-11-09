@@ -111,6 +111,7 @@ BOOL CDlgMovePoints::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_MOVEPOINT_LIST2), _T("Sau khi vào cổng map luyện công: đi theo MapPath tới tọa độ đầu tiên, rồi đi lần lượt theo danh sách tới nơi luyện công"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MAP_MOVELIST2_EDIT), _T("Bản đồ của danh sách - chỉ đi theo tọa độ khi ở đúng bản đồ này"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_FINISHREAD_BUTTON), _T("Kết thúc đọc tọa độ, khôi phục tên bang trên đầu nhân vật (phím tắt Ctrl + End)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_FINISHREAD_BUTTON2), _T("Kết thúc đọc tọa độ, khôi phục tên bang trên đầu nhân vật (phím tắt Ctrl + End)"));
 		for (int i = 0; i < MOVEPOINTS_LISTS; i++)
 		{
 			m_ToolTip.AddTool(GetDlgItem(s_uAddID[i]), _T("Thêm tọa độ hiện tại của nhân vật"));
@@ -144,7 +145,7 @@ BOOL CDlgMovePoints::PreTranslateMessage(MSG* pMsg)
 void CDlgMovePoints::OnButtonsClicked(UINT nID)
 {
 	if (g_pCurGameWin == NULL) return;
-	if (nID == IDC_FINISHREAD_BUTTON)		// Ket thuc che do doc toa do (khoi phuc ten bang tren dau)
+	if (nID == IDC_FINISHREAD_BUTTON || nID == IDC_FINISHREAD_BUTTON2)	// Ket thuc che do doc toa do (khoi phuc ten bang tren dau) - 2 nut cung chuc nang
 	{
 		SendReadPosCmd(cmd_stopreadpos, 0);
 		return;

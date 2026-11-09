@@ -4,6 +4,9 @@
 #define	ALL_ATTRIB			79	// 15-10: thuoc tinh co trong magicdesc.ini 15_10
 #define MAXSETSKILL			8
 #define MAX_ENEMY			32
+#ifndef MAX_BUFFBUA
+#define MAX_BUFFBUA			8	// = GameDef.h
+#endif
 // PARAM_ATTACK::m_nPKMode
 #define PKMODE_OFF			0	// Khong dung
 #define PKMODE_ALL			1	// Do sat tat ca: toi map la Switch('PK',2)
@@ -123,6 +126,11 @@ struct PARAM_ATTACK : public AutoParams
 	int		m_nPKMapID;		// Map bat che do (0 = chua chon)
 	int		m_nPKMode;		// PKMODE_xxx
 	char	m_szEnemies[MAX_ENEMY][32];	// Ten ke thu (TCVN3 nhu ten trong game), het danh sach = chuoi rong
+	// Buff bua (cua so Cai dat bua) - VLHook CVLAttack phai giu cung thu tu
+	BOOL	m_bBuffBua;					// Tu cast bua len quai dang danh
+	int		m_BuaSkills[MAX_BUFFBUA];	// SkillId bua da chon (0 = trong)
+	BOOL	m_bBuaOnlyPlayer;			// Chi cast bua len nguoi choi (bo qua quai)
+	int		m_nBuaRange;				// Tam quet doi tuong cast bua (0 = dung tam tim quai)
 
 public:
 	void	InitValue();

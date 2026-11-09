@@ -662,6 +662,32 @@ enum _ATTACK_SKILL
 	skill_total
 };
 
+// Buff bua (tu cast bua/nguyen len quai dang danh) - chuyen tu BuffBua (KeoXe C#)
+// Moi bua (skillId) gay ra 1 trang thai (stateId) tren muc tieu. Client ve trang thai do o
+// KNpc::m_DataRes(+0x1DC8).m_cStateSpr[6] (+0x15BC, buoc 0x9C, m_nID dau tien) => kiem tra da dinh chua.
+#define MAX_BUFFBUA		8	// So bua toi da luu trong PARAM_ATTACK / CVLAttack
+struct BUFFBUA_INFO
+{
+	int nSkillId;
+	int nStateId;
+};
+static const BUFFBUA_INFO g_BuffBuaTable[] =
+{
+	// Con Lon
+	{ 394, 60 }, { 392, 63 }, { 174, 66 }, { 393, 65 }, { 175, 54 }, { 90, 64 },
+	// Thien Nhan
+	{ 391, 59 }, { 136, 22 }, { 137, 26 }, { 140, 27 }, { 364, 58 }, { 143, 28 },
+	// Ngu Doc
+	{ 73, 7 }, { 390, 12 }, { 356, 54 }, { 72, 11 }, { 64, 8 }, { 70, 10 }, { 67, 9 },
+};
+#define BUFFBUA_TABLE_LEN	(int)(sizeof(g_BuffBuaTable) / sizeof(g_BuffBuaTable[0]))
+inline int BuffBuaStateOf(int nSkillId)
+{
+	for (int i = 0; i < BUFFBUA_TABLE_LEN; i++)
+		if (g_BuffBuaTable[i].nSkillId == nSkillId) return g_BuffBuaTable[i].nStateId;
+	return 0;
+}
+
 enum TASK_CODES
 {
 	ys_taskgid = 1020,

@@ -51,6 +51,7 @@ public:
 	CListBox		m_PoinList[MOVEPOINTS_LISTS];
 	CArray<POINT, POINT> m_Pts[MOVEPOINTS_LISTS];	// Toa do tuyet doi; ItemData cua moi dong = chi so trong mang
 	CToolTipCtrl	m_ToolTip;
+	afx_msg void OnBnClickedFinishreadButton();
 };
 
 // Con tro toi cua so Danh sach toa do dang mo (NULL neu dang dong).

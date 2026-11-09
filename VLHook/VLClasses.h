@@ -248,6 +248,10 @@ public:
 
 #define MAXSETSKILL 8
 #define MAX_ENEMY 32
+#define BUA_DONE_NUM	32
+#ifndef MAX_BUFFBUA
+#define MAX_BUFFBUA 8	// = GameDef.h
+#endif
 
 class CVLAttack
 {
@@ -284,8 +288,33 @@ public:
 	int		m_nPKMapID;
 	int		m_nPKMode;		// 0 tat, 1 do sat tat ca, 2 do sat theo DS, 3 cuu sat theo DS
 	char	m_szEnemies[MAX_ENEMY][32];
+	// Buff bua - cung thu tu voi PARAM_ATTACK (VLAuto/AutoParams.h)
+	BOOL	m_bBuffBua;
+	int		m_BuaSkills[MAX_BUFFBUA];
+	BOOL	m_bBuaOnlyPlayer;	// Chi cast bua len nguoi choi (bo qua quai)
+	int		m_nBuaRange;		// Tam quet doi tuong cast bua (0 = dung tam tim quai)
 
 	//Private
+	int		m_nBuaTarget;		// Quai dang buff bua (index NPC), 0 = chua
+	DWORD	m_dwBuaTargetID;	// m_dwID cua quai do (index co the bi tai su dung)
+	int		m_nBuaCur;			// Vi tri trong m_BuaSkills dang cast
+	DWORD	m_dwBuaTick;		// Luc bat dau cast bua hien tai (chi tinh khi da trong tam skill)
+	DWORD	m_dwBuaTargetStart;	// Luc chon doi tuong (gioi han thoi gian chay toi)
+	BOOL	m_bBuaCasting;		// Dang dat ActiveSkill = bua
+	int		m_nBuaSavedRadius;	// Tam danh truoc khi cast bua
+	int		m_nBuaPhase;		// Bua hien tai: 0 cho nhan vat ranh, 1 da ranh, 2 dang ra chieu (bua)
+	DWORD	m_dwBuaDone[BUA_DONE_NUM];		// ID doi tuong da buff xong gan day (khong cast lai ngay)
+	DWORD	m_dwBuaDoneTime[BUA_DONE_NUM];
+	int		m_nBuaDoneNext;
+	int		m_nBuaPrevPeople;	// Muc tieu danh truoc khi chen buff bua (tra lai sau khi buff xong)
+	DWORD	m_dwBuaPrevPeopleID;
+	BOOL	BuaTargetValid();
+	BOOL	BuaNeedCast(KNpc* pNpc);
+	int		SearchBuaTarget();
+	void	BuaFinishTarget();
+	void	BuaNext();
+	BOOL	BuaIsDone(DWORD dwID);
+	void	BuaMarkDone(DWORD dwID);
 	DWORD	m_LastNpcID;
 	int		m_LastNpcLife;
 	KLagNpc	m_BadNpc[3];
@@ -323,6 +352,9 @@ public:
 	void	PKSwitchBreathe(BOOL bFindingTrain);	// Do sat / Cuu sat theo cai dat
 	BOOL	PKSwitchActive();	// Dang o map PK va da toi bai train
 	BOOL	IsListedEnemy(const char* szName);
+	BOOL	BuffBuaBreathe();	// Buff bua len quai dang danh: TRUE = dang cast bua (bo qua phan con lai)
+	void	BuffBuaReset();
+	void	BuffBuaStopCast();	// Tra lai skill tay trai + tam danh
 };
 
 #define	NUM_BADITEMS	60

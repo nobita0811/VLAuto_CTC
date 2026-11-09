@@ -2,6 +2,7 @@
 
 #include "DlgSettingSkill.h"
 #include "DlgDoSat.h"
+#include "DlgBuffBua.h"
 
 // CDlgAttack dialog
 
@@ -31,4 +32,5 @@ public:
 	CToolTipCtrl		m_ToolTip;
 	CDlgSettingSkill	m_dlgSkill;			// Cua so Cai dat skill (modal)
 	CDlgDoSat			m_dlgDoSat;			// Cua so Cai dat Do sat / Cuu sat (modal)
+	CDlgBuffBua			m_dlgBuffBua;		// Cua so Cai dat buff bua (modal)
 };

@@ -434,6 +434,7 @@ static void BadNpcs(BOOL bClear)
 }
 
 BOOL IsSameTong(KNpc* pNpc);	// VLAttack.cpp
+void PKSwitchDump();			// VLAttack.cpp - trang thai Do sat / Cuu sat
 
 static void PlayerList()
 {
@@ -470,6 +471,7 @@ static void PlayerList()
 	}
 	DbgOut("Tong: %d nguoi choi. m_nEnemyIdx hien tai = %d\n", nCount, a.m_nEnemyIdx);
 	if (!P_PLAYER->m_FightMode || !a.m_nAutoDefence) DbgOut("(AutoDefence khong chay: %s)\n", P_PLAYER->m_FightMode ? "m_nAutoDefence = 0" : "trong thanh");
+	PKSwitchDump();
 	g_DbgReply.nResult[0] = nCount;
 	g_DbgReply.bOK = TRUE;
 }

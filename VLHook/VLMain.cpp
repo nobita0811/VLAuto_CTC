@@ -396,7 +396,7 @@ void CVLMain::SetDllFilePath(char* szDllFile)
 	strcpy(m_szCurFolder, szDllFile);
 	char* pStr = strrchr(m_szCurFolder, '\\');
 	pStr[0] = 0;
-	sprintf(m_szIniFile, "%s\\VLAutoPr.ini", m_szCurFolder);
+	sprintf(m_szIniFile, "%s\\VLCTCPro.ini", m_szCurFolder);	// Phai trung ini cua GUI (VLAuto ghi ShowDbgTextIngame o day); ten cu VLAutoPr.ini da bo
 
 	char HardDriveID[33] = "h";
 	GetHardDriveComputerID(HardDriveID + 1);	// Get HDD Code

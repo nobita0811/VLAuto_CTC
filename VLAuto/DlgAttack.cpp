@@ -27,6 +27,7 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	GetDlgItem(IDC_SETTING_SKILL_BTN)->EnableWindow(g_pCurGameWin != NULL);
 	GetDlgItem(IDC_SETTING_DOSAT_BTN)->EnableWindow(g_pCurGameWin != NULL);
+	GetDlgItem(IDC_OPEN_SETTING_BUFFBUA_BUTTON)->EnableWindow(g_pCurGameWin != NULL);
 
 	// Cua so Cai dat skill dang mo => lam moi theo nhan vat hien tai
 	if (m_dlgSkill.GetSafeHwnd() != NULL && !pDX->m_bSaveAndValidate)
@@ -39,6 +40,14 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	// Cua so Cai dat Do sat dang mo => lam moi theo nhan vat hien tai
 	if (m_dlgDoSat.GetSafeHwnd() != NULL && !pDX->m_bSaveAndValidate)
 		m_dlgDoSat.RefreshFromParams();
+	// Cua so Cai dat bua dang mo => lam moi theo nhan vat hien tai
+	if (m_dlgBuffBua.GetSafeHwnd() != NULL && !pDX->m_bSaveAndValidate)
+	{
+		if (g_pCurGameWin == NULL)
+			m_dlgBuffBua.EndDialog(IDCANCEL);
+		else
+			m_dlgBuffBua.RefreshFromParams();
+	}
 
 	if (g_pCurGameWin == NULL)
 		return;
@@ -52,6 +61,7 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ALWAYSPK_CHECK, g_pCurGameWin->m_prAttack.m_bAlwaysF9);
 	DDX_Check(pDX, IDC_USEHORSE_CHECK, g_pCurGameWin->m_prAttack.m_bDefHorseMode);
 	DDX_Check(pDX, IDC_TONG_ENEMY_CHECK, g_pCurGameWin->m_prAttack.m_bTongEnemy);
+	DDX_Check(pDX, IDC_ATTACK_BUFFBUA_CHECK, g_pCurGameWin->m_prAttack.m_bBuffBua);
 
 	//Textboxes
 	DDX_Text(pDX, IDC_SEARCHRANGE_EDIT, g_pCurGameWin->m_prAttack.m_nSearchRange);
@@ -72,8 +82,8 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	bChecked = ((CButton*)GetDlgItem(IDC_HITCLOSE_CHECK2))->GetCheck();
 	GetDlgItem(IDC_SKILLRANGE_EDIT2)->EnableWindow(!bChecked);
 
-	int nAutoDef = ((CComboBox*)GetDlgItem(IDC_DEFENCE_COMBO))->GetCurSel();
-	GetDlgItem(IDC_DEFENCERANGE_EDIT)->EnableWindow(!nAutoDef);
+	// "Pham vi tim ke thu" luon sua duoc: dung chung cho Tu ve va tam quet Do sat / Cuu sat
+	GetDlgItem(IDC_DEFENCERANGE_EDIT)->EnableWindow(TRUE);
 }
 
 BEGIN_MESSAGE_MAP(CDlgAttack, CDialog)
@@ -117,6 +127,8 @@ BOOL CDlgAttack::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_TONG_ENEMY_CHECK), _T("Coi nhân vật cùng bang hội là đối thủ (bỏ chọn = bỏ qua người cùng bang)"));
 
 		m_ToolTip.AddTool(GetDlgItem(IDC_SETTING_SKILL_BTN), _T("Thiết lập chiêu thức, chuyển chiêu"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_ATTACK_BUFFBUA_CHECK), _T("Tự cast bùa (Ngũ Độc, Thiên Nhẫn, Côn Lôn) lên quái đang đánh trước khi đánh thường"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_OPEN_SETTING_BUFFBUA_BUTTON), _T("Chọn bùa sẽ dùng"));
 	}
 
 #if !ADMIN_MODE	
@@ -143,6 +155,11 @@ void CDlgAttack::OnButtonsClicked(UINT nID)
 	if (nID == IDC_SETTING_DOSAT_BTN)
 	{
 		m_dlgDoSat.DoModal();
+		return;
+	}
+	if (nID == IDC_OPEN_SETTING_BUFFBUA_BUTTON)
+	{
+		m_dlgBuffBua.DoModal();
 		return;
 	}
 
