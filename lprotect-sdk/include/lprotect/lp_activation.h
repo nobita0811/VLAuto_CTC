@@ -19,7 +19,10 @@
 //   * The server timestamp is remembered as a high-water mark -> an old captured
 //     token cannot be replayed after a clock rollback.
 //
-// Transport: WinHTTP (HTTPS). Links winhttp.lib and bcrypt.lib in the final exe.
+// Transport: libcurl (static, schannel backend) over HTTPS, forcing IPv4 so a
+// machine with a dead/blackholed IPv6 route does not hang (browsers survive via
+// Happy Eyeballs; plain WinHTTP tried IPv6 first and timed out). Links the static
+// libcurl plus ws2_32, bcrypt, advapi32, crypt32, winhttp (IE-proxy read).
 #ifndef LPROTECT_LP_ACTIVATION_H
 #define LPROTECT_LP_ACTIVATION_H
 
@@ -124,6 +127,18 @@ bool activation_session_challenge(uint8_t nonce[16], uint64_t* server_time);
 // Cached after the first call. Returns the length written (excluding the NUL),
 // 0 on error. Pass a buffer of >= 96 bytes.
 int activation_machine_id(char* out, size_t cap);
+
+// ---- Diagnostic reachability probe ("Kiem tra" button) ----
+// Do a lightweight IPv4 HTTPS round-trip to the configured endpoint (SNI + cert
+// validated via the Windows store, same as login). Forces IPv4 to avoid the dead
+// -IPv6 hang. Returns a coarse code so the UI can show a human message:
+//   0 = OK (TLS handshake + HTTP response reached the server)
+//   1 = TLS/certificate failure      2 = cannot connect (refused/unreachable)
+//   3 = DNS not resolved             4 = timed out
+//   5 = other error
+// On OK, *http_status gets the HTTP status code; on error, *net_code gets the raw
+// libcurl CURLcode (for a "ma %ld" fallback message). Either pointer may be null.
+int activation_probe(unsigned long* http_status, long* net_code);
 
 // ---- Periodic re-check (background heartbeat) ----
 // Called after each background re-check with its result (runs ON the background

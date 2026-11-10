@@ -183,113 +183,43 @@ struct LoginResult {
     bool ok;
 };
 
-// Chan doan nhanh ngay tren login dialog: ep CHI TLS 1.2 va thu bat tay toi endpoint
-// license, ghi ket qua vao IDC_STATUS_STATIC. Giup nguoi dung (vd may ao Win7) biet
-// lieu khong dang nhap duoc co phai vi thieu TLS 1.2 hay khong.
-// Giong lib: chi dung proxy khi may dat THU CONG, khong tu dong WPAD (tranh treo).
-static void ApplyManualProxy(HINTERNET hSession)
-{
-    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie;
-    memset(&ie, 0, sizeof ie);
-    if (WinHttpGetIEProxyConfigForCurrentUser(&ie)) {
-        if (ie.lpszProxy && ie.lpszProxy[0]) {
-            WINHTTP_PROXY_INFO pi;
-            memset(&pi, 0, sizeof pi);
-            pi.dwAccessType    = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-            pi.lpszProxy       = ie.lpszProxy;
-            pi.lpszProxyBypass = ie.lpszProxyBypass;
-            WinHttpSetOption(hSession, WINHTTP_OPTION_PROXY, &pi, sizeof pi);
-        }
-        if (ie.lpszProxy)         GlobalFree(ie.lpszProxy);
-        if (ie.lpszProxyBypass)   GlobalFree(ie.lpszProxyBypass);
-        if (ie.lpszAutoConfigUrl) GlobalFree(ie.lpszAutoConfigUrl);
-    }
-}
-
+// Chan doan nhanh ngay tren login dialog: goi lp::activation_probe() (libcurl, EP
+// IPv4, SNI + chung chi qua kho Windows) va ghi ket qua vao IDC_STATUS_STATIC.
+// Toan bo networking nam trong lib (mot noi dung libcurl) -> file MFC nay khong
+// phai #include <curl/curl.h> (tranh dung winsock1/2 voi stdafx).
 static void TlsCheckToStatus(HWND hDlg)
 {
-#ifndef WINHTTP_OPTION_SECURE_PROTOCOLS
-#define WINHTTP_OPTION_SECURE_PROTOCOLS 84
-#endif
-#ifndef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2
-#define WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2 0x00000800
-#endif
-    ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, L"Đang kiểm tra kết nối (TLS 1.2)...");
+    ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, L"Đang kiểm tra kết nối (IPv4)...");
     ::UpdateWindow(hDlg);
 
-    // Tach host + path tu endpoint da cau hinh (giu dong bo voi kEndpoint).
-    URL_COMPONENTS uc; memset(&uc, 0, sizeof uc); uc.dwStructSize = sizeof uc;
-    wchar_t host[256] = {0}, path[2048] = {0};
-    uc.lpszHostName = host; uc.dwHostNameLength = _countof(host);
-    uc.lpszUrlPath  = path; uc.dwUrlPathLength  = _countof(path);
-    if (!WinHttpCrackUrl(kEndpoint, 0, 0, &uc)) {
-        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, L"Lỗi cấu hình máy chủ.");
-        return;
-    }
-    INTERNET_PORT port = uc.nPort ? uc.nPort : 443;
+    lp::activation_set_endpoint(kEndpoint);   // bao dam endpoint da dat truoc khi do
+    unsigned long httpst = 0; long netcode = 0;
+    int r = lp::activation_probe(&httpst, &netcode);
 
-    DWORD err = 0, status = 0; bool ok = false;
-    HINTERNET hS = WinHttpOpen(L"VLCTCPro-TLSCheck/1.0", WINHTTP_ACCESS_TYPE_NO_PROXY,
-                               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-    if (hS) {
-        ApplyManualProxy(hS);   // di thang; chi dung proxy neu may dat thu cong
-        // IPv6 "fast fallback" (giong Happy Eyeballs cua trinh duyet): may BAT IPv6 nhung
-        // KHONG co duong ra (SYN bi nuot) -> WinHTTP thu IPv6 truoc roi treo het gio du
-        // IPv4 vao duoc. Bat option: thu IPv6 ~300ms roi tu dong roi sang IPv4; van giu
-        // ten mien nen SNI/chung chi dung. Win10 1903+; may cu hon thi bo qua (khong sao).
-#ifndef WINHTTP_OPTION_IPV6_FAST_FALLBACK
-#define WINHTTP_OPTION_IPV6_FAST_FALLBACK 140
-#endif
-        { BOOL fastfb = TRUE;
-          WinHttpSetOption(hS, WINHTTP_OPTION_IPV6_FAST_FALLBACK, &fastfb, sizeof fastfb); }
-        WinHttpSetTimeouts(hS, 5000, 5000, 8000, 8000);
-        DWORD secprot = WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;   // CHI TLS 1.2
-        WinHttpSetOption(hS, WINHTTP_OPTION_SECURE_PROTOCOLS, &secprot, sizeof secprot);
-        HINTERNET hC = WinHttpConnect(hS, host, port, 0);
-        if (hC) {
-            HINTERNET hR = WinHttpOpenRequest(hC, L"GET", path, nullptr,
-                WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-            if (hR) {
-                if (WinHttpSendRequest(hR, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                        WINHTTP_NO_REQUEST_DATA, 0, 0, 0)
-                    && WinHttpReceiveResponse(hR, nullptr)) {
-                    DWORD scl = sizeof status;
-                    WinHttpQueryHeaders(hR, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-                        WINHTTP_HEADER_NAME_BY_INDEX, &status, &scl, WINHTTP_NO_HEADER_INDEX);
-                    ok = true;   // bat tay TLS 1.2 thanh cong (co phan hoi HTTP)
-                } else err = GetLastError();
-                WinHttpCloseHandle(hR);
-            } else err = GetLastError();
-            WinHttpCloseHandle(hC);
-        } else err = GetLastError();
-        WinHttpCloseHandle(hS);
-    } else err = GetLastError();
-
-    if (ok) {
+    switch (r) {
+    case 0:
         ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
-            L"Kết nối máy chủ OK (TLS 1.2). Mời đăng nhập.");
-        return;
-    }
-    switch (err) {
-    case ERROR_WINHTTP_SECURE_FAILURE:      // 12175
-        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
-            L"Không kết nối được: máy thiếu TLS 1.2. Win7 cần SP1 + KB3140245.");
+            L"Kết nối máy chủ OK. Mời đăng nhập.");
         break;
-    case ERROR_WINHTTP_CANNOT_CONNECT:      // 12029
+    case 1:
+        ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
+            L"Lỗi bảo mật TLS/chứng chỉ. Cập nhật Windows (TLS 1.2) rồi thử lại.");
+        break;
+    case 2:
         ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
             L"Không kết nối được máy chủ. Kiểm tra mạng / tường lửa.");
         break;
-    case ERROR_WINHTTP_NAME_NOT_RESOLVED:   // 12007
+    case 3:
         ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
             L"Không phân giải được tên miền (DNS). Kiểm tra mạng.");
         break;
-    case ERROR_WINHTTP_TIMEOUT:             // 12002
+    case 4:
         ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC,
             L"Hết thời gian chờ máy chủ. Kiểm tra mạng.");
         break;
     default: {
         wchar_t buf[160];
-        wsprintfW(buf, L"Kết nối thất bại (mã %lu). 12175 = thiếu TLS 1.2.", err);
+        wsprintfW(buf, L"Kết nối thất bại (mã %ld). Kiểm tra mạng.", netcode);
         ::SetDlgItemTextW(hDlg, IDC_STATUS_STATIC, buf);
         break;
     }

@@ -29,7 +29,8 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(LProtectRoot)lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lprotect.lib;winhttp.lib;bcrypt.lib;iphlpapi.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- libcurl.lib (static, schannel) + deps he thong cho transport IPv4. Cung thu muc lib\$(Platform)\$(Configuration) voi lprotect.lib (Debug = libcurl-d da copy thanh libcurl.lib). -->
+      <AdditionalDependencies>lprotect.lib;libcurl.lib;winhttp.lib;bcrypt.lib;iphlpapi.lib;advapi32.lib;ws2_32.lib;crypt32.lib;secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

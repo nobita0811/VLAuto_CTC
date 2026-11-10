@@ -61,7 +61,11 @@ void CDlgAttack::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ALWAYSPK_CHECK, g_pCurGameWin->m_prAttack.m_bAlwaysF9);
 	DDX_Check(pDX, IDC_USEHORSE_CHECK, g_pCurGameWin->m_prAttack.m_bDefHorseMode);
 	DDX_Check(pDX, IDC_TONG_ENEMY_CHECK, g_pCurGameWin->m_prAttack.m_bTongEnemy);
+#if TEST_OFFLINE_BUILD
 	DDX_Check(pDX, IDC_ATTACK_BUFFBUA_CHECK, g_pCurGameWin->m_prAttack.m_bBuffBua);
+#else
+	g_pCurGameWin->m_prAttack.m_bBuffBua = FALSE;	// Buff bua chi dung cho ban Tester Offline (khong doc theo cfg cu)
+#endif
 
 	//Textboxes
 	DDX_Text(pDX, IDC_SEARCHRANGE_EDIT, g_pCurGameWin->m_prAttack.m_nSearchRange);
@@ -131,9 +135,14 @@ BOOL CDlgAttack::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_OPEN_SETTING_BUFFBUA_BUTTON), _T("Chọn bùa sẽ dùng"));
 	}
 
-#if !ADMIN_MODE	
+#if !ADMIN_MODE
 	if (GetDlgItem(IDC_SETTING_DOSAT_BTN)) GetDlgItem(IDC_SETTING_DOSAT_BTN)->ShowWindow(SW_HIDE);	// Ẩn nút cài đặt đồ sát
 
+#endif
+#if !TEST_OFFLINE_BUILD
+	// Buff bùa + cài đặt bùa chỉ có ở bản Tester Offline: ẩn ô chọn và nút cài đặt
+	if (GetDlgItem(IDC_ATTACK_BUFFBUA_CHECK)) GetDlgItem(IDC_ATTACK_BUFFBUA_CHECK)->ShowWindow(SW_HIDE);
+	if (GetDlgItem(IDC_OPEN_SETTING_BUFFBUA_BUTTON)) GetDlgItem(IDC_OPEN_SETTING_BUFFBUA_BUTTON)->ShowWindow(SW_HIDE);
 #endif
 	return FALSE;
 }

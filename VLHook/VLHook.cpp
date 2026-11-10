@@ -262,6 +262,11 @@ static struct READPOS_STATE
 	char	szTopText[64];		// Chu tren dau goc (khoi phuc khi stop)
 } g_ReadPos;
 
+// Vao che do doc toa do -> tam ngung Auto (nhan vat dung yen de doc chuan), ket thuc -> tiep tuc.
+// Chi danh dau khi CHINH TA bat g_SysPause (auto chua tam ngung san), de Ctrl+End khong vo tinh
+// mo lai auto nguoi dung da chu dong tam ngung tu truoc.
+static BOOL g_bReadPosPaused = FALSE;
+
 // Doc vi tri HIEN TAI cua nhan vat -> toa do map (hien thi) + tuyet doi (luu config)
 static void GetCurReadPos(int *pnMapID, int *pnMapX, int *pnMapY, int *pnAbsX, int *pnAbsY)
 {
@@ -361,6 +366,14 @@ static void DoReadPosInto(int nKind)
 // Bat dau (hoac chuyen) che do doc toa do cho list nKind, doc ngay vi tri hien tai
 static void StartReadPos(HWND hWndReply, int nKind)
 {
+	// Vua vao che do doc toa do (chua pause san): tam ngung Auto cho nhan vat dung yen.
+	// StartReadPos co the duoc goi lai khi chuyen list (Ctrl+Ins <-> Ctrl+Del) nen chi pause 1 lan.
+	if (!g_bReadPosPaused && !g_SysPause)
+	{
+		g_SysPause = TRUE;
+		g_bReadPosPaused = TRUE;
+		SystemMessage(TV(L"<color=yellow>Auto tạm ngưng khi đọc tọa độ. Bấm Ctrl+End (Lưu) để tiếp tục."), 1);
+	}
 	g_ReadPos.bActive = TRUE;
 	g_ReadPos.hWndReply = (hWndReply && _IsWindow(hWndReply)) ? hWndReply : theMain.m_hWndAuto;
 	g_ReadPos.nKind = nKind;
@@ -373,7 +386,15 @@ static void StopReadPos()
 	g_ReadPos.bActive = FALSE;
 	g_ReadPos.hWndReply = NULL;
 	RestoreOverheadText();
-	SystemMessage(TV(L"<color=yellow>Kết thúc đọc tọa độ."));
+	// Chi mo lai Auto neu chinh che do doc da tam ngung no (khong dung vao tam ngung thu cong cua nguoi dung).
+	if (g_bReadPosPaused)
+	{
+		g_bReadPosPaused = FALSE;
+		g_SysPause = FALSE;
+		SystemMessage(TV(L"<color=yellow>Kết thúc đọc tọa độ. <color=green>Auto tiếp tục.<color>"));
+	}
+	else
+		SystemMessage(TV(L"<color=yellow>Kết thúc đọc tọa độ."));
 }
 
 // Lenh doc tiep (bare SPACE) vao list dang active
