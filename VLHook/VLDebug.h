@@ -78,6 +78,8 @@ const char*	PathFileShow(int nMapID);					// "Maps\Path\<MapID>_<Ten>.txt" (TCVN
 int			PathLoadNpcs(int nMapID, POINT *pNpc);		// Muc [NPC] cua file MapPath -> pNpc[npc_Nums]: so NPC co toa do, -1 khong co file
 BOOL		PathSaveNpc(int nMapID, int nIdx, int x, int y);	// Ghi 1 toa do NPC vao muc [NPC]
 int			PathWalkTo(int tx, int ty);					// Di trong map theo MapPath: 1 dang di, 0 toi cuoi duong, -1 khong co MapPath
+int			PathWalkRemain(int tx, int ty, int *pLeft, POINT *pNext);	// Debug DiChuyen.log: quang duong con lai theo duong MapPath dang di (-1 khong dang di toi (tx,ty))
+int			PathRouteLen(int px, int py, int tx, int ty, int *pNodes);	// Debug DiChuyen.log: do dai duong MapPath (-1 khong co MapPath, -2 khong noi)
 
 // Thoi diem map hien tai nap xong (TimerProc cap nhat; doi map thi xoa duong MapPath cu) - cac buoc cho nap map
 // tinh tu day, khong cong don

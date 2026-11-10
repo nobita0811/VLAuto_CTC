@@ -3231,6 +3231,67 @@ void PathWalkReset()
 	s_nWLen = -1;
 }
 
+// Debug (DiChuyen.log): quang duong con lai theo duong MapPath PathWalkTo dang di toi (tx,ty):
+// vi tri -> diem dang toi -> cac diem con lai -> (tx,ty). -1 = PathWalkTo khong dang di toi (tx,ty).
+// *pLeft = so diem MapPath con phai qua, *pNext = diem MapPath dang toi
+int PathWalkRemain(int tx, int ty, int *pLeft, POINT *pNext)
+{
+	if (pLeft) *pLeft = 0;
+	if (!IsPlayerOk() || s_nWMap != *g_pMapID || s_nWLen <= 0 || s_ptWTarget.x != tx || s_ptWTarget.y != ty) return -1;
+	int x, y;
+	GetPos(&x, &y);
+	if (s_nWIdx >= s_nWLen)
+	{	// Het duong: doan cuoi chay thang
+		if (pNext) { pNext->x = tx; pNext->y = ty; }
+		return __distance(x, y, tx, ty);
+	}
+	POINT pt = s_W.pt[s_nWRoute[s_nWIdx]];
+	if (pNext) *pNext = pt;
+	int d = __distance(x, y, pt.x, pt.y);
+	for (int i = s_nWIdx + 1; i < s_nWLen; i++)
+		d += __distance(s_W.pt[s_nWRoute[i - 1]], s_W.pt[s_nWRoute[i]]);
+	d += __distance(s_W.pt[s_nWRoute[s_nWLen - 1]].x, s_W.pt[s_nWRoute[s_nWLen - 1]].y, tx, ty);
+	if (pLeft) *pLeft = s_nWLen - s_nWIdx;
+	return d;
+}
+
+// Debug (DiChuyen.log): do dai duong theo MapPath tu (px,py) toi (tx,ty) neu lap duong nhu PathWalkTo
+// (diem dau = diem MapPath gan (px,py) nhat theo duong thang, diem cuoi = diem gan (tx,ty) nhat).
+// Tong = (px,py)->diem dau + cac canh + diem cuoi->(tx,ty). -1 = map khong co MapPath, -2 = 2 diem khong noi nhau.
+// Do thi doc lai moi 10s (co the vua sua o tab Debug). *pNodes = so diem MapPath tren duong
+int PathRouteLen(int px, int py, int tx, int ty, int *pNodes)
+{
+	static PT_GRAPH s_L;
+	static int s_nLMap = 0;
+	static BOOL s_bLOk = FALSE;
+	static DWORD s_dwLTick = 0;
+	static int s_nLRoute[PT_MAX_POINTS];
+	if (pNodes) *pNodes = 0;
+	int nMap = *g_pMapID;
+	if (nMap != s_nLMap || GetTickCount() - s_dwLTick > 10000)
+	{
+		s_nLMap = nMap;
+		s_dwLTick = GetTickCount();
+		s_bLOk = LoadGraph(&s_L, nMap) && s_L.nPoints > 0;
+	}
+	if (!s_bLOk) return -1;
+	int nStart = -1, nEnd = -1, dS = MAX_INTNUM, dE = MAX_INTNUM;
+	for (int i = 0; i < s_L.nPoints; i++)
+	{
+		if (!s_L.pt[i].x && !s_L.pt[i].y) continue;
+		int d = __distance(s_L.pt[i].x, s_L.pt[i].y, px, py);
+		if (d < dS) { dS = d; nStart = i; }
+		d = __distance(s_L.pt[i].x, s_L.pt[i].y, tx, ty);
+		if (d < dE) { dE = d; nEnd = i; }
+	}
+	if (nStart < 0 || nEnd < 0) return -1;
+	int nDist = 0;
+	int nLen = FindRoute(nStart, nEnd, s_nLRoute, &nDist, &s_L, NULL);
+	if (nLen <= 0) return -2;
+	if (pNodes) *pNodes = nLen;
+	return dS + nDist + dE;
+}
+
 // Cac diem MapPath cua map nMapID (tab Nhiem vu, Buoc 4: di vong danh quai). Tra ve so diem (0 = map chua co MapPath)
 int PathMapPoints(int nMapID, POINT *pPts, int nMax, BOOL bNoDoor, int *pDoorSkip)
 {

@@ -8,7 +8,7 @@
 #include "VLObstacle.h"
 #include "TcvnText.h"
 #include "../CrashHandler.h"
-void DebugLogFlushAll();	// cuoi file: ghi bo dem danhquai.log / cuusat.log
+#include "BufLog.h"
 
 // Debug log Cuu sat / Do sat (tab Chien dau) -> <thu muc auto>\Logs\cuusat.log
 // 1 = bat ghi log, 0 = tat (khong bien dich code log)
@@ -16,21 +16,8 @@ void DebugLogFlushAll();	// cuoi file: ghi bo dem danhquai.log / cuusat.log
 // Debug log Danh quai -> <thu muc auto>\Logs\danhquai.log: trang thai moi vong Breathe + moi lan doi / bo muc tieu (ly do, file:dong)
 #define DebugDanhQuai 0
 
-#if DebugCuuSat || DebugDanhQuai
-// ===== Bo dem log: gom nhieu dong trong RAM, vuot nguong / qua thoi gian moi ghi file 1 lan =====
-struct KBufLog
-{
-	const char*	szName;		// Ten file (khong duoi) trong <auto>\Logs
-	int			nMaxSize;	// File lon hon => doi ten <ten>_bak.log, mo file moi
-	int			nBufSize;
-	int			nFlushAt;	// Bo dem vuot nguong => ghi
-	DWORD		dwFlushTime;// Hoac qua thoi gian nay chua ghi => ghi
-	char*		pBuf;
-	int			nLen;
-	DWORD		dwFlushTick;
-};
-
-static void BLFlush(KBufLog* L)
+// ===== Bo dem log (BufLog.h): gom nhieu dong trong RAM, vuot nguong / qua thoi gian moi ghi file 1 lan =====
+void BLFlush(KBufLog* L)
 {
 	L->dwFlushTick = GetTickCount();
 	if (!L->nLen) return;
@@ -60,7 +47,7 @@ static void BLFlush(KBufLog* L)
 }
 
 // Them 1 dong (TCVN3) vao bo dem (doi sang UTF-8)
-static void BLAppend(KBufLog* L, const char* szTcvnLine)
+void BLAppend(KBufLog* L, const char* szTcvnLine)
 {
 	char szUtf8[4200];
 	int nLen = Tcvn3ToUtf8(szTcvnLine, szUtf8, sizeof(szUtf8) - 3);
@@ -73,7 +60,6 @@ static void BLAppend(KBufLog* L, const char* szTcvnLine)
 	if (L->nLen >= L->nFlushAt || GetTickCount() - L->dwFlushTick >= L->dwFlushTime)
 		BLFlush(L);
 }
-#endif
 
 // ===== Debug log Danh quai =====
 #if DebugDanhQuai
@@ -2224,8 +2210,10 @@ void CVLAttack::SendVLCmdSkill(int nSkillId, int nX, int nY)
 }
 
 // Ghi bo dem log ra file (go hook / thoat game)
+void DiChuyenLogFlush();	// VLMove.cpp (DebugMoveMode)
 void DebugLogFlushAll()
 {
+	DiChuyenLogFlush();
 #if DebugDanhQuai
 	BLFlush(&s_DQFile);
 #endif

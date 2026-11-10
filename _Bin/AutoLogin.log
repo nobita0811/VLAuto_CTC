@@ -1978,3 +1978,21 @@
 09:59:43.973 PID 5508 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13454EC8/00000000 13579790/00000000 13591B08/00000000 00000000/00000000
 09:59:43.973 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7578 ms từ đầu lượt)
 09:59:45.986 Kết thúc lượt: thành công
+12:35:43.672 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+12:35:46.666 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+12:35:46.667   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:46.667 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 134453F0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:47.186 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3515 ms từ đầu lượt)
+12:35:47.186   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:47.186 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFA3F98/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:49.192 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5531 ms từ đầu lượt)
+12:35:49.206   Chọn server + Xác định: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:49.206 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFA3F98/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+12:35:49.696 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6031 ms từ đầu lượt)
+12:35:49.696   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:49.696 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFA3F98/00000000 133A3C60/00000000 00000000/00000000 00000000/00000000
+12:35:50.704   Serial ổ đĩa gửi server: F57A-66F6 (ngẫu nhiên)
+12:35:50.704   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+12:35:50.704 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFA3F98/00000000 133A3C60/00000000 1349C430/00000000 00000000/00000000
+12:35:50.704 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
+12:35:52.746 Kết thúc lượt: thành công

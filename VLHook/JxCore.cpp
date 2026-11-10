@@ -348,6 +348,7 @@ void KPlayer::MoveTo(KNpc* pNpc)
 }
 
 void DanhQuaiNoteMove(void* pCaller, int nX, int nY, const char* szWhat);	// VLAttack.cpp (DebugDanhQuai)
+void DiChuyenNoteMove(void* pCaller, int nX, int nY, const char* szWhat);	// VLMove.cpp (DebugMoveMode)
 
 void KPlayer::MoveTo(int nX, int nY)
 {
@@ -358,6 +359,7 @@ void KPlayer::MoveTo(int nX, int nY)
 	if (g_SysPause && g_nPauseMoveAllow <= 0) return;	// Auto tam ngung (Ctrl+DblClick phai): khong tim duong / di
 	if (!DebugQuestMoveOK(_ReturnAddress())) return;	// DEBUG > Nhiem vu: Buoc 4 / giu dung tai map
 	DanhQuaiNoteMove(_ReturnAddress(), nX, nY, "MoveTo");
+	DiChuyenNoteMove(_ReturnAddress(), nX, nY, "MoveTo");
 	if (m_nSendMoveFrames > MAX_PLAYER_MOVE_FRAME)
 	{
 		P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
@@ -379,6 +381,7 @@ void KPlayer::GoTo(int nX, int nY)
 	if (g_SysPause && g_nPauseMoveAllow <= 0) return;
 	if (!DebugQuestMoveOK(_ReturnAddress())) return;
 	DanhQuaiNoteMove(_ReturnAddress(), nX, nY, "GoTo");
+	DiChuyenNoteMove(_ReturnAddress(), nX, nY, "GoTo");
 	int x = nX / 32;
 	int y = nY / 32;
 	__asm

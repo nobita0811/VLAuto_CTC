@@ -4,7 +4,7 @@
 #define CLIENT_VERSION		"0.1"
 #define HASH_CODE			0x4683
 
-#define VLVERSION	"0.95"
+#define VLVERSION	"0.96"
 
 // Ban build (dung chung VLAuto + VLHook qua GameDef.h). Sua 2 dong duoi roi build lai,
 // hoac chay BuildRelease.ps1 (truyen /DADMIN_MODE=.. /DADMIN_TESTER=.. qua bien CL, khong sua file nay)

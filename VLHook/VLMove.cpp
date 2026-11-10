@@ -7,7 +7,10 @@
 #include "VLClasses.h"
 #include "VLDebug.h"
 #include "VLObstacle.h"
+#include "BufLog.h"
+#include "../CrashHandler.h"
 
+#define DebugMoveMode 1
 static int WalkDist(int px, int py, int tx, int ty, int dZ);
 
 // ===== Ket lag: Khinh cong (Tab Phuc hoi "Dung khinh cong khi chay bi ket") =====
@@ -19,6 +22,302 @@ static int s_nJumpWait = 0;
 static int s_nJumpTry = 0;
 static BOOL s_bJumpRemount = FALSE;
 static int s_nJumpX = 0, s_nJumpY = 0;
+
+// Debug log Di chuyen -> <thu muc auto>\Logs\DiChuyen.log: moi vong CVLMove::Breathe (200ms) ghi trang thai di chuyen,
+// diem dich + ly do toi do, khoang cach thang / quang duong (ne vat can, MapPath) toi dich, diem gan nhat cua
+// "Danh sach toa do luyen cong" (m_Nodes); cac su kien (chon diem, doi trang thai, ket duong, GoTrain...) ghi dong rieng.
+// 1 = bat, 0 = tat (khong bien dich code log)
+#if DebugMoveMode
+#define MV_LOG_MAXSIZE		(16 * 1024 * 1024)	// Qua 16MB => DiChuyen_bak.log
+#define MV_BUF_SIZE			(128 * 1024)
+#define MV_BUF_FLUSH		(64 * 1024)
+#define MV_FLUSH_TIME		30000
+
+static char		s_MVBuf[MV_BUF_SIZE];
+static KBufLog	s_MVFile = { "DiChuyen", MV_LOG_MAXSIZE, MV_BUF_SIZE, MV_BUF_FLUSH, MV_FLUSH_TIME, s_MVBuf, 0, 0 };
+
+static const char*	s_pszMVExit = NULL;		// Diem thoat Breathe vong nay (MV_EXIT)
+static char			s_szMVExitBuf[300];
+static BOOL			s_bMVDest = FALSE;		// Vong nay co diem dich
+static int			s_nMVDestX = 0, s_nMVDestY = 0;
+static char			s_szMVDest[160];		// Dich la gi (danh sach nao, diem thu may)
+static const char*	s_pszMVAct = NULL;		// Cach di vong nay (MapPath / GoTo / chay thang ...)
+static char			s_szMVNodeWhy[240] = "";	// Ly do chon diem dang toi cua Breathe (m_nCurNode)
+static char			s_szMVGoWhy[240] = "";		// Ly do chon diem dang toi cua danh sach di den noi luyen cong (m_nGoNode)
+static char			s_szMVCmd[300];			// Lenh MoveTo/GoTo theMove ra vong nay (DiChuyenNoteMove)
+static int			s_nMVCmd = 0;
+static char			s_szMVOther[300] = "";	// Lenh MoveTo/GoTo gan nhat tu phan khac (khong phai theMove.Breathe)
+static DWORD		s_dwMVOtherTick = 0;
+static char			s_szMVLast[2400] = "";	// Dong VONG truoc (bo trung)
+static int			s_nMVRepeat = 0;
+// Trang thai vong truoc (ghi su kien khi doi)
+static int			s_nMVPrevStatus = -99, s_nMVPrevNode = -99, s_nMVPrevGoNode = -99, s_nMVPrevMap = 0;
+static BOOL			s_bMVPrevGoTrain = -1, s_bMVPrevFinding = -1, s_bMVPrevTravel = -1;
+
+static const char* MVStatus(int n)
+{
+	static const char* s_szName[] = { "idle", "movefirst", "move", "stand", "moveattack", "attack", "pickup" };
+	return (n >= 0 && n < (int)(sizeof(s_szName) / sizeof(s_szName[0]))) ? s_szName[n] : "?";
+}
+
+// Dong "[hh:mm:ss.ms] msg" (truoc do ghi so vong VONG lap lai neu co)
+static void MVLog(const char* fmt, ...)
+{
+	char szMsg[2400];
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, fmt, va);
+	va_end(va);
+	szMsg[sizeof(szMsg) - 1] = 0;
+	if (s_nMVRepeat)
+	{
+		char sz[64];
+		sprintf(sz, "	  (giong tren x%d vong)", s_nMVRepeat);
+		BLAppend(&s_MVFile, sz);
+		s_nMVRepeat = 0;
+	}
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	char szLine[2500];
+	_snprintf(szLine, sizeof(szLine) - 1, "[%02d:%02d:%02d.%03d] %s", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, szMsg);
+	szLine[sizeof(szLine) - 1] = 0;
+	BLAppend(&s_MVFile, szLine);
+}
+
+static void MVExitF(const char* fmt, ...)
+{
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(s_szMVExitBuf, sizeof(s_szMVExitBuf) - 1, fmt, va);
+	va_end(va);
+	s_szMVExitBuf[sizeof(s_szMVExitBuf) - 1] = 0;
+	s_pszMVExit = s_szMVExitBuf;
+}
+
+static void MVDest(int x, int y, const char* fmt, ...)
+{
+	s_bMVDest = (x || y);
+	s_nMVDestX = x; s_nMVDestY = y;
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(s_szMVDest, sizeof(s_szMVDest) - 1, fmt, va);
+	va_end(va);
+	s_szMVDest[sizeof(s_szMVDest) - 1] = 0;
+}
+
+// Ly do chon diem: luu (in o moi dong VONG) + ghi su kien ngay
+static void MVWhy(char* szBuf, int nBuf, const char* fmt, ...)
+{
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(szBuf, nBuf - 1, fmt, va);
+	va_end(va);
+	szBuf[nBuf - 1] = 0;
+	MVLog(">> %s", szBuf);
+}
+
+// Quang duong toi (tx,ty) tu (px,py): "thang d | ne vat can d | MapPath ..." (bMapPathWalk: ca duong PathWalkTo dang di)
+static int MVDistText(char* szOut, int nOut, int px, int py, int tx, int ty, BOOL bMapPathWalk)
+{
+	int dLine = __distance(px, py, tx, ty);
+	int dWalk = ObsWalkDist(px, py, tx, ty);
+	char szWalk[48], szPath[160];
+	if (dWalk < 0) strcpy(szWalk, "KHONG TOI DUOC");
+	else if (dWalk == dLine) sprintf(szWalk, "%d (thang duoc / ngoai vung nap)", dWalk);
+	else sprintf(szWalk, "%d", dWalk);
+	int nNodes = 0;
+	int dPlan = PathRouteLen(px, py, tx, ty, &nNodes);
+	if (dPlan == -1) strcpy(szPath, "map khong co MapPath");
+	else if (dPlan == -2) strcpy(szPath, "2 diem MapPath khong noi nhau");
+	else sprintf(szPath, "%d qua %d diem", dPlan, nNodes);
+	if (bMapPathWalk)
+	{
+		int nLeft = 0;
+		POINT ptNext = { 0, 0 };
+		int dRemain = PathWalkRemain(tx, ty, &nLeft, &ptNext);
+		if (dRemain >= 0)
+		{
+			int n = (int)strlen(szPath);
+			_snprintf(szPath + n, sizeof(szPath) - 1 - n, ", DANG DI con %d qua %d diem (toi %d/%d)", dRemain, nLeft,
+				ptNext.x >> 8, ptNext.y >> 9);
+			szPath[sizeof(szPath) - 1] = 0;
+		}
+	}
+	_snprintf(szOut, nOut - 1, "thang %d | duong ne vat can %s | duong MapPath %s", dLine, szWalk, szPath);
+	szOut[nOut - 1] = 0;
+	return dLine;
+}
+
+static int LureStateNow();	// Cuoi file (quay quai)
+
+static void MVLoopBegin()
+{
+	s_pszMVExit = NULL;
+	s_bMVDest = FALSE;
+	s_szMVDest[0] = 0;
+	s_pszMVAct = NULL;
+	s_szMVCmd[0] = 0;
+	s_nMVCmd = 0;
+}
+
+static void MVLoopEnd(CVLMove* p)
+{
+	BOOL bTravel = PathTravelActive();
+	if (!theAttack.m_bAutoHit && !p->m_bFollow && !p->m_bGoTrain && !bTravel) return;	// Khong tu di: khong ghi
+	int x, y;
+	P_PLAYER->GetMapPos(&x, &y);
+
+	// Su kien: doi map / doi trang thai / doi diem / bat tat co
+	if (*g_pMapID != s_nMVPrevMap)
+	{
+		if (s_nMVPrevMap) MVLog("== DOI MAP: %d -> %d, vi tri %d/%d", s_nMVPrevMap, *g_pMapID, x >> 8, y >> 9);
+		s_nMVPrevMap = *g_pMapID;
+	}
+	if (p->m_nStatus != s_nMVPrevStatus)
+	{
+		if (s_nMVPrevStatus != -99) MVLog("TRANG THAI: %s -> %s", MVStatus(s_nMVPrevStatus), MVStatus(p->m_nStatus));
+		s_nMVPrevStatus = p->m_nStatus;
+	}
+	if (p->m_nCurNode != s_nMVPrevNode)
+	{
+		if (s_nMVPrevNode != -99) MVLog("DOI DIEM (m_nCurNode): #%d -> #%d (pre #%d)", s_nMVPrevNode, p->m_nCurNode, p->m_nPreNode);
+		s_nMVPrevNode = p->m_nCurNode;
+	}
+	if (p->m_nGoNode != s_nMVPrevGoNode)
+	{
+		if (s_nMVPrevGoNode != -99) MVLog("DOI DIEM DS di den noi luyen cong (m_nGoNode): #%d -> #%d (da toi #%d)", s_nMVPrevGoNode, p->m_nGoNode, p->m_nGoDone);
+		s_nMVPrevGoNode = p->m_nGoNode;
+	}
+	if (p->m_bGoTrain != s_bMVPrevGoTrain)
+	{
+		if (s_bMVPrevGoTrain != -1) MVLog("CO GoTrain (di toi bai train): %d -> %d (map %d)", s_bMVPrevGoTrain, p->m_bGoTrain, p->m_nGoTrainMap);
+		s_bMVPrevGoTrain = p->m_bGoTrain;
+	}
+	if (p->m_bFindingWay != s_bMVPrevFinding)
+	{
+		if (s_bMVPrevFinding != -1) MVLog("CO m_bFindingWay (tim duong toi map train): %d -> %d", s_bMVPrevFinding, p->m_bFindingWay);
+		s_bMVPrevFinding = p->m_bFindingWay;
+	}
+	if (bTravel != s_bMVPrevTravel)
+	{
+		if (s_bMVPrevTravel != -1) MVLog("PathTravel (tu di theo MapPath qua map): %d -> %d", s_bMVPrevTravel, bTravel);
+		s_bMVPrevTravel = bTravel;
+	}
+
+	char szLine[2400];
+	int n = 0;
+#define MVCAT(...)	do { if (n < (int)sizeof(szLine) - 1) { int k = _snprintf(szLine + n, sizeof(szLine) - 1 - n, __VA_ARGS__); n = (k < 0) ? (int)sizeof(szLine) - 1 : n + k; } } while (0)
+	MVCAT("VONG | %s | map %d vi tri %d/%d (%d,%d)", s_pszMVExit ? s_pszMVExit : "(het ham)", *g_pMapID, x >> 8, y >> 9, x, y);
+	MVCAT(" | che do %s%s%s%s st %s node #%d pre #%d",
+		p->m_bMoveByMapYS ? "BanDo " : "", p->m_bAroundPointPK ? "QuanhDiem " : "", p->m_bRouteMove ? "DanhSach " : "",
+		p->m_bFollow ? "TheoSau " : "", MVStatus(p->m_nStatus), p->m_nCurNode, p->m_nPreNode);
+	if (s_bMVDest)
+	{
+		char szDist[300];
+		MVDistText(szDist, sizeof(szDist), x, y, s_nMVDestX, s_nMVDestY, TRUE);
+		MVCAT(" | DICH %s %d/%d (%d,%d) | %s", s_szMVDest, s_nMVDestX >> 8, s_nMVDestY >> 9, s_nMVDestX, s_nMVDestY, szDist);
+		if (s_pszMVAct) MVCAT(" | cach di: %s", s_pszMVAct);
+	}
+	if (s_szMVNodeWhy[0] && p->m_nCurNode >= 0) MVCAT(" | ly do diem: %s", s_szMVNodeWhy);
+	if (p->m_bGoTrain && s_szMVGoWhy[0]) MVCAT(" | ly do diem di den: %s", s_szMVGoWhy);
+
+	// Diem gan nhat cua Danh sach toa do luyen cong (m_Nodes)
+	int nCount = 0;
+	while (nCount < MAX_NODES && p->m_Nodes[nCount].x && p->m_Nodes[nCount].y) nCount++;
+	if (!nCount) MVCAT(" | DS luyen cong: trong");
+	else if (p->m_nNodesMapID && p->m_nNodesMapID != *g_pMapID) MVCAT(" | DS luyen cong (%d diem) o map %d", nCount, p->m_nNodesMapID);
+	else
+	{
+		int nNear = 0, dNear = MAX_INTNUM;
+		for (int i = 0; i < nCount; i++)
+		{
+			int d = __distance(x, y, p->m_Nodes[i].x, p->m_Nodes[i].y);
+			if (d < dNear) { dNear = d; nNear = i; }
+		}
+		char szDist[300];
+		MVDistText(szDist, sizeof(szDist), x, y, p->m_Nodes[nNear].x, p->m_Nodes[nNear].y, FALSE);
+		MVCAT(" | DS luyen cong gan nhat #%d/%d %d/%d: %s", nNear, nCount, p->m_Nodes[nNear].x >> 8, p->m_Nodes[nNear].y >> 9, szDist);
+	}
+
+	MVCAT(" | lag %d dZcu %d tong %d", p->m_nLagCount, p->m_nLastdZ == MAX_INTNUM ? -1 : p->m_nLastdZ, p->m_nTotalLagCount);
+	if (s_nJumpStep) MVCAT(" khinhcong buoc %d", s_nJumpStep);
+	MVCAT(" | lenh: %s", s_nMVCmd ? s_szMVCmd : "khong");
+	if (s_szMVOther[0] && GetTickCount() - s_dwMVOtherTick < 2000)
+		MVCAT(" | lenh phan khac %.1fs truoc: %s", (GetTickCount() - s_dwMVOtherTick) / 1000.0, s_szMVOther);
+	MVCAT(" | nv doing %d ngua %d | danh auto %d muctieu #%d tiepcan %d boss %d kethu %d quay %d",
+		P_PLAYER->m_Doing, P_PLAYER->m_bRideHorse, theAttack.m_bAutoHit, PEOPLE_IDX, theAttack.IsApproaching(),
+		theAttack.m_nBossWait, theAttack.m_nEnemyIdx, LureStateNow());
+	if (p->m_bGoTrain) MVCAT(" | GoTrain map %d go #%d done #%d %ds", p->m_nGoTrainMap, p->m_nGoNode, p->m_nGoDone,
+		p->m_dwGoTrainTick ? (int)((GetTickCount() - p->m_dwGoTrainTick) / 1000) : 0);
+	if (p->m_bFollow) MVCAT(" | theo #%d", p->m_nLeaderIdx);
+#undef MVCAT
+	szLine[sizeof(szLine) - 1] = 0;
+
+	if (!strcmp(szLine, s_szMVLast)) { s_nMVRepeat++; return; }	// Giong vong truoc: chi dem
+	strcpy(s_szMVLast, szLine);
+	MVLog("%s", szLine);
+}
+
+struct KMVLoop
+{
+	CVLMove* p;
+	KMVLoop(CVLMove* pMove) : p(pMove) { MVLoopBegin(); }
+	~KMVLoop() { MVLoopEnd(p); }
+};
+
+#define MV_EXIT(s)			(s_pszMVExit = (s))
+#define MV_EXITF(...)		MVExitF(__VA_ARGS__)
+#define MV_DEST(x, y, ...)	MVDest((x), (y), __VA_ARGS__)
+#define MV_ACT(s)			(s_pszMVAct = (s))
+#define MV_ACT_IF(s)		(s_pszMVAct ? (void)0 : (void)(s_pszMVAct = (s)))
+#define MV_NODEWHY(...)		MVWhy(s_szMVNodeWhy, sizeof(s_szMVNodeWhy), __VA_ARGS__)
+#define MV_GOWHY(...)		MVWhy(s_szMVGoWhy, sizeof(s_szMVGoWhy), __VA_ARGS__)
+#define MV_LOG(...)			MVLog(__VA_ARGS__)
+#else
+#define MV_EXIT(s)			((void)0)
+#define MV_EXITF(...)		((void)0)
+#define MV_DEST(x, y, ...)	((void)0)
+#define MV_ACT(s)			((void)0)
+#define MV_ACT_IF(s)		((void)0)
+#define MV_NODEWHY(...)		((void)0)
+#define MV_GOWHY(...)		((void)0)
+#define MV_LOG(...)			((void)0)
+#endif
+
+// Goi tu KPlayer::MoveTo / GoTo (JxCore.cpp): lenh di chuyen thuc te. theMove.Breathe => in vao dong VONG,
+// phan khac (danh quai, nhat do, MapPath qua map...) => ghi lai lenh gan nhat
+void DiChuyenNoteMove(void* pCaller, int nX, int nY, const char* szWhat)
+{
+#if DebugMoveMode
+	const char* szStage = g_pszCrashStage ? g_pszCrashStage : "?";
+	int x, y;
+	P_PLAYER->GetMapPos(&x, &y);
+	if (!strcmp(szStage, "theMove.Breathe"))
+	{
+		int n = (int)strlen(s_szMVCmd);
+		if (n < (int)sizeof(s_szMVCmd) - 64)
+			_snprintf(s_szMVCmd + n, sizeof(s_szMVCmd) - 1 - n, "%s%s(%d/%d) cach %d", n ? ", " : "", szWhat, nX >> 8, nY >> 9,
+				__distance(x, y, nX, nY));
+		s_szMVCmd[sizeof(s_szMVCmd) - 1] = 0;
+		s_nMVCmd++;
+		return;
+	}
+	HMODULE hMod = NULL;
+	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)pCaller, &hMod);
+	_snprintf(s_szMVOther, sizeof(s_szMVOther) - 1, "%s(%d/%d) cach %d tu %s VLHook+0x%X", szWhat, nX >> 8, nY >> 9,
+		__distance(x, y, nX, nY), szStage, (DWORD)((BYTE*)pCaller - (BYTE*)hMod));
+	s_szMVOther[sizeof(s_szMVOther) - 1] = 0;
+	s_dwMVOtherTick = GetTickCount();
+#endif
+}
+
+void DiChuyenLogFlush()
+{
+#if DebugMoveMode
+	BLFlush(&s_MVFile);
+#endif
+}
+
 
 static BOOL HaveJumpSkill()
 {
@@ -114,20 +413,37 @@ void CVLMove::Breathe()
 	int nPlayerX, nPlayerY;
 	int nDestX, nDestY, dZ;
 	if (g_NetworkOffline) return;
-	if (theMain.m_bPause || theAttack.m_nEnemyIdx) return;
-	if (PathTravelActive()) return;	// Dang tu di theo MapPath
-	if (DebugQuestHoldMove()) return;	// DEBUG > Nhiem vu: Buoc 3 dung tai map / Buoc 4 tu di vong theo MapPath
+#if DebugMoveMode
+	KMVLoop mvLoop(this);	// Cuoi vong (moi return) ghi dong VONG vao DiChuyen.log
+#endif
+	if (theMain.m_bPause || theAttack.m_nEnemyIdx)
+	{
+		MV_EXITF("dung: %s", theMain.m_bPause ? "auto dang tam dung" : "dang danh ke thu (theAttack.m_nEnemyIdx)");
+		return;
+	}
+	if (PathTravelActive())	// Dang tu di theo MapPath
+	{
+#if DebugMoveMode
+		char szInfo[200] = "";
+		PathTravelInfo(szInfo, sizeof(szInfo));
+		MV_EXITF("PathTravel dang tu di theo MapPath qua map: %s", szInfo);
+#endif
+		return;
+	}
+	if (DebugQuestHoldMove()) { MV_EXIT("DEBUG Nhiem vu giu di chuyen (DebugQuestHoldMove)"); return; }	// DEBUG > Nhiem vu: Buoc 3 dung tai map / Buoc 4 tu di vong theo MapPath
 
 	if ((*g_pMapID) >= city_phongky1 && (*g_pMapID) <= city_baokho3)
 	{	// Map PCK
 		if (theQuest.m_bAutoDoQuest && theQuest.m_bNeedGoPCK)
 		{
 			MoveInPCK();
+			MV_EXIT("map PCK: MoveInPCK (nhiem vu)");
 			return;
 		}
 		else if (!P_PLAYER->m_FightMode)
 		{
 			MoveOut();
+			MV_EXIT("map PCK: MoveOut");
 			return;
 		}
 	}
@@ -142,15 +458,16 @@ void CVLMove::Breathe()
 		m_nCurNode = -1;
 		bInFightMode = 0;
 		s_nJumpStep = 0;
+		MV_EXIT("khong o trang thai chien dau (trong thanh) - reset diem");
 		return;
 	}
 	if (!bInFightMode)	// return from city
 	{
-		if (nWaitTime++ < 3) return; // wait for 0.5s
+		if (nWaitTime++ < 3) { MV_EXIT("vua ra khoi thanh: cho 0.5s"); return; } // wait for 0.5s
 		nWaitTime = 0;
 		bInFightMode = TRUE;
 	}
-	if (LagJumpBreathe()) return;	// Dang dung khinh cong vuot cho ket
+	if (LagJumpBreathe()) { MV_EXITF("dang dung khinh cong vuot ket (buoc %d, toi %d/%d)", s_nJumpStep, s_nJumpX >> 8, s_nJumpY >> 9); return; }	// Dang dung khinh cong vuot cho ket
 
 	BOOL bCurMoveByMap = m_bMoveByMap;
 	m_bAroundPointPK = m_bAroundPoint;
@@ -163,8 +480,8 @@ void CVLMove::Breathe()
 		m_nPointY = theQuest.m_TongPKOpt.m_nPointY;
 	}
 
-	if (IsFlagMoving()) return;
-	if (LoadingMapPath()) return;
+	if (IsFlagMoving()) { MV_EXITF("dang chay toi co (click ban do) %d/%d", *((int*)FLAG_X_OFFST) >> 8, *((int*)FLAG_Y_OFFST) >> 9); return; }
+	if (LoadingMapPath()) { MV_EXIT("dang nap MapPath / ban do"); return; }
 
 	if (m_bFollow)
 		if (DoFollow())
@@ -173,6 +490,7 @@ void CVLMove::Breathe()
 			if (m_bGoTrain) GoTrainStop();
 			if (PathTravelActive() && !theQuest.m_bAutoDoQuest && !theMain.m_nWcbStep) PathTravelStop();
 			m_bFindingWay = 0; m_nPreNode = -1; m_nCurNode = -1;
+			MV_EXITF("Theo sau: dang theo nguoi #%d (DoFollow)", m_nLeaderIdx);
 			return;
 		}
 
@@ -200,33 +518,40 @@ void CVLMove::Breathe()
 	}
 	if (m_bGoTrain && GoTrainBreathe()) return;	// Vua chon xa phu: tim duong toi bai train
 	if (m_bFindingWay && theMap.m_nTrainMapID && !theQuest.m_nYeSouMapID)
-		if (RouteFinding(theMap.m_nTrainMapID)) return;
+		if (RouteFinding(theMap.m_nTrainMapID))
+		{
+			MV_EXITF("RouteFinding (cach cu) toi map train %d: %s", theMap.m_nTrainMapID,
+				*g_pMapID != theMap.m_nTrainMapID ? "chay toi cong (RunningToDoor)" : "chay toi diem (RunningToPos)");
+			return;
+		}
 
 	m_bFindingWay = 0;
 
-	if (!m_bMoveByMapYS && !m_bAroundPointPK && !m_bRouteMove) { m_nStatus = status_idle; return; }
+	if (!m_bMoveByMapYS && !m_bAroundPointPK && !m_bRouteMove) { m_nStatus = status_idle; MV_EXIT("khong chon che do di chuyen (BanDo/QuanhDiem/DanhSach)"); return; }
 
-	if (theAttack.m_nBossWait) return;
+	if (theAttack.m_nBossWait) { MV_EXITF("cho boss (m_nBossWait %d)", theAttack.m_nBossWait); return; }
 
 	if (!theAttack.m_bAutoHit)
 	{
 		m_nStatus = status_idle;
-		if (!m_bFollow) return;
+		if (!m_bFollow) { MV_EXIT("khong bat danh quai tu dong"); return; }
 	}
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	if (m_bMoveByMapYS)
 	{
-		if (m_nMapPoints <= 0) return;
+		if (m_nMapPoints <= 0) { MV_EXIT("BanDo: chua co diem (.map)"); return; }
 		if (m_nCurNode < 0) { GetCurNode(); m_nStatus = status_movefirst; }
-		if (m_nCurNode < 0) return;
+		if (m_nCurNode < 0) { MV_EXIT("BanDo: khong chon duoc diem"); return; }
 		nDestX = MapPoints[m_nCurNode].x;
 		nDestY = MapPoints[m_nCurNode].y;
+		MV_DEST(nDestX, nDestY, "BanDo diem #%d/%d", m_nCurNode, m_nMapPoints);
 	}
 	else if (m_bAroundPointPK)
 	{
-		if (!m_nPointX && !m_nPointY) return;
+		if (!m_nPointX && !m_nPointY) { MV_EXIT("QuanhDiem: chua ghi toa do"); return; }
 		nDestX = m_nPointX;
 		nDestY = m_nPointY;
+		MV_DEST(nDestX, nDestY, "QuanhDiem%s", m_bMoveWithPK ? " (toa do PK bang)" : "");
 	}
 	else //m_bRouteMove
 	{
@@ -236,18 +561,23 @@ void CVLMove::Breathe()
 			if (!theMap.m_nTrainMapID && GetTickCount() - dwTryTick > 30000 && theMain.HaveTownPortal())
 			{
 				dwTryTick = GetTickCount();
-				if (PathTravelStart(m_nNodesMapID, FALSE)) return;
+				if (PathTravelStart(m_nNodesMapID, FALSE)) { MV_EXITF("DS luyen cong o map %d: bat PathTravel toi map do", m_nNodesMapID); return; }
 			}
 			m_nStatus = status_idle;
 			m_nCurNode = -1;
+			MV_EXITF("DS luyen cong thuoc map %d, dang o map %d: dung", m_nNodesMapID, *g_pMapID);
 			return;
 		}
 		if (m_nCurNode < 0) { GetCurNode(); m_nStatus = status_movefirst; }
-		if (m_nCurNode < 0) return;
+		if (m_nCurNode < 0) { MV_EXIT("DS luyen cong: khong chon duoc diem (trong?)"); return; }
 		if (!m_Nodes[m_nCurNode].x || !m_Nodes[m_nCurNode].y)
+		{
+			MV_EXITF("DS luyen cong: diem #%d rong", m_nCurNode);
 			return;
+		}
 		nDestX = m_Nodes[m_nCurNode].x;
 		nDestY = m_Nodes[m_nCurNode].y;
+		MV_DEST(nDestX, nDestY, "DS luyen cong diem #%d", m_nCurNode);
 	}
 	dZ = __distance(nPlayerX, nPlayerY, nDestX, nDestY);
 	// Diem can toi con xa (vd vua ra cong thanh, vua hoi sinh): di theo MapPath cua map, khong dam thang vao tuong.
@@ -259,12 +589,16 @@ void CVLMove::Breathe()
 		// Danh sach toa do train: nguoi choi da ghi nhan 2 diem lien tiep la di toi duoc
 		// -> dung KPlayer::GoTo (game tu tim duong) di thang giua 2 diem, KHONG di vong theo
 		// MapPath. GoTo dang dua toi -> xong; da gan (<=AUTO_GOTO_NEAR) / GoTo ket -> MoveTo not doan cuoi.
-		if (AutoGoTo(nDestX, nDestY) > 0)
+		int nGo = AutoGoTo(nDestX, nDestY);
+		if (nGo > 0)
 		{
+			MV_ACT("GoTo - game tu tim duong (AutoGoTo)");
+			MV_EXIT("dang di toi dich bang GoTo");
 			m_nLagCount = 0;
 			m_nLastdZ = MAX_INTNUM;
 			return;
 		}
+		MV_ACT(nGo == 0 ? "da gan (<=150): MoveTo not doan cuoi" : "AutoGoTo ket (GoTo khong tien) -> MoveTo chay thang");
 	}
 	else
 	{
@@ -272,22 +606,30 @@ void CVLMove::Breathe()
 		if (dZ <= AUTO_GOTO_NEAR) ptFar.x = ptFar.y = 0;
 		if (ptFar.x == nDestX && ptFar.y == nDestY)
 		{
-			if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
+			int nPW = PathWalkTo(nDestX, nDestY);
+			int nGo = nPW > 0 ? 1 : AutoGoTo(nDestX, nDestY);
+			if (nGo > 0)
 			{
+				MV_ACT(nPW > 0 ? "MapPath (PathWalkTo) - dich xa (>1000 luc chon)" :
+					nPW == 0 ? "GoTo (het duong MapPath)" : "GoTo (map khong co MapPath / khong noi)");
+				MV_EXIT("dang di toi dich (xa)");
 				m_nLagCount = 0;
 				m_nLastdZ = MAX_INTNUM;
 				return;
 			}
+			MV_ACT(nGo == 0 ? "xa: MapPath het, da gan (<=150) -> MoveTo" : "xa: MapPath + GoTo deu khong di duoc -> MoveTo chay thang");
 		}
 	}
 	if (dZ < 64)
 	{
+		MV_EXITF("toi dich (<64) luc trang thai %s", MVStatus(m_nStatus));
 		m_nLagCount = 0;
 		m_nTotalLagCount = 0;
 		switch (m_nStatus)
 		{
 		case status_movefirst:
 		case status_move:
+			MV_LOG("TOI DICH %d/%d: dung lai (stand), bat dau quay quai / danh", nDestX >> 8, nDestY >> 9);
 			m_nStatus = status_stand;
 			LureStart(nDestX, nDestY);	// Quay quai: vua toi toa do train
 			break;
@@ -321,12 +663,19 @@ void CVLMove::Breathe()
 		nTimeCount++;
 		if (nTimeCount % 3 == 1)
 		{
-			if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY)) return;
+			if (IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY))
+			{
+				MV_EXIT("ket duong (IsLagMoving) - chay huong khac / khinh cong / TDP");
+				return;
+			}
 		}
+		MV_ACT_IF("MoveTo chay thang (dich gan <=1000 luc chon)");
+		MV_EXIT("MoveTo toi dich");
 		g_pCurPlayer->MoveTo(nDestX, nDestY);
 	}
 	else
 	{
+		MV_EXITF("trang thai %s: dung tai cho (khong di)", MVStatus(m_nStatus));
 		m_nLagCount = 0;
 		m_nTotalLagCount = 0;
 	}
@@ -370,6 +719,7 @@ void CVLMove::GetCurNode()
 	if (m_bAroundPointPK && !m_bMoveByMapYS)
 	{
 		m_nCurNode = 0;
+		MV_NODEWHY("GetCurNode: QuanhDiem -> diem 0");
 		return;
 	}
 	const POINT *pPts = m_bMoveByMapYS ? MapPoints : m_Nodes;
@@ -393,11 +743,22 @@ void CVLMove::GetCurNode()
 				m_nCurNode = i;
 			}
 		}
+#if DebugMoveMode
+		if (m_nCurNode >= 0)
+			MV_NODEWHY("GetCurNode: chon %s #%d/%d (%d/%d) - %s %d, thang %d", m_bMoveByMapYS ? "BanDo" : "DS luyen cong", m_nCurNode, nCount,
+				pPts[m_nCurNode].x >> 8, pPts[m_nCurNode].y >> 9,
+				nPass == 0 ? "gan nhat theo duong di bo ne vat can, di bo" : "KHONG diem nao toi duoc bang di bo -> gan nhat duong thang",
+				dMin, __distance(nPlayerX, nPlayerY, pPts[m_nCurNode].x, pPts[m_nCurNode].y));
+#endif
 	}
+	if (m_nCurNode < 0) MV_NODEWHY("GetCurNode: khong co diem (%d diem)", nCount);
 }
 
 void CVLMove::GetNextNode()
 {
+#if DebugMoveMode
+	int nMVOld = m_nCurNode;
+#endif
 	if (m_bMoveByMapYS)
 	{
 		int nNextNode[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
@@ -421,6 +782,8 @@ void CVLMove::GetNextNode()
 			m_nPreNode = m_nCurNode;
 			m_nCurNode = nNextNode[i];
 		}
+		MV_NODEWHY("GetNextNode BanDo: toi #%d -> #%d (%s)", nMVOld, m_nCurNode,
+			nCount ? "ngau nhien trong cac diem noi, tru diem truoc" : "diem cut: quay lai diem truoc");
 		return;
 	}
 	m_nPreNode = m_nCurNode;
@@ -433,6 +796,8 @@ void CVLMove::GetNextNode()
 	}
 	else if (m_Nodes[0].x && m_Nodes[0].y)
 		m_nCurNode = 0;
+	MV_NODEWHY("GetNextNode DS luyen cong: toi #%d -> #%d%s", nMVOld, m_nCurNode,
+		(m_nCurNode == 0 && nMVOld > 0) ? " (het danh sach, quay ve diem dau)" : " (diem tiep theo)");
 }
 
 void CVLMove::SavePoint()
@@ -959,6 +1324,8 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX, int nD
 		int nDestX = nPlayerX + (int)(((double)number / (double)UINT_MAX * 512) - 256);
 		rand_s(&number);
 		int nDestY = nPlayerY + (int)(((double)number / (double)UINT_MAX * 1024) - 512);
+		MV_LOG("KET DUONG (IsLagMoving): 8 lan kiem tra khoang cach khong giam (dZ %d), tong ket %d -> chay huong ngau nhien %d/%d, bo diem #%d",
+			dZ, m_nTotalLagCount + 1, nDestX >> 8, nDestY >> 9, m_nCurNode);
 		m_nLagCount = 0; m_nCurNode = -1; m_nCurPoint = -1;
 		if ((*g_pMapID) != city_visondao)
 		{
@@ -970,6 +1337,7 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX, int nD
 			else if (m_nTotalLagCount > nTDPCount)
 			{
 				m_nTotalLagCount = 0;
+				MV_LOG("KET DUONG: ket qua nhieu lan -> dung TDP ve thanh");
 				theMap.m_bNoDriverRecent = TRUE;
 				SystemMessage(TV(L"<color=yellow>Kẹt hẳn rồi, về thành lát quay lại."));
 				theRecover.OnUseAM();
@@ -977,6 +1345,7 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX, int nD
 			}
 			else if (m_nTotalLagCount > 5 && theRecover.m_bLagUseSkill && LagJumpStart(nPlayerX, nPlayerY, nDestX, nDestY))
 			{
+				MV_LOG("KET DUONG: nhay khinh cong");
 				SystemMessage(TV(L"<color=yellow>Kẹt đường rồi, dùng khinh công nhảy qua."));
 				return TRUE;
 			}
@@ -1131,6 +1500,9 @@ BOOL CVLMove::GoNodesBreathe()
 		m_nLastdZ = MAX_INTNUM;
 		m_dwGoTrainTick = GetTickCount();
 		s_dwPickTick = GetTickCount();
+		if (m_nGoNode >= nCount) MV_GOWHY("GoNodes bat dau: da o gan bai train (NearTrainArea) -> bo qua DS di den");
+		else if (m_nGoDone >= 0) MV_GOWHY("GoNodes bat dau: dang dung sat diem #%d (<=300) -> di tiep tu do", m_nGoNode);
+		else MV_GOWHY("GoNodes bat dau: MapPath/GoTo toi diem dau tien #0 (%d diem)", nCount);
 	}
 	else if (__distance(nPlayerX, nPlayerY, s_ptLast.x, s_ptLast.y) > 600) bPick = TRUE;	// Bi dich chuyen (diem nhay)
 	s_ptLast.x = nPlayerX; s_ptLast.y = nPlayerY;
@@ -1146,6 +1518,8 @@ BOOL CVLMove::GoNodesBreathe()
 		{
 			SystemMessage(0, "<color=white>Di den noi luyen cong: chuyen sang diem %d (%d/%d) - gan nhat co duong toi",
 				nNear + 1, m_GoNodes[nNear].x >> 8, m_GoNodes[nNear].y >> 9);
+			MV_GOWHY("GoNodes doi sang #%d: gan nhat co duong toi (di bo %d) < diem dang toi #%d (%d)", nNear, nReach, m_nGoNode,
+				nCurReach == MAX_INTNUM ? -1 : nCurReach);
 			m_nGoNode = nNear;
 			m_nLagCount = 0;
 			m_nLastdZ = MAX_INTNUM;
@@ -1167,8 +1541,11 @@ BOOL CVLMove::GoNodesBreathe()
 
 	int nDestX = m_GoNodes[m_nGoNode].x, nDestY = m_GoNodes[m_nGoNode].y;
 	int dZ = __distance(nPlayerX, nPlayerY, nDestX, nDestY);
+	MV_DEST(nDestX, nDestY, "DS di den noi luyen cong #%d/%d", m_nGoNode, nCount);
+	MV_EXIT("GoTrain: di theo DS di den noi luyen cong (GoNodesBreathe)");
 	if (dZ <= 64)
 	{	// Toi diem -> diem tiep theo (moi doan duoc 3 phut)
+		MV_GOWHY("GoNodes toi diem #%d -> diem tiep #%d", m_nGoNode, m_nGoNode + 1);
 		m_nGoDone = m_nGoNode;
 		m_nGoNode++;
 		m_nLagCount = 0;
@@ -1178,6 +1555,7 @@ BOOL CVLMove::GoNodesBreathe()
 	}
 	if (m_nGoDone < 0)
 	{	// Chua toi diem nao (vua vao map): theo MapPath cua map tu cong vao
+		MV_ACT("chua toi diem nao: MapPath, khong duoc thi GoTo");
 		if (PathWalkTo(nDestX, nDestY) > 0 || AutoGoTo(nDestX, nDestY) > 0)
 		{
 			m_nLagCount = 0;
@@ -1189,6 +1567,7 @@ BOOL CVLMove::GoNodesBreathe()
 		return TRUE;
 	}
 	// Cac diem sau: chay thang theo danh sach
+	MV_ACT("MoveTo chay thang theo DS di den");
 	static int nTimeCount = 0;
 	if (++nTimeCount % 3 == 1 && IsLagMoving(nPlayerX, nPlayerY, WalkDist(nPlayerX, nPlayerY, nDestX, nDestY, dZ), nDestX, nDestY)) return TRUE;
 	g_pCurPlayer->MoveTo(nDestX, nDestY);
@@ -1209,6 +1588,7 @@ BOOL CVLMove::GoTrainBreathe()
 	{
 		if (PathTravelStart(nTarget, FALSE))
 		{
+			MV_EXITF("GoTrain: bat PathTravel sang map train %d", nTarget);
 			m_dwGoTrainTick = GetTickCount();
 			return TRUE;	// PathTravelBreathe di; toi map train thi Breathe goi lai day
 		}
@@ -1232,6 +1612,9 @@ BOOL CVLMove::GoTrainBreathe()
 	int nPlayerX, nPlayerY;
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	int dZ = (nDestX || nDestY) ? __distance(nPlayerX, nPlayerY, nDestX, nDestY) : 0;
+	MV_DEST(nDestX, nDestY, "GoTrain: diem dau tien cua bai train");
+	MV_EXIT("GoTrain: di toi diem dau bai train (GoTrainBreathe)");
+	MV_ACT("MapPath, khong duoc thi GoTo");
 	if (dZ <= 64 || GetTickCount() - m_dwGoTrainTick > 180000)
 	{
 		if (dZ > 64) SystemMessage(0, "<color=yellow>Di toi bai train qua 3 phut - bat dau danh tai cho");
@@ -1481,6 +1864,7 @@ int AutoGoTo(int tx, int ty)
 		s_dwGoToProgress = dwNow;
 		s_nGoToBest = MAX_INTNUM;
 		s_nGoToFails = 0;
+		MV_LOG("AutoGoTo: dich moi %d/%d cach %d", tx >> 8, ty >> 9, d);
 	}
 	if (d <= AUTO_GOTO_NEAR) return 0;
 	if (s_nGoToFails >= GOTO_MAX_FAILS) return -1;
@@ -1497,6 +1881,8 @@ int AutoGoTo(int tx, int ty)
 
 	if (s_dwGoToCall && dwNow - s_dwGoToProgress > 2000)
 	{	// Lan goi truoc khong dua nhan vat tien them
+		MV_LOG("AutoGoTo: lan goi GoTo truoc khong tien them (fail %d/%d, gan nhat %d, con %d)", s_nGoToFails + 1, GOTO_MAX_FAILS,
+			s_nGoToBest, d);
 		if (++s_nGoToFails >= GOTO_MAX_FAILS)
 		{
 #if ADMIN_MODE
@@ -1678,3 +2064,7 @@ BOOL CVLMove::LureBreathe()
 	g_pCurPlayer->MoveTo(s_ptLureAnchor.x, s_ptLureAnchor.y);
 	return TRUE;
 }
+
+#if DebugMoveMode
+static int LureStateNow() { return s_nLureState; }
+#endif
