@@ -194,7 +194,6 @@ static void AMCheck()
 	if (!pUiPlayerBar) DbgOut("KHONG lam gi - KUiPlayerBar = NULL\n");
 	else if (r.m_nAMBuffCount < MAX_BUFF_COUNT) DbgOut("cho (m_nAMBuffCount %d < %d, vua dung AM)\n", r.m_nAMBuffCount, MAX_BUFF_COUNT);
 	else if (*g_pMapID == city_visondao) DbgOut("o Vi Son Dao: khan cap => thoat game, thuong => cam co ve tam dao\n");
-	else if (*g_pMapID >= 387 && *g_pMapID <= 395) DbgOut("map 387..395 - khong lam gi\n");
 	else if (nAM) DbgOut("UseItem('%s')\n", AMULET_PAPER);
 	else if (nAMX) DbgOut("UseItem('%s')\n", AMULETX_PAPER);
 	else if (pUiPlayerBar->m_nHK3Gengre) DbgOut("ShortcutUseItem(2) - o phim tat 3\n");

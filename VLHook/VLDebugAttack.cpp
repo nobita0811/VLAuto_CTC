@@ -231,7 +231,7 @@ static void AttackStatus()
 		return;
 	}
 	DbgOut("AutoDefence -> ");
-	if (a.m_nEnemyIdx || theQuest.m_bNeedGoPCK) { DbgOut("DUNG - dang danh nguoi (m_nEnemyIdx %d) / theQuest.m_bNeedGoPCK %d\n", a.m_nEnemyIdx, theQuest.m_bNeedGoPCK); return; }
+	if (a.m_nEnemyIdx) { DbgOut("DUNG - dang danh nguoi (m_nEnemyIdx %d)\n", a.m_nEnemyIdx); return; }
 	if (!pPlayer->m_FightMode) { DbgOut("DUNG - trong thanh (m_FightMode 0)\n"); return; }
 	if (!a.m_bAutoHit) { DbgOut("DUNG - chua bat Tu danh quai (m_bAutoHit)\n"); return; }
 	if (theMove.m_bGoTrain) { DbgOut("DUNG - theMove.m_bGoTrain (dang tim duong toi bai train map %d)\n", theMove.m_nGoTrainMap); return; }

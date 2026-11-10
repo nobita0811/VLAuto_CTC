@@ -1311,9 +1311,9 @@ void CVLAttack::Breathe()
 
 	AutoDefence();
 
-	if (m_nEnemyIdx || theQuest.m_bNeedGoPCK)
+	if (m_nEnemyIdx)
 	{
-		DQ_EXIT(m_nEnemyIdx ? "dang danh ke thu (tu ve)" : "nhiem vu can ve PCK");
+		DQ_EXIT("dang danh ke thu (tu ve)");
 		return;
 	}
 
@@ -2211,9 +2211,11 @@ void CVLAttack::SendVLCmdSkill(int nSkillId, int nX, int nY)
 
 // Ghi bo dem log ra file (go hook / thoat game)
 void DiChuyenLogFlush();	// VLMove.cpp (DebugMoveMode)
+void SuaDoLogFlush();       // VLMap.cpp (DebugSuaDo)
 void DebugLogFlushAll()
 {
 	DiChuyenLogFlush();
+	SuaDoLogFlush();
 #if DebugDanhQuai
 	BLFlush(&s_DQFile);
 #endif

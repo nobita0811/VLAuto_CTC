@@ -1593,7 +1593,6 @@ void CVLQuest::DoQuest05()
 		QTRACE("DoQuest05 MW: dat %d/%d", nCurValue - nOldValue, m_nRqValue);
 		if (nCurValue >= nOldValue + m_nRqValue && !theMap.m_bDoShoping)
 		{
-			m_bNeedGoPCK = 0;
 			m_nYSDoing = ys_return;
 			theMap.m_nCurPoint = -1;
 			theMap.NearestDriver();
@@ -1727,13 +1726,12 @@ void CVLQuest::DoQuestJY(int nRqValue)
 	m_nYSDoing = ys_suspending;
 }
 
+// Nhiem vu Danh vong: game khong con PCK (Tin su) => chi doi danh vong o thanh lon (m_bGetMingWang, yeu cau <= 10).
+// Van chua du thi huy (tab Tang diem: "Huy neu yeu cau <") / tam ngung
 void CVLQuest::DoQuestMW(int nRqValue)
 {
-	KUiMsgSel2* pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
-
 	if (m_nDoQuestStep == 0)
 	{
-		// GetMW in BigCity
 		int nOwnerID = theMain.GetOwnerCity(*g_pMapID);
 		if (theMap.ChangeMap(nOwnerID)) return;
 		if (m_bGetMingWang && nRqValue <= 10)
@@ -1743,126 +1741,20 @@ void CVLQuest::DoQuestMW(int nRqValue)
 			if (theMap.GetReputation(1)) return;
 			m_bGetMingWang = 0;
 		}
-		theMap.NearestDriver();
+		theMap.ResetShoping();
 		m_nDoQuestStep = 1;
-		return;
+		return;	// DoQuest05 kiem tra lai: du danh vong thi tra nhiem vu
 	}
-	if (m_nDoQuestStep == 1)
+	if (m_AddPointOpt.m_bMWCancel && nRqValue < m_AddPointOpt.m_nMWCancelVal)
 	{
-		if (theMap.m_bNeedPharmacy)
-		{
-			if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_Pharmacy])) return;
-			theMap.m_bDoShoping = TRUE;
-			theMap.GetPharmacy();
-			return;
-		}
+		m_nYSDoing = ys_cancel;
 		theMap.NearestDriver();
-		m_nDoQuestStep = 2;
+		SaveYSLog(TV(L"Nhiệm vụ Danh vọng (không còn Tín sứ) => Hủy nhiệm vụ!"));
 	}
-	if (m_nDoQuestStep == 2) // DichQuan - Nhan NV
+	else
 	{
-		if (m_AddPointOpt.m_bPCKOnly)
-		{
-			if ((*g_pMapID) != city_bienkinh && (*g_pMapID) != city_duongchau)
-				if (theMap.ChangeMap(city_duongchau)) return;
-		}
-
-		if (!theMap.m_bDoShoping && theMap.RunningToPos(theMap.NpcPoints[npc_Postman])) return;
-		theMap.m_bDoShoping = TRUE;
-
-		if (g_UiInformation2->IsVisible())
-		{
-			g_UiInformation2->Hide();
-			m_nDoQuestStep = 4; // Di Xa phu
-			theMap.ResetShoping();
-			return;
-		}
-		if (pMsgSel2 && pMsgSel2->IsVisible())
-		{
-			if (pMsgSel2->m_nNumMessage == 1)
-			{
-				// Check Time
-				int nTime = g_pCurPlayer->GetTaskVal(pck_time);
-				if (!nTime)
-				{
-					if (m_AddPointOpt.m_bMWCancel && nRqValue < m_AddPointOpt.m_nMWCancelVal)
-					{
-						m_nYSDoing = ys_cancel;
-						theMap.NearestDriver();
-						SaveYSLog(TV(L"Quá giờ chạy Tín sứ => Hủy nhiệm vụ!"));
-					}
-					else
-					{
-						m_nYSDoing = ys_suspending;
-						SaveYSLog(TV(L"Quá giờ chạy Tín sứ => Tạm ngưng!"));
-					}
-					pMsgSel2->OnClickMsg(0);
-					m_bNeedGoPCK = 0;
-					theMap.ResetShoping();
-					return;
-				}
-				m_nDoQuestStep = 3; // Huy NV
-				theMap.ResetShoping();
-			}
-			pMsgSel2->OnClickMsg(0);
-			theMap.m_nTimeWait = 2;
-			return;
-		}
-		theMap.ClickToNpc(theMap.NpcPoints[npc_Postman].x, theMap.NpcPoints[npc_Postman].y);
-		return;
-	}
-	if (m_nDoQuestStep == 3) // DichQuan - Huy NV
-	{
-		if (pMsgSel2 && pMsgSel2->IsVisible())
-		{
-			if (strstr(pMsgSel2->m_pMessages[0]->Msg, TV(L"Đúng vậy!")))
-				m_nDoQuestStep = 2;
-			if (pMsgSel2->m_nNumMessage == 7)
-				pMsgSel2->OnClickMsg(2);
-			else
-				pMsgSel2->OnClickMsg(0);
-			theMap.ResetShoping(0);
-			return;
-		}
-		theMap.ClickToNpc(theMap.NpcPoints[npc_Postman].x, theMap.NpcPoints[npc_Postman].y);
-		return;
-	}
-	if (m_nDoQuestStep == 4) // XaPhu - Di lam NV
-	{
-		int nCount = theMain.GetMenuCount();
-		if (nCount > 0)
-		{
-			if (nCount == 2 && theMain.ClickMenuStr(TV(L"Muốn")))
-				m_nDoQuestStep = 5;
-			else
-				theMain.ClickMenuStr(TV(L"Nhiệm vụ Tín Sứ"));
-			theMap.ResetShoping();
-			return;
-		}
-		theMap.ClickToNpc(theMap.NpcPoints[theMap.m_nDriverIndex].x, theMap.NpcPoints[theMap.m_nDriverIndex].y);
-	}
-	if (m_nDoQuestStep == 5) // Dich Quan - Tra NV
-	{
-		if (pMsgSel2 && pMsgSel2->IsVisible())
-		{
-			if (pMsgSel2->m_nNumMessage == 1)
-			{
-				int nItemBlood = g_pCurPlayer->GetItemsCount(item_medicine, medicine_blood);
-				int nItemBoth = g_pCurPlayer->GetItemsCount(item_medicine, medicine_both);
-				if (nItemBlood < 5 && nItemBoth < 5)
-					m_nDoQuestStep = 1;
-				else
-					m_nDoQuestStep = 2;
-			}
-			if (pMsgSel2->m_nNumMessage == 7)
-				pMsgSel2->OnClickMsg(1);
-			else
-				pMsgSel2->OnClickMsg(0);
-			theMap.ResetShoping();
-			return;
-		}
-		theMap.ClickToNpc(theMap.NpcPoints[npc_Postman].x, theMap.NpcPoints[npc_Postman].y);
-		return;
+		m_nYSDoing = ys_suspending;
+		SaveYSLog(TV(L"Nhiệm vụ Danh vọng (không còn Tín sứ) => Tạm ngưng!"));
 	}
 }
 
@@ -2179,7 +2071,6 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 	m_nFirstMapID = (*g_pMapID);
 	m_nDoQuestStep = 0;
 	m_bNeedGoTrain = 0;
-	m_bNeedGoPCK = 0;
 	m_bGoTrainGetPK = 0;
 	m_nYeSouMapID = 0;
 	m_tmStart = 0;
@@ -2260,7 +2151,7 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 		m_nRqMapID = g_pCurPlayer->GetTaskVal(ys_mapid);
 		if (!theMove.LoadYeSouMap(m_nRqMapID))
 		{
-			SystemMessage(TV(L"<color=yellow>Nơi cần đến chưa có MAP!"));
+			SystemMessage(TV(L"<color=yellow>Nơi cần đến chưa có MapPath (Maps\\Path)!"));
 			m_nRqMapID = 0;
 			if (m_TuZhiOpt.m_bCancelNoMap)
 			{
@@ -2338,7 +2229,6 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 				return ys_suspending;
 			break;
 		case ys_rqmingwang:
-			m_bNeedGoPCK = TRUE;
 			if (m_nMingWang == act_cancel || m_nMingWang == act_useitem)
 			{
 				SaveYSLog(CANCEL_BY_USER);
@@ -2346,8 +2236,6 @@ YESOU_TASK_DOING CVLQuest::GetRequiredConditionRaw()
 			}
 			else if (m_nMingWang == act_ignore)
 				return ys_suspending;
-			if (m_nFirstMapID >= 387 && m_nFirstMapID <= 389)
-				m_nDoQuestStep = 5;
 			break;
 		case ys_rqfuyuan:
 			if (m_nFuYuan == act_cancel || m_nFuYuan == act_useitem)

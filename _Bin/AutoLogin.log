@@ -1996,3 +1996,39 @@
 12:35:50.704 PID 19632 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AFA3F98/00000000 133A3C60/00000000 1349C430/00000000 00000000/00000000
 12:35:50.704 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7031 ms từ đầu lượt)
 12:35:52.746 Kết thúc lượt: thành công
+14:31:07.437 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+14:31:10.429 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+14:31:10.430   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:31:10.430 PID 19608 sau thao tác: init notice sel login role smc = 00000000/00000000 135F6070/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:31:10.936 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+14:31:10.937   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:31:10.937 PID 19608 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13580928/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:31:12.987 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5547 ms từ đầu lượt)
+14:31:12.996   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 183)
+14:31:12.996 PID 19608 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13580928/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+14:31:13.477 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6047 ms từ đầu lượt)
+14:31:13.480   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:31:13.480 PID 19608 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13580928/00000000 1369EE60/00000000 00000000/00000000 00000000/00000000
+14:31:14.474   Serial ổ đĩa gửi server: A890-AC9B (ngẫu nhiên)
+14:31:14.474   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 183)
+14:31:14.474 PID 19608 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 13580928/00000000 1369EE60/00000000 136B9C90/00000000 00000000/00000000
+14:31:14.474 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7047 ms từ đầu lượt)
+14:31:16.473 Kết thúc lượt: thành công
+15:02:43.908 Màn hình 1 lần 1: Đang mở game (chờ 3000 ms, 0 ms từ đầu lượt)
+15:02:46.908 Màn hình 2 lần 1: Bấm Bắt Đầu Trò Chơi (chờ 500 ms, 3000 ms từ đầu lượt)
+15:02:46.908   Bấm Bắt Đầu Trò Chơi: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:02:46.909 PID 5636 sau thao tác: init notice sel login role smc = 00000000/00000000 1365D0A0/80000000 00000000/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:02:47.403 Màn hình 3 lần 1: Bấm Xác định (Nhắc nhở) (chờ 2000 ms, 3500 ms từ đầu lượt)
+15:02:47.405   Bấm Xác định (Nhắc nhở): chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:02:47.405 PID 5636 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE52A70/80000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:02:49.404 Màn hình 4 lần 1: Đang chọn server (chờ 500 ms, 5500 ms từ đầu lượt)
+15:02:49.415   Chọn server + Xác định: chạy mã xong sau 16 ms, exit 1 (GetLastError 6)
+15:02:49.415 PID 5636 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE52A70/00000000 00000000/00000000 00000000/00000000 00000000/00000000
+15:02:49.899 Màn hình 5 lần 1: Đang đăng nhập (chờ 1000 ms, 6000 ms từ đầu lượt)
+15:02:49.901   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:02:49.901 PID 5636 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE52A70/00000000 13697540/00000000 00000000/00000000 00000000/00000000
+15:02:50.905   Serial ổ đĩa gửi server: E025-053D (ngẫu nhiên)
+15:02:50.905   Đang đăng nhập: chạy mã xong sau 0 ms, exit 1 (GetLastError 6)
+15:02:50.906 PID 5636 sau thao tác: init notice sel login role smc = 00000000/00000000 00000000/00000000 0AE52A70/00000000 13697540/00000000 136B2370/00000000 00000000/00000000
+15:02:50.906 Màn hình 6 lần 1: Đang vào game (chờ 2000 ms, 7000 ms từ đầu lượt)
+15:02:52.901 Kết thúc lượt: thành công

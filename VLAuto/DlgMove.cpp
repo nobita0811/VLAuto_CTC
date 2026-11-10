@@ -92,7 +92,7 @@ BOOL CDlgMove::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_NEARBYPLAYER_COMBO), _T("Tên nhân vật cần theo"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_FOLLOWDISTANCE_EDIT), _T("Phạm vi theo sau"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_NOATTACKFOLLOW_CHECK), _T("Không tự đánh nếu mất người dẫn đường"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_MOVEBYMAP_CHECK), _T("Di chuyển tự do toàn bản đồ (đã soạn file MAP)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_MOVEBYMAP_CHECK), _T("Di chuyển tự do toàn bản đồ theo các điểm MapPath (Maps\\Path)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_RIDEHORSEFOLLOW_CHECK), _T("Tự lên ngựa khi theo sau"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AROUNDPOINT_CHECK), _T("Đánh quanh 1 điểm cố định"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_POINTX_EDIT), _T("Tọa độ đánh quanh điểm"));

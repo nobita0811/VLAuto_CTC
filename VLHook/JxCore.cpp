@@ -50,7 +50,7 @@ void PostChatMessage(const char *szChatMsg)
 }
 void PostChatMessage2(const char* szChatMsg)
 {
-	if (LICENSE_REQUIRED)
+	if (QUANGCAOAUTO)
 	{
 		char szScript[MAX_PATH];
 		sprintf(szScript, "Chat('CH_NEARBY','%s')", szChatMsg);

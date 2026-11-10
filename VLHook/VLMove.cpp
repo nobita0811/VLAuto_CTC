@@ -10,7 +10,7 @@
 #include "BufLog.h"
 #include "../CrashHandler.h"
 
-#define DebugMoveMode 1
+#define DebugMoveMode 0
 static int WalkDist(int px, int py, int tx, int ty, int dZ);
 
 // ===== Ket lag: Khinh cong (Tab Phuc hoi "Dung khinh cong khi chay bi ket") =====
@@ -399,9 +399,6 @@ CVLMove::CVLMove(void)
 	m_dwGoTrainTick = 0;
 	nLastMapID = 0;
 	m_nMapPoints = 0;
-	m_nPathPoints = 0;
-	m_nCurPoint = -1;
-	m_nMaxSide = 0;
 	m_nLastdZ = MAX_INTNUM;
 	m_nLagCount = 0;
 	m_nTotalLagCount = 0;
@@ -431,22 +428,6 @@ void CVLMove::Breathe()
 		return;
 	}
 	if (DebugQuestHoldMove()) { MV_EXIT("DEBUG Nhiem vu giu di chuyen (DebugQuestHoldMove)"); return; }	// DEBUG > Nhiem vu: Buoc 3 dung tai map / Buoc 4 tu di vong theo MapPath
-
-	if ((*g_pMapID) >= city_phongky1 && (*g_pMapID) <= city_baokho3)
-	{	// Map PCK
-		if (theQuest.m_bAutoDoQuest && theQuest.m_bNeedGoPCK)
-		{
-			MoveInPCK();
-			MV_EXIT("map PCK: MoveInPCK (nhiem vu)");
-			return;
-		}
-		else if (!P_PLAYER->m_FightMode)
-		{
-			MoveOut();
-			MV_EXIT("map PCK: MoveOut");
-			return;
-		}
-	}
 
 	static int nWaitTime = 0;
 	static BOOL bInFightMode = TRUE;
@@ -517,14 +498,6 @@ void CVLMove::Breathe()
 		}
 	}
 	if (m_bGoTrain && GoTrainBreathe()) return;	// Vua chon xa phu: tim duong toi bai train
-	if (m_bFindingWay && theMap.m_nTrainMapID && !theQuest.m_nYeSouMapID)
-		if (RouteFinding(theMap.m_nTrainMapID))
-		{
-			MV_EXITF("RouteFinding (cach cu) toi map train %d: %s", theMap.m_nTrainMapID,
-				*g_pMapID != theMap.m_nTrainMapID ? "chay toi cong (RunningToDoor)" : "chay toi diem (RunningToPos)");
-			return;
-		}
-
 	m_bFindingWay = 0;
 
 	if (!m_bMoveByMapYS && !m_bAroundPointPK && !m_bRouteMove) { m_nStatus = status_idle; MV_EXIT("khong chon che do di chuyen (BanDo/QuanhDiem/DanhSach)"); return; }
@@ -539,7 +512,7 @@ void CVLMove::Breathe()
 	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
 	if (m_bMoveByMapYS)
 	{
-		if (m_nMapPoints <= 0) { MV_EXIT("BanDo: chua co diem (.map)"); return; }
+		if (m_nMapPoints <= 0) { MV_EXIT("BanDo: map chua co MapPath (Maps\\Path)"); return; }
 		if (m_nCurNode < 0) { GetCurNode(); m_nStatus = status_movefirst; }
 		if (m_nCurNode < 0) { MV_EXIT("BanDo: khong chon duoc diem"); return; }
 		nDestX = MapPoints[m_nCurNode].x;
@@ -602,7 +575,7 @@ void CVLMove::Breathe()
 	}
 	else
 	{
-		if (dZ > 1000) { ptFar.x = nDestX; ptFar.y = nDestY; }
+		if (dZ > 1000 || (m_bMoveByMapYS && dZ > AUTO_GOTO_NEAR)) { ptFar.x = nDestX; ptFar.y = nDestY; }	// BanDo: luon theo canh MapPath
 		if (dZ <= AUTO_GOTO_NEAR) ptFar.x = ptFar.y = 0;
 		if (ptFar.x == nDestX && ptFar.y == nDestY)
 		{
@@ -610,7 +583,7 @@ void CVLMove::Breathe()
 			int nGo = nPW > 0 ? 1 : AutoGoTo(nDestX, nDestY);
 			if (nGo > 0)
 			{
-				MV_ACT(nPW > 0 ? "MapPath (PathWalkTo) - dich xa (>1000 luc chon)" :
+				MV_ACT(nPW > 0 ? "MapPath (PathWalkTo) - dich xa (>1000 luc chon) / BanDo" :
 					nPW == 0 ? "GoTo (het duong MapPath)" : "GoTo (map khong co MapPath / khong noi)");
 				MV_EXIT("dang di toi dich (xa)");
 				m_nLagCount = 0;
@@ -760,30 +733,32 @@ void CVLMove::GetNextNode()
 	int nMVOld = m_nCurNode;
 #endif
 	if (m_bMoveByMapYS)
-	{
-		int nNextNode[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
-		int nCount = 0;
+	{	// Diem MapPath: ngau nhien 1 trong 4 diem gan diem vua toi nhat (tru diem truoc); PathWalkTo di theo canh MapPath
+		if (m_nCurNode < 0 || m_nCurNode >= m_nMapPoints) { GetCurNode(); return; }
+		int nNext[4], dNext[4], nCount = 0;
 		for (int i = 0; i < m_nMapPoints; i++)
 		{
-			if (i == m_nCurNode) continue;
-			if (MapSides[i][m_nCurNode] == MAX_INTNUM) continue;
-			if (i == m_nPreNode) continue;
-			nNextNode[nCount++] = i;
+			if (i == m_nCurNode || i == m_nPreNode) continue;
+			int d = __distance(MapPoints[i], MapPoints[m_nCurNode]);
+			int k = nCount < 4 ? nCount++ : 4;
+			while (k > 0 && dNext[k - 1] > d)
+			{
+				if (k < 4) { nNext[k] = nNext[k - 1]; dNext[k] = dNext[k - 1]; }
+				k--;
+			}
+			if (k < 4) { nNext[k] = i; dNext[k] = d; }
 		}
-		if (nCount == 0 && m_nPreNode >= 0)
+		if (nCount == 0)
 		{
-			nNextNode[0] = m_nPreNode;
-			m_nPreNode = m_nCurNode;
-			m_nCurNode = nNextNode[0];
+			if (m_nPreNode >= 0) { int n = m_nPreNode; m_nPreNode = m_nCurNode; m_nCurNode = n; }
 		}
 		else
 		{
-			int i = P_PLAYER->m_SyncSignal % nCount; //random
 			m_nPreNode = m_nCurNode;
-			m_nCurNode = nNextNode[i];
+			m_nCurNode = nNext[P_PLAYER->m_SyncSignal % nCount];	//random
 		}
 		MV_NODEWHY("GetNextNode BanDo: toi #%d -> #%d (%s)", nMVOld, m_nCurNode,
-			nCount ? "ngau nhien trong cac diem noi, tru diem truoc" : "diem cut: quay lai diem truoc");
+			nCount ? "ngau nhien 1 trong 4 diem MapPath gan nhat, tru diem truoc" : "chi con diem truoc: quay lai");
 		return;
 	}
 	m_nPreNode = m_nCurNode;
@@ -933,115 +908,11 @@ BOOL CVLMove::LoadingMapPath()
 		if (MapEnterElapsed() < 600) return TRUE;
 		nLastMapID = (*g_pMapID);
 
-		m_nCurPoint = -1;
-		m_nMapPoints = 0;
-		m_nPathPoints = 0;
-		GetMapInfo();
-		GetPathInfo();
+		m_nMapPoints = PathMapPoints(*g_pMapID, MapPoints, MAX_MAP_POINTS, TRUE);	// Che do Ban do: diem MapPath, bo diem gan cong
+		if (m_nCurNode >= m_nMapPoints && m_bMoveByMapYS) { m_nCurNode = -1; m_nPreNode = -1; }
 	}
 
 	return 0;
-}
-
-void CVLMove::GetMapInfo()
-{
-	char szMapID[4] = "0";
-	sprintf(szMapID, "%d", (*g_pMapID));
-
-	char szMapFile[64] = "";
-	char szMapIniFile[MAX_PATH];
-	sprintf(szMapIniFile, "%s\\Maps\\MapMenu.ini", theMain.m_szCurFolder);
-
-	GetPrivateProfileString("Map_File", szMapID, NULL, szMapFile, 32, szMapIniFile);
-
-	if (szMapFile[0])
-		LoadMap(szMapFile);
-}
-
-void CVLMove::LoadMap(const char *szMapFile)
-{
-	char szMapFileName[MAX_PATH];
-	sprintf(szMapFileName, "%s\\Maps\\%s", theMain.m_szCurFolder, szMapFile);
-	FILE* pFile;
-	pFile = fopen(szMapFileName, "r");
-	if (pFile == NULL)
-	{
-#ifdef ADMIN_MODE
-		SystemMessage(0, TV(L"Không đọc được file MAP: %s!"), szMapFile);
-#endif
-		return;
-	}
-	int i = 0;
-	while (i < MAX_POINTS)
-	{
-		int nRet = fscanf(pFile, "%d,%d\n", &MapPoints[i].x, &MapPoints[i].y);
-		if (nRet < 2) break;
-		i++;
-	}
-	m_nMapPoints = i;
-	if (m_nMapPoints == 0)
-	{
-		SystemMessage(TV(L"Lỗi file MAP, xin đọc lại Hướng dẫn!"));
-		return;
-	}
-	for (int i = 0; i < m_nMapPoints; i++)
-		for (int j = 0; j < m_nMapPoints; j++)
-			if (i == j) MapSides[i][j] = 0;
-			else MapSides[i][j] = MAX_INTNUM;
-
-	m_nMaxSide = 0;
-	while (TRUE)
-	{
-		int si, sj;
-		int nRet = fscanf(pFile, "%d,%d\n", &si, &sj);
-		if (nRet < 2) break;
-		MapSides[si][sj] = MapSides[sj][si] = __distance(MapPoints[si], MapPoints[sj]);
-		if (MapSides[si][sj] > m_nMaxSide) m_nMaxSide = MapSides[si][sj];
-	}
-	fclose(pFile);
-}
-
-void CVLMove::GetPathInfo()
-{
-	char szMapID[4] = "0";
-	sprintf(szMapID, "%d", (*g_pMapID));
-
-	char szPathFile[64] = "";
-	char szPathListFile[MAX_PATH];
-	sprintf(szPathListFile, "%s\\Maps\\PathList.ini", theMain.m_szCurFolder);
-
-	GetPrivateProfileString("Path_File", szMapID, NULL, szPathFile, 32, szPathListFile);
-
-	if (szPathFile[0])
-		LoadPath(szPathFile);
-}
-
-void CVLMove::LoadPath(const char *szPathFile)
-{
-	//Loading Path File
-	char szPathFileName[MAX_PATH];
-	sprintf(szPathFileName, "%s\\Maps\\Paths\\%s", theMain.m_szCurFolder, szPathFile);
-	FILE* pFile;
-	pFile = fopen(szPathFileName, "r");
-	if (pFile == NULL)
-	{
-		SystemMessage(0, TV(L"Không đọc được file PATH: %s!"), szPathFile);
-		return;
-	}
-	int i = 0;
-	while (i < MAX_POINTS)
-	{
-		int nRet = fscanf(pFile, "%d,%d,%d\n", &PathPoints[i].x, &PathPoints[i].y, &PathPoints[i].z);
-		if (nRet < 3) break;
-		i++;
-	}
-	m_nPathPoints = i;
-	if (m_nPathPoints == 0)
-	{
-		SystemMessage(TV(L"Lỗi file PATH, xin đọc lại Hướng dẫn!"));
-		return;
-	}
-	fclose(pFile);
 }
 
 BOOL CVLMove::IsNpcInRange(int nNpcX, int nNpcY)
@@ -1053,13 +924,13 @@ BOOL CVLMove::IsNpcInRange(int nNpcX, int nNpcY)
 	if (m_bMoveByMapYS)
 	{
 		if (m_nMapPoints <= 0) return TRUE;
-		if (m_nCurNode < 0) return 0;
+		if (m_nCurNode < 0 || m_nCurNode >= m_nMapPoints) return 0;
 		dZ = __distance(MapPoints[m_nCurNode].x, MapPoints[m_nCurNode].y, nNpcX, nNpcY);
-		if (dZ <= m_nMaxSide / 4) return TRUE;
+		if (dZ <= m_nPointRange) return TRUE;
 		//m_bAttackWhenMove is always TRUE
-		if (m_nPreNode < 0) return TRUE;
+		if (m_nPreNode < 0 || m_nPreNode >= m_nMapPoints) return TRUE;
 		dZ = __getheight(MapPoints[m_nPreNode], MapPoints[m_nCurNode], ptNpc);
-		if (dZ <= MapSides[m_nPreNode][m_nCurNode] / 4) return TRUE;
+		if (dZ <= m_nPointRange) return TRUE;
 	}
 	else if (m_bAroundPointPK)
 	{
@@ -1078,11 +949,7 @@ BOOL CVLMove::IsNpcInRange(int nNpcX, int nNpcY)
 		{
 			if (m_nPreNode < 0) return TRUE;
 			dZ = __getheight(m_Nodes[m_nPreNode], m_Nodes[m_nCurNode], ptNpc);
-			if (m_nMaxSide > 0)
-			{
-				if (dZ <= m_nMaxSide / 4) return TRUE;
-			}
-			else if (dZ <= m_nPointRange) return TRUE;
+			if (dZ <= m_nPointRange) return TRUE;
 		}
 	}
 	else
@@ -1090,218 +957,11 @@ BOOL CVLMove::IsNpcInRange(int nNpcX, int nNpcY)
 	return 0;
 }
 
+// Map Da Tau phai co MapPath (Maps\Path\<MapID>_<Ten>.txt) de di vong danh quai
 BOOL CVLMove::LoadYeSouMap(int nYSMapID)
 {
-	char szMapID[4] = "0";
-	sprintf(szMapID, "%d", nYSMapID);
-
-	char szMapFile[64] = "";
-	char szMapIniFile[MAX_PATH];
-	sprintf(szMapIniFile, "%s\\Maps\\MapMenu.ini", theMain.m_szCurFolder);
-	GetPrivateProfileString("Map_File", szMapID, NULL, szMapFile, 32, szMapIniFile);
-	if (szMapFile[0]) return TRUE;
-
-	return 0;
-}
-
-void CVLMove::MoveOut()
-{
-	static int nTimeWait = 15;
-	KUiMsgSel2 *pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
-	if (pMsgSel2 && pMsgSel2->IsVisible()) // DICH QUAN
-	{
-		pMsgSel2->OnClickMsg(1); // Exit
-		nTimeWait = 10;
-		return;
-	}
-	if (nTimeWait) { nTimeWait--; return; }
-	if ((*g_pMapID) >= 390 && (*g_pMapID) <= 392) g_pCurPlayer->MoveTo(42438, 101866);
-	for (int i = 1; i < MAX_NPC; i++)
-	{
-		if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-		if (strcmp(g_pNpcArray[i]->Name, TV(L"Dịch Quan"))) continue;
-		theAttack.SetPeopleIdx(i);
-		nTimeWait = 15;
-		break;
-	}
-}
-
-void CVLMove::MoveInPCK()
-{
-	static BOOL bExitMap = 0;
-	static BOOL bQuestDone = 0;
-	static int nTimeWait = 15;
-	static int nCurNode = -1;
-
-	KUiMsgSel2 *pMsgSel2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
-	if (!P_PLAYER->m_FightMode) // Starting
-	{
-		nCurNode = -1;
-		if (pMsgSel2 && pMsgSel2->IsVisible()) // DICH QUAN
-		{
-			if (bExitMap)
-			{
-				pMsgSel2->OnClickMsg(1); // Exit
-				bExitMap = 0;
-			}
-			else
-			{
-				if (!LoadPCKMap()) return;
-				pMsgSel2->OnClickMsg(0); // Enter
-				bQuestDone = 0;
-			}
-			nTimeWait = 10;
-			return;
-		}
-		if (nTimeWait) { nTimeWait--; return; }
-		if ((*g_pMapID) >= 390 && (*g_pMapID) <= 392) g_pCurPlayer->MoveTo(42438, 101866);
-		for (int i = 1; i < MAX_NPC; i++)
-		{
-			if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (strcmp(g_pNpcArray[i]->Name, TV(L"Dịch Quan"))) continue;
-			theAttack.SetPeopleIdx(i);
-			nTimeWait = 15;
-			break;
-		}
-		return;
-	}
-	if (bQuestDone)
-	{
-		if (pMsgSel2 && pMsgSel2->IsVisible())
-		{
-			if (pMsgSel2->m_nNumMessage < 3)
-				pMsgSel2->OnClickMsg(0);
-			else
-			{
-				int nMark = g_pCurPlayer->GetTaskVal(pck_marks);
-				if (nMark >= 5)
-					pMsgSel2->OnClickMsg(0);
-				else
-					pMsgSel2->OnClickMsg(1);
-			}
-			bExitMap = TRUE;
-			nTimeWait = 10;
-			return;
-		}
-		if (nTimeWait) { nTimeWait--; return; }
-		if (IAM_IN_A_PARTY)
-		{
-			g_pCoreShell->TeamOperation(TEAM_LEAVE, 0, 0);
-			return;
-		}
-		for (int i = 1; i < MAX_NPC; i++)
-		{
-			if (!g_pNpcArray[i]->IsExist() || g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (strcmp(g_pNpcArray[i]->Name, TV(L"Cánh trắng")) &&
-				strcmp(g_pNpcArray[i]->Name, TV(L"Tiêu Trấn")) &&
-				strcmp(g_pNpcArray[i]->Name, TV(L"Nạp Lan Thanh Thành"))) continue;
-			theAttack.SetPeopleIdx(i);
-			nTimeWait = 15;
-			break;
-		}
-	}
-	if (g_UiInformation2->IsVisible())
-		g_UiInformation2->Hide();
-	// Check Lag
-	static int nCheckLag = 0;
-	if (PEOPLE_IDX)
-	{
-		nCheckLag++;
-		if (nCheckLag > 7) { theAttack.SetPeopleIdx(0); }
-		return;
-	}
-	nCheckLag = 0;
-	int nPlayerX, nPlayerY;
-	int dZ, dMin = MAX_INTNUM;
-	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
-	if (!theQuest.m_AddPointOpt.m_bNoClickTS)
-	{
-		//Keep Searching
-		int nNpcX, nNpcY;
-		static DWORD dwLastID1 = 0;
-		static DWORD dwLastID2 = 0;
-		static DWORD dwLastID3 = 0;
-		for (int i = 1; i < MAX_NPC; i++)
-		{
-			if (!g_pNpcArray[i]->IsExist()) continue;
-			if (g_pNpcArray[i]->m_Kind != kind_dialoger) continue;
-			if (!strstr(g_pNpcArray[i]->Name, TV(L"Tọa độ trinh sát"))) continue;
-			if (g_pNpcArray[i]->m_dwID == dwLastID1 || g_pNpcArray[i]->m_dwID == dwLastID2) continue;
-			g_pNpcArray[i]->GetMapPos(&nNpcX, &nNpcY);
-			dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
-			if (dZ < 640)
-			{
-				if (!dwLastID1) dwLastID1 = g_pNpcArray[i]->m_dwID;
-				else if (!dwLastID2) dwLastID2 = g_pNpcArray[i]->m_dwID;
-				else if (!dwLastID3) dwLastID3 = g_pNpcArray[i]->m_dwID;
-				else { dwLastID1 = dwLastID2; dwLastID2 = dwLastID3; dwLastID3 = g_pNpcArray[i]->m_dwID; }
-				theAttack.SetPeopleIdx(i);
-				return;
-			}
-		}
-	}
-	// Keep Moving
-	static int nTimeCount = 0;
-	nTimeCount++;
-	if (nTimeCount % 3 != 1) return; // 600ms
-	if (nCurNode < 0)
-	{
-		for (int i = 0; i < m_nPCKPoints; i++)
-		{
-			dZ = __distance(nPlayerX, nPlayerY, PCKPoints[i].x, PCKPoints[i].y);
-			if (dZ < dMin)
-			{
-				dMin = dZ;
-				nCurNode = i;
-			}
-		}
-	}
-	if (nCurNode < 0) return;
-	dZ = __distance(nPlayerX, nPlayerY, PCKPoints[nCurNode].x, PCKPoints[nCurNode].y);
-	if (dZ <= 100)
-	{
-		if (PCKPoints[nCurNode].z < 0) // Check Point)
-		{
-			bQuestDone = TRUE;
-			return;
-		}
-		else
-			nCurNode = PCKPoints[nCurNode].z;
-	}
-	g_pCurPlayer->MoveTo(PCKPoints[nCurNode].x, PCKPoints[nCurNode].y);
-}
-
-BOOL CVLMove::LoadPCKMap()
-{
-	char szFileName[MAX_PATH];
-	sprintf(szFileName, "%s\\Maps\\", theMain.m_szCurFolder);
-	if ((*g_pMapID) >= city_phongky1 && (*g_pMapID) <= city_phongky3)
-	{
-		if (theQuest.m_AddPointOpt.m_bNoClickTS)
-			strcat(szFileName, "PhongKy0.map");
-		else
-			strcat(szFileName, "PhongKy1.map");
-	}
-	else if ((*g_pMapID) >= 390 && (*g_pMapID) <= 392)
-		strcat(szFileName, "SonThan.map");
-	else
-		strcat(szFileName, "ThienBao.map");
-	FILE* pFile = fopen(szFileName, "r");
-	if (pFile == NULL) return 0;
-	memset(PCKPoints, sizeof(PCKPoints), 0);
-	int i = 0;
-	while (i < MAX_POINTS)
-	{
-		int nRet = fscanf(pFile, "%d,%d,%d\n", &PCKPoints[i].x, &PCKPoints[i].y, &PCKPoints[i].z);
-		if (nRet < 3) break;
-		if (PCKPoints[i].z == 0)
-			PCKPoints[i].z = i + 1;
-		i++;
-	}
-	m_nPCKPoints = i;
-	fclose(pFile);
-	if (m_nPCKPoints <= 0) return 0;
-	return TRUE;
+	static POINT pt[8];
+	return nYSMapID > 0 && PathMapPoints(nYSMapID, pt, 8) > 0;
 }
 
 BOOL CVLMove::IsFlagMoving()
@@ -1326,7 +986,7 @@ BOOL CVLMove::IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX, int nD
 		int nDestY = nPlayerY + (int)(((double)number / (double)UINT_MAX * 1024) - 512);
 		MV_LOG("KET DUONG (IsLagMoving): 8 lan kiem tra khoang cach khong giam (dZ %d), tong ket %d -> chay huong ngau nhien %d/%d, bo diem #%d",
 			dZ, m_nTotalLagCount + 1, nDestX >> 8, nDestY >> 9, m_nCurNode);
-		m_nLagCount = 0; m_nCurNode = -1; m_nCurPoint = -1;
+		m_nLagCount = 0; m_nCurNode = -1;
 		if ((*g_pMapID) != city_visondao)
 		{
 			m_nTotalLagCount++;
@@ -1592,10 +1252,10 @@ BOOL CVLMove::GoTrainBreathe()
 			m_dwGoTrainTick = GetTickCount();
 			return TRUE;	// PathTravelBreathe di; toi map train thi Breathe goi lai day
 		}
-		// Khong co lo trinh MapPath: tra ve cach cu (RouteFinding theo file .map / danh sach toa do)
+		// Khong co lo trinh MapPath toi map train
 		char szName[64] = "";
 		theMain.GetMapName(nTarget, szName);
-		SystemMessage(0, "<color=yellow>Khong co lo trinh MapPath toi map train %s (%d) - di theo cach cu", szName, nTarget);
+		SystemMessage(0, "<color=yellow>Khong co lo trinh MapPath toi map train %s (%d)", szName, nTarget);
 		GoTrainStop();
 		return FALSE;
 	}
@@ -1635,204 +1295,6 @@ BOOL CVLMove::GoTrainBreathe()
 	if (IsLagMoving(nPlayerX, nPlayerY, dZ, nDestX, nDestY)) return TRUE;
 	g_pCurPlayer->GoTo(nDestX, nDestY);
 	return TRUE;
-}
-
-BOOL CVLMove::RouteFinding(int nTrainMapID)
-{
-	static int nTimerCount = 0;
-	nTimerCount++;
-	if (nTimerCount % 3 != 1) return TRUE;	// make it as 600ms
-
-	if ((*g_pMapID) != nTrainMapID)			// not yet reach the right Map
-		return RunningToDoor();
-	else
-		return RunningToPos();
-}
-
-BOOL CVLMove::RunningToDoor()
-{
-	int dZ, dMin = MAX_INTNUM;
-	int nPlayerX, nPlayerY;
-	static POINT LastPos = { 0, 0 };
-
-	if (m_nPathPoints <= 0) return 0;
-
-	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
-
-	if (m_nCurPoint < 0)
-		SystemMessage(TV(L"Đang đi tìm bản đồ luyện công..."));
-	else
-	{
-		dZ = __distance(LastPos.x, LastPos.y, nPlayerX, nPlayerY);
-		if (dZ > 1600) m_nCurPoint = -1;
-	}
-
-	//Save last pos
-	LastPos.x = nPlayerX;
-	LastPos.y = nPlayerY;
-
-	//Find nearest point.
-	if (m_nCurPoint < 0)
-	{
-		for (int i = 0; i < m_nPathPoints; i++)
-		{
-			dZ = __distance(PathPoints[i].x, PathPoints[i].y, nPlayerX, nPlayerY);
-			if (dZ < dMin)
-			{
-				dMin = dZ;
-				m_nCurPoint = i;
-			}
-		}
-	}
-
-	dZ = __distance(PathPoints[m_nCurPoint].x, PathPoints[m_nCurPoint].y, nPlayerX, nPlayerY);
-	if (dZ <= 64)
-	{
-		m_nLagCount = 0;
-		m_nTotalLagCount = 0;
-		if (PathPoints[m_nCurPoint].z > 0 && m_nCurPoint < m_nPathPoints)
-		{
-			m_nCurPoint++;	// To the next Point
-			if (!P_PLAYER->m_bRideHorse && HAVE_HORSE)
-				ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
-		}
-		else
-		{
-			m_nCurPoint = -1;
-			return TRUE;	// Reach the End
-		}
-	}
-	if (IsLagMoving(nPlayerX, nPlayerY, dZ, PathPoints[m_nCurPoint].x, PathPoints[m_nCurPoint].y)) return TRUE;
-	g_pCurPlayer->MoveTo(PathPoints[m_nCurPoint].x, PathPoints[m_nCurPoint].y);
-	return TRUE;
-}
-
-BOOL CVLMove::RunningToPos()
-{
-	int nPlayerX, nPlayerY;
-	int dZ, dMin;
-	static int nStart = -1;
-	static int nEnd = -1;
-
-	if (m_nMapPoints <= 0) return 0;
-
-	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
-	POINT pntPlayer = { nPlayerX, nPlayerY };
-
-	if (m_nCurPoint < 0)
-	{
-		SystemMessage(TV(L"Đến bản đồ luyện công! Đi tìm bãi..."));
-		//Finding Start Point (near the destination)
-		POINT ptnStart = { 0, 0 };
-		nStart = m_nMapPoints / 2;
-		if (m_bMoveByMapYS)
-		{
-			SystemMessage(TV(L"Đến khu vực luyện công! Bắt đầu..."));
-			return 0;
-		}
-		else if (m_bAroundPointPK)
-		{
-			if (!m_nPointX && !m_nPointY) return 0;
-			ptnStart.x = m_nPointX;
-			ptnStart.y = m_nPointY;
-		}
-		else if (m_bRouteMove)
-		{
-			if (!m_Nodes[0].x && !m_Nodes[0].y) return 0;
-			ptnStart = m_Nodes[0];
-		}
-		if (ptnStart.x && ptnStart.y)
-		{
-			dMin = MAX_INTNUM;
-			for (int i = 0; i < m_nMapPoints; i++)
-			{
-				dZ = __distance(MapPoints[i], ptnStart);
-				if (dZ < dMin)
-				{
-					dMin = dZ;
-					nStart = i;
-				}
-			}
-		}
-		//Finding End Point (near the Player)
-		dMin = MAX_INTNUM;
-		for (int i = 0; i < m_nMapPoints; i++)
-		{
-			dZ = __distance(MapPoints[i], pntPlayer);
-			if (dZ < dMin)
-			{
-				dMin = dZ;
-				nEnd = i;
-			}
-		}
-		if (!Dijkstra(nStart, nEnd)) return 0;
-		m_nCurPoint = nEnd;
-	}
-
-	//Tracing the Path
-	if (m_nCurPoint >= 0)
-	{
-		dZ = __distance(MapPoints[m_nCurPoint], pntPlayer);
-		if (dZ <= 64)
-		{
-			m_nLagCount = 0;
-			m_nTotalLagCount = 0;
-			if (m_nCurPoint != nStart)
-			{
-				m_nCurPoint = TraceRoute[m_nCurPoint];
-				if (!P_PLAYER->m_bRideHorse && HAVE_HORSE)
-					ExecuteScript(SCK_SHORTCUT_HORSE); // Len ngua
-			}
-			else
-			{
-				SystemMessage(TV(L"Đến khu vực luyện công! Bắt đầu..."));
-				m_nCurPoint = -1;
-				return 0;
-			}
-		}
-		if (IsLagMoving(nPlayerX, nPlayerY, dZ, MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y)) return TRUE;
-		g_pCurPlayer->MoveTo(MapPoints[m_nCurPoint].x, MapPoints[m_nCurPoint].y);
-		return TRUE;
-	}
-	return 0;
-}
-
-BOOL CVLMove::Dijkstra(int nStart, int nEnd)
-{
-	int Dist[MAX_POINTS];
-	BOOL Free[MAX_POINTS];
-	BOOL bStop = 0;
-	int i, u, v, min;
-	if (nEnd < 0 || nStart < 0) return 0;
-	for (i = 0; i < m_nMapPoints; i++)
-	{
-		Dist[i] = MapSides[nStart][i];
-		TraceRoute[i] = nStart;
-	}
-	memset(Free, TRUE, sizeof(Free));
-	do {
-		u = -1; min = MAX_INTNUM;
-		for (i = 0; i < m_nMapPoints; i++)
-			if (Free[i] && Dist[i] < min)
-			{
-				min = Dist[i];
-				u = i;
-			}
-		if (u == -1 || u == nEnd) bStop = TRUE;
-		if (!bStop)
-		{
-			Free[u] = FALSE;
-			for (v = 0; v < m_nMapPoints; v++)
-				if (Free[v] && Dist[v] > (Dist[u] + MapSides[u][v]))
-				{
-					Dist[v] = Dist[u] + MapSides[u][v];
-					TraceRoute[v] = u;
-				}
-		}
-
-	} while (!bStop);
-
-	return (Dist[nEnd] < MAX_INTNUM);
 }
 
 //================================Game tu tim duong (KPlayer::GoTo)================================

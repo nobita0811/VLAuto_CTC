@@ -88,7 +88,6 @@ CVLQuest::CVLQuest(void)
 
 	m_bUseDoubleExp = 0;
 	m_bNeedGoTrain = 0;
-	m_bNeedGoPCK = 0;
 	m_bGoTrainGetPK = 0;
 	m_nLastMapID = 0;
 	m_nYeSouMapID = 0;
@@ -132,7 +131,6 @@ void CVLQuest::Breath()
 		m_nBHDoing = bh_none;
 		m_nDoQuestStep = 0;
 		m_bNeedGoTrain = 0;
-		m_bNeedGoPCK = 0;
 		m_bGoTrainGetPK = 0;
 		m_bIsFull100LB = 0;
 		m_nTotalPKQuest = 0;
@@ -476,7 +474,6 @@ void CVLQuest::CheckNewDay()
 	SaveYSLog(TV(L"Qua 12h đêm => Nhận nhiệm vụ Dã Tẩu ngày mới.\n"));
 	SystemMessage(TV(L"<color=yellow>Qua ngày mới => Về Tương Dương nhận nhiệm vụ Dã Tẩu."), 1);
 	m_bNeedGoTrain = 0;
-	m_bNeedGoPCK = 0;
 	m_bGoTrainGetPK = 0;
 	g_bQuestGoTrainFirst = FALSE;
 	m_nSaveMapID = 0;
@@ -515,7 +512,6 @@ void CVLQuest::DoSuspendOpt()
 		// Ruong tuy chon tab Ban do) -> cat do -> mua TDP / mau / mana -> xa phu: "Nhung noi da di qua"
 		// con map luyen cong thi chon, khong con thi tu chay bo theo MapPath (GetDriver)
 		m_bNeedGoTrain = TRUE;
-		m_bNeedGoPCK = 0;
 		m_bGoTrainGetPK = 0;
 		m_nYeSouMapID = 0;	// Khong con theo map nhiem vu (FirstRepository / GetDriver / SameMapNodes)
 		m_nSaveMapID = 0;

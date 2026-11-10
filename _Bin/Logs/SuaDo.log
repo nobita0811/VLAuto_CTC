@@ -1,0 +1,52 @@
+﻿[15:02:52.422] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 176 Lâm An - TRONG THANH (phi chien dau) | tien hanh trang 500
+[15:02:52.422]     o  0 idx 50: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[15:02:52.423]     o  1 idx 2:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 16/80  +0  gia sua 0  => CAN SUA
+[15:02:52.423]     o  2 idx 49: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[15:02:52.423]     o  3 idx 46: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[15:02:52.423]     o  4 idx 62:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 65/70  +0  gia sua 0  => CAN SUA
+[15:02:52.423]     o  5 idx 52: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[15:02:52.423]     o  6 idx 53: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:02:52.423]     o  7 idx 54: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:02:52.423]     o  8 idx 51: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:02:52.423]     o  9 idx 48: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:02:52.423]     o 10 idx 44: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:02:52.423] Ke hoach ve thanh: can sua do = 1 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 0 | Hieu thuoc: can mua 0 | tien 500, ruong 7388250
+[15:02:54.156] [Quet 30s] o 1  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam do ben 16/80 (tu sua khi <= 64, canh bao < 4) +0 gia 0 tien 100000 => KHONG tu sua tren map: dang trong thanh (sua o thanh theo tab Ban do)
+[15:03:21.168] --- Trong thanh - Ky Tran Cac | map 176 Lâm An - TRONG THANH (phi chien dau) | tien hanh trang 100000
+[15:03:21.168]     o  0 idx 50: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[15:03:21.168]     o  1 idx 2:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 16/80  +0  gia sua 0  => CAN SUA
+[15:03:21.168]     o  2 idx 49: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[15:03:21.168]     o  3 idx 46: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[15:03:21.168]     o  4 idx 62:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 65/70  +0  gia sua 0  => CAN SUA
+[15:03:21.168]     o  5 idx 52: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[15:03:21.168]     o  6 idx 53: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:03:21.168]     o  7 idx 54: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:03:21.168]     o  8 idx 51: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:03:21.168]     o  9 idx 48: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:03:21.168]     o 10 idx 44: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[15:03:21.168] [Ky Tran Cac - Trong thanh - Ky Tran Cac] bat dau sua 2 mon, tien 100000, ruong 7288750
+[15:03:21.225] GUI LENH SUA:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam (idx 2) do ben 16/80 +0 | gia uoc tinh 0, tien 100000 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 176 Lâm An - TRONG THANH (phi chien dau)
+[15:03:21.364] BANG HOI SUA DO hien (KUiMsgSel, 2 dong): [0]Sửa kỹ [12 vạn2880 Lượng]  [1]Tạm thời không sửa   | tien 100000
+[15:03:21.690] [KUiMsgSel] bang hoi 'Sửa kỹ [12 vạn2880 Lượng]': gia 122880 > tien 100000 (ruong 7288750) => bam [1] khong sua, rut tien roi sua lai
+[15:03:21.830] Bang hoi sua do (KUiMsgSel) da dong sau 453 ms
+[15:03:22.155] [Ky Tran Cac - Trong thanh - Ky Tran Cac] rut 22880 luong tu ruong (tien 122880, ruong 7265870)
+[15:03:22.296] [Quet 30s] o 1  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam do ben 16/80 (tu sua khi <= 64, canh bao < 4) +0 gia 0 tien 122880 => KHONG tu sua tren map: dang trong thanh (sua o thanh theo tab Ban do)
+[15:03:22.624] [Ky Tran Cac - Trong thanh - Ky Tran Cac] tien 100000 -> 122880, gui lai lenh sua
+[15:03:22.624] GUI LENH SUA:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam (idx 2) do ben 16/80 +0 | gia uoc tinh 0, tien 122880 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 176 Lâm An - TRONG THANH (phi chien dau)
+[15:03:22.763] BANG HOI SUA DO hien (KUiMsgSel, 2 dong): [0]Sửa kỹ [12 vạn2880 Lượng]  [1]Tạm thời không sửa   | tien 122880
+[15:03:23.096] [KUiMsgSel] bang hoi 'Sửa kỹ [12 vạn2880 Lượng]': gia 122880 <= tien 122880 => bam [0] Sua ky | Trong thanh - Ky Tran Cac
+[15:03:23.226] => SUA THANH CONG:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam do ben 16/80 -> 80/80 sau 609 ms | MAT 122880 luong (gia uoc tinh 0; tien luc gui lenh 122880, nay 0) [Trong thanh - Ky Tran Cac] | tong: 1 mon OK, 0 that bai, het 122880 luong
+[15:03:23.226] Bang hoi sua do (KUiMsgSel) da dong sau 468 ms
+[15:03:23.565] GUI LENH SUA:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa (idx 62) do ben 65/70 +0 | gia uoc tinh 0, tien 0 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 176 Lâm An - TRONG THANH (phi chien dau)
+[15:03:23.720] BANG HOI SUA DO hien (KUiMsgSel, 2 dong): [0]Sửa kỹ [0 vạn9600 Lượng]  [1]Tạm thời không sửa   | tien 0
+[15:03:24.037] [KUiMsgSel] bang hoi 'Sửa kỹ [0 vạn9600 Lượng]': gia 9600 > tien 0 (ruong 7265870) => bam [1] khong sua, rut tien roi sua lai
+[15:03:24.171] Bang hoi sua do (KUiMsgSel) da dong sau 453 ms
+[15:03:24.502] [Ky Tran Cac - Trong thanh - Ky Tran Cac] rut 9600 luong tu ruong (tien 9600, ruong 7256270)
+[15:03:24.963] [Ky Tran Cac - Trong thanh - Ky Tran Cac] tien 0 -> 9600, gui lai lenh sua
+[15:03:24.963] GUI LENH SUA:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa (idx 62) do ben 65/70 +0 | gia uoc tinh 0, tien 9600 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 176 Lâm An - TRONG THANH (phi chien dau)
+[15:03:25.118] BANG HOI SUA DO hien (KUiMsgSel, 2 dong): [0]Sửa kỹ [0 vạn9600 Lượng]  [1]Tạm thời không sửa   | tien 9600
+[15:03:25.427] [KUiMsgSel] bang hoi 'Sửa kỹ [0 vạn9600 Lượng]': gia 9600 <= tien 9600 => bam [0] Sua ky | Trong thanh - Ky Tran Cac
+[15:03:25.527] => SUA THANH CONG:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa do ben 65/70 -> 70/70 sau 562 ms | MAT 9600 luong (gia uoc tinh 0; tien luc gui lenh 9600, nay 0) [Trong thanh - Ky Tran Cac] | tong: 2 mon OK, 0 that bai, het 132480 luong
+[15:03:25.567] Bang hoi sua do (KUiMsgSel) da dong sau 453 ms
+[15:03:25.923] [Ky Tran Cac - Trong thanh - Ky Tran Cac] da gui lenh sua het 2 mon => tat cua so
+[15:03:27.372] Sua o Ky Tran Cac xong: tien 0, ruong 7256270 | khong can sua o cua hang

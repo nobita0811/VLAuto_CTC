@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "../GameDef.h"
 #include "GameBase.h"
 #include "JxCore.h"
@@ -114,8 +114,8 @@ static void MoveStatus()
 		theMove.m_bRouteMove, theMove.m_bMoveByMap, theMove.m_bMoveByMapYS, theMove.m_bFindingWay);
 	DbgOut("         m_nStatus = %d  m_nCurNode = %d  m_nPreNode = %d  m_nLeaderIdx = %d\n",
 		theMove.m_nStatus, theMove.m_nCurNode, theMove.m_nPreNode, theMove.m_nLeaderIdx);
-	DbgOut("         nLastMapID = %d  m_nMapPoints = %d  m_nPathPoints = %d  m_nCurPoint = %d  LagCount = %d/%d\n",
-		theMove.nLastMapID, theMove.m_nMapPoints, theMove.m_nPathPoints, theMove.m_nCurPoint, theMove.m_nLagCount, theMove.m_nTotalLagCount);
+	DbgOut("         nLastMapID = %d  m_nMapPoints (MapPath) = %d  LagCount = %d/%d\n",
+		theMove.nLastMapID, theMove.m_nMapPoints, theMove.m_nLagCount, theMove.m_nTotalLagCount);
 	DbgOut("theMap.m_nTrainMapID = %d  theQuest.m_nYeSouMapID = %d\n", theMap.m_nTrainMapID, theQuest.m_nYeSouMapID);
 	DbgOut("GoTrain: m_bGoTrain = %d  m_nGoTrainMap = %d  m_nGoNode = %d  m_nGoNodesMapID = %d  PathTravelActive = %d\n",
 		theMove.m_bGoTrain, theMove.m_nGoTrainMap, theMove.m_nGoNode, theMove.m_nGoNodesMapID, PathTravelActive() ? 1 : 0);
@@ -303,13 +303,9 @@ static void MsgSel2Info()
 static void MapInfo()
 {
 	DbgOut("*g_pMapID = %d  g_szMapName = %s\n", *g_pMapID, g_szMapName);
-	DbgOut("theMove.nLastMapID = %d  m_nMapPoints = %d  m_nPathPoints = %d  m_nPCKPoints = %d\n",
-		theMove.nLastMapID, theMove.m_nMapPoints, theMove.m_nPathPoints, theMove.m_nPCKPoints);
-	char szMapID[16], szMapFile[64] = "", szMapIniFile[MAX_PATH];
-	sprintf(szMapID, "%d", *g_pMapID);
-	sprintf(szMapIniFile, "%s\\Maps\\MapMenu.ini", theMain.m_szCurFolder);
-	GetPrivateProfileString("Map_File", szMapID, "", szMapFile, sizeof(szMapFile), szMapIniFile);
-	DbgOut("MapMenu.ini [Map_File] %s = '%s'%s\n", szMapID, szMapFile, szMapFile[0] ? "" : "  (khong co file MAP cho map nay)");
+	DbgOut("theMove.nLastMapID = %d  m_nMapPoints (MapPath) = %d\n",
+		theMove.nLastMapID, theMove.m_nMapPoints);
+	DbgOut("MapPath: %s%s\n", PathFileShow(*g_pMapID), theMove.m_nMapPoints ? "" : "  (map chua co MapPath)");
 	for (int i = 0; i < theMove.m_nMapPoints && i < 10; i++)
 		DbgOut("  MapPoints[%d] = (%d, %d)\n", i, theMove.MapPoints[i].x, theMove.MapPoints[i].y);
 	DbgOut("  m_nNodesMapID = %d  (map hien tai %d)\n", theMove.m_nNodesMapID, *g_pMapID);

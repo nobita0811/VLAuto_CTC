@@ -1,47 +1,53 @@
-﻿  AutoParams.cpp
+﻿  stdafx.cpp
+  AutoParams.cpp
+  GameWindow.cpp
+  LoginSck.cpp
+  VLAuto.cpp
+  VLAutoDlg.cpp
+  License.cpp
+  LicenseGate.cpp
+  SealGate.cpp
+  Harden.cpp
+  CrashHandler.cpp
+  KDtrFix.cpp
   DlgAbout.cpp
-  DlgAttack.cpp
   DlgAutoLogin.cpp
-  DlgBasic.cpp
-  DlgBuffBua.cpp
-  DlgBuySetting.cpp
-  DlgCollect.cpp
-  DlgCollectSetting.cpp
   DlgDebug.cpp
+  DlgAttack.cpp
+  DlgSettingSkill.cpp
   DlgDoSat.cpp
-  DlgExit.cpp
-  DlgFindItem.cpp
-  DlgLogin.cpp
+  DlgBuffBua.cpp
+  DlgBasic.cpp
+  DlgCollect.cpp
+  Generating Code...
+  Compiling...
+  DlgCollectSetting.cpp
+  DlgBuySetting.cpp
   DlgMap.cpp
   DlgMove.cpp
   DlgMovePoints.cpp
+  DlgParty.cpp
+  DlgRecover.cpp
+  DlgYeSou.cpp
+  DiskID32.cpp
+  DWinProcess.cpp
+  MiniBrowser.cpp
+  MyListCtrl.cpp
+  UiControls.cpp
+  VNUnicode.cpp
+  DlgExit.cpp
+  DlgFindItem.cpp
+  DlgLogin.cpp
   DlgOption.cpp
   DlgPKQFilter.cpp
-  DlgParty.cpp
+  DlgUtility.cpp
   Generating Code...
   Compiling...
-  DlgRecover.cpp
-  DlgSettingSkill.cpp
-  DlgUtility.cpp
-  DlgYeSou.cpp
-  GameWindow.cpp
-  Harden.cpp
-  KDtrFix.cpp
-  License.cpp
-  LicenseGate.cpp
-  LoginSck.cpp
-  MyListCtrl.cpp
-  SealGate.cpp
-  VLAuto.cpp
-  VLAutoDlg.cpp
-  VNUnicode.cpp
   YSAddPoint.cpp
   YSBuyItem.cpp
-  YSKillQ.cpp
   YSPrizeSel.cpp
   YSTongPK.cpp
-  Generating Code...
-  Compiling...
+  YSKillQ.cpp
   YSTongQ.cpp
   YSTuZhi.cpp
   Generating Code...

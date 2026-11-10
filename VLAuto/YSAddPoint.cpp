@@ -37,8 +37,6 @@ void CYSAddPoint::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CANCELMW_CHECK, m_pAddPointOpt->m_bMWCancel);
 	DDX_Check(pDX, IDC_CANCELSJ_CHECK, m_pAddPointOpt->m_bSJCancel);
 	DDX_Check(pDX, IDC_USETTL_CHECK, m_pAddPointOpt->m_bUseTienThaoLo);
-	DDX_Check(pDX, IDC_PCKONLY_CHECK, m_pAddPointOpt->m_bPCKOnly);
-	DDX_Check(pDX, IDC_PCKNOCLICK_CHECK, m_pAddPointOpt->m_bNoClickTS);
 	// Textboxes
 	DDX_Text(pDX, IDC_CANCELJY_EDIT, m_pAddPointOpt->m_nExpCancelVal);
 	DDX_Text(pDX, IDC_FY01_EDIT, m_pAddPointOpt->m_nFYItem01);

@@ -191,6 +191,8 @@ public:
 	void	Breathe();
 	void	DoNgaMiBuff();
 	void	CheckEquip();
+	BOOL	StartRepair(BOOL bTown, const char* szWho);	// Sua do qua Ky Tran Cac (VLRecover.cpp)
+	BOOL	IsRepairing();
 	void	CheckInventory();
 	void	CheckPKQuest();
 	void	OnUseAM(BOOL bUrgent = 0);
@@ -452,6 +454,7 @@ enum MOVE_STATUS
 
 #define MAX_NODES 64
 #define MAX_POINTS 128
+#define MAX_MAP_POINTS 512	// Diem MapPath cua map (che do Ban do / Da Tau)
 #define MAX_INTNUM 0x7FFFFF
 class CVLMove
 {
@@ -503,23 +506,14 @@ public:
 	void	LureStart(int nAnchorX, int nAnchorY);	// Vua toi toa do train: >1 quai thi bat dau quay quai
 	BOOL	LureBreathe();							// TRUE = dang quay quai (chua danh)
 	void	LureStop();
-	int		m_nMapPoints, m_nStart, m_nEnd;
-	POINT	MapPoints[MAX_POINTS];
-	int		MapSides[MAX_POINTS][MAX_POINTS];
-	int		TraceRoute[MAX_POINTS];
-	//Ver 4.50
-	int		m_nPathPoints;
-	typedef struct _PATHPOINT { int x, y, z; } PATHPOINT;
-	PATHPOINT PathPoints[MAX_POINTS];
-	int		m_nCurPoint;
+	// Che do Ban do / Da Tau: cac diem MapPath (Maps\Path) cua map hien tai, nap khi vao map (bo diem gan cong)
+	int		m_nMapPoints;
+	POINT	MapPoints[MAX_MAP_POINTS];
 	//Ver 5.2
 	BOOL	m_bMoveByMapYS;
-	int		m_nMaxSide;
 	int		m_nLastdZ;
 	int		m_nLagCount;
 	int		m_nTotalLagCount;
-	PATHPOINT PCKPoints[MAX_POINTS];
-	int		m_nPCKPoints;
 	//Ver 6.15
 	BOOL	m_bAroundPointPK;
 	BOOL	m_bMoveWithPK;
@@ -534,24 +528,11 @@ public:
 	int		GetLeaderChar(const char* szLeader);
 	BOOL	IsNpcInRange(int nNpcX, int nNpcY);
 	BOOL	LoadYeSouMap(int nYSMapID);
-	void	MoveOut();
-	void	MoveInPCK();
-	BOOL	LoadPCKMap();
 	BOOL	IsFlagMoving();
 
 private:
 	BOOL	LoadingMapPath();
-	BOOL	RouteFinding(int nTrainMapID);
-
-	void	GetMapInfo();
-	void	LoadMap(const char *szMapFile);
-	void	GetPathInfo();
-	void	LoadPath(const char *szPathFile);
-
 	BOOL	IsLagMoving(int nPlayerX, int nPlayerY, int dZ, int nDestX = 0, int nDestY = 0);
-	BOOL	RunningToDoor();
-	BOOL	RunningToPos();
-	BOOL	Dijkstra(int nStart, int nEnd);
 	// hàm di chuyển đến bất kỳ nơi nào trong thế giơi game (yêu cầu cần làm full map path , có thể không tìm đường được)
 	BOOL	GoToWorld(int MapId, int nDestX, int nDestY);
 };
@@ -900,8 +881,8 @@ struct YSAddPointOpt
 	int m_nSJCancelVal;
 	int m_nMWCancelVal;
 	BOOL m_bUseTienThaoLo;
-	BOOL m_bPCKOnly;
-	BOOL m_bNoClickTS;
+	BOOL m_bPCKOnly;		// Khong dung (game bo PCK) - giu cho dung bo cuc = VLAuto AutoParams.h
+	BOOL m_bNoClickTS;		// Khong dung
 };
 
 #define MAX_PRIZE_ITEM 32
@@ -1044,7 +1025,6 @@ public:
 	int		m_nFirstMapID;
 	BOOL	m_bUseDoubleExp;
 	BOOL	m_bNeedGoTrain;
-	BOOL	m_bNeedGoPCK;
 	BOOL	m_bGoTrainGetPK;
 	BOOL	m_bIsFull100LB;
 	int		m_nLastMapID;

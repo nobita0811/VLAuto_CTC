@@ -1863,7 +1863,6 @@ static const char* AttackBlockReason()
 	WHY(theAttack.m_bDoingSkill || theAttack.m_bDoingSkillEx, "dang ra skill phu");
 	WHY(theRecover.m_bDoingBuff, "dang buff");
 	WHY(theRecover.m_bEmptyMana, "het mana (tam tim = 0)");
-	WHY(theQuest.m_bNeedGoPCK, "Da Tau cu: di PCK");
 	WHY(theMove.m_nStatus == status_pickup, "dang nhat do");
 	WHY(theAttack.m_nSearchRange <= 0, "tam tim = 0");
 #undef WHY

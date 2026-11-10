@@ -6,9 +6,10 @@
 #include "S3Client.h"
 #include "VLClasses.h"
 #include "VLDebug.h"
+#include "BufLog.h"
+#include "SuaDoLog.h"
 
 #define MAX_TIME_WAIT 12
-
 static int DriverTargetMap();
 static BOOL RunToNearestNode();
 static BOOL s_bNodeDirect = FALSE;	// Da het duong trong thanh (reset o InitValues)
@@ -21,6 +22,217 @@ static DWORD s_dwTryReturnTick = 0;
 static int s_nRebuyCount = 0;			// So lan quay lai mua TDP/thuoc truoc khi bam xa phu (reset o InitValues)
 static BOOL NeedBuyMedicine();
 static BOOL NeedBuyAmulet();
+
+// ===== Debug log Sua do -> <thu muc auto>\Logs\SuaDo.log (bat/tat: DebugSuaDo trong SuaDoLog.h) =====
+#if DebugSuaDo
+#define SD_LOG_MAXSIZE      (8 * 1024 * 1024)   // Qua 8MB => SuaDo_bak.log
+#define SD_BUF_SIZE         (64 * 1024)
+#define SD_FLUSH_TIME       5000
+#define SD_RESULT_WAIT      8000                // Gui lenh sua 8s ma do ben khong doi => that bai
+#define SD_MAX_PEND         16
+
+static char     s_SDBuf[SD_BUF_SIZE];
+static KBufLog  s_SDFile = { "SuaDo", SD_LOG_MAXSIZE, SD_BUF_SIZE, 32 * 1024, SD_FLUSH_TIME, s_SDBuf, 0, 0 };
+
+struct KSDPend
+{
+	int     nIdx;
+	char    szName[80];
+	int     nDur0, nMax0;
+	int     nMoney0;
+	int     nPrice;
+	DWORD   dwTick;
+	char    szWho[64];
+};
+static KSDPend  s_SDPend[SD_MAX_PEND];      // Cac lenh sua dang cho ket qua
+static int      s_nSDPend = 0;
+static int      s_nSDLastMoney = -1;
+static int      s_nSDTotalCost = 0;         // Tong tien sua thanh cong (tu luc go hook)
+static int      s_nSDOK = 0, s_nSDFail = 0;
+static char     s_szSDDlg[2][1200];         // Noi dung bang hoi sua do dang hien da ghi (KUiMsgSel / KUiMsgSel2)
+static DWORD    s_dwSDDlgTick[2];
+static BOOL     s_bSDDlgWarn[2];
+
+static KItem* SDItem(int nItemIdx) { return (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE); }
+
+// Dang o dau: map + ten map + trong thanh (phi chien dau) / tren map (chien dau)
+static const char* SDWhere()
+{
+	static char sz[200];
+	_snprintf(sz, sizeof(sz) - 1, "map %d %s - %s", *g_pMapID, g_szMapName ? g_szMapName : "?",
+		P_PLAYER->m_FightMode ? "TREN MAP (chien dau)" : "TRONG THANH (phi chien dau)");
+	sz[sizeof(sz) - 1] = 0;
+	return sz;
+}
+
+void SuaDoLog(const char* fmt, ...)
+{
+	char szMsg[2000];
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, fmt, va);
+	va_end(va);
+	szMsg[sizeof(szMsg) - 1] = 0;
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	char szLine[2100];
+	_snprintf(szLine, sizeof(szLine) - 1, "[%02d:%02d:%02d.%03d] %s", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, szMsg);
+	szLine[sizeof(szLine) - 1] = 0;
+	BLAppend(&s_SDFile, szLine);
+}
+
+void SuaDoEquipDump(const char* szWhy)
+{
+	SuaDoLog("--- %s | %s | tien hanh trang %d", szWhy, SDWhere(), EQUIP_MONEY);
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
+	{
+		int nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
+		if (!nItemIdx) continue;
+		KItem* pItem = SDItem(nItemIdx);
+		const char* szState;
+		BOOL bNeed = pItem->m_nCurDur >= 0 && pItem->m_nCurDur < pItem->m_nMaxDur;
+		if (pItem->m_nCurDur < 0) szState = "khong co do ben";
+		else if (!bNeed) szState = "day";
+		else if (pItem->m_nItemPlus > 5) szState = "CAN SUA nhung bo qua (+N > 5)";
+		else szState = "CAN SUA";
+		SuaDoLog("    o %2d idx %d: %s  do ben %d/%d  +%d  gia sua %d  => %s", i, nItemIdx, ComAttr.szItemName,
+			pItem->m_nCurDur, pItem->m_nMaxDur, pItem->m_nItemPlus, bNeed ? pItem->GetRepairPrice() : 0, szState);
+	}
+}
+
+void SuaDoSent(int nItemIdx, const char* szWho)
+{
+	KItem* pItem = SDItem(nItemIdx);
+	KUiShop* pShop = (KUiShop*)GetPtrAddress(SHOP_BASE_ADD);
+	int nPrice = pItem->GetRepairPrice();
+	SuaDoLog("GUI LENH SUA: %s (idx %d) do ben %d/%d +%d | gia uoc tinh %d, tien %d | [%s] | cua so shop: %s | %s",
+		ComAttr.szItemName, nItemIdx, pItem->m_nCurDur, pItem->m_nMaxDur, pItem->m_nItemPlus, nPrice, EQUIP_MONEY, szWho,
+		pShop ? (pShop->IsVisible() ? "dang mo" : "co nhung an") : "KHONG MO", SDWhere());
+	if (nPrice > EQUIP_MONEY)
+		SuaDoLog("    !! gia sua %d > tien hanh trang %d => co the khong du tien", nPrice, EQUIP_MONEY);
+	int k;
+	for (k = 0; k < s_nSDPend; k++)
+		if (s_SDPend[k].nIdx == nItemIdx) break;
+	if (k == s_nSDPend)
+	{
+		if (s_nSDPend >= SD_MAX_PEND) k = 0;
+		else s_nSDPend++;
+	}
+	KSDPend& P = s_SDPend[k];
+	P.nIdx = nItemIdx;
+	strncpy(P.szName, ComAttr.szItemName, sizeof(P.szName) - 1);
+	P.szName[sizeof(P.szName) - 1] = 0;
+	P.nDur0 = pItem->m_nCurDur;
+	P.nMax0 = pItem->m_nMaxDur;
+	P.nMoney0 = EQUIP_MONEY;
+	P.nPrice = nPrice;
+	P.dwTick = GetTickCount();
+	strncpy(P.szWho, szWho, sizeof(P.szWho) - 1);
+	P.szWho[sizeof(P.szWho) - 1] = 0;
+}
+
+// Bang hoi co dong "Sua ky [": ghi noi dung khi hien / doi, canh bao mo qua 5s chua ai bam, ghi khi dong
+static void SDDialog(int n, const char* szType, BOOL bVisible, int nNum, KOneMsgInfo** pMsgs)
+{
+	char sz[1200];
+	sz[0] = 0;
+	BOOL bRepair = FALSE;
+	if (bVisible && pMsgs && nNum > 0 && nNum < 20)
+	{
+		int nLen = 0;
+		for (int i = 0; i < nNum; i++)
+		{
+			const char* szMsg = (const char*)pMsgs[i]->Msg;
+			if (strstr(szMsg, FULL_REPAIR)) bRepair = TRUE;
+			int r = _snprintf(sz + nLen, sizeof(sz) - 1 - nLen, "[%d]%s  ", i, szMsg);
+			if (r < 0) { nLen = sizeof(sz) - 1; break; }
+			nLen += r;
+		}
+		sz[nLen] = 0;
+	}
+	DWORD dwNow = GetTickCount();
+	if (bRepair)
+	{
+		if (strcmp(sz, s_szSDDlg[n]))
+		{
+			SuaDoLog("BANG HOI SUA DO hien (%s, %d dong): %s | tien %d", szType, nNum, sz, EQUIP_MONEY);
+			strcpy(s_szSDDlg[n], sz);
+			s_dwSDDlgTick[n] = dwNow;
+			s_bSDDlgWarn[n] = FALSE;
+		}
+		else if (!s_bSDDlgWarn[n] && dwNow - s_dwSDDlgTick[n] > 5000)
+		{
+			SuaDoLog("!! Bang hoi sua do (%s) mo qua 5s chua ai bam (auto khong nhan ra dong 'Sua ky [' / sai so dong?)", szType);
+			s_bSDDlgWarn[n] = TRUE;
+		}
+	}
+	else if (s_szSDDlg[n][0])
+	{
+		SuaDoLog("Bang hoi sua do (%s) da dong sau %d ms", szType, dwNow - s_dwSDDlgTick[n]);
+		s_szSDDlg[n][0] = 0;
+	}
+}
+
+void SuaDoPoll()
+{
+	static int nTick = 0;
+	int nMoney = EQUIP_MONEY;
+	DWORD dwNow = GetTickCount();
+	for (int k = 0; k < s_nSDPend; )
+	{
+		KSDPend& P = s_SDPend[k];
+		KItem* pItem = SDItem(P.nIdx);
+		BOOL bChanged = pItem->m_nCurDur != P.nDur0 || pItem->m_nMaxDur != P.nMax0;
+		if (!bChanged && dwNow - P.dwTick <= SD_RESULT_WAIT) { k++; continue; }
+		int nCostNow = s_nSDLastMoney >= 0 ? s_nSDLastMoney - nMoney : 0;  // Tien giam ngay vong do ben doi
+		int nCostAll = P.nMoney0 - nMoney;                                  // Tien giam tu luc gui lenh
+		int nCost = nCostNow > 0 ? nCostNow : nCostAll;
+		if (bChanged && pItem->m_nCurDur >= pItem->m_nMaxDur)
+		{
+			s_nSDOK++;
+			if (nCost > 0) s_nSDTotalCost += nCost;
+			SuaDoLog("=> SUA THANH CONG: %s do ben %d/%d -> %d/%d sau %d ms | MAT %d luong (gia uoc tinh %d; tien luc gui lenh %d, nay %d) [%s] | tong: %d mon OK, %d that bai, het %d luong",
+				P.szName, P.nDur0, P.nMax0, pItem->m_nCurDur, pItem->m_nMaxDur, dwNow - P.dwTick, nCost, P.nPrice, P.nMoney0, nMoney,
+				P.szWho, s_nSDOK, s_nSDFail, s_nSDTotalCost);
+		}
+		else if (bChanged)
+		{
+			SuaDoLog("=> DO BEN DOI NHUNG CHUA DAY: %s %d/%d -> %d/%d sau %d ms | tien giam %d (gia uoc tinh %d) [%s]",
+				P.szName, P.nDur0, P.nMax0, pItem->m_nCurDur, pItem->m_nMaxDur, dwNow - P.dwTick, nCost, P.nPrice, P.szWho);
+		}
+		else
+		{
+			s_nSDFail++;
+			KUiShop* pShop = (KUiShop*)GetPtrAddress(SHOP_BASE_ADD);
+			SuaDoLog("=> SUA THAT BAI: %s sau %d ms do ben van %d/%d, tien %d -> %d (gia uoc tinh %d) [%s] | cua so shop luc nay: %s | %s",
+				P.szName, dwNow - P.dwTick, pItem->m_nCurDur, pItem->m_nMaxDur, P.nMoney0, nMoney, P.nPrice, P.szWho,
+				pShop ? (pShop->IsVisible() ? "dang mo" : "co nhung an") : "KHONG MO", SDWhere());
+			SuaDoLog("    (ly do co the: cua so shop/Ky Tran Cac chua mo khi gui lenh, bang hoi 'Sua ky' khong ai bam, thieu tien, server tu choi)");
+		}
+		s_SDPend[k] = s_SDPend[--s_nSDPend];
+	}
+	s_nSDLastMoney = nMoney;
+
+	if (++nTick % 5 == 0)
+	{
+		KUiMsgSel* pMsg = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
+		BOOL bVis = pMsg && pMsg->IsVisible();
+		SDDialog(0, "KUiMsgSel", bVis, bVis ? pMsg->m_nNumMessage : 0, bVis ? pMsg->m_pMessages : NULL);
+		KUiMsgSel2* pMsg2 = (KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD);
+		bVis = pMsg2 && pMsg2->IsVisible();
+		SDDialog(1, "KUiMsgSel2", bVis, bVis ? pMsg2->m_nNumMessage : 0, bVis ? pMsg2->m_pMessages : NULL);
+	}
+	if (s_SDFile.nLen && dwNow - s_SDFile.dwFlushTick >= SD_FLUSH_TIME)
+		BLFlush(&s_SDFile);
+}
+#endif
+
+void SuaDoLogFlush()
+{
+#if DebugSuaDo
+	BLFlush(&s_SDFile);
+#endif
+}
 
 //================================Class CVLMap================================
 CVLMap::CVLMap(void)
@@ -76,10 +288,27 @@ CVLMap::CVLMap(void)
 	m_bEnableGiveKCL = TRUE;
 }
 
+// Con do thuong (co gia sua) chua day do ben - Ky Tran Cac sua khong duoc thi sua o cua hang
+static BOOL NeedShopRepair()
+{
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
+	{
+		int nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
+		if (!nItemIdx) continue;
+		KItem* pItem = (KItem*)(dwItmBaseAdd + nItemIdx * ITM_DATA_SIZE);
+		if (pItem->m_nCurDur < 0 || pItem->m_nItemPlus > 5) continue;
+		if (pItem->m_nCurDur < pItem->m_nMaxDur && pItem->GetRepairPrice() > 0) return TRUE;
+	}
+	return FALSE;
+}
+
 void CVLMap::InitEquipCheck()
 {
 	// Check Equipments
 	m_bNeedRepairItems = 0;
+#if DebugSuaDo
+	SuaDoEquipDump(m_bRepair ? "VE THANH: kiem tra do (Sua do trong thanh: BAT)" : "VE THANH: Sua do trong thanh TAT (m_bRepair = 0) => khong sua o thanh");
+#endif
 
 	if (m_bRepair)
 	{
@@ -169,6 +398,13 @@ BOOL g_bQuestGoTrainFirst = FALSE;		// Ngung nhiem vu -> lan dau len map luyen c
 DWORD g_dwTownEatHP = 0;				// Luc uong binh mau / mana o tiem thuoc (tab Nhiem vu: Refill khong uong them)
 DWORD g_dwTownEatMP = 0;
 static DWORD s_dwShopEatTick = 0;
+static int s_nTownRepair = 0;			// Sua do trong thanh qua Ky Tran Cac: 0 = chua, 1 = dang sua, 2 = xong
+
+// Sua do (VLRecover) rut tien tu ruong: ghi muc tien truoc khi rut de CheckReady cat lai
+void TownMoneyMarkBase()
+{
+	if (s_nTownMoneyBase < 0) s_nTownMoneyBase = EQUIP_MONEY;
+}
 
 #define SHOP_MONEY_DEF		100000	// Chua dat "Rut tien": can 10 van tren nguoi de mua
 #define SHOP_BUY_STALL		8000	// Goi BuyItem 8s ma tien khong doi => khong mua duoc (het tien)
@@ -268,6 +504,7 @@ void CVLMap::InitValues()
 	s_nRebuyCount = 0;
 	s_nTownMoneyBase = -1;
 	s_bShopNoMoney = FALSE;
+	s_nTownRepair = 0;
 	ShopMoneyReset();
 	theMove.GoTrainStop();
 	m_nCurPoint = -1;
@@ -282,8 +519,11 @@ void CVLMap::InitValues()
 
 	InitEquipCheck();
 
-	if (!m_bNeedGroceries && !m_bNeedPharmacy)
-		m_bNeedPharmacy = m_bNeedRepairItems;
+	// Sua do: sau khi ban do, sua qua Ky Tran Cac ngay tai cho (khong can toi cua hang) - xem Breathe
+#if DebugSuaDo
+	SuaDoLog("Ke hoach ve thanh: can sua do = %d (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP %d | Hieu thuoc: can mua %d | tien %d, ruong %d",
+		m_bNeedRepairItems, m_bNeedGroceries, m_bNeedPharmacy, EQUIP_MONEY, ROOM_MONEY);
+#endif
 
 	if (P_PLAYER->m_nPKFlag)
 		ExecuteScript("Switch('PK',0)");
@@ -425,6 +665,24 @@ void CVLMap::Breathe()
 	{
 		if (SellItems()) return;
 		m_bNeedSellItems = 0;
+	}
+	if (m_bNeedRepairItems && s_nTownRepair != 2)
+	{	// Sua do qua Ky Tran Cac (thieu tien sua do Hoang Kim thi rut tu ruong)
+		if (s_nTownRepair == 0)
+		{
+			s_nTownRepair = 1;
+			if (theRecover.StartRepair(TRUE, "Trong thanh - Ky Tran Cac")) return;
+		}
+		if (theRecover.IsRepairing()) return;
+		s_nTownRepair = 2;
+		m_bNeedRepairItems = NeedShopRepair();	// Con do thuong chua sua duoc: sua o cua hang nhu cu
+		if (m_bNeedRepairItems && !m_bNeedGroceries && !m_bNeedPharmacy)
+			m_bNeedPharmacy = TRUE;
+#if DebugSuaDo
+		SuaDoLog("Sua o Ky Tran Cac xong: tien %d, ruong %d | %s", EQUIP_MONEY, ROOM_MONEY,
+			m_bNeedRepairItems ? "con do thuong chua sua => sua o cua hang" : "khong can sua o cua hang");
+#endif
+		return;
 	}
 #ifndef VLTK_FREE_MODE
 	if (m_bNeedUseLB && !theQuest.m_bIsFull100LB && !theQuest.m_bGoTrainGetPK)
@@ -721,7 +979,7 @@ BOOL CVLMap::ChangeMap(int nNewMapID)
 		WithdrawMoneyForXaPhu();
 		if (ROOM_MONEY < 500)
 		{
-			PostChatMessage2(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Tiền trong rương không đủ, không thể rỳt tiền!!!"));
+			PostChatMessage2(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Tiền trong rương không đủ, không thể rút tiền!!!"));
 			// tắt tất cả cửa sổ
 			CloseAllWindows(0);
 			return FALSE;
@@ -926,11 +1184,17 @@ void CVLMap::GetSaveItems()
 	m_bNeedSaveItems = 0;
 }
 
+static const char* s_szSDShop = "Thanh";    // Cua hang dang sua do (log SuaDo)
+
 void CVLMap::GetRepairItems()
 {
 	int nItemIdx;
 	KItem* pItem;
 	static int nLastRpEquip = -1;
+#if DebugSuaDo
+	if (nLastRpEquip < 0) SuaDoEquipDump(s_szSDShop);
+	else SuaDoLog("GetRepairItems: tiep tuc tu o %d (%s)", nLastRpEquip + 1, s_szSDShop);
+#endif
 	for (int i = nLastRpEquip + 1; i < MAX_EQUIP_SLOT; i++)
 	{
 		nItemIdx = g_pCurPlayer->m_ItemList.GetEquip(i);
@@ -939,13 +1203,19 @@ void CVLMap::GetRepairItems()
 		if (pItem->m_nCurDur < 0) continue; // Durability not available
 		if (pItem->m_nItemPlus > 5) continue; // Cannot repair this item
 		if (pItem->m_nCurDur < pItem->m_nMaxDur)
-		{	//Sua do
+		{   //Sua do
+#if DebugSuaDo
+			SuaDoSent(nItemIdx, s_szSDShop);
+#endif
 			SystemMessage(0, TV(L"Sửa đồ: <color=yellow>%s"), ComAttr.szItemName);
 			g_pCurPlayer->RepairItem(nItemIdx);
 			nLastRpEquip = i;
 			return;
 		}
 	}
+#if DebugSuaDo
+	SuaDoLog("Da gui lenh sua het cac mon (%s) => m_bNeedRepairItems = 0, tiep tuc mua ban", s_szSDShop);
+#endif
 	nLastRpEquip = -1;
 	m_bNeedRepairItems = 0;
 }
@@ -954,17 +1224,25 @@ void CVLMap::GetRepairItems()
 // Index dong "Sua ky" khong co dinh (co bang [0]=Sua ky, [1]=Tam thoi khong sua),
 // nen quet het cac dong tim FULL_REPAIR roi click. Khong thay -> giu hanh vi cu (click dong cuoi).
 template <class TMsgSel>
-static void ClickRepairChoice(TMsgSel* pMsgSel)
+static void ClickRepairChoice(TMsgSel* pMsgSel, const char* szType)
 {
 	for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
 	{
 		if (strstr((char*)pMsgSel->m_pMessages[i]->Msg, FULL_REPAIR))
 		{
-			pMsgSel->OnClickMsg(i);		// Sua ky do Hoang Kim
+#if DebugSuaDo
+			SuaDoLog("[%s] bam dong [%d] '%s' (Sua ky do Hoang Kim) | tien %d | %s", szType, i,
+				(char*)pMsgSel->m_pMessages[i]->Msg, EQUIP_MONEY, SDWhere());
+#endif
+			pMsgSel->OnClickMsg(i);     // Sua ky do Hoang Kim
 			SystemMessage(TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim"));
 			return;
 		}
 	}
+#if DebugSuaDo
+	SuaDoLog("[%s] bang hoi %d dong khong co dong 'Sua ky [' => bam dong %d (cuoi) | dong [0]: '%s'", szType,
+		pMsgSel->m_nNumMessage, pMsgSel->m_nNumMessage, pMsgSel->m_nNumMessage > 0 ? (char*)pMsgSel->m_pMessages[0]->Msg : "");
+#endif
 	pMsgSel->OnClickMsg(pMsgSel->m_nNumMessage);
 }
 
@@ -982,7 +1260,7 @@ void CVLMap::GetGroceries()
 	{
 		if (pShop)
 		{
-			ClickRepairChoice(pMsgSel);
+			ClickRepairChoice(pMsgSel, "KUiMsgSel2 - Tap hoa");
 			return;
 		}
 		for (int i = 0; i < pMsgSel->m_nNumMessage; i++)
@@ -1008,6 +1286,7 @@ void CVLMap::GetGroceries()
 		//Repair Items
 		if (m_bNeedRepairItems)
 		{
+			s_szSDShop = "Thanh - Tap hoa";
 			GetRepairItems();
 			return;
 		}
@@ -1049,7 +1328,7 @@ void CVLMap::GetPharmacy()
 	{
 		if (pShop)
 		{
-			ClickRepairChoice(pMsgSel);
+			ClickRepairChoice(pMsgSel, "KUiMsgSel - Hieu thuoc");
 			return;
 		}
 		bShopLoaded = 0;
@@ -1095,6 +1374,7 @@ void CVLMap::GetPharmacy()
 		//Repair Items
 		if (m_bNeedRepairItems)
 		{
+			s_szSDShop = "Thanh - Hieu thuoc";
 			GetRepairItems();
 			return;
 		}

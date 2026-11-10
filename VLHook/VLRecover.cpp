@@ -5,6 +5,8 @@
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include "BufLog.h"
+#include "SuaDoLog.h"
 
 //================================Class CVLRecover================================
 CVLRecover::CVLRecover(void)
@@ -142,52 +144,282 @@ void CVLRecover::DoNgaMiBuff()
 	}
 }
 
+//------------------------------------------------------------------ Sua do qua Ky Tran Cac
+// Dung chung tren map (Tu sua do, tab Phuc hoi) va trong thanh (Sua do, tab Ban do): mo Ky Tran Cac (OnClickGShop),
+// gui RepairItem tung mon, bang hoi "Sua ky [x van y luong]" (do Hoang Kim) thi bam neu du tien. Trong thanh thieu
+// tien thi bo bang hoi, rut tu ruong dung so con thieu roi gui lai lenh sua mon do (CheckReady cat lai tien sau).
+extern void TownMoneyMarkBase();
+
+enum { rj_idle = 0, rj_open, rj_wait, rj_unlock, rj_money, rj_close };
+#define RJ_RESULT_WAIT		4000	// Gui lenh sua: cho do ben doi / bang hoi hien
+#define RJ_UNLOCK_WAIT		15000	// Mo khoa ruong de rut tien
+#define RJ_MONEY_WAIT		5000	// Cho tien rut ve tren nguoi
+
+static int s_nRJSlots[MAX_EQUIP_SLOT];	// O trang bi can sua (luu o, khong luu idx: idx do co the doi)
+static int s_nRJCount = 0;
+static int s_nRJPos = 0;
+static int s_nRJStep = rj_idle;
+static DWORD s_dwRJTick = 0;
+static BOOL s_bRJTown = FALSE;			// Dang o thanh: duoc rut tien tu ruong
+static BOOL s_bRJWithdrew = FALSE;		// Mon hien tai da rut tien 1 lan
+static int s_nRJDur0 = 0;
+static int s_nRJMoney0 = 0;
+static int s_nRJTake = 0;				// So tien can rut
+static BOOL s_bRJTried = FALSE;			// Da thu sua (tu luc co mon hong < 3) - reset khi het mon hong
+static const char* s_szRJWho = "";
+
+static BOOL RJNeedRepair(KItem* pItem)
+{
+	return pItem->m_nCurDur >= 0 && pItem->m_nCurDur < pItem->m_nMaxDur && pItem->m_nItemPlus < 6;
+}
+
+static KItem* RJSlotItem(int nSlot, int* pIdx)
+{
+	int nIdx = g_pCurPlayer->m_ItemList.GetEquip(nSlot);
+	if (pIdx) *pIdx = nIdx;
+	if (!nIdx) return NULL;
+	return (KItem*)(dwItmBaseAdd + nIdx * ITM_DATA_SIZE);
+}
+
+// Gia trong dong "Sua ky [12 van2880 luong]" => 122880
+static int RJParsePrice(const char* szMsg)
+{
+	const char* p = strstr(szMsg, FULL_REPAIR);
+	if (!p) return -1;
+	p += strlen(FULL_REPAIR);
+	int nPrice = atoi(p);
+	const char* pL = strstr(p, TV(L"vạn"));
+	if (pL) nPrice = nPrice * 10000 + atoi(pL + 3);
+	return nPrice;
+}
+
+static void RJSend()
+{
+	DWORD dwNow = GetTickCount();
+	while (s_nRJPos < s_nRJCount)
+	{
+		int nIdx;
+		KItem* pItem = RJSlotItem(s_nRJSlots[s_nRJPos], &nIdx);
+		if (pItem && RJNeedRepair(pItem))
+		{
+#if DebugSuaDo
+			SuaDoSent(nIdx, s_szRJWho);
+#endif
+			SystemMessage(0, TV(L"Sửa đồ: <color=yellow>%s"), ComAttr.szItemName);
+			g_pCurPlayer->RepairItem(nIdx);
+			s_nRJDur0 = pItem->m_nCurDur;
+			s_nRJStep = rj_wait;
+			s_dwRJTick = dwNow;
+			return;
+		}
+		s_nRJPos++;
+		s_bRJWithdrew = FALSE;
+	}
+#if DebugSuaDo
+	SuaDoLog("[Ky Tran Cac - %s] da gui lenh sua het %d mon => tat cua so", s_szRJWho, s_nRJCount);
+#endif
+	s_nRJStep = rj_close;
+	s_dwRJTick = dwNow;
+}
+
+static void RJNext()
+{
+	s_nRJPos++;
+	s_bRJWithdrew = FALSE;
+	RJSend();
+}
+
+// Bang hoi "Sua ky [...]" dang hien: TRUE = da xu ly (bam / bo)
+template <class TMsgSel>
+static BOOL RJDialog(TMsgSel* pMsgSel, const char* szType)
+{
+	if (!pMsgSel || !pMsgSel->IsVisible()) return FALSE;
+	int nNum = pMsgSel->m_nNumMessage;
+	if (nNum <= 0 || nNum > 20) return FALSE;
+	int nLine = -1;
+	for (int i = 0; i < nNum; i++)
+		if (strstr((char*)pMsgSel->m_pMessages[i]->Msg, FULL_REPAIR)) { nLine = i; break; }
+	if (nLine < 0) return FALSE;
+
+	char* szMsg = (char*)pMsgSel->m_pMessages[nLine]->Msg;
+	int nPrice = RJParsePrice(szMsg);
+	int nMoney = EQUIP_MONEY;
+	int nCancel = nLine == nNum - 1 ? nNum : nNum - 1;	// Dong "Tam thoi khong sua" (dong cuoi)
+	BOOL bJob = s_nRJStep == rj_wait;
+
+	if (nPrice <= nMoney)
+	{
+#if DebugSuaDo
+		SuaDoLog("[%s] bang hoi '%s': gia %d <= tien %d => bam [%d] Sua ky | %s", szType, szMsg, nPrice, nMoney, nLine,
+			bJob ? s_szRJWho : "khong phai auto gui lenh");
+#endif
+		pMsgSel->OnClickMsg(nLine);
+		SystemMessage(0, TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim (%d lượng)"), nPrice);
+		if (bJob) s_dwRJTick = GetTickCount();	// Cho do ben doi
+		return TRUE;
+	}
+
+	// Thieu tien: trong thanh thi rut tu ruong (1 lan moi mon)
+	int nTake = nPrice - nMoney;
+	BOOL bWithdraw = bJob && s_bRJTown && !s_bRJWithdrew && ROOM_MONEY >= nTake;
+#if DebugSuaDo
+	SuaDoLog("[%s] bang hoi '%s': gia %d > tien %d (ruong %d) => bam [%d] khong sua, %s", szType, szMsg, nPrice, nMoney, ROOM_MONEY,
+		nCancel, bWithdraw ? "rut tien roi sua lai" : !bJob ? "khong phai auto gui lenh" : !s_bRJTown ? "dang tren map (khong rut duoc)" :
+		s_bRJWithdrew ? "da rut 1 lan van thieu" : "ruong khong du tien");
+#endif
+	pMsgSel->OnClickMsg(nCancel);
+	if (bWithdraw)
+	{
+		SystemMessage(0, TV(L"<color=yellow>Rút %d lượng để sửa đồ Hoàng Kim (giá %d, trên người %d)"), nTake, nPrice, nMoney);
+		s_nRJTake = nTake;
+		s_bRJWithdrew = TRUE;
+		s_nRJStep = rj_unlock;
+		s_dwRJTick = GetTickCount();
+		return TRUE;
+	}
+	SystemMessage(0, TV(L"<color=yellow>Không đủ tiền sửa đồ Hoàng Kim (giá %d, trên người %d, rương %d)"), nPrice, nMoney, ROOM_MONEY);
+	if (bJob) RJNext();
+	return TRUE;
+}
+
+BOOL CVLRecover::StartRepair(BOOL bTown, const char* szWho)
+{
+	if (s_nRJStep != rj_idle) return TRUE;
+	s_nRJCount = 0;
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
+	{
+		KItem* pItem = RJSlotItem(i, NULL);
+		if (pItem && RJNeedRepair(pItem)) s_nRJSlots[s_nRJCount++] = i;
+	}
+	s_bRJTried = TRUE;
+	if (!s_nRJCount) return FALSE;
+	s_nRJPos = 0;
+	s_bRJTown = bTown;
+	s_bRJWithdrew = FALSE;
+	s_szRJWho = szWho;
+#if DebugSuaDo
+	SuaDoEquipDump(szWho);
+	SuaDoLog("[Ky Tran Cac - %s] bat dau sua %d mon, tien %d, ruong %d", szWho, s_nRJCount, EQUIP_MONEY, ROOM_MONEY);
+#endif
+	CloseAllWindows(0);
+	KUiPlayerBar* pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
+	if (pUiPlayerBar) pUiPlayerBar->OnClickGShop();
+	s_nRJStep = rj_open;
+	s_dwRJTick = GetTickCount();
+	return TRUE;
+}
+
+BOOL CVLRecover::IsRepairing()
+{
+	return s_nRJStep != rj_idle;
+}
+
+// Moi 0.5s
+static void RJBreathe()
+{
+	if (RJDialog((KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD), "KUiMsgSel")) return;
+	if (RJDialog((KUiMsgSel2*)GetPtrAddress(MSG2_BASE_ADD), "KUiMsgSel2")) return;
+
+	DWORD dwNow = GetTickCount();
+	switch (s_nRJStep)
+	{
+	case rj_open:	// Ky Tran Cac vua mo (0.5s)
+		RJSend();
+		break;
+	case rj_wait:
+	{
+		KItem* pItem = RJSlotItem(s_nRJSlots[s_nRJPos], NULL);
+		if (!pItem || pItem->m_nCurDur != s_nRJDur0 || dwNow - s_dwRJTick >= RJ_RESULT_WAIT)
+			RJNext();
+		break;
+	}
+	case rj_unlock:
+		if (theMain.OpenLockRoom(theMap.m_nRepositoryPass))
+		{
+			theMap.m_bRoomLocked = TRUE;
+			if (dwNow - s_dwRJTick < RJ_UNLOCK_WAIT) break;
+			SystemMessage(1, TV(L"<color=red>Mở khóa rương 15s không được - không rút được tiền sửa đồ"));
+			RJNext();
+			break;
+		}
+		TownMoneyMarkBase();
+		s_nRJMoney0 = EQUIP_MONEY;
+		g_pCoreShell->OperationRequest(GOI_MONEY_INOUT_STORE_BOX, 0, s_nRJTake);
+#if DebugSuaDo
+		SuaDoLog("[Ky Tran Cac - %s] rut %d luong tu ruong (tien %d, ruong %d)", s_szRJWho, s_nRJTake, EQUIP_MONEY, ROOM_MONEY);
+#endif
+		s_nRJStep = rj_money;
+		s_dwRJTick = dwNow;
+		break;
+	case rj_money:
+		if (EQUIP_MONEY <= s_nRJMoney0 && dwNow - s_dwRJTick < RJ_MONEY_WAIT) break;
+#if DebugSuaDo
+		SuaDoLog("[Ky Tran Cac - %s] tien %d -> %d, gui lai lenh sua", s_szRJWho, s_nRJMoney0, EQUIP_MONEY);
+#endif
+		RJSend();	// Gui lai lenh sua mon nay (s_bRJWithdrew = TRUE: thieu nua thi bo qua)
+		break;
+	case rj_close:
+		if (dwNow - s_dwRJTick < 500) break;
+		CloseAllWindows(0);
+		s_nRJStep = rj_idle;
+		break;
+	}
+}
+
+// Mon hong (do ben < 3): idx, NULL = khong co
+static KItem* RJBrokenItem()
+{
+	for (int i = 0; i < MAX_EQUIP_SLOT; i++)
+	{
+		KItem* pItem = RJSlotItem(i, NULL);
+		if (pItem && pItem->m_nCurDur >= 0 && pItem->m_nCurDur < 3) return pItem;
+	}
+	return NULL;
+}
+
 void CVLRecover::CheckEquip()
 {
-	static int nRepairingItem = 0;
-	static int nCloseShop = 0;		// Da mo Ky Tran Cac (OnClickGShop) de sua do: sua xong thi tat
 	static int nTimerCount = 0;
 	nTimerCount++;
+#if DebugSuaDo
+	SuaDoPoll();
+#endif
 
 	if (nTimerCount % 10 == 7)	// each 0.5s
 	{
-		KUiMsgSel *pMsgSel = (KUiMsgSel*)GetPtrAddress(MSG_BASE_ADD);
-		if (pMsgSel && pMsgSel->IsVisible() && pMsgSel->m_nNumMessage >= 4)
-		{
-			char *szMsg1 = (char*)pMsgSel->m_pMessages[1]->Msg;
-			if (strstr(szMsg1, FULL_REPAIR))	// Söa kü [%d v¹n%d l­îng]
+		RJBreathe();
+		return;
+	}
+
+	if (nTimerCount % 200 == 107)	// each 10s: trang bi hong (< 3) => tam ngung auto
+	{
+		KItem* pItem = RJBrokenItem();
+		if (!pItem) { s_bRJTried = FALSE; return; }
+		if (IsRepairing()) return;
+		if (!P_PLAYER->m_FightMode && theMap.m_bAutoReturn && theMap.m_bNeedRepairItems) return;	// Trong thanh: sap sua
+		if (P_PLAYER->m_FightMode)
+		{	// Tren map: dung Tho Dia Phu ve thanh sua; khong co TDP thi tam ngung
+			if (theMain.HaveTownPortal())
 			{
-				char *szPriceV = szMsg1 + strlen(FULL_REPAIR);
-				int nRepairPrice = atoi(szPriceV);
-
-				char *szPriceL = strstr(szPriceV, TV(L"vạn"));
-				if (szPriceL)
-				{
-					szPriceL += 3;
-					nRepairPrice = nRepairPrice * 10000 + atoi(szPriceL);
-				}
-
-				if (nRepairPrice <= EQUIP_MONEY)
-				{
-					pMsgSel->OnClickMsg(1);
-					SystemMessage(TV(L"<color=yellow>Sửa kỹ đồ Hoàng Kim"));
-				}
-				else
-				{
-					pMsgSel->OnClickMsg(3);
-					SystemMessage(TV(L"<color=yellow>Không đủ tiền sửa đồ"));
-				}
+#if DebugSuaDo
+				SuaDoLog("Tren map: %s do ben %d/%d (< 3) => dung Tho Dia Phu ve thanh sua", ComAttr.szItemName, pItem->m_nCurDur, pItem->m_nMaxDur);
+#endif
+				SystemMessage(0, TV(L"<color=yellow>Trang bị hư hỏng <%s> - dùng Thổ Địa Phù về thành sửa"), ComAttr.szItemName);
+				OnUseAM();
 				return;
 			}
 		}
-		if (nCloseShop && !nRepairingItem && --nCloseShop == 0)
-			CloseAllWindows(0);		// Sua do xong (0.5s sau RepairItem): tat cua so Ky Tran Cac
-		if (nRepairingItem)
-		{
-			g_pCurPlayer->RepairItem(nRepairingItem);
-			nRepairingItem = 0;
-			nCloseShop = 2;
+		else if (!s_bRJTried && theMap.m_bRepair)
+		{	// Trong thanh: thu sua 1 lan, khong duoc thi tam ngung
+			StartRepair(TRUE, "Trong thanh - do hong < 3");
+			return;
 		}
+#if DebugSuaDo
+		SuaDoLog("TAM NGUNG AUTO: %s do ben %d/%d (< 3), tien %d, ruong %d | %s", ComAttr.szItemName, pItem->m_nCurDur, pItem->m_nMaxDur,
+			EQUIP_MONEY, ROOM_MONEY, P_PLAYER->m_FightMode ? "tren map, het Tho Dia Phu" : "trong thanh, sua khong duoc");
+#endif
+		theMain.SetPause();
+		PostChatMessage2(TV(L"<color=green>VLCTCPro<color> :<color=yellow>Tạm ngưng , trang bị đang bị hư hỏng (:H)!!!"));
 		return;
 	}
 
@@ -200,38 +432,42 @@ void CVLRecover::CheckEquip()
 		KItem *pItem = (KItem*)(dwItmBaseAdd + nEquipIndex * ITM_DATA_SIZE);
 		if (pItem->m_nCurDur < 0) continue; // Durability not available
 		if (pItem->m_nCurDur >= pItem->m_nMaxDur) continue; // No need to repair
-
-		if (m_bAutoRepair && P_PLAYER->m_FightMode && !nRepairingItem)
+		int nAutoRepairDur = pItem->m_nMaxDur * 8 / 10;
+#if DebugSuaDo
+		if (pItem->m_nCurDur <= nAutoRepairDur || pItem->m_nCurDur < m_nAMByDurAmount)
 		{
-			int nAutoRepairDur = pItem->m_nMaxDur * 8 / 10;
-			if (pItem->m_nCurDur <= nAutoRepairDur && pItem->m_nItemPlus < 6)
-			{
-				char szMsg[128];
-				if (pItem->GetRepairPrice() <= EQUIP_MONEY)
-				{
-					KUiPlayerBar *pUiPlayerBar = (KUiPlayerBar*)GetPtrAddress(UPB_BASE_ADD);
-					pUiPlayerBar->OnClickGShop();
-					nRepairingItem = nEquipIndex;
-					sprintf(szMsg, TV(L"Tự sửa đồ: <color=yellow><%s>"), ComAttr.szItemName);
-				}
-				else
-					sprintf(szMsg, TV(L"<color=yellow>Không đủ tiền sửa đồ"));
-				SystemMessage(szMsg);
-			}
+			const char* szWhy;
+			if (!m_bAutoRepair) szWhy = "KHONG tu sua: tat 'Tu sua do'";
+			else if (!P_PLAYER->m_FightMode) szWhy = "KHONG tu sua tren map: dang trong thanh (sua o thanh theo tab Ban do)";
+			else if (IsRepairing()) szWhy = "cho: dang sua";
+			else if (pItem->m_nCurDur > nAutoRepairDur) szWhy = "chua toi 80% (chi canh bao sap hong)";
+			else if (pItem->m_nItemPlus >= 6) szWhy = "KHONG tu sua: +N >= 6";
+			else szWhy = "TU SUA: mo Ky Tran Cac";
+			SuaDoLog("[Quet 30s] o %d %s do ben %d/%d (tu sua khi <= %d, canh bao < %d) +%d gia %d tien %d => %s", i,
+				ComAttr.szItemName, pItem->m_nCurDur, pItem->m_nMaxDur, nAutoRepairDur, m_nAMByDurAmount, pItem->m_nItemPlus,
+				pItem->GetRepairPrice(), EQUIP_MONEY, szWhy);
+		}
+#endif
+
+		if (m_bAutoRepair && P_PLAYER->m_FightMode && !IsRepairing() && pItem->m_nCurDur <= nAutoRepairDur && pItem->m_nItemPlus < 6)
+		{
+			SystemMessage(0, TV(L"Tự sửa đồ: <color=yellow><%s>"), ComAttr.szItemName);
+			StartRepair(FALSE, "Tren map - tu sua (Ky Tran Cac)");
+			return;
 		}
 
 		if (pItem->m_nCurDur < m_nAMByDurAmount)
 		{
 			char szMessage[128];
 			// Trang bị sắp hỏng
-			sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Trang bị sắp hỏng: <color=red><%s>"), ComAttr.szItemName); 
+			sprintf(szMessage, TV(L"<color=green>VLCTCPro<color> : Trang bị sắp hỏng: <color=red><%s>"), ComAttr.szItemName);
 			PostChatMessage2(szMessage);
 			SystemMessage(1,szMessage);
 			if (P_PLAYER->m_FightMode)
 			{
-				if (m_bAMByDur || pItem->m_nCurDur < 3)
+				if (m_bAMByDur || (pItem->m_nCurDur < 3 && theMain.HaveTownPortal()))
 					OnUseAM();
-				else if (i == itempart_weapon)
+				else if (i == itempart_weapon && pItem->m_nCurDur >= 3)
 					theMain.SetPause();
 			}
 			return;
@@ -325,10 +561,6 @@ void CVLRecover::OnUseAM(BOOL bUrgent)
 				SystemMessage(TV(L"<color=yellow>Quay về tâm đảo!!!"));
 			}
 		}
-		else if ((*g_pMapID) >= 387 && (*g_pMapID) <= 395)
-		{
-			// Do nothing here
-		}
 		else if (!g_pCurPlayer->UseItem(AMULET_PAPER))
 		{
 			if (!g_pCurPlayer->UseItem(AMULETX_PAPER))
@@ -410,7 +642,6 @@ void CVLRecover::OnUseTTL()
 	if (g_RunningTimer % 20 != 1) return; // Checking each 1s
 	if (P_PLAYER->m_FightMode)
 	{
-		if (theQuest.m_bNeedGoPCK) return;
 		if (theQuest.m_bGoTrainGetPK) return;
 	}
 

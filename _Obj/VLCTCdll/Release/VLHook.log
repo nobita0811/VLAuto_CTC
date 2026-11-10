@@ -1,6 +1,4 @@
-﻿  JxCore.cpp
-  S3Client.cpp
-  VLAttack.cpp
+﻿  VLAttack.cpp
   VLBasic.cpp
   VLCollect.cpp
   VLDebug.cpp
@@ -17,12 +15,11 @@
   VLMain.cpp
   VLMap.cpp
   VLMove.cpp
-  VLObstacle.cpp
-  Generating Code...
-  Compiling...
   VLParty.cpp
   VLPathPak.cpp
   VLQTong.cpp
+  Generating Code...
+  Compiling...
   VLQuest.cpp
   VLRecover.cpp
   VLUtil.cpp
