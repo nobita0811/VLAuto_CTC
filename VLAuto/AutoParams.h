@@ -55,6 +55,19 @@ struct PARAM_BASIC : public AutoParams
 	BOOL	m_bTrimRam;		// Giam RAM dinh ky (SetProcessWorkingSetSize trong game)
 	int		m_nTrimRamTime;	// So giay giua 2 lan giam RAM
 	int		m_nGiamCauHinh;	// Giam cau hinh: 0 = binh thuong, 1 = chi ve 1/9 region, 2 = tat ve canh (den man hinh)
+	// Chong chan map (khinh cong qua diem bi chan). Append cuoi PARAM_BASIC => tuong thich cfg cu.
+	BOOL	m_bFixChanMap;		// Bat tong chong chan map
+	BOOL	m_bFixChanMap1;		// Dem tick khi ket gan cong (bang co dinh) roi nhay
+	BOOL	m_bFixChanMap2;		// Nhay ngay khi doi map (bang co dinh)
+	int		m_nChanMapId;		// Toa do tuy chon: map ap dung (0 = chua dat)
+	int		m_nChanMapX;		// Toa do tuy chon: toa do cong X (raw world)
+	int		m_nChanMapY;		// Toa do tuy chon: toa do cong Y (raw world)
+	int		m_nChanDirX;		// Toa do tuy chon: huong nhay X (raw world)
+	int		m_nChanDirY;		// Toa do tuy chon: huong nhay Y (raw world)
+	int		m_nChanJumpDist;	// Toa do tuy chon: do dai moi lan khinh cong
+	int		m_nChanJumpCount;	// Toa do tuy chon: so lan nhay toi da moi lan ket
+	int		m_nChanCheckTime;	// Toa do tuy chon: thoi gian (ms) dung gan cong truoc khi nhay
+	int		m_nChanCheckDist;	// Toa do tuy chon: ban kinh coi la "gan cong"
 
 public:
 	void	InitValue();

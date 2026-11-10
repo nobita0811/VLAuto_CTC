@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UiControls.h"
+#include "DlgAntiChanMap.h"
 
 // CDlgBasic dialog
 
@@ -28,6 +29,7 @@ protected:
 	afx_msg void		OnBnClickedExpLimitCheck();
 	afx_msg void		OnBnClickedTrimRamCheck();
 	afx_msg void		OnCbnSelchangeGiamCauHinh();
+	afx_msg void		OnBnClickedChanMapSettingBtn();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -35,4 +37,5 @@ public:
 	CProgressCtrlEx		m_LifeIndicator;
 	CProgressCtrlEx		m_ManaIndicator;
 	CToolTipCtrl		m_ToolTip;
+	CDlgAntiChanMap		m_dlgAntiChanMap;	// Cua so Cai dat chong chan map (modal)
 };

@@ -29,6 +29,12 @@ void CDlgBasic::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIFE_PROGRESS, m_LifeIndicator);
 	DDX_Control(pDX, IDC_MANA_PROGRESS, m_ManaIndicator);
 
+#if TEST_OFFLINE_BUILD
+	GetDlgItem(IDC_CHANMAP_SETTING_BTN)->EnableWindow(g_pCurGameWin != NULL);
+#else
+	GetDlgItem(IDC_CHANMAP_SETTING_BTN)->ShowWindow(SW_HIDE);	// Chong chan map chi co o ban Tester Offline
+#endif
+
 	if (g_pCurGameWin == NULL) return;
 
 	DDX_Check(pDX, IDC_AMEXIT_CHECK, g_pCurGameWin->m_prBasic.m_bExitWhenAM);
@@ -68,6 +74,7 @@ BEGIN_MESSAGE_MAP(CDlgBasic, CDialog)
 	ON_BN_CLICKED(IDC_EXP_LIMIT_CHECK, &CDlgBasic::OnBnClickedExpLimitCheck)
 	ON_BN_CLICKED(IDC_TRIM_RAM_CHECK, &CDlgBasic::OnBnClickedTrimRamCheck)
 	ON_CBN_SELCHANGE(IDC_GIAMCAUHINH_COMBO, &CDlgBasic::OnCbnSelchangeGiamCauHinh)
+	ON_BN_CLICKED(IDC_CHANMAP_SETTING_BTN, &CDlgBasic::OnBnClickedChanMapSettingBtn)
 END_MESSAGE_MAP()
 
 BOOL CDlgBasic::OnInitDialog()
@@ -99,6 +106,7 @@ BOOL CDlgBasic::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_TRIM_RAM_CHECK), _T("Giảm RAM game định kỳ (đẩy bộ nhớ ra standby/pagefile), chạy cả khi chưa check Auto"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_GIAMCAUHINH_COMBO), _T("Mức 0: bình thường - Mức 1: chỉ vẽ 1/9 cảnh quanh nhân vật (giảm ~1/3 CPU) - Mức 2: tắt vẽ cảnh, đen màn hình (giảm ~1/2 CPU)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_TRIM_RAM_EDIT), _T("Số giây giữa 2 lần giảm RAM (10 - 86400, mặc định 60)"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_CHANMAP_SETTING_BTN), _T("Mở cửa sổ cài đặt chống chặn map (tự khinh công qua điểm bị chặn)"));
 	}
 
 	return FALSE;
@@ -251,4 +259,12 @@ void CDlgBasic::OnBnClickedTrimRamCheck()
 	g_pCurGameWin->SetGameParams(tab_basic);
 	if (g_pCurGameWin->m_bLoadDone)
 		g_pCurGameWin->SaveProfile();
+}
+
+void CDlgBasic::OnBnClickedChanMapSettingBtn()
+{
+#if TEST_OFFLINE_BUILD
+	if (g_pCurGameWin == NULL) return;
+	m_dlgAntiChanMap.DoModal();
+#endif
 }

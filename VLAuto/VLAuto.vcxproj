@@ -131,6 +131,7 @@
     <ClCompile Include="DlgDebug.cpp" />
     <ClCompile Include="DlgAttack.cpp" />
     <ClCompile Include="DlgSettingSkill.cpp" />
+    <ClCompile Include="DlgAntiChanMap.cpp" />
     <ClCompile Include="DlgDoSat.cpp" />
     <ClCompile Include="DlgBuffBua.cpp" />
     <ClCompile Include="DlgBasic.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="DlgDebug.h" />
     <ClInclude Include="DlgAttack.h" />
     <ClInclude Include="DlgSettingSkill.h" />
+    <ClInclude Include="DlgAntiChanMap.h" />
     <ClInclude Include="DlgDoSat.h" />
     <ClInclude Include="DlgBuffBua.h" />
     <ClInclude Include="DlgBasic.h" />

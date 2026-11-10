@@ -110,6 +110,19 @@ public:
 	BOOL	m_bTrimRam;		// Giam RAM dinh ky
 	int		m_nTrimRamTime;	// So giay giua 2 lan giam RAM
 	int		m_nGiamCauHinh;	// Giam cau hinh 0/1/2 (giong PARAM_BASIC)
+	// Chong chan map - dong bo tu PARAM_BASIC (phai giu cung thu tu)
+	BOOL	m_bFixChanMap;
+	BOOL	m_bFixChanMap1;		// dem tick khi ket gan cong roi nhay (bang co dinh)
+	BOOL	m_bFixChanMap2;		// nhay ngay khi doi map (bang co dinh)
+	int		m_nChanMapId;
+	int		m_nChanMapX;
+	int		m_nChanMapY;
+	int		m_nChanDirX;
+	int		m_nChanDirY;
+	int		m_nChanJumpDist;
+	int		m_nChanJumpCount;
+	int		m_nChanCheckTime;
+	int		m_nChanCheckDist;
 //private:
 	int		m_nDistTimeCount;
 	int		m_nIdleTimeCount;
@@ -126,6 +139,7 @@ public:
 	void TrimRamBreathe();	// 200ms, ca khi tam dung
 	void GiamCauHinhBreathe();	// 200ms: ap dung m_nGiamCauHinh khi doi
 	void GiamCauHinhRestore();	// Truoc khi FreeLibrary: tra lai ma game goc
+	void AntiBlockBreathe();	// 400ms: khinh cong qua diem bi chan map
 	int GetExpPercent();
 private:
 	void SetExpStep(int nStep);

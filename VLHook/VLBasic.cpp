@@ -4,6 +4,7 @@
 #include "JxCore.h"
 #include "S3Client.h"
 #include "VLClasses.h"
+#include <math.h>
 
 //================================Class CVLBasic================================
 CVLBasic::CVLBasic(void)
@@ -24,6 +25,18 @@ CVLBasic::CVLBasic(void)
 	m_nDistTimeCount = 0;
 	m_nIdleTimeCount = 0;
 	strcpy(m_szCurName, "");
+	m_bFixChanMap = 0;
+	m_bFixChanMap1 = 1;
+	m_bFixChanMap2 = 1;
+	m_nChanMapId = 0;
+	m_nChanMapX = 0;
+	m_nChanMapY = 0;
+	m_nChanDirX = 0;
+	m_nChanDirY = 0;
+	m_nChanJumpDist = 200;
+	m_nChanJumpCount = 3;
+	m_nChanCheckTime = 1000;
+	m_nChanCheckDist = 150;
 }
 
 void CVLBasic::Breathe()
@@ -228,4 +241,96 @@ void CVLBasic::GiamCauHinhBreathe()
 void CVLBasic::GiamCauHinhRestore()
 {
 	if (s_nGchApplied) GchApply(0);
+}
+
+//================================Chong chan map================================
+// Bang co dinh theo ID map: moi dong {mapId, congX, congY, nhayToiX, nhayToiY, diffX, diffY}.
+// diffX/diffY cong vao vi tri hien tai de ra diem khinh cong (giu nguyen tu ban auto cu).
+struct ChanMapData { int m_nMapId; int m_nPosX; int m_nPosY; int m_nJumpToX; int m_nJumpToY; int m_nDiffX; int m_nDiffY; };
+static ChanMapData g_ChanMap[] = {
+	{198, 48704,  94560,  48713,  94282,  200, -200},	// Thanh Khe
+	{203, 49632,  95744,  49520,  95980, -200,  200},	// Vo Danh
+	{199, 52608,  92992,  52420,  93136, -200,  200},	// Vu Lang
+	{204, 53728, 108512,  53502, 108650, -200,  200},	// Phi Thien
+	{200, 51584, 101472,  51765, 101624,  200,  200},	// Co Duong
+	{201, 51168, 102304,  51403, 102214,  200, -200},	// Bang Ha
+	{205, 54336, 109056,  54158, 108852, -200, -200},	// Duong Trung
+};
+
+#define CHANMAP_BREATHE_MS	400		// AntiBlockBreathe goi moi 400ms (VLHook.cpp)
+#define CHANMAP_JUMP_SKILLID	210		// Skill khinh cong (giong LAG_JUMP_SKILLID o VLMove.cpp)
+static int ChanMsToTicks(int nMs) { int t = nMs / CHANMAP_BREATHE_MS; return t < 1 ? 1 : t; }
+
+// Khinh cong (skill 210) toi (jx, jy) de thoat diem bi chan
+static void DoAntiBlockJump(int jx, int jy)
+{
+	if (P_PLAYER->m_bRideHorse) ExecuteScript(SCK_SHORTCUT_HORSE);	// Xuong ngua moi khinh cong duoc
+	P_PLAYER->SendCommand(do_skill, CHANMAP_JUMP_SKILLID, jx, jy);
+	theAttack.SendVLCmdSkill(CHANMAP_JUMP_SKILLID, jx, jy);
+	SystemMessage(1, "<color=red>Chong chan map: khinh cong toi %d , %d<color>", jx, jy);
+}
+
+void CVLBasic::AntiBlockBreathe()
+{
+	if (!m_bFixChanMap) return;
+	KUiSysMsgCentre *pSysMsg = (KUiSysMsgCentre*)(GetPtrAddress(SMC_BASE_ADD));
+	if (!pSysMsg) return;				// chua vao game
+	if (g_NetworkOffline == -1) return;	// mat ket noi
+	if (P_PLAYER->m_Doing == do_death || P_PLAYER->m_Doing == do_revive) return;
+
+	int nPlayerX = 0, nPlayerY = 0;
+	P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+
+	// (1) Bang co dinh theo ID map
+	static int s_nCountFixed = 0;
+	static int s_nLastMap = 0;
+	for (int i = 0; i < (int)_countof(g_ChanMap); i++)
+	{
+		if (g_ChanMap[i].m_nMapId != *g_pMapID) continue;
+		int jx = nPlayerX + g_ChanMap[i].m_nDiffX;
+		int jy = nPlayerY + g_ChanMap[i].m_nDiffY;
+		if (s_nLastMap != *g_pMapID)
+		{
+			if (m_bFixChanMap2) DoAntiBlockJump(jx, jy);	// nhay ngay khi doi map
+			s_nCountFixed = 0;
+		}
+		else if (m_bFixChanMap1)	// dem tick khi ket gan cong roi nhay
+		{
+			int d = __distance(g_ChanMap[i].m_nPosX, g_ChanMap[i].m_nPosY, nPlayerX, nPlayerY);
+			if (d < 150 && ++s_nCountFixed > 2) { DoAntiBlockJump(jx, jy); s_nCountFixed = 0; }
+		}
+		break;
+	}
+	s_nLastMap = *g_pMapID;
+
+	// (2) Toa do tuy chon
+	static int s_nInZone = 0;
+	static int s_nJumpDone = 0;
+	if (m_nChanMapId && *g_pMapID == m_nChanMapId && m_nChanMapX && m_nChanMapY)
+	{
+		int nCheckDist = m_nChanCheckDist > 0 ? m_nChanCheckDist : 150;
+		int nCheckTick = ChanMsToTicks(m_nChanCheckTime > 0 ? m_nChanCheckTime : 1000);
+		int nMaxJumps  = m_nChanJumpCount > 0 ? m_nChanJumpCount : 1;
+		int nJumpDist  = m_nChanJumpDist > 0 ? m_nChanJumpDist : 200;
+		int d = __distance(m_nChanMapX, m_nChanMapY, nPlayerX, nPlayerY);
+		if (d < nCheckDist)
+		{
+			s_nInZone++;
+			if (s_nJumpDone < nMaxJumps && s_nInZone >= nCheckTick)
+			{
+				double dx = (double)(m_nChanDirX - m_nChanMapX);
+				double dy = (double)(m_nChanDirY - m_nChanMapY);
+				double len = sqrt(dx * dx + dy * dy);
+				if (len >= 1.0)
+				{
+					int jx = nPlayerX + (int)(dx / len * nJumpDist);
+					int jy = nPlayerY + (int)(dy / len * nJumpDist);
+					DoAntiBlockJump(jx, jy);
+					s_nJumpDone++;
+					s_nInZone = 0;
+				}
+			}
+		}
+		else { s_nInZone = 0; s_nJumpDone = 0; }
+	}
 }

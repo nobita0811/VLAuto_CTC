@@ -209,6 +209,13 @@ VOID CALLBACK TimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	if (theMain.m_nTongMoney) return;	// Dang gom tien len bang (phu ve thanh -> gop quy): tam dung Auto
 	if (theMain.m_nWcbStep) return;		// Dang chay bo ve thanh luu ruong (WalkCityBoxBreathe): tam dung Auto
 
+#if TEST_OFFLINE_BUILD
+	// Chong chan map (khinh cong qua diem bi chan) - chay ca che do thuong lan Gioi han Exp.
+	// Chi co o ban Tester Offline.
+	if (g_RunningTimer % 8 == 4)		// Chu ky 400ms
+		{ CRASH_STAGE("theBasic.AntiBlockBreathe"); theBasic.AntiBlockBreathe(); }
+#endif
+
 	if (bExpLimit)
 	{
 		if (g_RunningTimer % 12 == 5)	// Chu ky 600ms
