@@ -10,7 +10,7 @@
 #include "BufLog.h"
 #include "../CrashHandler.h"
 
-#define DebugMoveMode 0
+
 static int WalkDist(int px, int py, int tx, int ty, int dZ);
 
 // ===== Ket lag: Khinh cong (Tab Phuc hoi "Dung khinh cong khi chay bi ket") =====

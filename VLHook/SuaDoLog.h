@@ -5,7 +5,7 @@
 // trong thanh hay tren map), bang hoi "Sua ky [..]" do Hoang Kim (cac dong, bam dong nao), ket qua (do ben co day khong,
 // mat bao nhieu tien), quet tu sua tren map moi 30s (vi sao sua / khong sua).
 // 1 = bat, 0 = tat (khong bien dich code log)
-#define DebugSuaDo 1
+
 
 #if DebugSuaDo
 void	SuaDoLog(const char* fmt, ...);

@@ -12,9 +12,9 @@
 
 // Debug log Cuu sat / Do sat (tab Chien dau) -> <thu muc auto>\Logs\cuusat.log
 // 1 = bat ghi log, 0 = tat (khong bien dich code log)
-#define DebugCuuSat 0
+
 // Debug log Danh quai -> <thu muc auto>\Logs\danhquai.log: trang thai moi vong Breathe + moi lan doi / bo muc tieu (ly do, file:dong)
-#define DebugDanhQuai 0
+
 
 // ===== Bo dem log (BufLog.h): gom nhieu dong trong RAM, vuot nguong / qua thoi gian moi ghi file 1 lan =====
 void BLFlush(KBufLog* L)
