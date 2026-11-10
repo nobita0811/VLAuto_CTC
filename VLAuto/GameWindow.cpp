@@ -158,6 +158,14 @@ void GameWindow::Refresh()
 
 	if (!strcmp(m_szPlayerName, VLTK_UNNAMED)) // Disconnected => Connected
 	{
+		// Luc moi dang nhap (nhat la khi thoat game roi mo game khac login lai), game
+		// cap phat slot nhan vat (m_Index != 0) TRUOC khi ghi truong Name vai frame.
+		// Neu copy ngay thi m_szPlayerName = "" va vi "" != VLTK_UNNAMED nen khoi doc
+		// ten khong bao gio chay lai => Auto bi trang ten (van co dong check). Giu
+		// trang thai <GAME OFFLINE> va thu lai o lan Refresh sau cho den khi co ten.
+		Npc.Name[sizeof(Npc.Name) - 1] = 0;
+		if (!Npc.Name[0]) return;
+
 		// Check DevIoCode
 		BOOL bIsCodeOK = TRUE;
 		/*BYTE brDevIoCode[DEVIO_CODE_SIZE];
@@ -183,7 +191,9 @@ void GameWindow::Refresh()
 		if (!m_dwServerIP) return;*/
 
 		m_nPlayerLevel = Npc.m_Level;
-		strcpy(m_szPlayerName, Npc.Name);
+		// Name[39] -> m_szPlayerName[32]: bound tranh tran neu ten game >= 32 byte
+		strncpy(m_szPlayerName, Npc.Name, sizeof(m_szPlayerName) - 1);
+		m_szPlayerName[sizeof(m_szPlayerName) - 1] = 0;
 		m_bInfoChanged = TRUE;
 
 		// Thong ke lan dang nhap nay

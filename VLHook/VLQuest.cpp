@@ -674,6 +674,8 @@ int CVLQuest::FindMapID(const char* szName, char* szFound, int nFound, BOOL bPri
 		static const struct { const wchar_t *szName; int nID; } s_Alias[] =
 		{
 			{ L"Khỏa Long Động", 75 },	// = Khoả Lang động
+				{ L"Lưởng Thủy Động", 181 },	// = 181_Lưỡng Thủy động
+				{ L"Tiên Cúc Động", 93 },	// = 93_Tiến Cúc động
 		};
 		for (int i = 0; i < _countof(s_Alias); i++)
 		{
