@@ -22,16 +22,24 @@ namespace hard {
     // Mask de XOR vao gia tri runtime: 0 khi sach, != 0 khi da tamper (va khong
     // o SAFE mode). Goi RAI RAC, cach xa diem Flag, de kho lan nguoc.
     unsigned int PoisonMask();
+    // CHAN DOAN (chi dung cho log): checker nao bay DAU TIEN va luc nao (GetTickCount).
+    // Tra "" / 0 khi chua trip hoac o SAFE mode. KHONG anh huong co che degrade.
+    const char*   TripWhere();
+    unsigned long TripTick();
 }
 
 #define LP_TAMPER(where)	(::hard::Flag(where))
 #define LP_TRIPPED()		(::hard::Tripped())
 #define LP_POISON()			(::hard::PoisonMask())
+#define LP_TRIP_WHERE()		(::hard::TripWhere())
+#define LP_TRIP_TICK()		(::hard::TripTick())
 
 #else   // LP_HARDEN == 0 : khong dinh gi (Tester offline)
 
 #define LP_TAMPER(where)	((void)0)
 #define LP_TRIPPED()		(false)
 #define LP_POISON()			(0u)
+#define LP_TRIP_WHERE()		("")
+#define LP_TRIP_TICK()		(0ul)
 
 #endif

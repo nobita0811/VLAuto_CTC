@@ -586,13 +586,24 @@ static void IntegrityLoop(volatile LONG* self, volatile LONG* other, DWORD baseM
     LONG lastOther = InterlockedCompareExchange(other, 0, 0);
     int  stale = 0;
     for (;;) {
-        Sleep(baseMs + (GetTickCount() & 0x7FF));   // jitter ~0.0-2.0s
+        DWORD want = baseMs + (GetTickCount() & 0x7FF);   // ngu du kien, jitter ~0.0-2.0s
+        DWORD t0 = GetTickCount();
+        Sleep(want);
+        DWORD slept = GetTickCount() - t0;                // thuc te (lon khi may sleep/treo)
         if (!lp::integrity_verify())
             LP_TAMPER("text");
         InterlockedIncrement(self);
         LONG now = InterlockedCompareExchange(other, 0, 0);
+        // Chong FALSE-POSITIVE: may vua ngu/treo/dong bang (CPU doi do nhieu client) =>
+        // CA HAI thread bi dung cung luc => nhip kia "dong bang" KHONG phai do bi kill.
+        // Bo qua chu ky nay thay vi bay. (NOP/kill 1 thread thi thread nay van chay
+        // dung nhip => slept binh thuong => van bat duoc.)
+        if (slept > want + 8000) {
+            stale = 0; lastOther = now;
+            continue;
+        }
         if (now == lastOther) {                      // nhip kia khong tang
-            if (++stale >= 2) LP_TAMPER("beat");     // ~2 chu ky moi flag (chong jitter)
+            if (++stale >= 4) LP_TAMPER("beat");     // ~4 chu ky (chong jitter + may nang)
         } else {
             stale = 0; lastOther = now;
         }
@@ -649,9 +660,12 @@ void IntegrityGuardStart()
     h = CreateThread(nullptr, 0, ThreadA, nullptr, 0, nullptr); if (h) CloseHandle(h);
     h = CreateThread(nullptr, 0, ThreadB, nullptr, 0, nullptr); if (h) CloseHandle(h);
 
-    // Watchdog anti-debug: API + PEB + NtQuery + HWBP (bo TIMING -> it false-positive).
+    // Watchdog anti-debug: API + PEB + NtQuery. Bo TIMING va HWBP -> it false-positive:
+    // HWBP doc thanh ghi debug Dr0-7, nhung overlay GPU (MSI Afterburner, RivaTuner,
+    // Discord...) cung dat HWBP => bay nham khach hop le. Gia tri phat hien cua HWBP
+    // thap nen bo di.
     lp::ad_install_guard(&OnDbg, 1500,
-                         lp::AD_API | lp::AD_PEB | lp::AD_NTQUERY | lp::AD_HWBP);
+                         lp::AD_API | lp::AD_PEB | lp::AD_NTQUERY);
 #if !LP_HARDEN_SAFE
     HideCurrentThread();
     BlockRemoteAttach();

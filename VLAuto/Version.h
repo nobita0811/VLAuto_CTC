@@ -4,14 +4,15 @@
 #define CLIENT_VERSION		"0.1"
 #define HASH_CODE			0x4683
 
-#define VLVERSION	"1.01"
+#define VLVERSION	"1.02"
 
 #define QUANGCAOAUTO	1
 
-#define DebugSuaDo 0
+#define DebugSuaDo 1
 #define DebugMoveMode 0
 #define DebugCuuSat 0
 #define DebugDanhQuai 0
+#define DebugUserCheckAccount 1
 // Ban build (dung chung VLAuto + VLHook qua GameDef.h). Sua 2 dong duoi roi build lai,
 // hoac chay BuildRelease.ps1 (truyen /DADMIN_MODE=.. /DADMIN_TESTER=.. qua bien CL, khong sua file nay)
 //   ADMIN_MODE 0                  : ban nguoi dung - can license, bo cua so DEBUG / lenh debug / phim test

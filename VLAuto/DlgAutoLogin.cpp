@@ -1619,9 +1619,12 @@ BOOL CDlgAutoLogin::LoginAction(int nScreen, LPCTSTR szStatus, DWORD dwWait)
 	return m_Job.nTries <= LOGIN_MAX_TRIES;
 }
 
-// Nhật ký đăng nhập <Auto>\AutoLogin.log (UTF-8) để dò lỗi kẹt màn hình
+// Nhật ký đăng nhập <Auto>\AutoLogin.log (UTF-8) để dò lỗi kẹt màn hình.
+// Đặt WRITE_AUTOLOGIN_LOG 1 để bật lại khi cần dò lỗi.
+#define WRITE_AUTOLOGIN_LOG	0
 static void LoginLog(LPCTSTR szFormat, ...)
 {
+#if WRITE_AUTOLOGIN_LOG
 	CString strLine;
 	va_list args;
 	va_start(args, szFormat);
@@ -1640,6 +1643,9 @@ static void LoginLog(LPCTSTR szFormat, ...)
 	DWORD dwWritten;
 	WriteFile(hFile, (LPCSTR)szUtf8, (DWORD)strlen(szUtf8), &dwWritten, NULL);
 	CloseHandle(hFile);
+#else
+	UNREFERENCED_PARAMETER(szFormat);
+#endif
 }
 
 static void LogGameScreens(HANDLE hGame, LPCTSTR szWhat)

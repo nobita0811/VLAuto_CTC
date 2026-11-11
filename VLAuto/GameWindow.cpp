@@ -44,6 +44,134 @@ const WinMessage AutoParamMsg[] =
 	{ WM_HOOK_YESOU, NULL, sizeof(PARAM_YESOU) },
 };
 
+// ============================================================================
+//  DEBUG LOG "NHAN NHAN VAT"  ->  <thu muc Auto>\Logs\UserCheck.log
+//  Bat/tat: #define DebugUserCheckAccount (Version.h). 1 = ghi log, 0 = khong
+//  bien dich (zero-cost cho ban phat hanh).
+//  Muc dich: tim ly do Auto KHONG nhan nhan vat (ten trang / dung <GAME OFFLINE>).
+//  Ghi lai tung buoc doc bo nho game + tung nhanh "return" trong Refresh():
+//    - OpenProcess that bai (handle NULL) -> khong doc duoc bo nho
+//    - doc NPC_BASE / KNpc core that bai (sai dia chi / ERROR_PARTIAL_COPY)
+//    - m_Index = 0 (chua vao game / chon nhan vat / sai player index)
+//    - m_Index != 0 nhung Name rong (dua doc: game cap slot truoc khi ghi ten)
+//    - doc / giai ma account id that bai hoac rong
+//    - NHAN DUOC (thanh cong) + ket qua IsRegistered
+//    - MAT KET NOI (Connected -> <GAME OFFLINE>)
+//  Noi dung ASCII (ten TCVN3 ghi ca dang doc duoc lan hex) de khong lech ma.
+// ============================================================================
+#if DebugUserCheckAccount
+#define UC_LOG_MAXSIZE   (4 * 1024 * 1024)   // > 4MB => doi ten UserCheck_bak.log
+#define UC_DUMP_PERIOD   5000                 // Cung 1 ly do/1 cua so: toi da 5s ghi lai
+
+static void UCWrite(const char* szLine)
+{
+	TCHAR szDir[MAX_PATH], szFile[MAX_PATH];
+	_stprintf(szDir, _T("%s\\Logs"), g_szAppFolder);
+	CreateDirectory(szDir, NULL);
+	_stprintf(szFile, _T("%s\\UserCheck.log"), szDir);
+
+	WIN32_FILE_ATTRIBUTE_DATA fa;
+	if (GetFileAttributesEx(szFile, GetFileExInfoStandard, &fa)
+		&& (fa.nFileSizeHigh || fa.nFileSizeLow > UC_LOG_MAXSIZE))
+	{
+		TCHAR szBak[MAX_PATH];
+		_stprintf(szBak, _T("%s\\UserCheck_bak.log"), szDir);
+		DeleteFile(szBak);
+		MoveFile(szFile, szBak);
+	}
+
+	FILE* f = _tfopen(szFile, _T("ab"));
+	if (!f) return;
+	if (ftell(f) == 0) fputs("\xEF\xBB\xBF", f);	// BOM UTF-8 (noi dung ASCII)
+	fputs(szLine, f);
+	fclose(f);
+}
+
+static void UCLog(const char* fmt, ...)
+{
+	char szMsg[1800];
+	va_list va;
+	va_start(va, fmt);
+	_vsnprintf(szMsg, sizeof(szMsg) - 1, fmt, va);
+	va_end(va);
+	szMsg[sizeof(szMsg) - 1] = 0;
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	char szLine[2000];
+	_snprintf(szLine, sizeof(szLine) - 1, "[%02d:%02d:%02d.%03d] %s\r\n",
+		st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, szMsg);
+	szLine[sizeof(szLine) - 1] = 0;
+	UCWrite(szLine);
+}
+
+// Dump byte (dang doc duoc + hex) - dung cho ten TCVN3 / account id.
+// Vong 4 bo dem => goi duoc nhieu lan trong cung 1 cau lenh log.
+static const char* UCBytes(const void* p, int n)
+{
+	static char szRing[4][400];
+	static int iRing = 0;
+	char* sz = szRing[iRing = (iRing + 1) & 3];
+	const unsigned char* b = (const unsigned char*)p;
+	if (n < 0) n = 0;
+	if (n > 40) n = 40;
+	int k = 0;
+	sz[k++] = '"';
+	for (int i = 0; i < n && k < 300; i++)
+		sz[k++] = (b[i] >= 0x20 && b[i] < 0x7F) ? (char)b[i] : '.';
+	k += _snprintf(sz + k, sizeof(sz) - k - 1, "\" hex=");
+	for (int i = 0; i < n && k < 390; i++)
+		k += _snprintf(sz + k, sizeof(sz) - k - 1, "%02X ", b[i]);
+	sz[k] = 0;
+	return sz;
+}
+
+// TCHAR* -> const char* (an toan ca ban UNICODE lan ANSI) de ghi ten file exe
+static const char* UCTStr(const TCHAR* s)
+{
+	static char ring[2][MAX_PATH];
+	static int i = 0;
+	char* o = ring[i = (i + 1) & 1];
+#ifdef UNICODE
+	WideCharToMultiByte(CP_ACP, 0, s, -1, o, MAX_PATH, NULL, NULL);
+#else
+	strncpy(o, s, MAX_PATH - 1); o[MAX_PATH - 1] = 0;
+#endif
+	return o;
+}
+
+// Rate-limit theo (cua so, ly do): tranh flood khi dung o 1 trang thai lau
+struct UCState { HWND hWnd; int nReason; DWORD dwTick; };
+static UCState s_UC[32];
+static int s_nUC = 0;
+static bool UCShouldLog(HWND hWnd, int nReason)
+{
+	DWORD now = GetTickCount();
+	for (int i = 0; i < s_nUC; i++)
+		if (s_UC[i].hWnd == hWnd)
+		{
+			if (s_UC[i].nReason == nReason && now - s_UC[i].dwTick < UC_DUMP_PERIOD)
+				return false;
+			s_UC[i].nReason = nReason;
+			s_UC[i].dwTick = now;
+			return true;
+		}
+	if (s_nUC < 32)
+	{
+		s_UC[s_nUC].hWnd = hWnd;
+		s_UC[s_nUC].nReason = nReason;
+		s_UC[s_nUC].dwTick = now;
+		s_nUC++;
+	}
+	return true;
+}
+#define UC_LOG(...)             UCLog(__VA_ARGS__)
+#define UC_LOGR(hwnd, rc, ...)  do { if (UCShouldLog(hwnd, rc)) UCLog(__VA_ARGS__); } while (0)
+#else
+#define UC_LOG(...)             ((void)0)
+#define UC_LOGR(hwnd, rc, ...)  ((void)0)
+#endif // DebugUserCheckAccount
+
 // GameWindow Class
 GameWindow::GameWindow(HWND hWnd)
 {
@@ -87,6 +215,15 @@ void GameWindow::Refresh()
 	LPBYTE lpBaseAdd, lpCurAdd;
 	DWinProcess winProcess(m_hWnd);
 
+#if DebugUserCheckAccount
+	if (winProcess.GetHandle() == NULL)
+	{
+		DWORD err = GetLastError();
+		UC_LOGR(m_hWnd, 1, "hWnd=%p LY DO 1: OpenProcess THAT BAI err=%u -> KHONG doc duoc bo nho game. Thuong do thieu quyen (hay chay Auto bang quyen Administrator, cung cap bit 32/64 voi game) hoac game dang thoat.", m_hWnd, err);
+		return;
+	}
+#endif
+
 	if (!m_bVersionChecked)
 	{
 		// Check Game Version - BEGIN
@@ -115,18 +252,48 @@ void GameWindow::Refresh()
 	lpCurAdd = lpBaseAdd + PLR_IDX_OFFSET;
 	winProcess.ReadMemory(lpCurAdd, &m_nPlayerIndex, sizeof(int));
 
-	if (!winProcess.ReadMemory((LPBYTE)NPC_BASE_ADD, (LPVOID)&lpBaseAdd, 4)) return;
+	if (!winProcess.ReadMemory((LPBYTE)NPC_BASE_ADD, (LPVOID)&lpBaseAdd, 4))
+	{
+#if DebugUserCheckAccount
+		DWORD err = GetLastError();
+		UC_LOGR(m_hWnd, 2, "hWnd=%p LY DO 2: doc NPC_BASE_ADD(0x%p) THAT BAI err=%u. plrIdx=%d. Co the sai dia chi goc (phien ban game khac) hoac chua vao game.", m_hWnd, (void*)NPC_BASE_ADD, err, m_nPlayerIndex);
+		// Neu dia chi sai do ANTI-TAMPER da trip (degrade): ghi 1 LAN duy nhat, neu ro
+		// checker nao bay dau tien va luc nao -> ban log sau cua khach se chi dich danh.
+		if (LP_TRIPPED())
+		{
+			static bool s_bTripLogged = false;
+			if (!s_bTripLogged)
+			{
+				s_bTripLogged = true;
+				UC_LOG("*** ANTI-TAMPER DA TRIP tai '%s' (tripTick=%lu, tickHienTai=%lu). Day la NGUYEN NHAN dia chi game bi hong (degrade=0xC7A93E51) -> tat ca cua so khong nhan nhan vat tu luc nay. ***",
+					LP_TRIP_WHERE(), LP_TRIP_TICK(), GetTickCount());
+			}
+		}
+#endif
+		return;
+	}
 	lpCurAdd = lpBaseAdd + m_nPlayerIndex * NPC_DATA_SIZE;
 	// KNpc stride ~0x11AB8 (~72KB). Doc GOP ca struct de tran sang trang chua commit
 	// (index nhan vat lon sau khi doi map) => ERROR_PARTIAL_COPY => return => dong bang
 	// thong tin (mau/mana/map/vi tri/ke thu...). Doc TACH 2 cum data thuc su dung, bo
 	// qua ~64KB vung skill o giua; cum max o xa that bai thi giu max cu, khong return.
 	memset(&Npc, 0, sizeof(Npc));
-	if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90)) return;							// core: 0x0..m_RegY(0x1A88)
+	if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90))									// core: 0x0..m_RegY(0x1A88)
+	{
+#if DebugUserCheckAccount
+		DWORD err = GetLastError();
+		UC_LOGR(m_hWnd, 3, "hWnd=%p LY DO 3: doc KNpc core(0x1A90) THAT BAI err=%u (299=ERROR_PARTIAL_COPY). lpBase=0x%p lpCurAdd=0x%p plrIdx=%d. Vung bo nho chua commit / player index qua lon.", m_hWnd, err, (void*)lpBaseAdd, (void*)lpCurAdd, m_nPlayerIndex);
+#endif
+		return;
+	}
 	BOOL bMaxOK = winProcess.ReadMemory(lpCurAdd + 0x11A00, (LPVOID)&Npc.m_CurLifeMaxA, 0x10);	// LifeMax/ManaMax @0x11A00
 
 	if (Npc.m_Index == 0) // Disconnected
 	{
+#if DebugUserCheckAccount
+		if (!strcmp(m_szPlayerName, VLTK_UNNAMED))
+			UC_LOGR(m_hWnd, 4, "hWnd=%p LY DO 4: m_Index=0 -> chua dang nhap / dang o man hinh chon nhan vat, hoac sai player index. plrIdx=%d. Doi den khi vao game se thu lai.", m_hWnd, m_nPlayerIndex);
+#endif
 		if (m_nPlayerLevel < 0)
 		{
 			m_nPlayerLevel = 0;
@@ -139,6 +306,7 @@ void GameWindow::Refresh()
 				SaveProfile();
 
 			m_nExp = 0;
+			UC_LOG("hWnd=%p MAT KET NOI: '%s' -> <GAME OFFLINE> (game thoat / logout / doi nhan vat).", m_hWnd, m_szPlayerName);
 			strcpy(m_szPlayerName, VLTK_UNNAMED);
 			m_bInfoChanged = TRUE;
 
@@ -164,7 +332,11 @@ void GameWindow::Refresh()
 		// ten khong bao gio chay lai => Auto bi trang ten (van co dong check). Giu
 		// trang thai <GAME OFFLINE> va thu lai o lan Refresh sau cho den khi co ten.
 		Npc.Name[sizeof(Npc.Name) - 1] = 0;
-		if (!Npc.Name[0]) return;
+		if (!Npc.Name[0])
+		{
+			UC_LOGR(m_hWnd, 5, "hWnd=%p LY DO 5: m_Index=%d NHUNG truong Name con RONG (dua: game cap slot nhan vat truoc khi ghi ten vai frame). Giu <GAME OFFLINE> va thu lai Refresh sau. plrIdx=%d", m_hWnd, Npc.m_Index, m_nPlayerIndex);
+			return;
+		}
 
 		// Check DevIoCode
 		BOOL bIsCodeOK = TRUE;
@@ -180,12 +352,23 @@ void GameWindow::Refresh()
 			}
 		}*/
 
-		if (!winProcess.ReadMemory((LPCVOID)ACNT_ID_ADD, (LPVOID)m_szAccountID, sizeof(m_szAccountID))) return;
+		if (!winProcess.ReadMemory((LPCVOID)ACNT_ID_ADD, (LPVOID)m_szAccountID, sizeof(m_szAccountID)))
+		{
+#if DebugUserCheckAccount
+			DWORD err = GetLastError();
+			UC_LOGR(m_hWnd, 6, "hWnd=%p LY DO 6: doc ACNT_ID_ADD(0x%p) THAT BAI err=%u. Da co ten %s nhung khong lay duoc account id.", m_hWnd, (void*)ACNT_ID_ADD, err, UCBytes(Npc.Name, (int)strlen(Npc.Name)));
+#endif
+			return;
+		}
 		// 10-10: KLogin::m_Choices.Account luu dang dao bit (~c), 32 byte
 		for (int i = 0; i < 32 && i < (int)sizeof(m_szAccountID); i++)
 			m_szAccountID[i] = ~m_szAccountID[i];
 		m_szAccountID[sizeof(m_szAccountID) - 1] = 0;
-		if (!m_szAccountID[0]) return;
+		if (!m_szAccountID[0])
+		{
+			UC_LOGR(m_hWnd, 7, "hWnd=%p LY DO 7: account id RONG sau khi giai ma (~bit). Ten=%s. Co the sai ACNT_ID_ADD cho phien ban nay.", m_hWnd, UCBytes(Npc.Name, (int)strlen(Npc.Name)));
+			return;
+		}
 
 		/*if (!winProcess.ReadMemory((LPCVOID)SERVERIP_ADD, (LPVOID)&m_dwServerIP, sizeof(m_dwServerIP))) return;
 		if (!m_dwServerIP) return;*/
@@ -210,6 +393,11 @@ void GameWindow::Refresh()
 		LoadProfile();
 		m_bLoadDone = TRUE;
 		m_bRegistered = bIsCodeOK && IsRegistered();
+		UC_LOG("hWnd=%p ==> NHAN DUOC NHAN VAT. Level=%d Registered=%d CodeOK=%d | Ten(TCVN3)=%s | m_szPlayerName=%s | Account=%s",
+			m_hWnd, m_nPlayerLevel, m_bRegistered, bIsCodeOK,
+			UCBytes(Npc.Name, (int)strlen(Npc.Name)),
+			UCBytes(m_szPlayerName, (int)strlen(m_szPlayerName)),
+			UCBytes(m_szAccountID, (int)strlen(m_szAccountID)));
 
 		// Check for same server
 		/*for (int i = 0; i < g_pCharList->GetItemCount(); i++)
@@ -627,20 +815,30 @@ void GameWindowsSet::RefreshWindows(BOOL bRefreshAll)
 			// GetModuleBaseName hay thất bại tạm thời lúc game mới mở (module chưa nạp xong / mở handle chưa được):
 			// trả về 0 => để nguyên chuỗi rỗng, bỏ qua lượt này, lần quét sau (3s) sẽ nhận lại
 			if (winProcess.GetModuleBaseName(NULL, szGameY, MAX_PATH) == 0)
+			{
+#if DebugUserCheckAccount
+				DWORD err = GetLastError();
+				UC_LOGR(hWnd, 10, "hWnd=%p LY DO 10: tim thay cua so game (dung class) nhung GetModuleBaseName THAT BAI err=%u. Thuong do game vua mo (module chua nap) hoac Auto 32-bit doc game 64-bit (hay thieu quyen Admin). Quet lai sau.", hWnd, err);
+#endif
 				continue;
+			}
 
 			_tcslwr(szGameY);
 			//if (!_tcsstr(szGameY, _TGameY_Exe)) continue;
 			if (!_tcsstr(szGameY, _TGameY_Exe1)
 				&& !_tcsstr(szGameY, _TGameY_Exe2)
 				)
+			{
+				UC_LOGR(hWnd, 11, "hWnd=%p LY DO 11: cua so dung class game nhung ten exe='%s' KHONG khop (can '%s' hoac '%s'). Bo qua cua so nay.", hWnd, UCTStr(szGameY), UCTStr(_TGameY_Exe1), UCTStr(_TGameY_Exe2));
 				continue;
+			}
 			if (FindGameWindow(hWnd) == NULL)
 			{
 				GameWindow* pGameWin = new GameWindow(hWnd);
 				g_pCharList->InsertItem(0, _T(""));
 				g_pCharList->SetItemData(0, (DWORD_PTR)pGameWin);
 				g_pCharList->SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
+				UC_LOG("hWnd=%p ==> DA PHAT HIEN CUA SO GAME (exe='%s'). Bat dau theo doi de nhan nhan vat.", hWnd, UCTStr(szGameY));
 			}
 		}
 
