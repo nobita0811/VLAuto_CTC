@@ -6,6 +6,7 @@
 #include "AntiRE.h"
 #include "DWinProcess.h"
 #include "GameCore.h"
+#include "GameLogin.h"	// LG_SMC_BASE_ADD: != 0 khi dang trong game (phat hien ket noi lai sau bao tri)
 #include "VLAuto.h"
 #include "VLAutoDlg.h"
 #include "DlgMap.h"
@@ -248,9 +249,24 @@ void GameWindow::Refresh()
 		// Check Game Version - END
 	}
 
-	winProcess.ReadMemory((LPVOID)PLR_BASE_ADD, &lpBaseAdd, sizeof(LPBYTE)); lpBaseAdd += PLAYER_OFFSET;
-	lpCurAdd = lpBaseAdd + PLR_IDX_OFFSET;
-	winProcess.ReadMemory(lpCurAdd, &m_nPlayerIndex, sizeof(int));
+	// Doc con tro KPlayer. PHAI null-guard: luc o man login / chon nhan vat / dang KET NOI
+	// LAI sau khi SERVER BAO TRI thi KPlayer = 0. Code cu cong PLAYER_OFFSET vao con tro 0
+	// roi doc index tu dia chi rac => ReadMemory that bai => m_nPlayerIndex GIU gia tri CU
+	// (slot cua phien truoc). Sau bao tri, slot cu da bi dung lai/rong => doc nham => ket
+	// <GAME OFFLINE> du nhan vat da online tro lai.
+	LPBYTE lpPlrBase = NULL;
+	winProcess.ReadMemory((LPVOID)PLR_BASE_ADD, &lpPlrBase, sizeof(LPBYTE));
+	BOOL bNoPlayer = (lpPlrBase == NULL);	// TRUE: khong co KPlayer (dang ngoai the gioi game)
+	// Game bao con dang trong game (KUiSysMsgCentre != 0): dung o nhanh disconnect ben duoi
+	// de nhan ra ket "da ket noi lai nhung Auto van bao offline".
+	DWORD dwInGame = 0;
+	winProcess.ReadMemory((LPVOID)LG_SMC_BASE_ADD, (LPVOID)&dwInGame, sizeof(DWORD));
+	if (!bNoPlayer)
+	{
+		lpBaseAdd = lpPlrBase + PLAYER_OFFSET;
+		lpCurAdd = lpBaseAdd + PLR_IDX_OFFSET;
+		winProcess.ReadMemory(lpCurAdd, &m_nPlayerIndex, sizeof(int));	// index TUOI tu base hop le (re-derive)
+	}
 
 	if (!winProcess.ReadMemory((LPBYTE)NPC_BASE_ADD, (LPVOID)&lpBaseAdd, 4))
 	{
@@ -272,26 +288,35 @@ void GameWindow::Refresh()
 #endif
 		return;
 	}
-	lpCurAdd = lpBaseAdd + m_nPlayerIndex * NPC_DATA_SIZE;
 	// KNpc stride ~0x11AB8 (~72KB). Doc GOP ca struct de tran sang trang chua commit
 	// (index nhan vat lon sau khi doi map) => ERROR_PARTIAL_COPY => return => dong bang
 	// thong tin (mau/mana/map/vi tri/ke thu...). Doc TACH 2 cum data thuc su dung, bo
 	// qua ~64KB vung skill o giua; cum max o xa that bai thi giu max cu, khong return.
 	memset(&Npc, 0, sizeof(Npc));
-	if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90))									// core: 0x0..m_RegY(0x1A88)
+	BOOL bMaxOK = FALSE;
+	if (!bNoPlayer)		// Co KPlayer: index da tuoi, doc KNpc cua nhan vat. Khong co KPlayer => Npc=0 => roi vao nhanh disconnect (dat <GAME OFFLINE> dung).
 	{
+		lpCurAdd = lpBaseAdd + m_nPlayerIndex * NPC_DATA_SIZE;
+		if (!winProcess.ReadMemory(lpCurAdd, (LPVOID)&Npc, 0x1A90))								// core: 0x0..m_RegY(0x1A88)
+		{
 #if DebugUserCheckAccount
-		DWORD err = GetLastError();
-		UC_LOGR(m_hWnd, 3, "hWnd=%p LY DO 3: doc KNpc core(0x1A90) THAT BAI err=%u (299=ERROR_PARTIAL_COPY). lpBase=0x%p lpCurAdd=0x%p plrIdx=%d. Vung bo nho chua commit / player index qua lon.", m_hWnd, err, (void*)lpBaseAdd, (void*)lpCurAdd, m_nPlayerIndex);
+			DWORD err = GetLastError();
+			UC_LOGR(m_hWnd, 3, "hWnd=%p LY DO 3: doc KNpc core(0x1A90) THAT BAI err=%u (299=ERROR_PARTIAL_COPY). lpBase=0x%p lpCurAdd=0x%p plrIdx=%d. Vung bo nho chua commit / player index qua lon.", m_hWnd, err, (void*)lpBaseAdd, (void*)lpCurAdd, m_nPlayerIndex);
 #endif
-		return;
+			return;
+		}
+		bMaxOK = winProcess.ReadMemory(lpCurAdd + 0x11A00, (LPVOID)&Npc.m_CurLifeMaxA, 0x10);	// LifeMax/ManaMax @0x11A00
 	}
-	BOOL bMaxOK = winProcess.ReadMemory(lpCurAdd + 0x11A00, (LPVOID)&Npc.m_CurLifeMaxA, 0x10);	// LifeMax/ManaMax @0x11A00
 
 	if (Npc.m_Index == 0) // Disconnected
 	{
 #if DebugUserCheckAccount
-		if (!strcmp(m_szPlayerName, VLTK_UNNAMED))
+		if (!strcmp(m_szPlayerName, VLTK_UNNAMED) && m_bAttached && !bNoPlayer && dwInGame)
+			// Ket "ket-da-attached": Auto DA GAN va game bao CON TRONG GAME (KUiSysMsgCentre != 0)
+			// va CO KPlayer (base hop le) nhung KNpc cua slot van m_Index=0 => doc nham slot
+			// (index chua cap nhat sau bao tri) HOAC NPC_BASE bi poison boi anti-tamper.
+			UC_LOGR(m_hWnd, 8, "hWnd=%p LY DO 8: KET <GAME OFFLINE> du Auto DA GAN va game bao CON TRONG GAME (SMC=0x%X, KPlayer=0x%p) nhung m_Index=0 tai plrIdx=%d. Nghi index chua cap nhat sau bao tri hoac NPC_BASE bi poison (anti-tamper).", m_hWnd, dwInGame, (void*)lpBaseAdd, m_nPlayerIndex);
+		else if (!strcmp(m_szPlayerName, VLTK_UNNAMED))
 			UC_LOGR(m_hWnd, 4, "hWnd=%p LY DO 4: m_Index=0 -> chua dang nhap / dang o man hinh chon nhan vat, hoac sai player index. plrIdx=%d. Doi den khi vao game se thu lai.", m_hWnd, m_nPlayerIndex);
 #endif
 		if (m_nPlayerLevel < 0)

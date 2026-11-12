@@ -4,7 +4,7 @@
 #define CLIENT_VERSION		"0.1"
 #define HASH_CODE			0x4683
 
-#define VLVERSION	"1.02"
+#define VLVERSION	"1.03"
 
 #define QUANGCAOAUTO	1
 

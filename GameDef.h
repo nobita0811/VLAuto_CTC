@@ -13,6 +13,13 @@ void QTraceSite(char* szLast, const char* szFormat, ...);
 #define QTRACE(...) ((void)0)
 #endif
 
+enum GAME_DOING_STATE
+{
+	game_do_tongkim = 0,
+	game_do_liendau,
+	game_do_datau,
+	game_do_train,		
+};
 enum OBJ_ATTRIBYTE_TYPE
 {
 	series_undef = -1,
