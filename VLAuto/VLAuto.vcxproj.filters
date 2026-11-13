@@ -168,6 +168,21 @@
     <ClCompile Include="..\CrashHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="License.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LicenseGate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SealGate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Harden.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KDtrFix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoParams.h">
@@ -311,6 +326,18 @@
     <ClInclude Include="Help\HTMLDefines.h">
       <Filter>HTML Help Files</Filter>
     </ClInclude>
+    <ClInclude Include="License.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LicenseGate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SealGate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Harden.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Login.ico">
@@ -323,6 +350,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\VLAuto.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MvOpen.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MvSave.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MvRead.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MvStop.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

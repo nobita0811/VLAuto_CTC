@@ -310,7 +310,7 @@ static void RestoreOverheadText()
 	}
 }
 
-static void SendReadPosReply(HWND hWndReply, int nKind, int nMapID, int nMapX, int nMapY, int nAbsX, int nAbsY)
+static void SendReadPosReply(HWND hWndReply, int nKind, int nMapID, int nMapX, int nMapY, int nAbsX, int nAbsY, int nFlags = 0)
 {
 	if (!hWndReply || !_IsWindow(hWndReply)) return;
 	READPOS_REPLY reply;
@@ -320,11 +320,18 @@ static void SendReadPosReply(HWND hWndReply, int nKind, int nMapID, int nMapX, i
 	reply.nMapID = nMapID;
 	reply.nMapX = nMapX;	reply.nMapY = nMapY;
 	reply.nAbsX = nAbsX;	reply.nAbsY = nAbsY;
+	reply.nFlags = nFlags;
 	COPYDATASTRUCT cds;
 	cds.dwData = READPOS_COPYDATA_ID;
 	cds.cbData = sizeof(reply);
 	cds.lpData = &reply;
 	_SendMessage(hWndReply, WM_COPYDATA, (WPARAM)theMain.m_hWndGame, (LPARAM)&cds);
+}
+
+// Gui reply bao UI xoa danh sach cu (luc bat dau doc), khong them diem nao
+static void SendReadPosClear(HWND hWndReply, int nKind, int nMapID)
+{
+	SendReadPosReply(hWndReply, nKind, nMapID, 0, 0, 0, 0, READPOS_FLAG_CLEAR);
 }
 
 // Toa do vua doc da co trong list chua (cung ban do) -> tranh luu trung.
@@ -384,7 +391,19 @@ static void StartReadPos(HWND hWndReply, int nKind)
 	g_ReadPos.bActive = TRUE;
 	g_ReadPos.hWndReply = (hWndReply && _IsWindow(hWndReply)) ? hWndReply : theMain.m_hWndAuto;
 	g_ReadPos.nKind = nKind;
-	DoReadPosInto(nKind);
+
+	// Khong doc toa do ngay nua: chi bao UI xoa list cu + huong dan bam SPACE de doc.
+	int nMapID, nMapX, nMapY, nAbsX, nAbsY;
+	GetCurReadPos(&nMapID, &nMapX, &nMapY, &nAbsX, &nAbsY);
+	SendReadPosClear(g_ReadPos.hWndReply, nKind, nMapID);
+
+	char szMsg[160];
+	if (nKind == rpk_gonode)
+		lstrcpynA(szMsg, TV(L"Bắt đầu đọc tọa độ Nơi Luyện Công , bấm dấu cách(SPACE) để đọc"), sizeof(szMsg));
+	else
+		lstrcpynA(szMsg, TV(L"Bắt đầu đọc tọa độ Luyện Công , bấm dấu cách(SPACE) để đọc"), sizeof(szMsg));
+	SetOverheadText(szMsg);
+	SystemMessage(szMsg);
 }
 
 static void StopReadPos()

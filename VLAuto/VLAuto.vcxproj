@@ -221,6 +221,10 @@
     <Image Include="res\Login.ico" />
     <Image Include="res\LoginBtn.bmp" />
     <Image Include="res\MainTab.bmp" />
+    <Image Include="res\MvOpen.bmp" />
+    <Image Include="res\MvRead.bmp" />
+    <Image Include="res\MvSave.bmp" />
+    <Image Include="res\MvStop.bmp" />
     <Image Include="res\VLAuto.ico" />
   </ItemGroup>
   <ItemGroup>

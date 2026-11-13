@@ -16,7 +16,7 @@
 #include "DlgParty.h"
 #include "DlgMap.h"
 #include "DlgDebug.h"		// AllowMessageFromGame()
-#include "DlgMovePoints.h"	// g_pMovePointsDlg (cap nhat live khi cua so Danh sach dang mo)
+#include "DlgMovePoints.h"	// CDlgMovePoints::GetMapName/GetTrainMapID (ham tinh)
 #include "DlgYeSou.h"
 #include "DlgAbout.h"
 #include "DlgExit.h"
@@ -840,9 +840,11 @@ LRESULT CVLAutoDlg::OnReceiveFeedBack(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// VLHook tra toa do doc duoc ve day khi bat che do doc bang PHIM NONG trong game
-// (Ctrl+Insert / Ctrl+Del) ma cua so "Danh sach toa do" dang DONG -> ghi thang vao
-// cau hinh roi luu. Khi cua so do dang mo thi reply ve chinh no (CDlgMovePoints), khong toi day.
+// VLHook tra toa do doc duoc ve day (reply luon ve cua so chinh, da AllowMessageFromGame).
+// - Bam "Đọc Tọa độ" / phim nong (Ctrl+Ins, Ctrl+Del): hook gui 1 goi CO FLAG_CLEAR
+//   (xoa danh sach cu + gan ban do), chua co toa do. Trong game bam SPACE moi doc tung toa do.
+// - Moi lan SPACE: hook gui 1 goi khong flag, co toa do -> them vao danh sach tuong ung.
+// Ghi thang vao cau hinh m_prMove roi lam tuoi tab Di chuyen (UI 2 danh sach o day).
 BOOL CVLAutoDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 {
 	if (pCopyDataStruct->dwData != READPOS_COPYDATA_ID || g_pCurGameWin == NULL)
@@ -852,41 +854,41 @@ BOOL CVLAutoDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	READPOS_REPLY reply;
 	memcpy(&reply, pCopyDataStruct->lpData, sizeof(reply));
 	if (reply.cbSize != sizeof(READPOS_REPLY)) return TRUE;
-	if (reply.nMapX <= 0 || reply.nMapY <= 0) return TRUE;			// toa do khong hop le (chua vao game?)
 	if (reply.nKind != rpk_node && reply.nKind != rpk_gonode) return TRUE;
 
 	int nList = (reply.nKind == rpk_gonode) ? 1 : 0;
-
-	// Cua so "Danh sach toa do" dang mo -> chen thang vao no de hien ngay (live).
-	// (Doc bang phim nong trong game khong co hWndReply nen hook tra ve cua so chinh.)
-	if (g_pMovePointsDlg && ::IsWindow(g_pMovePointsDlg->GetSafeHwnd()))
-	{
-		POINT ptAbs = { reply.nAbsX, reply.nAbsY };
-		g_pMovePointsDlg->OnReadPosNode(nList, reply.nMapID, ptAbs);
-		return TRUE;
-	}
-
 	PARAM_MOVE& pm = g_pCurGameWin->m_prMove;
 	POINT* pNodes = nList ? pm.m_GoNodes : pm.m_Nodes;
 	int& nNodesMapID = nList ? pm.m_nGoNodesMapID : pm.m_nNodesMapID;
 
-	// Khac ban do -> xoa danh sach cu (moi list chi 1 ban do, giong CDlgMovePoints::OnReadPosNode)
-	if (pNodes[0].x && pNodes[0].y && nNodesMapID && reply.nMapID && nNodesMapID != reply.nMapID)
+	if (reply.nFlags & READPOS_FLAG_CLEAR)
+	{
+		// Bat dau doc: xoa danh sach cu, gan ban do hien tai (chua them toa do nao)
 		memset(pNodes, 0, sizeof(POINT) * MAX_NODES);
-	if (reply.nMapID) nNodesMapID = reply.nMapID;
+		nNodesMapID = reply.nMapID;
+	}
+	else
+	{
+		if (reply.nMapX <= 0 || reply.nMapY <= 0) return TRUE;		// toa do khong hop le (chua vao game?)
 
-	// Them vao o trong dau tien (x hoac y = 0 = het danh sach)
-	for (int i = 0; i < MAX_NODES; i++)
-		if (!(pNodes[i].x && pNodes[i].y))
-		{
-			pNodes[i].x = reply.nAbsX;
-			pNodes[i].y = reply.nAbsY;
-			break;
-		}
+		// Khac ban do -> xoa danh sach cu (moi list chi 1 ban do)
+		if (pNodes[0].x && pNodes[0].y && nNodesMapID && reply.nMapID && nNodesMapID != reply.nMapID)
+			memset(pNodes, 0, sizeof(POINT) * MAX_NODES);
+		if (reply.nMapID) nNodesMapID = reply.nMapID;
 
-	g_pCurGameWin->SetGameParams(tab_move);		// luu cau hinh + day xuong hook (mo cua so Danh sach se thay)
+		// Them vao o trong dau tien (x hoac y = 0 = het danh sach)
+		for (int i = 0; i < MAX_NODES; i++)
+			if (!(pNodes[i].x && pNodes[i].y))
+			{
+				pNodes[i].x = reply.nAbsX;
+				pNodes[i].y = reply.nAbsY;
+				break;
+			}
+	}
 
-	// Cap nhat ngay so luong tren nut "Danh sách tọa độ" cua tab Di chuyen (dang hien)
+	g_pCurGameWin->SetGameParams(tab_move);		// luu cau hinh + day xuong hook
+
+	// Lam tuoi 2 danh sach + o ban do tren tab Di chuyen (neu dang hien)
 	CDlgMove* pMoveDlg = (CDlgMove*)m_MainTab.GetTabDlg(tab_move);
 	if (pMoveDlg && pMoveDlg->GetSafeHwnd())
 		pMoveDlg->UpdatePointsList();

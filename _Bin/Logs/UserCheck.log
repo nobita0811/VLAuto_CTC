@@ -1,0 +1,3 @@
+﻿[14:31:55.910] hWnd=00040C64 ==> DA PHAT HIEN CUA SO GAME (exe='gamethienha_y.exe'). Bat dau theo doi de nhan nhan vat.
+﻿[14:31:56.401] hWnd=00040C64 LY DO 4: m_Index=0 -> chua dang nhap / dang o man hinh chon nhan vat, hoac sai player index. plrIdx=0. Doi den khi vao game se thu lai.
+﻿[14:32:00.928] hWnd=00040C64 ==> NHAN DUOC NHAN VAT. Level=98 Registered=1 CodeOK=1 | Ten(TCVN3)="TAN.SAT" hex=54 41 4E D9 53 41 54  | m_szPlayerName="TAN.SAT" hex=54 41 4E D9 53 41 54  | Account="myyyd103" hex=6D 79 79 79 64 31 30 33 

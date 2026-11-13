@@ -1075,6 +1075,9 @@ struct READPOS_PARAM
 	int		nCurMapID;		// Map ID hien tai ben UI (de so sanh clear/append)
 };
 
+// Co (nFlags) trong READPOS_REPLY
+#define READPOS_FLAG_CLEAR	1	// Xoa danh sach cu truoc khi dung reply (luc bat dau doc)
+
 struct READPOS_REPLY
 {
 	UINT	cbSize;
@@ -1082,6 +1085,7 @@ struct READPOS_REPLY
 	int		nMapID;			// Map ID luc doc
 	int		nMapX, nMapY;	// Toa do map (hien thi)
 	int		nAbsX, nAbsY;	// Toa do tuyet doi (luu config)
+	int		nFlags;			// READPOS_FLAG_* (vd CLEAR: xoa list, khong them diem)
 };
 
 
