@@ -101,10 +101,10 @@ BOOL CDlgRecover::OnInitDialog()
 	if (m_ToolTip.Create(this))
 	{
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOHP_CHECK), _T("Tự động bơm Sinh lực (Máu)"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOHP_EDIT), _T("Mức Sinh lực cần bơm"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOHP_EDIT), _T("Mức Sinh lực cần bơm. Nhập <=100: bơm theo % máu (vd 85 = bơm khi máu <= 85%). Nhập >100: bơm theo điểm máu (vd 2000). Máu càng thấp uống càng nhiều bình/lượt"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_HPTIME_EDIT), _T("Số giây giãn cách giữa 2 lần bơm"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOMP_CHECK), _T("Tự động bơm Nội lực (Mana)"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOMP_EDIT), _T("Mức Nội lực cần bơm"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_AUTOMP_EDIT), _T("Mức Nội lực cần bơm. Nhập <=100: bơm theo % mana (vd 25 = bơm khi mana <= 25%). Nhập >100: bơm theo điểm mana (vd 500)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_MPTIME_EDIT), _T("Số giây giãn cách giữa 2 lần bơm"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AMBYHP_CHECK), _T("Hồi thành khi Sinh lực thấp"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AMBYHP_EDIT), _T("Mức Sinh lực hồi thành"));

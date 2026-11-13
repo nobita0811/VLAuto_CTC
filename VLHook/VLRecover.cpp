@@ -32,12 +32,33 @@ void CVLRecover::Breathe()
 	int nCurMP = P_PLAYER->m_CurrentMana;
 	int nMaxMP = P_PLAYER->GetManaMax();
 
-	if (m_bAutoHP && nCurHP < m_nAutoHPAmount && nCurHP * 10 < nMaxHP * 7 && m_nHPBuffCount >= m_nAutoHPTimer * 20)
-	{	//Auto Buff HP
-		m_nHPBuffCount = 0;
-		if (!g_pCurPlayer->EatMedicine(medicine_blood))
+	// Auto Buff HP
+	// m_nAutoHPAmount <= 100: nguong theo % mau toi da (vd 85 = bom khi mau <= 85%)
+	// m_nAutoHPAmount >  100: nguong theo diem mau tuyet doi (vd 2000 = bom khi mau < 2000)
+	// Da bo chan cung 70% (nCurHP*10 < nMaxHP*7) cu: nguong nguoi dung dat moi quyet dinh.
+	if (m_bAutoHP && m_nHPBuffCount >= m_nAutoHPTimer * 20)
+	{
+		BOOL bPumpHP = (m_nAutoHPAmount <= 100)
+			? (nMaxHP > 0 && nCurHP * 100 <= nMaxHP * m_nAutoHPAmount)
+			: (nCurHP < m_nAutoHPAmount);
+		if (bPumpHP)
 		{
-			if (m_bAMByBlood)
+			m_nHPBuffCount = 0;
+			// Mau cang thap cang uong nhieu binh mot luot (song sot khi bi burst trong CTC)
+			int nEatHP = 1;
+			if (nMaxHP > 0)
+			{
+				int nHPPct = nCurHP * 100 / nMaxHP;
+				if (nHPPct < 35) nEatHP = 3;
+				else if (nHPPct < 55) nEatHP = 2;
+			}
+			BOOL bAteHP = FALSE;
+			for (int k = 0; k < nEatHP; k++)
+			{
+				if (g_pCurPlayer->EatMedicine(medicine_blood)) bAteHP = TRUE;
+				else break;		// het binh mau trong hanh trang
+			}
+			if (!bAteHP && m_bAMByBlood)
 			{
 				OnUseAM();
 				return;
@@ -45,18 +66,25 @@ void CVLRecover::Breathe()
 		}
 	}
 
-	if (nCurMP * 100 / nMaxMP > 60) m_bEmptyMana = 0;
-	if (m_bAutoMP && nCurMP < m_nAutoMPAmount && nCurMP * 10 < nMaxMP * 7 && m_nMPBuffCount >= m_nAutoMPTimer * 20)
-	{	//Auto Buff MP
-		m_nMPBuffCount = 0;
-		if (!g_pCurPlayer->EatMedicine(medicine_mana))
+	if (nMaxMP > 0 && nCurMP * 100 / nMaxMP > 60) m_bEmptyMana = 0;
+	// Auto Buff MP: cung quy uoc <=100 = %, >100 = diem; da bo chan cung 70%.
+	if (m_bAutoMP && m_nMPBuffCount >= m_nAutoMPTimer * 20)
+	{
+		BOOL bPumpMP = (m_nAutoMPAmount <= 100)
+			? (nMaxMP > 0 && nCurMP * 100 <= nMaxMP * m_nAutoMPAmount)
+			: (nCurMP < m_nAutoMPAmount);
+		if (bPumpMP)
 		{
-			if (m_bAMByMana)
+			m_nMPBuffCount = 0;
+			if (!g_pCurPlayer->EatMedicine(medicine_mana))
 			{
-				OnUseAM();
-				return;
+				if (m_bAMByMana)
+				{
+					OnUseAM();
+					return;
+				}
+				m_bEmptyMana = TRUE;
 			}
-			m_bEmptyMana = TRUE;
 		}
 	}
 

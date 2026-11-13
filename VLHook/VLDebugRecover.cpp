@@ -67,11 +67,24 @@ static void RecoverStatus()
 	if (g_NetworkOffline) { DbgOut("DUNG - g_NetworkOffline = %d\n", g_NetworkOffline); return; }
 	DbgOut("CheckEquip%s%s -> ", r.m_bUseMaster ? " + OnUseSDT" : "", (r.m_bUseDoubleExp || theQuest.m_bUseDoubleExp) ? " + OnUseTTL" : "");
 	if (!pPlayer->m_FightMode) { DbgOut("DUNG - trong thanh (chi an thuoc khi m_FightMode)\n"); return; }
-	if (nMaxMP == 0) { DbgOut("LOI: GetManaMax() = 0 => 'nCurMP * 100 / nMaxMP' chia cho 0 (crash)!\n"); return; }
-	if (r.m_bAutoHP && nCurHP < r.m_nAutoHPAmount)
-		DbgOut("AN MAU %s -> ", r.m_nHPBuffCount >= r.m_nAutoHPTimer * 20 ? "ngay" : "(dang cho dem)");
-	if (r.m_bAutoMP && nCurMP < r.m_nAutoMPAmount)
-		DbgOut("AN MANA %s -> ", r.m_nMPBuffCount >= r.m_nAutoMPTimer * 20 ? "ngay" : "(dang cho dem)");
+	int nMaxHP = pPlayer->GetLifeMax();
+	// Nguong bom: Amount <= 100 => theo %, > 100 => theo diem (giong CVLRecover::Breathe)
+	BOOL bPumpHP = (r.m_nAutoHPAmount <= 100)
+		? (nMaxHP > 0 && nCurHP * 100 <= nMaxHP * r.m_nAutoHPAmount)
+		: (nCurHP < r.m_nAutoHPAmount);
+	BOOL bPumpMP = (r.m_nAutoMPAmount <= 100)
+		? (nMaxMP > 0 && nCurMP * 100 <= nMaxMP * r.m_nAutoMPAmount)
+		: (nCurMP < r.m_nAutoMPAmount);
+	if (r.m_bAutoHP && bPumpHP)
+	{
+		int nEatHP = 1, nHPPct = nMaxHP > 0 ? nCurHP * 100 / nMaxHP : 100;
+		if (nHPPct < 35) nEatHP = 3; else if (nHPPct < 55) nEatHP = 2;
+		DbgOut("AN MAU x%d %s (%s) -> ", nEatHP, r.m_nHPBuffCount >= r.m_nAutoHPTimer * 20 ? "ngay" : "(dang cho dem)",
+			r.m_nAutoHPAmount <= 100 ? "nguong %" : "nguong diem");
+	}
+	if (r.m_bAutoMP && bPumpMP)
+		DbgOut("AN MANA %s (%s) -> ", r.m_nMPBuffCount >= r.m_nAutoMPTimer * 20 ? "ngay" : "(dang cho dem)",
+			r.m_nAutoMPAmount <= 100 ? "nguong %" : "nguong diem");
 	if ((r.m_bAMByHP && nCurHP < r.m_nAMByHPAmount) || (r.m_bAMByMP && nCurMP < r.m_nAMByMPAmount))
 	{
 		DbgOut("VE THANH (OnUseAM khan cap) - mau/mana duoi muc\n");
