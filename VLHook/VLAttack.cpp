@@ -764,7 +764,7 @@ static BOOL EnemyInDefenceRange(int nRange)
 #define PK_ARM_NEAR			400		// Cach diem dau bao nhieu thi coi la da toi (giong NearTrainArea)
 #define PK_CHECK_DELAY		1000	// Nhip kiem tra
 #define PK_SWITCH_DELAY		3000	// Toi thieu giua 2 lan Switch('PK',x)
-#define PK_LIST_HOLD		10000	// Do sat theo DS: ke thu ra khoi tam bao lau moi chuyen ve chien dau
+#define PK_LIST_HOLD		3000	// Do sat theo DS: ke thu ra khoi tam bao lau moi chuyen ve chien dau
 #define PK_REVENGE_DELAY	10000	// Cuu sat cung 1 nguoi: gui lai sau
 #define PK_ZERO_TRIES		3		// Do sat theo DS: ve Luyen cong that bai bao nhieu lan thi ve Chien dau
 

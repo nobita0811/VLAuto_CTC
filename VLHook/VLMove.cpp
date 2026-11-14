@@ -559,19 +559,28 @@ void CVLMove::Breathe()
 	static POINT ptFar = { 0, 0 };	// Diem dang tiep can tu xa
 	if (m_bRouteMove)
 	{
-		// Danh sach toa do train: nguoi choi da ghi nhan 2 diem lien tiep la di toi duoc
-		// -> dung KPlayer::GoTo (game tu tim duong) di thang giua 2 diem, KHONG di vong theo
-		// MapPath. GoTo dang dua toi -> xong; da gan (<=AUTO_GOTO_NEAR) / GoTo ket -> MoveTo not doan cuoi.
-		int nGo = AutoGoTo(nDestX, nDestY);
-		if (nGo > 0)
+		// Danh sach toa do train thuong gan nhau va nhin thang toi duoc: chay thang (MoveTo, tu ne vat
+		// can) cho MUOT, KHONG qua GoTo (game tu tim duong) - GoTo dung-roi-chay lam khung moi doan.
+		// Chi dung GoTo khi dich xa (>1000, co the ngoai vung da nap) hoac duong thang bi vat can chan.
+		// Latch ptRoute: da chon GoTo thi giu toi khi vao gan (<=AUTO_GOTO_NEAR) de khong nhay qua lai.
+		static POINT ptRoute = { 0, 0 };
+		if (dZ > 1000 || !ObsLineClear(nPlayerX, nPlayerY, nDestX, nDestY)) { ptRoute.x = nDestX; ptRoute.y = nDestY; }
+		if (dZ <= AUTO_GOTO_NEAR) ptRoute.x = ptRoute.y = 0;
+		if (ptRoute.x == nDestX && ptRoute.y == nDestY)
 		{
-			MV_ACT("GoTo - game tu tim duong (AutoGoTo)");
-			MV_EXIT("dang di toi dich bang GoTo");
-			m_nLagCount = 0;
-			m_nLastdZ = MAX_INTNUM;
-			return;
+			int nGo = AutoGoTo(nDestX, nDestY);
+			if (nGo > 0)
+			{
+				MV_ACT("GoTo - game tu tim duong (dich xa / duong thang bi chan)");
+				MV_EXIT("dang di toi dich bang GoTo");
+				m_nLagCount = 0;
+				m_nLastdZ = MAX_INTNUM;
+				return;
+			}
+			MV_ACT(nGo == 0 ? "da gan (<=150): MoveTo not doan cuoi" : "AutoGoTo ket (GoTo khong tien) -> MoveTo chay thang");
 		}
-		MV_ACT(nGo == 0 ? "da gan (<=150): MoveTo not doan cuoi" : "AutoGoTo ket (GoTo khong tien) -> MoveTo chay thang");
+		else
+			MV_ACT_IF("MoveTo chay thang (nhin thang toi dich, khong qua GoTo)");
 	}
 	else
 	{
