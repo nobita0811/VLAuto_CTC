@@ -843,7 +843,8 @@ int CVLMove::GetLeaderChar(const char* szLeader)
 		dZ = __distance(nPlayerX, nPlayerY, nNpcX, nNpcY);
 		if (dZ < 1200)
 		{
-			m_nStatus = status_idle;
+			if(m_nStatus != status_movefirst)
+				m_nStatus = status_idle;
 			m_nLeaderIdx = i;
 			// Gan va duong thang thong: gan PEOPLE_IDX = nguoi can theo (game tu chay theo nhu cu).
 			// Xa / bi vat can chan: game (KNpcAI) chay thang se dam vao vat can => bo PEOPLE_IDX,

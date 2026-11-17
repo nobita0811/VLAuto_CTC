@@ -1087,3 +1087,145 @@
 [13:33:59.781]     o  9 idx 50: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
 [13:33:59.781]     o 10 idx 7: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
 [13:33:59.781] Ke hoach ve thanh: can sua do = 0 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 1 | Hieu thuoc: can mua 1 | tien 1506, ruong 8161601
+[14:13:41.183] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 1 Phượng Tường - TRONG THANH (phi chien dau) | tien hanh trang 500
+[14:13:41.183]     o  0 idx 27: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:13:41.183]     o  1 idx 3:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:13:41.183]     o  2 idx 26: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:13:41.184]     o  3 idx 23: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:13:41.184]     o  4 idx 34:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:13:41.184]     o  5 idx 29: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:13:41.184]     o  6 idx 30: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:41.184]     o  7 idx 31: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:41.184]     o  8 idx 28: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:41.184]     o  9 idx 25: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:41.184]     o 10 idx 21: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:41.184] Ke hoach ve thanh: can sua do = 1 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 1 | Hieu thuoc: can mua 1 | tien 500, ruong 8158407
+[14:13:46.834] --- Trong thanh - Ky Tran Cac | map 1 Phượng Tường - TRONG THANH (phi chien dau) | tien hanh trang 100312
+[14:13:46.834]     o  0 idx 27: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:13:46.834]     o  1 idx 3:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:13:46.834]     o  2 idx 26: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:13:46.834]     o  3 idx 23: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:13:46.834]     o  4 idx 34:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:13:46.834]     o  5 idx 29: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:13:46.834]     o  6 idx 30: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:46.834]     o  7 idx 31: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:46.834]     o  8 idx 28: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:46.834]     o  9 idx 25: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:46.834]     o 10 idx 21: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:13:46.834] [Ky Tran Cac - Trong thanh - Ky Tran Cac] bat dau sua 1 mon, tien 100312, ruong 8058907
+[14:13:46.960] GUI LENH SUA: Tú Cốt Thương (idx 23) do ben 66/67 +0 | gia uoc tinh 274, tien 100312 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 1 Phượng Tường - TRONG THANH (phi chien dau)
+[14:13:49.060] => SUA THANH CONG: Tú Cốt Thương do ben 66/67 -> 67/67 sau 2110 ms | MAT 274 luong (gia uoc tinh 274; tien luc gui lenh 100312, nay 100038) [Trong thanh - Ky Tran Cac] | tong: 1 mon OK, 0 that bai, het 274 luong
+[14:13:49.460] [Ky Tran Cac - Trong thanh - Ky Tran Cac] da gui lenh sua het 1 mon => tat cua so
+[14:13:50.755] Sua o Ky Tran Cac xong: tien 100038, ruong 8058907 | khong can sua o cua hang
+[14:14:44.798] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 120 Tường Vân động  - TRONG THANH (phi chien dau) | tien hanh trang 500
+[14:14:44.798]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:14:44.798]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:14:44.798]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:14:44.798]     o  3 idx 25: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[14:14:44.798]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:14:44.798]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:14:44.798]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:14:44.798]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:14:44.798]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:14:44.798]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:14:44.798]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:14:44.798] Ke hoach ve thanh: can sua do = 0 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 0 | Hieu thuoc: can mua 0 | tien 500, ruong 8147045
+[14:15:50.572] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 500
+[14:15:50.572]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:15:50.572]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:15:50.572]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:15:50.572]     o  3 idx 25: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[14:15:50.572]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:15:50.572]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:15:50.572]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:50.572]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:50.572]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:50.572]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:50.572]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:50.572] Ke hoach ve thanh: can sua do = 0 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 0 | Hieu thuoc: can mua 0 | tien 500, ruong 8147045
+[14:15:54.130] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 100000
+[14:15:54.130]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:15:54.130]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:15:54.130]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:15:54.130]     o  3 idx 25: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[14:15:54.130]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:15:54.130]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:15:54.130]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:54.130]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:54.130]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:54.130]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:54.130]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:15:54.130] Ke hoach ve thanh: can sua do = 0 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 0 | Hieu thuoc: can mua 0 | tien 100000, ruong 8047545
+[14:27:56.708] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 19061
+[14:27:56.708]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:27:56.708]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:27:56.708]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:27:56.708]     o  3 idx 25: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:27:56.708]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:27:56.708]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:27:56.708]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:56.708]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:56.708]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:56.708]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:56.708]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:56.708] Ke hoach ve thanh: can sua do = 1 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 1 | Hieu thuoc: can mua 0 | tien 19061, ruong 8147045
+[14:27:57.264] --- Trong thanh - Ky Tran Cac | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 100000
+[14:27:57.264]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:27:57.264]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:27:57.264]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:27:57.264]     o  3 idx 25: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:27:57.264]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:27:57.264]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:27:57.264]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:57.264]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:57.264]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:57.264]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:57.264]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:27:57.264] [Ky Tran Cac - Trong thanh - Ky Tran Cac] bat dau sua 1 mon, tien 100000, ruong 8066106
+[14:27:57.665] GUI LENH SUA: Tú Cốt Thương (idx 25) do ben 66/67 +0 | gia uoc tinh 274, tien 100000 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 78 Tương Dương - TRONG THANH (phi chien dau)
+[14:27:57.774] => SUA THANH CONG: Tú Cốt Thương do ben 66/67 -> 67/67 sau 110 ms | MAT 274 luong (gia uoc tinh 274; tien luc gui lenh 100000, nay 99726) [Trong thanh - Ky Tran Cac] | tong: 1 mon OK, 0 that bai, het 274 luong
+[14:27:58.162] [Ky Tran Cac - Trong thanh - Ky Tran Cac] da gui lenh sua het 1 mon => tat cua so
+[14:27:59.568] Sua o Ky Tran Cac xong: tien 99726, ruong 8066106 | khong can sua o cua hang
+[14:33:23.896] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 14499
+[14:33:23.896]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:33:23.896]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:33:23.896]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:33:23.896]     o  3 idx 25: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:33:23.896]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:33:23.896]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:33:23.896]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:23.896]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:23.896]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:23.896]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:23.896]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:23.896] Ke hoach ve thanh: can sua do = 1 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 1 | Hieu thuoc: can mua 0 | tien 14499, ruong 8164732
+[14:33:24.439] --- Trong thanh - Ky Tran Cac | map 78 Tương Dương - TRONG THANH (phi chien dau) | tien hanh trang 100000
+[14:33:24.439]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:33:24.439]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:33:24.439]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:33:24.439]     o  3 idx 25: Tú Cốt Thương  do ben 66/67  +0  gia sua 274  => CAN SUA
+[14:33:24.439]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:33:24.439]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:33:24.439]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:24.439]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:24.439]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:24.439]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:24.439]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:33:24.439] [Ky Tran Cac - Trong thanh - Ky Tran Cac] bat dau sua 1 mon, tien 100000, ruong 8079231
+[14:33:24.809] GUI LENH SUA: Tú Cốt Thương (idx 25) do ben 66/67 +0 | gia uoc tinh 274, tien 100000 | [Trong thanh - Ky Tran Cac] | cua so shop: KHONG MO | map 78 Tương Dương - TRONG THANH (phi chien dau)
+[14:33:24.916] => SUA THANH CONG: Tú Cốt Thương do ben 66/67 -> 67/67 sau 93 ms | MAT 274 luong (gia uoc tinh 274; tien luc gui lenh 100000, nay 99726) [Trong thanh - Ky Tran Cac] | tong: 2 mon OK, 0 that bai, het 548 luong
+[14:33:25.289] [Ky Tran Cac - Trong thanh - Ky Tran Cac] da gui lenh sua het 1 mon => tat cua so
+[14:33:26.686] Sua o Ky Tran Cac xong: tien 99726, ruong 8079231 | khong can sua o cua hang
+[14:34:15.691] --- VE THANH: kiem tra do (Sua do trong thanh: BAT) | map 119 Tường Vân động  - TRONG THANH (phi chien dau) | tien hanh trang 500
+[14:34:15.691]     o  0 idx 21: Ngân Khôi  do ben 28/28  +0  gia sua 0  => day
+[14:34:15.691]     o  1 idx 45:  Đồ phổ Hoàng Kim - Định Quốc Thanh Sa Trường Sam  do ben 80/80  +0  gia sua 0  => day
+[14:34:15.691]     o  2 idx 22: Tê Giác Yêu Đái  do ben 15/15  +0  gia sua 0  => day
+[14:34:15.691]     o  3 idx 25: Tú Cốt Thương  do ben 67/67  +0  gia sua 0  => day
+[14:34:15.691]     o  4 idx 14:  Đồ phổ Hoàng Kim - Định Quốc Xích Quyên Nhuyễn Ngoa  do ben 70/70  +0  gia sua 0  => day
+[14:34:15.691]     o  5 idx 19: Long Lân Hộ Uyển  do ben 20/20  +0  gia sua 0  => day
+[14:34:15.691]     o  6 idx 18: Hồng Phỉ Thúy Hộ Thân phù   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:34:15.691]     o  7 idx 17: Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:34:15.691]     o  8 idx 20: Hải Lam Bảo Thạch Giới Chỉ  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:34:15.691]     o  9 idx 23: Bích Ngọc Ngọc Bội   do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:34:15.691]     o 10 idx 27: Túc Sương  do ben -1/-1  +0  gia sua 0  => khong co do ben
+[14:34:15.691] Ke hoach ve thanh: can sua do = 0 (Ky Tran Cac sau khi ban do) | Tap hoa: can mua TDP 0 | Hieu thuoc: can mua 0 | tien 500, ruong 8177857

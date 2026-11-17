@@ -1408,10 +1408,20 @@ void CVLAttack::Breathe()
 	nRange = m_nSearchRange;
 	if (theMove.m_bFollow)
 	{
+		// Theo sau de di toi bai: danh sach toa do nam o map khac (chua sang dung map luyen cong)
+	// thi chi bam theo leader, KHONG danh quai doc duong
+		if (theMove.m_bRouteMove && theMove.m_nNodesMapID && *g_pMapID != theMove.m_nNodesMapID)
+		{
+			DQ_EXIT("theo sau: chua toi map luyen cong - chi bam theo, khong danh");
+			return;
+		}
 		if (!theMove.m_nLeaderIdx && theMove.m_bNoAttackFollow)
 		{
 			if (theMove.m_bAroundPointPK || theMove.m_bRouteMove)
-				theMove.m_nStatus = status_idle;
+			{
+				if(theMove.m_nStatus != status_movefirst)
+					theMove.m_nStatus = status_idle;
+			}
 			DQ_EXIT("theo sau: khong thay nguoi dan, khong danh");
 			return;
 		}
