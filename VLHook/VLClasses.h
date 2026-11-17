@@ -278,6 +278,14 @@ class CVLAttack
 		int	nAlterType;		// Direct, Time, Life, Mana...
 	} ALTER_SKILLS;
 
+	// Mot bac luan chuyen chieu thuc moi - cung layout voi VLAuto/AutoParams.h SWAP_SKILL
+	typedef struct
+	{
+		int		nSkillID;	// 0 = khong thiet lap
+		int		nValue;		// Nguong tuyet doi: ms / diem sinh luc / diem noi luc
+		wchar_t	szName[40];	// Ten skill (VLAuto hien thi lai; VLHook khong dung)
+	} SWAP_SKILL;
+
 public:
 	UINT	m_cbSize;
 	BOOL	m_bAutoHit;
@@ -309,6 +317,15 @@ public:
 	int		m_BuaSkills[MAX_BUFFBUA];
 	BOOL	m_bBuaOnlyPlayer;	// Chi cast bua len nguoi choi (bo qua quai)
 	int		m_nBuaRange;		// Tam quet doi tuong cast bua (0 = dung tam tim quai)
+	// === Giao dien skill moi (HandleInDirectSkills2) - cung thu tu voi PARAM_ATTACK (VLAuto/AutoParams.h) ===
+	BOOL		m_bSpamSkill;			// Danh mac dinh: spam skill lien tuc tai cho dung
+	int			m_nSpamSkillID;			// Skill ID spam
+	int			m_nSpamSkillMs;			// Chu ky spam (ms)
+	wchar_t		m_szSpamSkillName[40];	// Ten skill spam (VLHook khong dung)
+	int			m_nSwapLeftType;		// Luan chuyen tay trai: 0=thoi gian, 1=sinh luc, 2=noi luc
+	SWAP_SKILL	m_SwapLeft[2];			// 2 bac tay trai (dong duoi uu tien)
+	int			m_nSwapRightType;		// Luan chuyen tay phai: 0/1/2
+	SWAP_SKILL	m_SwapRight[2];			// 2 bac tay phai (dong duoi uu tien)
 
 	//Private
 	int		m_nBuaTarget;		// Quai dang buff bua (index NPC), 0 = chua
@@ -344,6 +361,7 @@ public:
 	int		m_nBossWait;
 	int		m_nPeopleIdx;
 	int		m_nEnemyIdx;
+	BOOL	m_bDoingSkillSpam;
 
 public:
 	CVLAttack(void);
@@ -356,6 +374,8 @@ public:
 	void	SetActiveSkill(int nSkillId);
 	void	HandleDirectSkills();
 	void	HandleInDirectSkills();
+	void	HandleInDirectSkills2();
+	static int ChonSkillLuanChuyen(int nType, const SWAP_SKILL* sw);	// Chon skill luan chuyen cho HandleInDirectSkills2
 	void	DoSpecialSkill(int nSkillIdx, BOOL bDirect = TRUE);
 	BOOL	IsLagTarget(int nIndex);
 	void	AddBadNpc(DWORD dwID, int nLife);	// Ghi quai lag vao m_BadNpc (da co: gia han, day: thay o sap het han)

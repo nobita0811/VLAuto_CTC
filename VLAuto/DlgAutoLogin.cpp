@@ -39,7 +39,8 @@
 #define NET_LOST_SEC			20		// giây: nhân vật không được server đồng bộ quá lâu => coi là mất kết nối
 
 #define AUTOLOGIN_DATA_FILE		_T("%s\\AutoLogin.ini")
-#define SERVERLIST_FILE			_T("%s\\UiConfig\\serverlist_.txt")
+#define SERVERLIST_FILE			_T("%s\\UiConfig\\serverlist.ini")		// copy thang serverlist.ini cua Game vao day la cap nhat
+#define SERVERLIST_FILE_OLD		_T("%s\\UiConfig\\serverlist_.txt")		// ten cu - van doc duoc de tuong thich
 #define MAX_ROLE_COUNT			3		// Số nhân vật tối đa trên một tài khoản
 #define DEFAULT_RELOGIN_DELAY	10000	// ms
 static void LoginLog(LPCTSTR szFormat, ...);
@@ -205,7 +206,8 @@ static CString DecryptPassword(CString strHex)
 	return strPassword;
 }
 
-// Đọc UiConfig\serverlist_.txt (UTF-8, \settings\serverlist.ini trong pak của Game - Debug > Đăng nhập > Đọc danh sách server),
+// Đọc UiConfig\serverlist.ini (chính là \settings\serverlist.ini trong pak của Game - copy thẳng vào là xong),
+// tự nhận encoding: UTF-8 (có BOM hoặc hợp lệ) hoặc mã TCVN3 (font ABC - file gốc của Game),
 // tách thành "section|key" (chữ thường) -> value
 static BOOL ReadServerListFile(LPCTSTR szFile, CMapStringToString& mapValues)
 {
@@ -222,13 +224,29 @@ static BOOL ReadServerListFile(LPCTSTR szFile, CMapStringToString& mapValues)
 	if (!bRead)
 		dwRead = 0;
 	strDataA.ReleaseBuffer(dwRead);
-	if (strDataA.Left(3) == "\xEF\xBB\xBF")
+	BOOL bBom = (strDataA.Left(3) == "\xEF\xBB\xBF");
+	if (bBom)
 		strDataA.Delete(0, 3);
 
+	// Tu nhan encoding: co BOM UTF-8, hoac giai ma UTF-8 chat (MB_ERR_INVALID_CHARS) thanh cong -> UTF-8;
+	// nguoc lai (file goc cua Game ma TCVN3, co byte dau >= 0x80) -> TCVN3ToUnicode
+	BOOL bUtf8 = bBom;
+	if (!bUtf8 && strDataA.GetLength() > 0)
+		bUtf8 = (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, strDataA, strDataA.GetLength(), NULL, 0) > 0);
+
 	CStringW strData;
-	int nLen = MultiByteToWideChar(CP_UTF8, 0, strDataA, strDataA.GetLength(), NULL, 0);
-	MultiByteToWideChar(CP_UTF8, 0, strDataA, strDataA.GetLength(), strData.GetBuffer(nLen + 1), nLen);
-	strData.ReleaseBuffer(nLen);
+	if (bUtf8)
+	{
+		int nLen = MultiByteToWideChar(CP_UTF8, 0, strDataA, strDataA.GetLength(), NULL, 0);
+		MultiByteToWideChar(CP_UTF8, 0, strDataA, strDataA.GetLength(), strData.GetBuffer(nLen + 1), nLen);
+		strData.ReleaseBuffer(nLen);
+	}
+	else
+	{
+		int nLen = strDataA.GetLength();
+		TCVN3ToUnicode(strDataA, strData.GetBuffer(nLen + 1), nLen);
+		strData.ReleaseBuffer();
+	}
 
 	CString strSection;
 	int nPos = 0;
@@ -481,7 +499,7 @@ BOOL CDlgAutoLogin::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_OPENGAME_BUTTON), _T("Mở một Game mới cho tài khoản đang chọn"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_TERMINAL_GAME_BUTTON), _T("Thoát Game của tài khoản đang chọn (dừng đăng nhập tài khoản này)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_TERMINAL_GAMEALL_BUTTON), _T("Dừng đăng nhập và thoát tất cả Game đang chạy"));
-		m_ToolTip.AddTool(GetDlgItem(IDC_SERVER_REGION_COMBO), _T("Đọc từ UiConfig\\serverlist_.txt"));
+		m_ToolTip.AddTool(GetDlgItem(IDC_SERVER_REGION_COMBO), _T("Đọc từ UiConfig\\serverlist.ini (copy thẳng serverlist.ini của Game vào là cập nhật)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_AUTO_RELOGIN_COUNT_CHECK), _T("Đăng nhập thất bại thì chờ 2s rồi thử lại, tối đa số lần bên cạnh (bỏ check: không thử lại)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_COUNT_RELOGIN_EDIT), _T("Số lần thử lại khi đăng nhập thất bại"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_HIDEGAME_LOGIN_CHECK), _T("Auto Login ẩn cửa sổ Game ngay từ lúc mở game, đăng nhập trong lúc ẩn (double-click dòng tài khoản để hiện)"));
@@ -668,7 +686,7 @@ void CDlgAutoLogin::SaveAccounts()
 	CloseHandle(hFile);
 }
 
-// Đọc danh sách cụm/server từ UiConfig\serverlist_.txt (cập nhật tay mỗi khi Game đổi danh sách)
+// Đọc danh sách cụm/server từ UiConfig\serverlist.ini (copy thẳng serverlist.ini của Game vào mỗi khi có server mới; còn đọc được serverlist_.txt tên cũ)
 void CDlgAutoLogin::LoadServerList()
 {
 	CString strRegion = GetComboText(m_RegionCombo), strServer = GetComboText(m_ServerCombo);
@@ -676,7 +694,14 @@ void CDlgAutoLogin::LoadServerList()
 	CString strFile;
 	strFile.Format(SERVERLIST_FILE, g_szAppFolder);
 	CMapStringToString mapValues;
-	if (ReadServerListFile(strFile, mapValues))
+	BOOL bLoaded = ReadServerListFile(strFile, mapValues);
+	if (!bLoaded)
+	{
+		// Chua co serverlist.ini thi thu ten cu serverlist_.txt
+		strFile.Format(SERVERLIST_FILE_OLD, g_szAppFolder);
+		bLoaded = ReadServerListFile(strFile, mapValues);
+	}
+	if (bLoaded)
 	{
 		int nRegionCount = _ttoi(GetServerListValue(mapValues, _T("List"), _T("RegionCount")));
 		for (int i = 0; i < nRegionCount; i++)
@@ -836,7 +861,7 @@ BOOL CDlgAutoLogin::GetFields(AutoLoginAccount& acc)
 	else if (acc.strPassword.IsEmpty())
 		nFocusID = IDC_PASSWORD_EDIT, szError = _T("Chưa nhập mật khẩu");
 	else if (acc.strRegion.IsEmpty())
-		nFocusID = IDC_SERVER_REGION_COMBO, szError = _T("Chưa chọn cụm server (kiểm tra lại UiConfig\\serverlist_.txt)");
+		nFocusID = IDC_SERVER_REGION_COMBO, szError = _T("Chưa chọn cụm server (kiểm tra lại UiConfig\\serverlist.ini)");
 	else if (acc.strServer.IsEmpty())
 		nFocusID = IDC_SERVER_NAME_COMBO, szError = _T("Chưa chọn server");
 	if (szError)

@@ -47,6 +47,27 @@ void CDlgSettingSkill::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_SKILL1A_COMBO, g_pCurGameWin->m_prAttack.m_AlterSkill[0].nAlterType);
 	DDX_CBIndex(pDX, IDC_SKILL2A_COMBO, g_pCurGameWin->m_prAttack.m_AlterSkill[1].nAlterType);
 
+	// === Giao dien skill moi (HandleInDirectSkills2) ===
+	// Danh mac dinh (spam skill)
+	DDX_Check(pDX, IDC_SPAM_SKILL_CHECK, g_pCurGameWin->m_prAttack.m_bSpamSkill);
+	DDX_Text(pDX, IDC_VALUE_SPAM_SKILL_EDIT, g_pCurGameWin->m_prAttack.m_nSpamSkillMs);
+	// Chua thiet lap nguong (<=0) thi hien thi mac dinh 1000 tren giao dien.
+	if (!pDX->m_bSaveAndValidate)
+	{
+		if (g_pCurGameWin->m_prAttack.m_SwapLeft[0].nValue  <= 0) g_pCurGameWin->m_prAttack.m_SwapLeft[0].nValue  = 1000;
+		if (g_pCurGameWin->m_prAttack.m_SwapLeft[1].nValue  <= 0) g_pCurGameWin->m_prAttack.m_SwapLeft[1].nValue  = 1000;
+		if (g_pCurGameWin->m_prAttack.m_SwapRight[0].nValue <= 0) g_pCurGameWin->m_prAttack.m_SwapRight[0].nValue = 1000;
+		if (g_pCurGameWin->m_prAttack.m_SwapRight[1].nValue <= 0) g_pCurGameWin->m_prAttack.m_SwapRight[1].nValue = 1000;
+	}
+	// Luan chuyen tay trai: kieu (0=thoi gian,1=sinh luc,2=noi luc) + 2 muc gia tri
+	DDX_Radio(pDX, IDC_SWAP_SKILL_TIME_LEFT_RADIO, g_pCurGameWin->m_prAttack.m_nSwapLeftType);
+	DDX_Text(pDX, IDC_SWAP_SKILL_LEFT_VALUE_EDIT,  g_pCurGameWin->m_prAttack.m_SwapLeft[0].nValue);
+	DDX_Text(pDX, IDC_SWAP_SKILL_LEFT_VALUE_EDIT2, g_pCurGameWin->m_prAttack.m_SwapLeft[1].nValue);
+	// Luan chuyen tay phai
+	DDX_Radio(pDX, IDC_SWAP_SKILL_TIME_RIGHT_RADIO, g_pCurGameWin->m_prAttack.m_nSwapRightType);
+	DDX_Text(pDX, IDC_SWAP_SKILL_RIGHT_VALUE_EDIT,  g_pCurGameWin->m_prAttack.m_SwapRight[0].nValue);
+	DDX_Text(pDX, IDC_SWAP_SKILL_RIGHT_VALUE_EDIT2, g_pCurGameWin->m_prAttack.m_SwapRight[1].nValue);
+
 	//UI Refresh
 	int nSkillIdx1 = ((CComboBox*)GetDlgItem(IDC_SKILL1_COMBO))->GetCurSel();
 	int nSkillIdx2 = ((CComboBox*)GetDlgItem(IDC_SKILL2_COMBO))->GetCurSel();
@@ -64,6 +85,8 @@ void CDlgSettingSkill::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CDlgSettingSkill, CDialog)
 	ON_CONTROL_RANGE(CBN_SELCHANGE, 1000, 2000, &CDlgSettingSkill::OnCbnSelchanged)
 	ON_CONTROL_RANGE(EN_KILLFOCUS, 1000, 2000, &CDlgSettingSkill::OnEnKillfocus)
+	// Checkbox spam + cac radio luan chuyen: ap dung ngay khi bam
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_SPAM_SKILL_CHECK, IDC_SWAP_SKILL_MP_RIGHT_RADIO, &CDlgSettingSkill::OnBnClickedApply)
 	ON_MESSAGE(WM_ONSETTEXT, &CDlgSettingSkill::OnSetTextSkillList)
 END_MESSAGE_MAP()
 
@@ -128,6 +151,19 @@ BOOL CDlgSettingSkill::OnInitDialog()
 		m_ToolTip.AddTool(GetDlgItem(IDC_SKILL2_EDIT), _T("Mức thời gian, sinh lực, nội lực (trên)"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_SKILL1A_COMBO), _T("Chế độ chuyển chiêu / xuất chiêu"));
 		m_ToolTip.AddTool(GetDlgItem(IDC_SKILL2A_COMBO), _T("Chế độ chuyển chiêu / xuất chiêu"));
+
+		// Nut check danh mac dinh (spam skill)
+		m_ToolTip.AddTool(GetDlgItem(IDC_SPAM_SKILL_CHECK),
+			_T("Bật: liên tục phát chiêu đã chọn ngay tại chỗ đứng, mỗi [ms] một lần (khi đang chiến đấu)."));
+		// 4 o nguong luan chuyen: giai thich dieu kien doi skill
+		m_ToolTip.AddTool(GetDlgItem(IDC_SWAP_SKILL_LEFT_VALUE_EDIT),
+			_T("Thời gian: giữ chiêu này trong số [ms] rồi đổi. Sinh/Nội lực: đổi sang chiêu này khi chỉ số NHỎ HƠN giá trị. Chưa nhập = 1000."));
+		m_ToolTip.AddTool(GetDlgItem(IDC_SWAP_SKILL_LEFT_VALUE_EDIT2),
+			_T("Thời gian: giữ chiêu này trong số [ms] rồi đổi. Sinh/Nội lực: đổi sang chiêu này khi chỉ số LỚN HƠN giá trị. Chưa nhập = 1000."));
+		m_ToolTip.AddTool(GetDlgItem(IDC_SWAP_SKILL_RIGHT_VALUE_EDIT),
+			_T("Thời gian: giữ chiêu này trong số [ms] rồi đổi. Sinh/Nội lực: đổi sang chiêu này khi chỉ số NHỎ HƠN giá trị. Chưa nhập = 1000."));
+		m_ToolTip.AddTool(GetDlgItem(IDC_SWAP_SKILL_RIGHT_VALUE_EDIT2),
+			_T("Thời gian: giữ chiêu này trong số [ms] rồi đổi. Sinh/Nội lực: đổi sang chiêu này khi chỉ số LỚN HƠN giá trị. Chưa nhập = 1000."));
 	}
 
 	return TRUE;
@@ -194,8 +230,17 @@ void CDlgSettingSkill::OnCbnSelchanged(UINT nID)
 void CDlgSettingSkill::OnEnKillfocus(UINT nID)
 {
 	if (!IsWindowVisible()) return;	// dang dong cua so (EndDialog) => da luu o OnOK/OnCancel
-	if (nID == IDC_SKILL1_EDIT || nID == IDC_SKILL2_EDIT)
+	if (nID == IDC_SKILL1_EDIT || nID == IDC_SKILL2_EDIT ||
+		nID == IDC_VALUE_SPAM_SKILL_EDIT ||
+		nID == IDC_SWAP_SKILL_LEFT_VALUE_EDIT  || nID == IDC_SWAP_SKILL_LEFT_VALUE_EDIT2 ||
+		nID == IDC_SWAP_SKILL_RIGHT_VALUE_EDIT || nID == IDC_SWAP_SKILL_RIGHT_VALUE_EDIT2)
 		SaveParams();
+}
+
+void CDlgSettingSkill::OnBnClickedApply(UINT nID)
+{
+	if (!IsWindowVisible()) return;
+	SaveParams();
 }
 
 LRESULT CDlgSettingSkill::OnSetTextSkillList(WPARAM wParam, LPARAM lParam)
@@ -206,6 +251,25 @@ LRESULT CDlgSettingSkill::OnSetTextSkillList(WPARAM wParam, LPARAM lParam)
 
 void CDlgSettingSkill::UpdateSkillList(BOOL bSave)
 {
+	// Danh sach 5 combo skill moi + con tro toi ID/ten tuong ung trong m_prAttack
+	const int kSwapCbNum = 5;
+	const UINT kSwapCbID[kSwapCbNum] = {
+		IDC_SPAM_SKILL_COMBO,
+		IDC_SWAP_SKILL_LEFT_COMBO,  IDC_SWAP_SKILL_LEFT_COMBO2,
+		IDC_SWAP_SKILL_RIGHT_COMBO, IDC_SWAP_SKILL_RIGHT_COMBO2 };
+	int* const kSwapCbPID[kSwapCbNum] = {
+		&g_pCurGameWin->m_prAttack.m_nSpamSkillID,
+		&g_pCurGameWin->m_prAttack.m_SwapLeft[0].nSkillID,
+		&g_pCurGameWin->m_prAttack.m_SwapLeft[1].nSkillID,
+		&g_pCurGameWin->m_prAttack.m_SwapRight[0].nSkillID,
+		&g_pCurGameWin->m_prAttack.m_SwapRight[1].nSkillID };
+	wchar_t* const kSwapCbName[kSwapCbNum] = {
+		g_pCurGameWin->m_prAttack.m_szSpamSkillName,
+		g_pCurGameWin->m_prAttack.m_SwapLeft[0].szName,
+		g_pCurGameWin->m_prAttack.m_SwapLeft[1].szName,
+		g_pCurGameWin->m_prAttack.m_SwapRight[0].szName,
+		g_pCurGameWin->m_prAttack.m_SwapRight[1].szName };
+
 	if (bSave)
 	{
 		for (int i=0; i < skill_total; i++)
@@ -213,6 +277,23 @@ void CDlgSettingSkill::UpdateSkillList(BOOL bSave)
 			int nSkillID = (int)m_SkillList.GetItemData(i);
 			if (nSkillID < 0) nSkillID = 0;
 			g_pCurGameWin->m_prAttack.m_SettingSkills[i] = nSkillID;
+		}
+
+		// Luu 5 combo skill moi: lay ID tu ItemData + ten tu text
+		for (int k=0; k < kSwapCbNum; k++)
+		{
+			CComboBox* pCb = (CComboBox*)GetDlgItem(kSwapCbID[k]);
+			if (pCb == NULL) continue;
+			int sel = pCb->GetCurSel();
+			int nID = (sel <= 0) ? 0 : (int)pCb->GetItemData(sel);	// sel 0 = [khong thiet lap]
+			*kSwapCbPID[k] = nID;
+			if (nID > 0)
+			{
+				CString s; pCb->GetLBText(sel, s);
+				lstrcpynW(kSwapCbName[k], s, 40);
+			}
+			else
+				kSwapCbName[k][0] = 0;
 		}
 	}
 	else
@@ -241,6 +322,13 @@ void CDlgSettingSkill::UpdateSkillList(BOOL bSave)
 			m_SkillList.SetItemData(j, 0);
 		}
 
+		// Xoa trang 5 combo skill moi truoc khi nap lai theo nhan vat hien tai
+		for (int k=0; k < kSwapCbNum; k++)
+		{
+			CComboBox* pCb = (CComboBox*)GetDlgItem(kSwapCbID[k]);
+			if (pCb != NULL) pCb->ResetContent();
+		}
+
 		KSkill Skill;
 		for (int i=0; i < MAX_NPCSKILL; i++)
 		{
@@ -260,6 +348,15 @@ void CDlgSettingSkill::UpdateSkillList(BOOL bSave)
 
 			m_SkillList.InsertComboText(szSkillName, curPlayer.m_Skills[i].SkillId);
 
+			// Nap skill vao 5 combo moi (CBS_SORT tu sap xep); gan ItemData = SkillId
+			for (int k=0; k < kSwapCbNum; k++)
+			{
+				CComboBox* pCb = (CComboBox*)GetDlgItem(kSwapCbID[k]);
+				if (pCb == NULL) continue;
+				int idx = pCb->AddString(szSkillName);
+				if (idx >= 0) pCb->SetItemData(idx, curPlayer.m_Skills[i].SkillId);
+			}
+
 			for (int j=0; j < skill_total; j++)
 			{
 				if (g_pCurGameWin->m_prAttack.m_SettingSkills[j] == curPlayer.m_Skills[i].SkillId)
@@ -269,6 +366,26 @@ void CDlgSettingSkill::UpdateSkillList(BOOL bSave)
 					break;
 				}
 			}
+		}
+
+		// Chen "[khong thiet lap]" o dau moi combo roi chon lai theo ID da luu
+		for (int k=0; k < kSwapCbNum; k++)
+		{
+			CComboBox* pCb = (CComboBox*)GetDlgItem(kSwapCbID[k]);
+			if (pCb == NULL) continue;
+			pCb->InsertString(0, UNSET_SKILL);	// CB_INSERTSTRING khong bi CBS_SORT sap lai
+			pCb->SetItemData(0, 0);
+			int nCur = 0;
+			int nStoredID = *kSwapCbPID[k];
+			if (nStoredID > 0)
+			{
+				int nCount = pCb->GetCount();
+				for (int m=1; m < nCount; m++)
+				{
+					if ((int)pCb->GetItemData(m) == nStoredID) { nCur = m; break; }
+				}
+			}
+			pCb->SetCurSel(nCur);
 		}
 	}
 }

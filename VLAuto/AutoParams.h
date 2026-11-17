@@ -116,6 +116,15 @@ struct ALTER_SKILLS
 	int	nAlterType;
 };
 
+// Mot bac luan chuyen chieu thuc (giao dien skill moi - HandleInDirectSkills2)
+// VLHook CVLAttack::SWAP_SKILL phai giu cung layout (int,int,wchar_t[40])
+struct SWAP_SKILL
+{
+	int		nSkillID;	// Skill ID (0 = [khong thiet lap])
+	int		nValue;		// Nguong tuyet doi: ms (thoi gian) / diem sinh luc / diem noi luc
+	wchar_t	szName[40];	// Ten skill da chon (de combo hien thi lai dung ten)
+};
+
 struct PARAM_ATTACK : public AutoParams
 {
 	BOOL	m_bAutoHit;
@@ -144,6 +153,16 @@ struct PARAM_ATTACK : public AutoParams
 	int		m_BuaSkills[MAX_BUFFBUA];	// SkillId bua da chon (0 = trong)
 	BOOL	m_bBuaOnlyPlayer;			// Chi cast bua len nguoi choi (bo qua quai)
 	int		m_nBuaRange;				// Tam quet doi tuong cast bua (0 = dung tam tim quai)
+	// === Giao dien skill moi (HandleInDirectSkills2) - them cuoi de tuong thich cfg cu ===
+	// VLHook CVLAttack phai giu dung thu tu & kieu cac field duoi day
+	BOOL		m_bSpamSkill;			// Danh mac dinh: spam skill lien tuc tai cho dung
+	int			m_nSpamSkillID;			// Skill ID spam (0 = chua chon)
+	int			m_nSpamSkillMs;			// Chu ky spam (ms)
+	wchar_t		m_szSpamSkillName[40];	// Ten skill spam (combo hien thi lai)
+	int			m_nSwapLeftType;		// Luan chuyen tay trai: 0=thoi gian, 1=sinh luc, 2=noi luc
+	SWAP_SKILL	m_SwapLeft[2];			// 2 bac tay trai (dong duoi uu tien)
+	int			m_nSwapRightType;		// Luan chuyen tay phai: 0=thoi gian, 1=sinh luc, 2=noi luc
+	SWAP_SKILL	m_SwapRight[2];			// 2 bac tay phai (dong duoi uu tien)
 
 public:
 	void	InitValue();

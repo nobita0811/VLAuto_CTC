@@ -529,16 +529,19 @@ void CVLMove::Breathe()
 	else //m_bRouteMove
 	{
 		if (m_nNodesMapID && *g_pMapID != m_nNodesMapID)
-		{	// Danh sach toa do thuoc ban do khac (vd "Tro lai dia diem cu" dua sai map): tu di theo MapPath, 30s thu 1 lan
+		{
 			static DWORD dwTryTick = 0;
-			if (!theMap.m_nTrainMapID && GetTickCount() - dwTryTick > 30000 && theMain.HaveTownPortal())
+			if (GetTickCount() - dwTryTick > 500)   // thu lai moi 0.5s, tranh spam khi that bai
 			{
 				dwTryTick = GetTickCount();
-				if (PathTravelStart(m_nNodesMapID, FALSE)) { MV_EXITF("DS luyen cong o map %d: bat PathTravel toi map do", m_nNodesMapID); return; }
+				if (PathTravelStart(m_nNodesMapID, FALSE))
+				{
+					MV_EXITF("DS luyen cong o map %d: bat PathTravel toi map do", m_nNodesMapID);
+					return;
+				}
 			}
 			m_nStatus = status_idle;
 			m_nCurNode = -1;
-			MV_EXITF("DS luyen cong thuoc map %d, dang o map %d: dung", m_nNodesMapID, *g_pMapID);
 			return;
 		}
 		if (m_nCurNode < 0) { GetCurNode(); m_nStatus = status_movefirst; }

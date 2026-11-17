@@ -25,6 +25,7 @@ protected:
 	void				SaveParams();
 	afx_msg void		OnCbnSelchanged(UINT nID);
 	afx_msg void		OnEnKillfocus(UINT nID);
+	afx_msg void		OnBnClickedApply(UINT nID);
 	afx_msg LRESULT		OnSetTextSkillList(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()

@@ -9,11 +9,9 @@
 #include "TcvnText.h"
 #include "../CrashHandler.h"
 #include "BufLog.h"
+#include <stdarg.h>
 
-// Debug log Cuu sat / Do sat (tab Chien dau) -> <thu muc auto>\Logs\cuusat.log
-// 1 = bat ghi log, 0 = tat (khong bien dich code log)
-
-// Debug log Danh quai -> <thu muc auto>\Logs\danhquai.log: trang thai moi vong Breathe + moi lan doi / bo muc tieu (ly do, file:dong)
+#define DebugSwapSkill 0
 
 
 // ===== Bo dem log (BufLog.h): gom nhieu dong trong RAM, vuot nguong / qua thoi gian moi ghi file 1 lan =====
@@ -60,6 +58,25 @@ void BLAppend(KBufLog* L, const char* szTcvnLine)
 	if (L->nLen >= L->nFlushAt || GetTickCount() - L->dwFlushTick >= L->dwFlushTime)
 		BLFlush(L);
 }
+
+// ===== Debug log Luan chuyen chieu thuc (<auto>\Logs\swapskill.log) =====
+// Bat/tat bang #define DebugSwapSkill (dau file). 1 = ghi log, 0 = khong bien dich.
+#if DebugSwapSkill
+static char		s_SwapBuf[64 * 1024];
+static KBufLog	s_SwapFile = { "swapskill", 8 * 1024 * 1024, 64 * 1024, 32 * 1024, 1000, s_SwapBuf, 0, 0 };
+static void SwapLogLine(const char* fmt, ...)
+{
+	char sz[1024];
+	va_list ap; va_start(ap, fmt);
+	_vsnprintf(sz, sizeof(sz) - 2, fmt, ap);
+	va_end(ap);
+	sz[sizeof(sz) - 1] = 0;
+	BLAppend(&s_SwapFile, sz);	// szName/noi dung chi dung ASCII nen Tcvn3ToUtf8 giu nguyen
+}
+#define SWAP_LOG(...)	SwapLogLine(__VA_ARGS__)
+#else
+#define SWAP_LOG(...)	((void)0)
+#endif
 
 // ===== Debug log Danh quai =====
 #if DebugDanhQuai
@@ -1257,7 +1274,8 @@ void CVLAttack::Breathe()
 			BuffBuaReset();
 	}
 	HandleDirectSkills();
-	HandleInDirectSkills();
+	//HandleInDirectSkills();
+	HandleInDirectSkills2();
 	// Tab Di chuyen dang tim duong toi bai train / dang tu di MapPath: chi buff (o tren), chua tu ve / tim quai.
 	// Bo quai dang nham (neu khong PathTravelBreathe cho "danh quai doc duong" ma khong ai danh -> dung im)
 	BOOL bFindingTrain = (theMove.m_bGoTrain || PathTravelActive()) && P_PLAYER->m_FightMode;
@@ -1298,6 +1316,10 @@ void CVLAttack::Breathe()
 			theRecover.m_bDoingBuff ? "Hoi phuc dang buff" : "tam dung (m_bPause)");
 		return;
 	}
+	if (m_bDoingSkillSpam)
+	{
+		return;	// Dang spam skill: khong can bo qua quai, tu ve, tim duong...
+	}
 	if (bFindingTrain) { DQ_EXIT("dang tim duong toi bai train / MapPath"); return; }
 
 	// ActiveSkill Adjustment
@@ -1319,7 +1341,13 @@ void CVLAttack::Breathe()
 
 	if (m_bSkillChanged)
 	{
-		SetDefSkills(m_SettingSkills[skill_left], m_SettingSkills[skill_right]);
+		// Neu dang bat luan phien chieu thuc thi KHONG ap lai skill tay do
+		// (luan phien tu dat skill trai/phai); truyen 0 de SetDefSkills bo qua tay do.
+		BOOL bSwapLeftOn  = (m_SwapLeft[0].nSkillID  > 0 || m_SwapLeft[1].nSkillID  > 0);
+		BOOL bSwapRightOn = (m_SwapRight[0].nSkillID > 0 || m_SwapRight[1].nSkillID > 0);
+		int nSetLeft  = bSwapLeftOn  ? 0 : m_SettingSkills[skill_left];
+		int nSetRight = bSwapRightOn ? 0 : m_SettingSkills[skill_right];
+		SetDefSkills(nSetLeft, nSetRight);
 		int nSkillId = g_pCurPlayer->m_nLeftSkillID;
 		SetActiveSkill(nSkillId);
 
@@ -1695,6 +1723,130 @@ void CVLAttack::HandleInDirectSkills()
 		}
 	}
 	nTimerCount++;
+}
+// Chon skill cho mot ben (trai/phai) theo kieu luan chuyen.
+// nType: 0 = theo thoi gian (luan phien pha), 1 = theo sinh luc, 2 = theo noi luc.
+// sw[0], sw[1]: 2 bac; dong duoi (sw[1]) uu tien hon dong tren (sw[0]).
+// Tra ve skill ID can dung, 0 = khong doi.
+int CVLAttack::ChonSkillLuanChuyen(int nType, const SWAP_SKILL* sw)
+{
+	const int kNguongMacDinh = 1000;	// Skill da chon nhung chua nhap nguong => dung 1000 (ms / sinh luc / noi luc)
+	int id0 = sw[0].nSkillID;
+	int id1 = sw[1].nSkillID;
+	if (id0 <= 0 && id1 <= 0)
+		return 0;
+
+	// Nguong hieu dung tung bac: chua thiet lap (<=0) thi coi la 1000.
+	int nguong0 = (sw[0].nValue > 0) ? sw[0].nValue : kNguongMacDinh;
+	int nguong1 = (sw[1].nValue > 0) ? sw[1].nValue : kNguongMacDinh;
+
+	if (nType == 0)
+	{
+		// Luan phien theo thoi gian: moi skill giu trong nguong (ms) cua no.
+		int v0 = (id0 > 0) ? nguong0 : 0;
+		int v1 = (id1 > 0) ? nguong1 : 0;
+		int total = v0 + v1;
+		if (total <= 0)
+		{
+			// Khong co skill nao hop le: chi dung bac nao co skill (uu tien dong duoi).
+			return (id1 > 0) ? id1 : id0;
+		}
+		DWORD t = GetTickCount() % (DWORD)total;
+		if ((int)t < v0 && id0 > 0)
+			return id0;
+		return (id1 > 0) ? id1 : id0;
+	}
+
+	// Theo nguong tuyet doi sinh luc / noi luc:
+	//  - skill 1 (dong tren) doi khi cur NHO HON nguong0.
+	//  - skill 2 (dong duoi) doi khi cur LON HON nguong1.
+	// Dong duoi uu tien (ghi de len dong tren neu ca hai thoa).
+	int cur = (nType == 1) ? (int)P_PLAYER->m_CurrentLife : (int)P_PLAYER->m_CurrentMana;
+	int chosen = 0;
+	if (id0 > 0 && cur < nguong0)
+		chosen = id0;
+	if (id1 > 0 && cur > nguong1)
+		chosen = id1;
+	return chosen;
+}
+
+void CVLAttack::HandleInDirectSkills2()
+{
+	// 1) Spam skill: phat lien tuc tai cho dung moi m_nSpamSkillMs mili-giay.
+	if (m_bSpamSkill && m_nSpamSkillID > 0)
+	{
+		m_bDoingSkillSpam = TRUE;
+		static DWORD s_dwSpamTick = 0;
+		int nPeriod = (m_nSpamSkillMs < 100) ? 100 : m_nSpamSkillMs;
+		// Chi phat khi dang trong che do chien dau.
+		if (P_PLAYER->m_FightMode && GetTickCount() - s_dwSpamTick >= (DWORD)nPeriod)
+		{
+			s_dwSpamTick = GetTickCount();
+			
+			int nPlayerX, nPlayerY;
+			P_PLAYER->GetMapPos(&nPlayerX, &nPlayerY);
+			P_PLAYER->SendCommand(do_skill, m_nSpamSkillID, nPlayerX, nPlayerY);
+			SendVLCmdSkill(m_nSpamSkillID, nPlayerX, nPlayerY);
+		}
+	}
+	else
+	{
+		m_bDoingSkillSpam = FALSE;
+	}
+
+	// 2) Luan chuyen chieu thuc tay trai.
+	// Chi doi skill tay trai; viec ra skill do ProcessAttack() tu dong xu ly.
+	// So sanh voi skill tay trai thuc te cua game (m_nLeftSkillID) de tranh goi lai
+	// va tranh bi khoi m_bSkillChanged ghi de ve mac dinh.
+	int nLeft = ChonSkillLuanChuyen(m_nSwapLeftType, m_SwapLeft);
+	int curLeft = (g_pCurPlayer != NULL) ? g_pCurPlayer->m_nLeftSkillID : -1;
+	BOOL bDoLeft = (nLeft > 0 && g_pCurPlayer != NULL && nLeft != curLeft);
+#if DebugSwapSkill
+	{
+		static DWORD s_dwLogL = 0;	// Giam tan suat log ~2 lan/giay cho de doc.
+		if (bDoLeft || GetTickCount() - s_dwLogL >= 500)
+		{
+			s_dwLogL = GetTickCount();
+			int cur = (m_nSwapLeftType == 1) ? (int)P_PLAYER->m_CurrentLife
+				: (m_nSwapLeftType == 2) ? (int)P_PLAYER->m_CurrentMana : 0;
+			SWAP_LOG("TRAI type=%d id0=%d(nguong=%d) id1=%d(nguong=%d) cur=%d => chon=%d | gameLeft=%d %s",
+				m_nSwapLeftType,
+				m_SwapLeft[0].nSkillID, m_SwapLeft[0].nValue,
+				m_SwapLeft[1].nSkillID, m_SwapLeft[1].nValue,
+				cur, nLeft, curLeft, bDoLeft ? "=> SetDefSkills(trai)" : "(giu nguyen)");
+		}
+	}
+#endif
+	if (bDoLeft)
+	{
+		SetDefSkills(nLeft, 0);
+		SetActiveSkill(nLeft);
+	}
+
+	// 3) Luan chuyen chieu thuc tay phai (thuong la skill phu tro bi dong, khong can ra skill).
+	int nRight = ChonSkillLuanChuyen(m_nSwapRightType, m_SwapRight);
+	int curRight = (g_pCurPlayer != NULL) ? g_pCurPlayer->m_nRightSkillID : -1;
+	BOOL bDoRight = (nRight > 0 && g_pCurPlayer != NULL && nRight != curRight);
+#if DebugSwapSkill
+	{
+		static DWORD s_dwLogR = 0;
+		if (bDoRight || GetTickCount() - s_dwLogR >= 500)
+		{
+			s_dwLogR = GetTickCount();
+			int cur = (m_nSwapRightType == 1) ? (int)P_PLAYER->m_CurrentLife
+				: (m_nSwapRightType == 2) ? (int)P_PLAYER->m_CurrentMana : 0;
+			SWAP_LOG("PHAI type=%d id0=%d(nguong=%d) id1=%d(nguong=%d) cur=%d => chon=%d | gameRight=%d %s",
+				m_nSwapRightType,
+				m_SwapRight[0].nSkillID, m_SwapRight[0].nValue,
+				m_SwapRight[1].nSkillID, m_SwapRight[1].nValue,
+				cur, nRight, curRight, bDoRight ? "=> SetDefSkills(phai)" : "(giu nguyen)");
+		}
+	}
+#endif
+	if (bDoRight)
+	{
+		SetDefSkills(0, nRight);
+	}
 }
 
 void CVLAttack::DoSpecialSkill(int nSkill, BOOL bDirect)
@@ -2221,5 +2373,8 @@ void DebugLogFlushAll()
 #endif
 #if DebugCuuSat
 	BLFlush(&s_CSFile);
+#endif
+#if DebugSwapSkill
+	BLFlush(&s_SwapFile);
 #endif
 }
